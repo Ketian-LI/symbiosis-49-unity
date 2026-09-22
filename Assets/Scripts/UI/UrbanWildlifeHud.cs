@@ -170,8 +170,7 @@ namespace UrbanWildlifeRooms.UI
             var scaler = gameObject.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920f, 1080f);
-            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-            scaler.matchWidthOrHeight = 0.5f;
+            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
             gameObject.AddComponent<GraphicRaycaster>();
 
             gameplayRoot = CreateEmpty("Minimal Gameplay HUD", transform);
@@ -1634,10 +1633,22 @@ namespace UrbanWildlifeRooms.UI
 
         private void BuildDesktopOverlay()
         {
-            var overlay = CreatePanel("Main Menu", transform, new Color(0.08f, 0.09f, 0.09f, 0.56f));
+            var overlay = CreatePanel("Main Menu", transform, Color.clear);
             desktopOverlay = overlay.GameObject;
             desktopCanvasGroup = overlay.GameObject.AddComponent<CanvasGroup>();
             Stretch(overlay.RectTransform);
+
+            var background = CreateImage(
+                overlay.Transform,
+                "Warm Tabletop Background",
+                MainMenuVisualCatalog.GetSprite(MainMenuVisual.TabletopBackground));
+            Stretch(background.rectTransform);
+            background.preserveAspect = false;
+            background.raycastTarget = false;
+            var backgroundAspect = background.gameObject.AddComponent<AspectRatioFitter>();
+            backgroundAspect.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
+            backgroundAspect.aspectRatio = 16f / 9f;
+
             BuildDesktopTitle(overlay.Transform);
 
             var sandboxButton = BuildModeCard(
@@ -1663,7 +1674,7 @@ namespace UrbanWildlifeRooms.UI
             var recordPanel = CreatePanel("Best Survival Record", overlay.Transform, Color.clear);
             recordPanel.Image.raycastTarget = false;
             desktopBestRecordRect = recordPanel.RectTransform;
-            SetTopCenter(desktopBestRecordRect, 0f, 770f, 390f, 80f);
+            ConfigureResponsiveMenuElement(desktopBestRecordRect, new Vector2(0.5f, 0.205f), 390f, 80f);
             var recordArtwork = CreateImage(
                 recordPanel.Transform,
                 "Best Record Panel Artwork",
@@ -1901,7 +1912,7 @@ namespace UrbanWildlifeRooms.UI
         private void BuildDesktopTitle(Transform parent)
         {
             var title = CreateEmpty("Desktop Title", parent);
-            SetTopCenter(title, 0f, 55f, 1000f, 188f);
+            ConfigureResponsiveMenuElement(title, new Vector2(0.5f, 0.84f), 820f, 155f);
 
             var wordmark = CreateImage(
                 title,
@@ -1920,7 +1931,11 @@ namespace UrbanWildlifeRooms.UI
             UnityEngine.Events.UnityAction action)
         {
             var root = CreateEmpty(name, parent);
-            SetTopCenter(root, x, 850f, 140f, 132f);
+            ConfigureResponsiveMenuElement(
+                root,
+                new Vector2(0.5f + (x / 1920f), 0.085f),
+                140f,
+                132f);
 
             var backing = CreatePanel("Paper Button Backing", root, Color.white);
             backing.Image.sprite = MainMenuVisualCatalog.GetSprite(MainMenuVisual.BottomButtonBase);
@@ -1953,6 +1968,20 @@ namespace UrbanWildlifeRooms.UI
                 FontStyle.Bold);
             SetTopCenter(label.rectTransform, 0f, 98f, 140f, 30f);
             return label;
+        }
+
+        private static void ConfigureResponsiveMenuElement(
+            RectTransform rectTransform,
+            Vector2 normalizedCenter,
+            float width,
+            float height)
+        {
+            rectTransform.anchorMin = normalizedCenter;
+            rectTransform.anchorMax = normalizedCenter;
+            rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            rectTransform.sizeDelta = new Vector2(width, height);
+            rectTransform.anchoredPosition = Vector2.zero;
+            rectTransform.localScale = Vector3.one;
         }
 
         private Button BuildModeCard(
@@ -2268,21 +2297,21 @@ namespace UrbanWildlifeRooms.UI
 
             if (showSandbox && showResearch)
             {
-                SetTopCenter(desktopSandboxCardRect, 0f, 320f, 720f, 190f);
-                SetTopCenter(desktopResearchCardRect, 0f, 525f, 720f, 190f);
-                SetTopCenter(desktopBestRecordRect, 0f, 745f, 390f, 80f);
+                ConfigureResponsiveMenuElement(desktopSandboxCardRect, new Vector2(0.5f, 0.56f), 720f, 190f);
+                ConfigureResponsiveMenuElement(desktopResearchCardRect, new Vector2(0.5f, 0.345f), 720f, 190f);
+                ConfigureResponsiveMenuElement(desktopBestRecordRect, new Vector2(0.5f, 0.205f), 390f, 80f);
             }
             else
             {
                 if (showSandbox)
                 {
-                    SetTopCenter(desktopSandboxCardRect, 0f, 410f, 720f, 190f);
+                    ConfigureResponsiveMenuElement(desktopSandboxCardRect, new Vector2(0.5f, 0.48f), 720f, 190f);
                 }
                 if (showResearch)
                 {
-                    SetTopCenter(desktopResearchCardRect, 0f, 410f, 720f, 190f);
+                    ConfigureResponsiveMenuElement(desktopResearchCardRect, new Vector2(0.5f, 0.48f), 720f, 190f);
                 }
-                SetTopCenter(desktopBestRecordRect, 0f, 635f, 390f, 80f);
+                ConfigureResponsiveMenuElement(desktopBestRecordRect, new Vector2(0.5f, 0.255f), 390f, 80f);
             }
         }
 

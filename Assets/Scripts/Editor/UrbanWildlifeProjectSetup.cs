@@ -126,6 +126,35 @@ namespace UrbanWildlifeRooms.Editor
             bootstrap.RebuildPreview();
         }
 
+        [MenuItem("Urban Wildlife/Capture Square Main Menu Preview")]
+        public static void CaptureSquareMainMenuPreview()
+        {
+            var bootstrap = Object.FindFirstObjectByType<UrbanWildlifeBootstrap>();
+            if (bootstrap == null && File.Exists(Path.GetFullPath(MainScenePath)))
+            {
+                EditorSceneManager.OpenScene(MainScenePath, OpenSceneMode.Single);
+                bootstrap = Object.FindFirstObjectByType<UrbanWildlifeBootstrap>();
+            }
+
+            if (bootstrap == null)
+            {
+                throw new System.InvalidOperationException("Main scene does not contain UrbanWildlifeBootstrap.");
+            }
+
+            bootstrap.RebuildPreview();
+            var boardCamera = bootstrap.LayoutCamera == null
+                ? null
+                : bootstrap.LayoutCamera.GetComponent<BoardCameraController>();
+            if (boardCamera == null)
+            {
+                throw new System.InvalidOperationException("Generated preview does not contain BoardCameraController.");
+            }
+
+            boardCamera.SetMenuViewImmediate();
+            CaptureCurrentLayoutPreview(bootstrap, "UrbanWildlifeRooms_MainMenu_Square.png", 1000, 1000);
+            bootstrap.RebuildPreview();
+        }
+
         [MenuItem("Urban Wildlife/Capture Restart Confirmation Preview")]
         public static void CaptureRestartConfirmationPreview()
         {
@@ -353,17 +382,18 @@ namespace UrbanWildlifeRooms.Editor
             CaptureCurrentLayoutPreview(bootstrap, "UrbanWildlifeRooms_Layout.png");
         }
 
-        private static void CaptureCurrentLayoutPreview(UrbanWildlifeBootstrap bootstrap, string fileName)
+        private static void CaptureCurrentLayoutPreview(
+            UrbanWildlifeBootstrap bootstrap,
+            string fileName,
+            int width = 1920,
+            int height = 1080)
         {
-            Canvas.ForceUpdateCanvases();
             var camera = bootstrap.LayoutCamera;
             if (camera == null)
             {
                 throw new System.InvalidOperationException("Layout camera was not generated.");
             }
 
-            const int width = 1920;
-            const int height = 1080;
             var renderTexture = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32)
             {
                 antiAliasing = 1
@@ -374,6 +404,7 @@ namespace UrbanWildlifeRooms.Editor
             var previousActive = RenderTexture.active;
             camera.targetTexture = renderTexture;
             camera.aspect = width / (float)height;
+            Canvas.ForceUpdateCanvases();
             camera.Render();
 
             RenderTexture.active = renderTexture;

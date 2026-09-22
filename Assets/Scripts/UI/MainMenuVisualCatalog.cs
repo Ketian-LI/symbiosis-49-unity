@@ -5,6 +5,7 @@ namespace UrbanWildlifeRooms.UI
 {
     public enum MainMenuVisual
     {
+        TabletopBackground,
         BestRecordPanel,
         SandboxCard,
         SandboxIcon,
@@ -26,6 +27,7 @@ namespace UrbanWildlifeRooms.UI
         private static readonly IReadOnlyDictionary<MainMenuVisual, string> ResourceNames =
             new Dictionary<MainMenuVisual, string>
             {
+                { MainMenuVisual.TabletopBackground, "main-menu-tabletop-background-v01" },
                 { MainMenuVisual.BestRecordPanel, "main-menu-best-record-panel-v01" },
                 { MainMenuVisual.SandboxCard, "main-menu-endless-card-v02" },
                 { MainMenuVisual.SandboxIcon, "main-menu-endless-icon-v02" },
