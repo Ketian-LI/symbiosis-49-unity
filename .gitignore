@@ -22,4 +22,7 @@ Recordings/
 *.mdb
 *.opendb
 *.VC.db
+*.blend1
+__pycache__/
+*.py[cod]
 sysinfo.txt
