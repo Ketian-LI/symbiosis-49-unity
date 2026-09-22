@@ -287,6 +287,13 @@ appear on hover.
   states.
 - Production assets must omit the sample-sheet labels and background and be
   delivered as separate transparent UI elements.
+- The four implemented metric pictograms are separate transparent resources in
+  `Assets/Resources/UI/GameplayHud/` (`metric-human-function-v01`,
+  `metric-food-access-v01`, `metric-habitat-v01` and
+  `metric-animal-safety-v01`).
+- The Human Function meter includes a compact live resident-count badge in the
+  form `current / 8`; the percentage ring still represents function rather than
+  population.
 - Animate progress-ring changes smoothly over approximately 0.5 seconds.
 - Pulse once, subtly, when an indicator enters warning or danger; do not use a
   continuous flashing animation.
@@ -334,6 +341,9 @@ appear on hover.
 - Position: lower-left corner.
 - Show four species portraits: pigeon, squirrel, hedgehog and fox.
 - Show only the current living population beside each portrait.
+- The implemented portraits are separate transparent resources in
+  `Assets/Resources/UI/GameplayHud/`, one PNG per species, so that later skin
+  replacement does not require changing the HUD layout code.
 - Initial populations are 12 pigeons, 4 squirrels, 2 hedgehogs and 2 foxes,
   for 20 animals in total. The four pigeon habitat rooms conceptually support
   three starting pigeons each.

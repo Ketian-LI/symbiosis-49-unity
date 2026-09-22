@@ -120,6 +120,8 @@ namespace UrbanWildlifeRooms.UI
         private WasteCollectionNotification wasteCollectionNotification;
         private ResourcePointCounter resourcePointCounter;
         private ResidentStatusOverlay residentStatusOverlay;
+        private ResidentPopulationController residentPopulation;
+        private Text residentCountText;
         private OakTreeLifecycleController oakTreeLifecycle;
         private AnimalPopulationController animalPopulation;
         private EcologicalMetricsController ecologicalMetrics;
@@ -216,6 +218,10 @@ namespace UrbanWildlifeRooms.UI
             {
                 ecologicalMetrics.StateChanged -= RefreshEcologicalMetrics;
             }
+            if (residentPopulation != null)
+            {
+                residentPopulation.StateChanged -= RefreshResidentPopulation;
+            }
             if (researchSession != null)
             {
                 researchSession.StateChanged -= RefreshResearchSession;
@@ -310,6 +316,11 @@ namespace UrbanWildlifeRooms.UI
             ResidentPopulationController controller,
             System.Func<string, Transform> roomTransformResolver)
         {
+            if (residentPopulation != null)
+            {
+                residentPopulation.StateChanged -= RefreshResidentPopulation;
+            }
+            residentPopulation = controller;
             if (controller == null || gameplayRoot == null)
             {
                 return;
@@ -328,6 +339,8 @@ namespace UrbanWildlifeRooms.UI
                 runtime,
                 controller,
                 roomTransformResolver);
+            residentPopulation.StateChanged += RefreshResidentPopulation;
+            RefreshResidentPopulation();
         }
 
         public void BindOakTreeLifecycle(OakTreeLifecycleController controller)
@@ -816,6 +829,10 @@ namespace UrbanWildlifeRooms.UI
         private void BuildSpeedButton(Transform parent, int speed, string label, float x)
         {
             var button = CreateButton(parent, $"Speed {speed}", label, 17, () => runtime.SetSpeed(speed));
+            var backing = button.GetComponent<Image>();
+            backing.sprite = PauseMenuVisualCatalog.GetSprite(PauseMenuVisual.ButtonBase);
+            backing.preserveAspect = false;
+            backing.color = Color.white;
             var rect = button.GetComponent<RectTransform>();
             rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
             rect.pivot = new Vector2(0.5f, 0.5f);
@@ -834,10 +851,10 @@ namespace UrbanWildlifeRooms.UI
 
             var indicators = new[]
             {
-                new Indicator(EcologicalMetricKind.HumanFunction, "Human Function", "人", 1f, new Color(0.52f, 0.45f, 0.71f)),
-                new Indicator(EcologicalMetricKind.FoodAccessibility, "Food Accessibility", "食", 1f, new Color(0.86f, 0.61f, 0.24f)),
-                new Indicator(EcologicalMetricKind.HabitatProvision, "Habitat Provision", "栖", 1f, new Color(0.35f, 0.66f, 0.47f)),
-                new Indicator(EcologicalMetricKind.AnimalSafety, "Animal Safety", "安", 1f, Cyan)
+                new Indicator(EcologicalMetricKind.HumanFunction, "Human Function", 1f, new Color(0.52f, 0.45f, 0.71f)),
+                new Indicator(EcologicalMetricKind.FoodAccessibility, "Food Accessibility", 1f, new Color(0.86f, 0.61f, 0.24f)),
+                new Indicator(EcologicalMetricKind.HabitatProvision, "Habitat Provision", 1f, new Color(0.35f, 0.66f, 0.47f)),
+                new Indicator(EcologicalMetricKind.AnimalSafety, "Animal Safety", 1f, Cyan)
             };
 
             for (var index = 0; index < indicators.Length; index++)
@@ -863,8 +880,39 @@ namespace UrbanWildlifeRooms.UI
             meter.SetValue(indicator.Value, indicator.Color);
             ecologicalMeters[indicator.Kind] = meter;
             ecologicalColors[indicator.Kind] = indicator.Color;
-            var glyph = CreateText(holder, "Pictogram Placeholder", indicator.Glyph, 24, TextAnchor.MiddleCenter, WarmPaper, FontStyle.Bold);
-            Stretch(glyph.rectTransform);
+            var pictogram = CreateImage(
+                holder,
+                "Metric Pictogram",
+                GameplayHudVisualCatalog.GetMetricSprite(indicator.Kind));
+            pictogram.preserveAspect = true;
+            pictogram.color = Color.white;
+            pictogram.rectTransform.anchorMin = pictogram.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            pictogram.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            pictogram.rectTransform.anchoredPosition = indicator.Kind == EcologicalMetricKind.HumanFunction
+                ? new Vector2(0f, 5f)
+                : Vector2.zero;
+            pictogram.rectTransform.sizeDelta = indicator.Kind == EcologicalMetricKind.HumanFunction
+                ? new Vector2(36f, 36f)
+                : new Vector2(42f, 42f);
+
+            if (indicator.Kind == EcologicalMetricKind.HumanFunction)
+            {
+                var badge = CreatePanel("Resident Count Badge", holder, new Color(0.10f, 0.12f, 0.14f, 0.96f));
+                badge.RectTransform.anchorMin = badge.RectTransform.anchorMax = new Vector2(0.5f, 0f);
+                badge.RectTransform.pivot = new Vector2(0.5f, 0f);
+                badge.RectTransform.anchoredPosition = new Vector2(0f, -1f);
+                badge.RectTransform.sizeDelta = new Vector2(42f, 21f);
+                badge.Image.raycastTarget = false;
+                residentCountText = CreateText(
+                    badge.Transform,
+                    "Resident Count",
+                    "4/8",
+                    13,
+                    TextAnchor.MiddleCenter,
+                    WarmPaper,
+                    FontStyle.Bold);
+                Stretch(residentCountText.rectTransform, 2f);
+            }
 
             var tooltip = CreatePanel("Hover Detail", holder, new Color(0.10f, 0.12f, 0.14f, 0.96f));
             tooltip.RectTransform.anchorMin = tooltip.RectTransform.anchorMax = new Vector2(0f, 0.5f);
@@ -885,32 +933,53 @@ namespace UrbanWildlifeRooms.UI
             root.anchoredPosition = new Vector2(22f, 20f);
             root.sizeDelta = new Vector2(334f, 68f);
 
-            BuildPopulationChip(root, 0, WildlifeSpecies.Pigeon, "鸽", 12, new Color(0.43f, 0.51f, 0.62f));
-            BuildPopulationChip(root, 1, WildlifeSpecies.Squirrel, "松", 4, new Color(0.76f, 0.37f, 0.18f));
-            BuildPopulationChip(root, 2, WildlifeSpecies.Hedgehog, "猬", 2, new Color(0.62f, 0.48f, 0.29f));
-            BuildPopulationChip(root, 3, WildlifeSpecies.Fox, "狐", 2, new Color(0.70f, 0.29f, 0.20f));
+            BuildPopulationChip(root, 0, WildlifeSpecies.Pigeon, 12, new Color(0.43f, 0.51f, 0.62f));
+            BuildPopulationChip(root, 1, WildlifeSpecies.Squirrel, 4, new Color(0.35f, 0.56f, 0.31f));
+            BuildPopulationChip(root, 2, WildlifeSpecies.Hedgehog, 2, new Color(0.78f, 0.55f, 0.25f));
+            BuildPopulationChip(root, 3, WildlifeSpecies.Fox, 2, new Color(0.76f, 0.34f, 0.18f));
         }
 
-        private void BuildPopulationChip(Transform parent, int index, WildlifeSpecies species, string glyph, int count, Color accent)
+        private void BuildPopulationChip(Transform parent, int index, WildlifeSpecies species, int count, Color accent)
         {
-            var holder = CreateEmpty($"Population {glyph}", parent);
+            var holder = CreateEmpty($"Population {species}", parent);
             holder.anchorMin = holder.anchorMax = new Vector2(0f, 0.5f);
             holder.pivot = new Vector2(0f, 0.5f);
             holder.anchoredPosition = new Vector2(index * 82f, 0f);
             holder.sizeDelta = new Vector2(74f, 62f);
-            var panel = CreatePanel("Portrait Base", holder, Graphite);
-            Stretch(panel.RectTransform);
-            var accentBar = CreatePanel("Accent", holder, accent);
-            accentBar.RectTransform.anchorMin = new Vector2(0f, 0f);
-            accentBar.RectTransform.anchorMax = new Vector2(1f, 0f);
-            accentBar.RectTransform.pivot = new Vector2(0.5f, 0f);
-            accentBar.RectTransform.sizeDelta = new Vector2(0f, 4f);
-            accentBar.RectTransform.anchoredPosition = Vector2.zero;
-            var portrait = CreateText(holder, "Portrait Placeholder", glyph, 20, TextAnchor.MiddleCenter, WarmPaper, FontStyle.Bold);
-            SetRect(portrait.rectTransform, 8f, 7f, 34f, 45f);
-            var amount = CreateText(holder, "Living Count", count.ToString(), 21, TextAnchor.MiddleCenter, WarmPaper, FontStyle.Bold);
-            SetRect(amount.rectTransform, 43f, 7f, 25f, 45f);
+            var shadow = CreatePanel("Portrait Shadow", holder, new Color(0.08f, 0.09f, 0.10f, 0.72f));
+            shadow.RectTransform.anchorMin = shadow.RectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            shadow.RectTransform.pivot = new Vector2(0.5f, 0.5f);
+            shadow.RectTransform.anchoredPosition = new Vector2(0f, 1f);
+            shadow.RectTransform.sizeDelta = new Vector2(62f, 62f);
+            shadow.Image.raycastTarget = false;
+
+            var portrait = CreateImage(holder, "Animal Portrait", GameplayHudVisualCatalog.GetPopulationSprite(species));
+            portrait.preserveAspect = true;
+            portrait.rectTransform.anchorMin = portrait.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            portrait.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            portrait.rectTransform.anchoredPosition = new Vector2(0f, 4f);
+            portrait.rectTransform.sizeDelta = new Vector2(62f, 62f);
+
+            var badge = CreatePanel("Living Count Badge", holder, accent);
+            badge.RectTransform.anchorMin = badge.RectTransform.anchorMax = new Vector2(0.5f, 0f);
+            badge.RectTransform.pivot = new Vector2(0.5f, 0f);
+            badge.RectTransform.anchoredPosition = new Vector2(0f, -1f);
+            badge.RectTransform.sizeDelta = new Vector2(40f, 22f);
+            badge.Image.raycastTarget = false;
+            var amount = CreateText(badge.Transform, "Living Count", count.ToString(), 15, TextAnchor.MiddleCenter, WarmPaper, FontStyle.Bold);
+            Stretch(amount.rectTransform, 2f);
             populationCounts[species] = amount;
+        }
+
+        private void RefreshResidentPopulation()
+        {
+            if (residentCountText == null)
+            {
+                return;
+            }
+
+            var count = residentPopulation?.Model?.ResidentCount ?? ResidentPopulationModel.StartingResidents;
+            residentCountText.text = $"{count}/{ResidentPopulationModel.MaximumResidents}";
         }
 
         private void RefreshAnimalPopulation()
@@ -953,7 +1022,12 @@ namespace UrbanWildlifeRooms.UI
                 }
                 if (ecologicalTooltips.TryGetValue(kind, out var tooltip))
                 {
-                    tooltip.text = $"{MetricName(kind, chinese)}  {Mathf.RoundToInt(value * 100f)}%\n{MetricReason(kind, chinese)}";
+                    var population = kind == EcologicalMetricKind.HumanFunction
+                        ? $" · {(chinese ? "居民" : "Residents")} " +
+                          $"{residentPopulation?.Model?.ResidentCount ?? ResidentPopulationModel.StartingResidents}/" +
+                          ResidentPopulationModel.MaximumResidents
+                        : string.Empty;
+                    tooltip.text = $"{MetricName(kind, chinese)}  {Mathf.RoundToInt(value * 100f)}%{population}\n{MetricReason(kind, chinese)}";
                 }
             }
         }
@@ -1139,11 +1213,23 @@ namespace UrbanWildlifeRooms.UI
 
         private void BuildLayoutEditingControls()
         {
-            var enterButton = CreateButton(gameplayRoot, "Enter Layout Editing", "▦", 25, () => layoutEditor?.EnterEditing());
+            var enterButton = CreateButton(gameplayRoot, "Enter Layout Editing", string.Empty, 1, () => layoutEditor?.EnterEditing());
             enterEditButtonObject = enterButton.gameObject;
-            SetTopLeft(enterButton.GetComponent<RectTransform>(), 22f, 102f, 52f, 52f);
+            var enterBacking = enterButton.GetComponent<Image>();
+            enterBacking.sprite = MainMenuVisualCatalog.GetSprite(MainMenuVisual.BottomButtonBase);
+            enterBacking.preserveAspect = true;
+            enterBacking.color = Color.white;
+            var enterIcon = CreateImage(
+                enterButton.transform,
+                "Layout Editing Pictogram",
+                MainMenuVisualCatalog.GetSprite(MainMenuVisual.SandboxIcon));
+            enterIcon.preserveAspect = true;
+            Stretch(enterIcon.rectTransform, 11f);
+            SetTopLeft(enterButton.GetComponent<RectTransform>(), 22f, 102f, 58f, 58f);
 
-            var toolbar = CreatePanel("Layout Editing Toolbar", gameplayRoot, new Color(0.10f, 0.12f, 0.14f, 0.94f));
+            var toolbar = CreatePanel("Layout Editing Toolbar", gameplayRoot, Color.white);
+            toolbar.Image.sprite = PauseMenuVisualCatalog.GetSprite(PauseMenuVisual.ButtonBase);
+            toolbar.Image.preserveAspect = false;
             editToolbar = toolbar.GameObject;
             toolbar.RectTransform.anchorMin = toolbar.RectTransform.anchorMax = new Vector2(0.5f, 0f);
             toolbar.RectTransform.pivot = new Vector2(0.5f, 0f);
@@ -1159,10 +1245,13 @@ namespace UrbanWildlifeRooms.UI
             editStatus = CreateText(toolbar.Transform, "Layout Status", "布局编辑", 16, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Bold);
             SetRect(editStatus.rectTransform, 80f, 12f, 276f, 50f);
             rotateEditButton = CreateButton(toolbar.Transform, "Rotate Selected", "↻", 25, () => layoutEditor?.RotateSelected());
+            StyleCompactPaperButton(rotateEditButton);
             SetRect(rotateEditButton.GetComponent<RectTransform>(), 378f, 12f, 62f, 50f);
             var cancelButton = CreateButton(toolbar.Transform, "Cancel Layout", "×", 28, () => layoutEditor?.CancelEditing());
+            StyleCompactPaperButton(cancelButton);
             SetRect(cancelButton.GetComponent<RectTransform>(), 450f, 12f, 62f, 50f);
             confirmEditButton = CreateButton(toolbar.Transform, "Confirm Layout", "✓", 25, () => layoutEditor?.ConfirmEditing());
+            StyleCompactPaperButton(confirmEditButton);
             SetRect(confirmEditButton.GetComponent<RectTransform>(), 522f, 12f, 62f, 50f);
             editToolbar.SetActive(false);
         }
@@ -1177,6 +1266,8 @@ namespace UrbanWildlifeRooms.UI
                 () => playerFeeding?.ToggleFeedingMode());
             feedingModeButtonObject = feedingModeButton.gameObject;
             feedingModeButtonBackground = feedingModeButton.GetComponent<Image>();
+            feedingModeButtonBackground.sprite = PauseMenuVisualCatalog.GetSprite(PauseMenuVisual.ButtonBase);
+            feedingModeButtonBackground.preserveAspect = false;
             SetTopLeft(feedingModeButton.GetComponent<RectTransform>(), 84f, 102f, 154f, 52f);
 
             feedingModeLabel = feedingModeButton.GetComponentInChildren<Text>();
@@ -1194,7 +1285,9 @@ namespace UrbanWildlifeRooms.UI
             var hint = CreatePanel(
                 "Feeding Mode Instruction",
                 gameplayRoot,
-                new Color(0.10f, 0.12f, 0.14f, 0.94f));
+                Color.white);
+            hint.Image.sprite = PauseMenuVisualCatalog.GetSprite(PauseMenuVisual.ButtonBase);
+            hint.Image.preserveAspect = false;
             feedingModeHint = hint.GameObject;
             SetTopLeft(hint.RectTransform, 248f, 102f, 410f, 52f);
             feedingModeHintLabel = CreateText(
@@ -1224,7 +1317,7 @@ namespace UrbanWildlifeRooms.UI
             feedingModeButtonBackground.color = active
                 ? Cyan
                 : available
-                    ? Graphite
+                    ? Color.white
                     : MutedTrack;
             feedingModeIcon.color = active ? Graphite : Color.white;
             feedingModeLabel.color = active ? Graphite : WarmPaper;
@@ -1959,7 +2052,7 @@ namespace UrbanWildlifeRooms.UI
             {
                 var active = pair.Key == runtime.SpeedMultiplier && !runtime.PauseMenuOpen &&
                              !runtime.AtDesktop && !runtime.LayoutEditing;
-                pair.Value.color = active ? Cyan : Graphite;
+                pair.Value.color = active ? new Color(0.62f, 0.96f, 0.94f, 1f) : Color.white;
             }
 
             var desktopSettingsOpen = runtime.AtDesktop && runtime.SettingsOpen;
@@ -2434,6 +2527,24 @@ namespace UrbanWildlifeRooms.UI
             return button;
         }
 
+        private static void StyleCompactPaperButton(Button button)
+        {
+            if (button == null)
+            {
+                return;
+            }
+
+            var image = button.GetComponent<Image>();
+            if (image == null)
+            {
+                return;
+            }
+
+            image.sprite = PauseMenuVisualCatalog.GetSprite(PauseMenuVisual.ButtonBase);
+            image.preserveAspect = false;
+            image.color = Color.white;
+        }
+
         private Slider CreateSlider(Transform parent, string name)
         {
             var sliderObject = NewUiObject(name, parent, typeof(Slider));
@@ -2586,18 +2697,16 @@ namespace UrbanWildlifeRooms.UI
 
         private readonly struct Indicator
         {
-            public Indicator(EcologicalMetricKind kind, string name, string glyph, float value, Color color)
+            public Indicator(EcologicalMetricKind kind, string name, float value, Color color)
             {
                 Kind = kind;
                 Name = name;
-                Glyph = glyph;
                 Value = value;
                 Color = color;
             }
 
             public EcologicalMetricKind Kind { get; }
             public string Name { get; }
-            public string Glyph { get; }
             public float Value { get; }
             public Color Color { get; }
         }
