@@ -97,6 +97,35 @@ namespace UrbanWildlifeRooms.Editor
             CaptureCurrentLayoutPreview(bootstrap);
         }
 
+        [MenuItem("Urban Wildlife/Capture Main Menu Preview")]
+        public static void CaptureMainMenuPreview()
+        {
+            var bootstrap = Object.FindFirstObjectByType<UrbanWildlifeBootstrap>();
+            if (bootstrap == null && File.Exists(Path.GetFullPath(MainScenePath)))
+            {
+                EditorSceneManager.OpenScene(MainScenePath, OpenSceneMode.Single);
+                bootstrap = Object.FindFirstObjectByType<UrbanWildlifeBootstrap>();
+            }
+
+            if (bootstrap == null)
+            {
+                throw new System.InvalidOperationException("Main scene does not contain UrbanWildlifeBootstrap.");
+            }
+
+            bootstrap.RebuildPreview();
+            var boardCamera = bootstrap.LayoutCamera == null
+                ? null
+                : bootstrap.LayoutCamera.GetComponent<BoardCameraController>();
+            if (boardCamera == null)
+            {
+                throw new System.InvalidOperationException("Generated preview does not contain BoardCameraController.");
+            }
+
+            boardCamera.SetMenuViewImmediate();
+            CaptureCurrentLayoutPreview(bootstrap, "UrbanWildlifeRooms_MainMenu.png");
+            bootstrap.RebuildPreview();
+        }
+
         [MenuItem("Urban Wildlife/Capture Layout Editing Preview")]
         public static void CaptureLayoutEditingPreview()
         {

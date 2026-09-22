@@ -4,6 +4,9 @@ namespace UrbanWildlifeRooms.Presentation
 {
     public sealed class BoardCameraController : MonoBehaviour
     {
+        private const float MenuTiltFromTopDownDegrees = 16f;
+        private const float MenuOverviewScale = 1.18f;
+
         public event System.Action OverviewRestored;
 
         private Camera controlledCamera;
@@ -40,12 +43,31 @@ namespace UrbanWildlifeRooms.Presentation
             overviewPosition = camera.transform.position;
             overviewRotation = camera.transform.rotation;
             overviewSize = camera.orthographicSize;
-            menuPosition = overviewPosition;
-            menuRotation = overviewRotation;
-            menuSize = overviewSize * 1.18f;
+            ConfigureMenuView();
             targetPosition = overviewPosition;
             targetRotation = overviewRotation;
             targetSize = overviewSize;
+        }
+
+        private void ConfigureMenuView()
+        {
+            var overviewForward = overviewRotation * Vector3.forward;
+            var focusPoint = overviewPosition;
+            if (overviewForward.y < -0.001f)
+            {
+                var distanceToGround = overviewPosition.y / -overviewForward.y;
+                focusPoint += overviewForward * distanceToGround;
+            }
+
+            var overviewEuler = overviewRotation.eulerAngles;
+            menuRotation = Quaternion.Euler(
+                90f - MenuTiltFromTopDownDegrees,
+                overviewEuler.y,
+                overviewEuler.z);
+            var menuForward = menuRotation * Vector3.forward;
+            var menuDistance = overviewPosition.y / Mathf.Max(0.001f, -menuForward.y);
+            menuPosition = focusPoint - menuForward * menuDistance;
+            menuSize = overviewSize * MenuOverviewScale;
         }
 
         private void Update()
@@ -99,6 +121,25 @@ namespace UrbanWildlifeRooms.Presentation
             controlledCamera.transform.position = menuPosition;
             controlledCamera.transform.rotation = menuRotation;
             controlledCamera.orthographicSize = menuSize;
+        }
+
+        public void SetGameplayViewImmediate()
+        {
+            if (controlledCamera == null)
+            {
+                return;
+            }
+
+            viewTransitionActive = false;
+            focused = false;
+            followTarget = null;
+            menuView = false;
+            targetPosition = overviewPosition;
+            targetRotation = overviewRotation;
+            targetSize = overviewSize;
+            controlledCamera.transform.position = overviewPosition;
+            controlledCamera.transform.rotation = overviewRotation;
+            controlledCamera.orthographicSize = overviewSize;
         }
 
         public void BeginGameplayViewTransition(float durationSeconds)

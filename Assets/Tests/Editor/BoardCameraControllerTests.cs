@@ -7,7 +7,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
     public sealed class BoardCameraControllerTests
     {
         [Test]
-        public void SquareOverviewTransitionsToWiderTopDownMenuView()
+        public void MenuUsesMildAngleAndGameplayReturnsToExactTopDownView()
         {
             var cameraObject = new GameObject("Menu Camera Test");
             try
@@ -31,7 +31,15 @@ namespace UrbanWildlifeRooms.Tests.Editor
                 var elevation = Mathf.Atan2(position.y, horizontalDistance) * Mathf.Rad2Deg;
                 Assert.That(controller.IsMenuView, Is.True);
                 Assert.That(camera.orthographicSize, Is.GreaterThan(gameplaySize));
-                Assert.That(elevation, Is.EqualTo(90f).Within(0.01f));
+                Assert.That(elevation, Is.EqualTo(74f).Within(0.01f));
+                Assert.That(Vector3.Angle(cameraObject.transform.forward, Vector3.down), Is.EqualTo(16f).Within(0.01f));
+                Assert.That(camera.orthographic, Is.True);
+
+                controller.SetGameplayViewImmediate();
+
+                Assert.That(controller.IsMenuView, Is.False);
+                Assert.That(camera.orthographicSize, Is.EqualTo(gameplaySize).Within(0.001f));
+                Assert.That(cameraObject.transform.position, Is.EqualTo(new Vector3(0f, 32f, 0f)));
                 Assert.That(Vector3.Angle(cameraObject.transform.forward, Vector3.down), Is.LessThan(0.01f));
             }
             finally

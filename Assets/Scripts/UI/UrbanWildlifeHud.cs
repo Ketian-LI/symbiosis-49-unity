@@ -1791,7 +1791,7 @@ namespace UrbanWildlifeRooms.UI
         private void BuildDesktopTitle(Transform parent)
         {
             var title = CreateEmpty("Desktop Title", parent);
-            SetTopCenter(title, 0f, 105f, 820f, 155f);
+            SetTopCenter(title, 0f, 55f, 1000f, 188f);
 
             var wordmark = CreateImage(
                 title,

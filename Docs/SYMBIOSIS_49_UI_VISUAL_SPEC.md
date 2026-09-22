@@ -49,12 +49,17 @@ baked into a single screenshot.
   only as it approaches the edge of the comfortable viewing area.
 - Right-click or Esc exits follow mode immediately and restores the full-board
   view.
+- The desktop/main menu is the only exception: keep orthographic projection but
+  tilt the live board by about 16 degrees from vertical for a restrained 2.5D
+  presentation. Selecting a mode smoothly returns the camera to the exact
+  straight-down gameplay angle; returning to the desktop restores the mild
+  menu angle.
 
 ## Desktop and mode selection
 
 - Show the `SYMBIOSIS: 49` title only on the desktop/main menu.
 - Use the modular city itself as a live, softly blurred background, viewed from
-  the same straight-down angle as gameplay.
+  the mild angled menu camera rather than the straight-down gameplay camera.
 - The player-facing mode names are **Endless Mode / 无尽模式** for the Sandbox
   ruleset and **Timed Mode / 限时模式** for the Research ruleset. Internal save
   and code identifiers remain `Sandbox` and `Research` for compatibility.
@@ -160,6 +165,9 @@ baked into a single screenshot.
   `Assets/Resources/UI/MainMenu/main-menu-title-v02.png`; it keeps the wordmark,
   irregular animal trail and enlarged `49` in one stable composition. Do not
   render a conventional colon underneath or beside it.
+- Keep the title centred above the mode cards, visibly wider than one card, with
+  clear breathing room above the first card. Do not let the wordmark compete
+  with the board's upper wall or crowd the card stack.
 - Use a matte moss-green paper card for Endless Mode and a matte dusty-purple
   paper card for Timed Mode.
 - Use the separate text-free transparent layer
