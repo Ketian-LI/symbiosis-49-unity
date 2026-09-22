@@ -325,6 +325,10 @@ namespace UrbanWildlifeRooms.Core
                 generatedHideFlags);
 
             BuildRoomShell(shellRoot, spec.Width, spec.Height, width, depth);
+            if (spec.Type == RoomType.CentralPark)
+            {
+                BuildCentralParkGroundDetails(shellRoot);
+            }
             if (spec.Type == RoomType.Garage)
             {
                 GarageVisualLayout.BuildShellDetails(shellRoot, spec, depth, surfaceMaterial, generatedHideFlags);
@@ -651,8 +655,8 @@ namespace UrbanWildlifeRooms.Core
             {
                 case RoomType.CentralPark:
                     CreatePond(parent, new Vector3(-0.8f, 0.34f, -0.72f), 1.05f);
-                    CreateTree(parent, new Vector3(-1.45f, 0f, 1.15f), 1.12f, false);
-                    CreateTree(parent, new Vector3(1.22f, 0f, 1.22f), 1.02f, false);
+                    CreateTree(parent, new Vector3(-1.10f, 0f, 1.05f), 1.72f, false);
+                    CreateTree(parent, new Vector3(1.12f, 0f, -1.08f), 1.62f, false);
                     CreateBush(parent, new Vector3(1.35f, 0f, -1.1f), 0.55f);
                     CreateBench(parent, new Vector3(0.20f, 0f, -2.18f), 0f, "South Park Bench");
                     CreateBench(parent, new Vector3(2.18f, 0f, 0.24f), 90f, "East Park Bench");
@@ -697,6 +701,44 @@ namespace UrbanWildlifeRooms.Core
                         surfaceMaterial,
                         generatedHideFlags);
                     break;
+            }
+        }
+
+        private void BuildCentralParkGroundDetails(Transform parent)
+        {
+            var path = new Color(0.82f, 0.75f, 0.58f);
+            var pathShade = new Color(0.77f, 0.70f, 0.54f);
+            CreatePath("North Park Walk", new Vector3(-1.55f, 0f, 2.88f),
+                new Vector3(-0.15f, 0f, 0.54f), path);
+            CreatePath("Central Park Walk", new Vector3(-0.15f, 0f, 0.54f),
+                new Vector3(0.24f, 0f, -0.50f), pathShade);
+            CreatePath("South Park Walk", new Vector3(0.24f, 0f, -0.50f),
+                new Vector3(1.55f, 0f, -2.88f), path);
+            CreatePath("East Park Walk", new Vector3(2.88f, 0f, 1.55f),
+                new Vector3(-0.02f, 0f, 0.42f), pathShade);
+
+            // Small faceted edging makes the pond legible from the full-board camera.
+            for (var index = 0; index < 9; index++)
+            {
+                var angle = index * Mathf.PI * 2f / 9f;
+                var x = -0.80f + Mathf.Cos(angle) * 0.58f;
+                var z = -0.72f + Mathf.Sin(angle) * 0.45f;
+                var stone = CreateBox($"Pond Edge Stone {index + 1}", parent,
+                    new Vector3(x, 0.28f, z),
+                    new Vector3(0.14f + index % 3 * 0.03f, 0.075f, 0.13f),
+                    index % 2 == 0
+                        ? new Color(0.58f, 0.59f, 0.54f)
+                        : new Color(0.66f, 0.64f, 0.57f));
+                stone.transform.localRotation = Quaternion.Euler(0f, index * 31f, 0f);
+            }
+
+            void CreatePath(string name, Vector3 start, Vector3 end, Color color)
+            {
+                var direction = end - start;
+                var segment = CreateBox(name, parent,
+                    (start + end) * 0.5f + new Vector3(0f, 0.248f, 0f),
+                    new Vector3(0.43f, 0.014f, direction.magnitude + 0.20f), color);
+                segment.transform.localRotation = Quaternion.LookRotation(direction, Vector3.up);
             }
         }
 

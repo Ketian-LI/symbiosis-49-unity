@@ -3,6 +3,7 @@ using UnityEngine;
 namespace UrbanWildlifeRooms.Presentation
 {
     /// <summary>Releases a procedural mesh when an editor preview is rebuilt.</summary>
+    [ExecuteAlways]
     public sealed class GeneratedMeshCleanup : MonoBehaviour
     {
         private Mesh mesh;
