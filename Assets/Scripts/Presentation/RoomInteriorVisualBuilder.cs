@@ -407,7 +407,7 @@ namespace UrbanWildlifeRooms.Presentation
             for (var index = 0; index < crownCount; index++)
             {
                 context.FacetedFoliage($"{name} Crown {index + 1}", anchor + offsets[index] * size,
-                    new Vector3(0.50f, 0.40f, 0.46f) * size,
+                    new Vector3(0.54f, 0.43f, 0.50f) * size,
                     index % 2 == 0 ? Leaf : DeepLeaf,
                     index * 27f - 19f);
             }
@@ -422,6 +422,16 @@ namespace UrbanWildlifeRooms.Presentation
                     new Vector3(0.23f, 0.17f, 0.22f), index % 2 == 0 ? DeepLeaf : Leaf,
                     index * 41f);
             }
+            // Two smaller, low clumps pull the corner island toward the path
+            // without filling the centre or any of the four door landings.
+            var inwardX = -Mathf.Sign(anchor.x);
+            var inwardZ = -Mathf.Sign(anchor.z);
+            context.FacetedFoliage($"{name} Ground Foliage 5",
+                anchor + new Vector3(inwardX * 0.35f, 0.32f, inwardZ * 0.19f),
+                new Vector3(0.24f, 0.16f, 0.21f), Leaf, 19f);
+            context.FacetedFoliage($"{name} Ground Foliage 6",
+                anchor + new Vector3(inwardX * 0.20f, 0.32f, inwardZ * 0.35f),
+                new Vector3(0.22f, 0.15f, 0.20f), DeepLeaf, -23f);
         }
 
         private static void BuildShrubFlower(BuildContext context, Vector3 anchor, string name)

@@ -253,7 +253,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
                             material, HideFlags.None);
                         var renderers = root.GetComponentsInChildren<Renderer>();
                         Assert.That(renderers.Count(item => item.name.Contains("Crown")), Is.EqualTo(8), spec.Id);
-                        Assert.That(renderers.Count(item => item.name.Contains("Ground Foliage")), Is.EqualTo(8), spec.Id);
+                        Assert.That(renderers.Count(item => item.name.Contains("Ground Foliage")), Is.EqualTo(12), spec.Id);
                         Assert.That(renderers.Count(item => item.name.Contains("Petal")), Is.EqualTo(10), spec.Id);
                         foreach (var crown in renderers.Where(item => item.name.Contains("Crown")))
                         {
