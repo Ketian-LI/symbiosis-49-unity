@@ -357,8 +357,10 @@ namespace UrbanWildlifeRooms.Presentation
                 "shrub-c" => southEast,
                 _ => southWest
             };
-            BuildShrubIsland(context, first, "Cover Island A", roomId == "shrub-b" ? 1.05f : 1f);
-            BuildShrubIsland(context, second, "Cover Island B", roomId == "shrub-b" ? 0.95f : 1f);
+            BuildShrubIsland(context, first, "Cover Island A", roomId == "shrub-b" ? 1.05f : 1f,
+                roomId == "shrub-b" ? 5 : 4);
+            BuildShrubIsland(context, second, "Cover Island B", roomId == "shrub-b" ? 0.95f : 1f,
+                roomId == "shrub-b" ? 3 : 4);
 
             var towardCentre = new Vector3(-Mathf.Sign(first.x) * 0.17f, 0f, -Mathf.Sign(first.z) * 0.15f);
             context.Box("Dry Leaf Resting Patch", first + towardCentre + new Vector3(0f, 0.27f, 0f), new Vector3(0.30f, 0.018f, 0.20f), WarmWood, 18f);
@@ -371,16 +373,17 @@ namespace UrbanWildlifeRooms.Presentation
             context.Sphere("White Flower B", second + new Vector3(0f, 0.70f, 0f), Vector3.one * 0.08f, Cream);
         }
 
-        private static void BuildShrubIsland(BuildContext context, Vector3 anchor, string name, float size)
+        private static void BuildShrubIsland(BuildContext context, Vector3 anchor, string name, float size, int crownCount)
         {
             var offsets = new[]
             {
                 new Vector3(-0.19f, 0.48f, 0.02f),
                 new Vector3(0.19f, 0.45f, 0.06f),
                 new Vector3(0f, 0.56f, -0.15f),
-                new Vector3(0f, 0.41f, 0.18f)
+                new Vector3(0f, 0.41f, 0.18f),
+                new Vector3(0.02f, 0.61f, 0.03f)
             };
-            for (var index = 0; index < offsets.Length; index++)
+            for (var index = 0; index < crownCount; index++)
             {
                 context.FacetedFoliage($"{name} Crown {index + 1}", anchor + offsets[index] * size,
                     new Vector3(0.50f, 0.40f, 0.46f) * size,
