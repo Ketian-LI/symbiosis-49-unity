@@ -113,6 +113,7 @@ namespace UrbanWildlifeRooms.Presentation
             swapPreviewing = false;
             dragPreviewLegal = null;
             ApplyState();
+            Physics.SyncTransforms();
         }
 
         public void RestoreRestingPlacement()
@@ -121,6 +122,7 @@ namespace UrbanWildlifeRooms.Presentation
             visualRoot.localRotation = restingRotation;
             dragPreviewLegal = null;
             ApplyState();
+            Physics.SyncTransforms();
         }
 
         private void OnMouseEnter()

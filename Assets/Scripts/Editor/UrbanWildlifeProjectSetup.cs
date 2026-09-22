@@ -126,6 +126,35 @@ namespace UrbanWildlifeRooms.Editor
             bootstrap.RebuildPreview();
         }
 
+        [MenuItem("Urban Wildlife/Capture Restart Confirmation Preview")]
+        public static void CaptureRestartConfirmationPreview()
+        {
+            var bootstrap = Object.FindFirstObjectByType<UrbanWildlifeBootstrap>();
+            if (bootstrap == null && File.Exists(Path.GetFullPath(MainScenePath)))
+            {
+                EditorSceneManager.OpenScene(MainScenePath, OpenSceneMode.Single);
+                bootstrap = Object.FindFirstObjectByType<UrbanWildlifeBootstrap>();
+            }
+
+            if (bootstrap == null)
+            {
+                throw new System.InvalidOperationException("Main scene does not contain UrbanWildlifeBootstrap.");
+            }
+
+            bootstrap.RebuildPreview();
+            var hud = bootstrap.transform
+                .Find(UrbanWildlifeBootstrap.GeneratedRootName + "/HUD Canvas")
+                ?.GetComponent<UrbanWildlifeHud>();
+            if (hud == null)
+            {
+                throw new System.InvalidOperationException("Generated preview does not contain UrbanWildlifeHud.");
+            }
+
+            hud.ShowRestartConfirmationPreview();
+            CaptureCurrentLayoutPreview(bootstrap, "UrbanWildlifeRooms_RestartConfirmation.png");
+            bootstrap.RebuildPreview();
+        }
+
         [MenuItem("Urban Wildlife/Capture Layout Editing Preview")]
         public static void CaptureLayoutEditingPreview()
         {

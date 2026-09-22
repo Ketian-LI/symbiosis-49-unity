@@ -1,5 +1,7 @@
 using NUnit.Framework;
+using UnityEngine;
 using UrbanWildlifeRooms.Data;
+using UrbanWildlifeRooms.Presentation;
 
 namespace UrbanWildlifeRooms.Tests.Editor
 {
@@ -95,6 +97,49 @@ namespace UrbanWildlifeRooms.Tests.Editor
             Assert.That(restored.Get("residence-e").Column, Is.EqualTo(1));
             Assert.That(restored.Get("residence-f").Column, Is.EqualTo(0));
             Assert.That(restored.IsCompleteAndLegal(), Is.True);
+        }
+
+        [Test]
+        public void CommittedVisualPlacementMovesItsPhysicsHitArea()
+        {
+            var roomRoot = new GameObject("Movable Room Root");
+            try
+            {
+                var floor = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                floor.transform.SetParent(roomRoot.transform, false);
+                floor.transform.localPosition = new Vector3(0f, 0.12f, 0f);
+                floor.transform.localScale = new Vector3(2f, 0.24f, 2f);
+                var collider = floor.GetComponent<Collider>();
+                var view = floor.AddComponent<RoomView>();
+                view.Initialize(
+                    RoomLayoutData.All[23],
+                    roomRoot.transform,
+                    floor.GetComponent<Renderer>(),
+                    Color.white,
+                    2f,
+                    2f,
+                    HideFlags.None);
+                Physics.SyncTransforms();
+
+                Assert.That(
+                    Physics.Raycast(new Vector3(0f, 5f, 0f), Vector3.down, out var originalHit, 10f),
+                    Is.True);
+                Assert.That(originalHit.collider, Is.EqualTo(collider));
+
+                view.ApplyPlacement(new Vector3(8f, 0f, 0f), 0);
+
+                Assert.That(
+                    Physics.Raycast(new Vector3(0f, 5f, 0f), Vector3.down, 10f),
+                    Is.False);
+                Assert.That(
+                    Physics.Raycast(new Vector3(8f, 5f, 0f), Vector3.down, out var movedHit, 10f),
+                    Is.True);
+                Assert.That(movedHit.collider, Is.EqualTo(collider));
+            }
+            finally
+            {
+                Object.DestroyImmediate(roomRoot);
+            }
         }
     }
 }

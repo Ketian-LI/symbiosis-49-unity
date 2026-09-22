@@ -105,6 +105,11 @@ namespace UrbanWildlifeRooms.Core
             Begin();
         }
 
+        public void SetOverlaySuppressed(bool suppressed)
+        {
+            overlay?.SetSuppressed(suppressed);
+        }
+
 #if UNITY_EDITOR
         public void ShowVisualPreview(OnboardingStep previewStep)
         {

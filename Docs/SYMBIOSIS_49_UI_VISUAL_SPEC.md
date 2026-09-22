@@ -133,6 +133,9 @@ baked into a single screenshot.
   accept any single 1 × 1, 1 × 2 or 2 × 2 module.
 - A player may move one module into the tray to create free cells for
   rearrangement.
+- Whenever a room is dragged, swapped or committed to the tray, update its
+  pointer hit area together with the visible module even while simulation time
+  is paused. No invisible hit area may remain at the room's previous cell.
 - The holding tray must be empty before the confirm/check action is enabled.
 - Selecting a movable module reveals a rotate control at its upper-right.
 - Clicking the rotate control or pressing `R` rotates the module clockwise by
@@ -958,6 +961,10 @@ appear on hover.
   confirmation panel; only confirmation clears the active run and restores day
   one, the initial layout and the initial resource balance. Cancelling leaves
   the run untouched.
+- Pause, settings and restart-confirmation panels always sit above tutorial
+  guidance. Temporarily hide the onboarding spotlight, shade and instruction
+  card while one of these modal panels is open, then restore the same tutorial
+  step when play resumes.
 - Pause-menu Settings uses the separate light-on-dark gear pictogram
   `Images/UI/pause-menu-settings-icon-v01.png`; do not reuse the dark-on-light
   main-menu version on the navy button.

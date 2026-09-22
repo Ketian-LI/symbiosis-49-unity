@@ -14,8 +14,11 @@ namespace UrbanWildlifeRooms.UI
         private Text skipLabel;
         private Transform target;
         private OnboardingStep step;
+        private bool shouldBeVisible;
+        private bool suppressed;
 
         public System.Action SkipRequested;
+        public bool IsVisible => root != null && root.gameObject.activeSelf;
 
         public void Build(Font font, Camera camera, HideFlags hideFlags)
         {
@@ -58,8 +61,9 @@ namespace UrbanWildlifeRooms.UI
         {
             step = nextStep;
             target = worldTarget;
-            root.gameObject.SetActive(nextStep != OnboardingStep.Hidden && nextStep != OnboardingStep.Complete);
-            if (!root.gameObject.activeSelf)
+            shouldBeVisible = nextStep != OnboardingStep.Hidden && nextStep != OnboardingStep.Complete;
+            ApplyVisibility();
+            if (!shouldBeVisible)
             {
                 return;
             }
@@ -75,6 +79,29 @@ namespace UrbanWildlifeRooms.UI
                 _ => new Vector2(96f, 96f)
             };
             UpdateSpotlight();
+        }
+
+        public void SetSuppressed(bool value)
+        {
+            if (suppressed == value)
+            {
+                return;
+            }
+
+            suppressed = value;
+            ApplyVisibility();
+            if (root != null && root.gameObject.activeSelf)
+            {
+                UpdateSpotlight();
+            }
+        }
+
+        private void ApplyVisibility()
+        {
+            if (root != null)
+            {
+                root.gameObject.SetActive(shouldBeVisible && !suppressed);
+            }
         }
 
         private void LateUpdate()

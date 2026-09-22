@@ -401,6 +401,23 @@ namespace UrbanWildlifeRooms.UI
             RefreshLanguage();
         }
 
+#if UNITY_EDITOR
+        public void ShowRestartConfirmationPreview()
+        {
+            if (runtime.AtDesktop)
+            {
+                runtime.StartNewRun(GameMode.Sandbox);
+            }
+            onboardingController?.Replay();
+            if (!runtime.PauseMenuOpen)
+            {
+                runtime.TogglePauseMenu();
+            }
+            restartConfirmationOpen = true;
+            Refresh();
+        }
+#endif
+
         public void BindOnboarding(FirstRunOnboardingController controller)
         {
             onboardingController = controller;
@@ -1968,6 +1985,8 @@ namespace UrbanWildlifeRooms.UI
                 82f);
             settingsPanel.SetActive(runtime.SettingsOpen);
             var calibrationOpen = cameraCalibrationOverlay != null && runtime.CameraCalibrationOpen;
+            onboardingController?.SetOverlaySuppressed(
+                runtime.PauseMenuOpen || runtime.AtDesktop || runtime.ResultsOpen || calibrationOpen);
             if (cameraCalibrationOverlay != null)
             {
                 cameraCalibrationOverlay.SetActive(calibrationOpen);
@@ -1985,7 +2004,7 @@ namespace UrbanWildlifeRooms.UI
             {
                 cameraCalibrationOverlay.transform.SetAsLastSibling();
             }
-            else if (desktopSettingsOpen)
+            else if (pauseOverlay.activeSelf)
             {
                 pauseOverlay.transform.SetAsLastSibling();
             }
