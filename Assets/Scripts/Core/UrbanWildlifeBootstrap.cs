@@ -880,7 +880,7 @@ namespace UrbanWildlifeRooms.Core
                 runtimeController,
                 boardCameraController);
             resultsOverlay = hudObject.AddComponent<EndRunResultsOverlay>();
-            resultsOverlay.Build(UrbanFontResolver.GetFont(), generatedHideFlags, runtimeController);
+            resultsOverlay.Build(UrbanFontResolver.GetFont(), generatedHideFlags, runtimeController, LayoutCamera);
         }
 
         private void BuildLayoutEditor()

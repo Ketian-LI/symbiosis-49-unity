@@ -703,7 +703,7 @@ appear on hover.
 
 ## End-of-run results
 
-![Approved end-of-run hierarchy](Images/end-of-run-results-sample-v01.png)
+![Rebuilt end-of-run hierarchy](Images/end-of-run-results-sample-v02.png)
 
 - Sandbox play has no fixed victory day or proactive win condition. A run
   continues until one of its failure conditions is reached, and days survived
@@ -735,30 +735,34 @@ appear on hover.
   three compact live-data groups, final-layout thumbnail, then the two actions.
   Values in the concept image are illustrative only; the Unity view must bind
   to the actual completed run and must never hard-code sample statistics.
-- Switch the ending-reason emblem from the live end condition. The approved
-  transparent layers are `Images/UI/results-end-animal-deaths-v01.png` and
-  `Images/UI/results-end-negative-resources-v01.png`. Keep the numeric death
+- Switch the ending-reason emblem from the live end condition. The rebuilt
+  transparent layers are `Images/UI/results-end-animal-deaths-v02.png` and
+  `Images/UI/results-end-negative-resources-v02.png`. Keep the numeric death
   limit and balance value in adjacent live text rather than baking numbers into
   either icon.
-- Use `Images/UI/results-days-survived-v01.png` beside the live survival-day
-  value. Use `Images/UI/results-new-record-ribbon-v01.png` only when the run
+- Use `Images/UI/results-days-survived-v02.png` beside the live survival-day
+  value. Use `Images/UI/results-new-record-ribbon-v02.png` only when the run
   exceeds the stored record. The ribbon remains text-free in the asset so the
   localized `新纪录 / New record` label can be rendered live.
-- Use three transparent pictograms for the compact summary groups:
-  `Images/UI/results-summary-resources-v01.png`,
-  `Images/UI/results-summary-residents-v01.png`, and
-  `Images/UI/results-summary-ecology-v01.png`. The ecology tree must follow the
-  approved broad clustered-canopy tree style rather than a conical silhouette.
+- Use three complete but text-free statistic-card layers for the compact
+  summary groups: `Images/UI/results-summary-resources-v02.png`,
+  `Images/UI/results-summary-residents-v02.png`, and
+  `Images/UI/results-summary-ecology-v02.png`. Their lower fields remain clear
+  for live values. The ecology tree follows the approved faceted low-poly tree
+  style and is paired with a distinct red downward trend arrow.
 - Frame the live final-layout capture with
-  `Images/UI/results-layout-thumbnail-frame-v01.png`; keep the captured board
-  visible through its transparent centre and inset it from the decorative edge.
-- Use `Images/UI/results-restart-button-v01.png` and
-  `Images/UI/results-main-menu-button-v01.png` as decoration behind live,
-  localised button labels. The image layers must remain text-free.
-- Use `Images/UI/results-main-card-v01.png` as the text-free decorative backing
-  of the central result sheet and `Images/UI/results-summary-card-v01.png` as
-  the repeated backing for all three compact statistic groups. Keep both as
-  independent image layers behind live data.
+  `Images/UI/results-layout-thumbnail-frame-v02.png`; capture the actual final
+  board as the results screen opens, keep it visible through the transparent
+  centre, and inset it from the decorative edge.
+- Use `Images/UI/results-restart-button-v02.png`,
+  `Images/UI/results-main-menu-button-v02.png`, and
+  `Images/UI/results-export-button-v02.png` behind live, localised action
+  labels. The teal export asset appears only in research mode.
+- Use `Images/UI/results-main-card-v02.png` as the text-free decorative backing
+  of the central result sheet. Place
+  `Images/UI/results-header-pigeon-v02.png` at the upper-right edge as a small
+  non-interactive ornament. The three statistic cards are complete independent
+  layers and no longer require a shared generic card backing.
 - Reveal the results with unscaled time after gameplay is paused: dim the board
   and ease the card from 92% to full size over 0.35 seconds, then reveal the
   ending reason, survival days, statistic groups, final-layout capture and

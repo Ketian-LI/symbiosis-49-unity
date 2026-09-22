@@ -15,8 +15,9 @@ namespace UrbanWildlifeRooms.UI
         LayoutThumbnailFrame,
         RestartButton,
         MainMenuButton,
+        ExportButton,
         MainCard,
-        SummaryCard
+        HeaderPigeon
     }
 
     public static class ResultsVisualCatalog
@@ -26,18 +27,19 @@ namespace UrbanWildlifeRooms.UI
         private static readonly IReadOnlyDictionary<ResultsVisual, string> ResourceNames =
             new Dictionary<ResultsVisual, string>
             {
-                { ResultsVisual.EndAnimalDeaths, "results-end-animal-deaths-v01" },
-                { ResultsVisual.EndNegativeResources, "results-end-negative-resources-v01" },
-                { ResultsVisual.DaysSurvived, "results-days-survived-v01" },
-                { ResultsVisual.NewRecordRibbon, "results-new-record-ribbon-v01" },
-                { ResultsVisual.SummaryResources, "results-summary-resources-v01" },
-                { ResultsVisual.SummaryResidents, "results-summary-residents-v01" },
-                { ResultsVisual.SummaryEcology, "results-summary-ecology-v01" },
-                { ResultsVisual.LayoutThumbnailFrame, "results-layout-thumbnail-frame-v01" },
-                { ResultsVisual.RestartButton, "results-restart-button-v01" },
-                { ResultsVisual.MainMenuButton, "results-main-menu-button-v01" },
-                { ResultsVisual.MainCard, "results-main-card-v01" },
-                { ResultsVisual.SummaryCard, "results-summary-card-v01" }
+                { ResultsVisual.EndAnimalDeaths, "results-end-animal-deaths-v02" },
+                { ResultsVisual.EndNegativeResources, "results-end-negative-resources-v02" },
+                { ResultsVisual.DaysSurvived, "results-days-survived-v02" },
+                { ResultsVisual.NewRecordRibbon, "results-new-record-ribbon-v02" },
+                { ResultsVisual.SummaryResources, "results-summary-resources-v02" },
+                { ResultsVisual.SummaryResidents, "results-summary-residents-v02" },
+                { ResultsVisual.SummaryEcology, "results-summary-ecology-v02" },
+                { ResultsVisual.LayoutThumbnailFrame, "results-layout-thumbnail-frame-v02" },
+                { ResultsVisual.RestartButton, "results-restart-button-v02" },
+                { ResultsVisual.MainMenuButton, "results-main-menu-button-v02" },
+                { ResultsVisual.ExportButton, "results-export-button-v02" },
+                { ResultsVisual.MainCard, "results-main-card-v02" },
+                { ResultsVisual.HeaderPigeon, "results-header-pigeon-v02" }
             };
 
         private static readonly Dictionary<ResultsVisual, Sprite> SpriteCache = new();

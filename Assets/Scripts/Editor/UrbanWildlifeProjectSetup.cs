@@ -180,6 +180,78 @@ namespace UrbanWildlifeRooms.Editor
             bootstrap.RebuildPreview();
         }
 
+        [MenuItem("Urban Wildlife/Capture End Run Results Preview")]
+        public static void CaptureEndRunResultsPreview()
+        {
+            var bootstrap = Object.FindFirstObjectByType<UrbanWildlifeBootstrap>();
+            if (bootstrap == null && File.Exists(Path.GetFullPath(MainScenePath)))
+            {
+                EditorSceneManager.OpenScene(MainScenePath, OpenSceneMode.Single);
+                bootstrap = Object.FindFirstObjectByType<UrbanWildlifeBootstrap>();
+            }
+            if (bootstrap == null)
+            {
+                throw new System.InvalidOperationException("Main scene does not contain UrbanWildlifeBootstrap.");
+            }
+
+            bootstrap.RebuildPreview();
+            var generatedRoot = bootstrap.transform.Find(UrbanWildlifeBootstrap.GeneratedRootName);
+            var runtime = generatedRoot == null
+                ? null
+                : generatedRoot.GetComponentInChildren<GameRuntimeController>(true);
+            if (runtime == null)
+            {
+                throw new System.InvalidOperationException("Generated preview does not contain GameRuntimeController.");
+            }
+
+            runtime.StartNewRun(GameMode.Sandbox);
+            runtime.SetOnboardingOpen(false);
+            var onboardingRoot = generatedRoot.Find("First Run Onboarding");
+            if (onboardingRoot != null)
+            {
+                Object.DestroyImmediate(onboardingRoot.gameObject);
+            }
+            var onboardingVisual = generatedRoot.Find("HUD Canvas/First Run Onboarding");
+            if (onboardingVisual != null)
+            {
+                Object.DestroyImmediate(onboardingVisual.gameObject);
+            }
+            runtime.EndRun(new RunResultsData
+            {
+                endReason = RunEndReason.AnimalDeathLimit,
+                configuredDeathLimit = 5,
+                daysSurvived = 23,
+                bestSurvivalDays = 23,
+                isNewRecord = true,
+                cumulativeResourceIncome = 57,
+                cumulativeResourceSpending = 15,
+                finalResourceBalance = 42,
+                peakResourceBalance = 49,
+                finalResidents = 32,
+                peakResidents = 34,
+                arrivals = 7,
+                departures = 3,
+                relocations = 6,
+                pigeonDeaths = 2,
+                squirrelDeaths = 1,
+                hedgehogDeaths = 1,
+                foxDeaths = 1,
+                treesPlanted = 4,
+                treesFelled = 2,
+                treesMatured = 2,
+                averageHabitatProvision = 0.71f
+            });
+
+            var resultsOverlay = generatedRoot.Find("HUD Canvas")?.GetComponent<EndRunResultsOverlay>();
+            if (resultsOverlay == null || !resultsOverlay.IsVisible)
+            {
+                throw new System.InvalidOperationException("End-run results overlay did not become visible for preview capture.");
+            }
+
+            CaptureCurrentLayoutPreview(bootstrap, "UrbanWildlifeRooms_EndRunResults.png");
+            bootstrap.RebuildPreview();
+        }
+
         [MenuItem("Urban Wildlife/Capture Onboarding Preview")]
         public static void CaptureOnboardingPreview()
         {

@@ -22,6 +22,7 @@ namespace UrbanWildlifeRooms.UI
         private Font font;
         private HideFlags generatedHideFlags;
         private GameRuntimeController runtime;
+        private Camera worldCamera;
         private GameObject overlay;
         private Image backgroundDimmer;
         private RectTransform resultsCard;
@@ -59,14 +60,17 @@ namespace UrbanWildlifeRooms.UI
         private Button menuButton;
         private Button exportButton;
         private ResearchSessionController researchSession;
+        private Texture2D capturedLayoutThumbnail;
+        private bool capturingLayoutThumbnail;
 
         public bool IsVisible => overlay != null && overlay.activeSelf;
 
-        public void Build(Font uiFont, HideFlags hideFlags, GameRuntimeController runtimeController)
+        public void Build(Font uiFont, HideFlags hideFlags, GameRuntimeController runtimeController, Camera layoutCamera)
         {
             font = uiFont;
             generatedHideFlags = hideFlags;
             runtime = runtimeController;
+            worldCamera = layoutCamera;
             resultAudioSource = gameObject.AddComponent<AudioSource>();
             resultAudioSource.playOnAwake = false;
             resultAudioSource.loop = false;
@@ -78,31 +82,39 @@ namespace UrbanWildlifeRooms.UI
             newRecordClip = CreateNewRecordClip();
             buttonClickClip = CreateButtonClickClip();
 
-            var dimmer = CreatePanel("Results Dimmed Board", transform, new Color(0.025f, 0.04f, 0.055f, 0.72f));
+            var dimmer = CreatePanel("Results Dimmed Board", transform, new Color(0.025f, 0.04f, 0.055f, 0.58f));
             backgroundDimmer = dimmer;
             overlay = dimmer.gameObject;
             Stretch(dimmer.rectTransform);
 
             var card = CreatePanel("Warm Results Card", dimmer.transform, Color.clear);
-            SetCenter(card.rectTransform, 760f, 980f);
+            SetCenter(card.rectTransform, 700f, 930f);
             resultsCard = card.rectTransform;
             resultsCardGroup = card.gameObject.AddComponent<CanvasGroup>();
             CreateDecorativeArt(
                 card.transform,
                 "Results Card Artwork",
                 ResultsVisualCatalog.GetSprite(ResultsVisual.MainCard),
-                1120f,
-                1120f);
+                720f,
+                906f);
+
+            var pigeon = CreateDecorativeArt(
+                card.transform,
+                "Header Pigeon",
+                ResultsVisualCatalog.GetSprite(ResultsVisual.HeaderPigeon),
+                88f,
+                82f);
+            SetTopCenter(pigeon.rectTransform, 198f, -28f, 88f, 82f);
 
             var emblemObject = NewUiObject("End Reason Emblem", card.transform, typeof(CanvasRenderer), typeof(Image));
             endReasonIcon = emblemObject.GetComponent<Image>();
             endReasonIcon.preserveAspect = true;
             endReasonIcon.raycastTarget = false;
-            SetTopCenter(endReasonIcon.rectTransform, 0f, 18f, 70f, 70f);
-            title = CreateText(card.transform, "Results Title", "运行结束", 42, TextAnchor.MiddleCenter, BrickRed, FontStyle.Bold);
-            SetTopCenter(title.rectTransform, 0f, 76f, 600f, 58f);
-            reason = CreateText(card.transform, "End Reason", string.Empty, 23, TextAnchor.MiddleCenter, Ink, FontStyle.Bold);
-            SetTopCenter(reason.rectTransform, 0f, 132f, 600f, 42f);
+            SetTopCenter(endReasonIcon.rectTransform, 0f, -42f, 205f, 100f);
+            title = CreateText(card.transform, "Results Title", "运行结束", 40, TextAnchor.MiddleCenter, BrickRed, FontStyle.Bold);
+            SetTopCenter(title.rectTransform, 0f, 62f, 540f, 54f);
+            reason = CreateText(card.transform, "End Reason", string.Empty, 22, TextAnchor.MiddleCenter, Ink, FontStyle.Bold);
+            SetTopCenter(reason.rectTransform, 0f, 112f, 540f, 38f);
             reasonReveal.Add(AddRevealGroup(endReasonIcon.gameObject));
             reasonReveal.Add(AddRevealGroup(title.gameObject));
             reasonReveal.Add(AddRevealGroup(reason.gameObject));
@@ -112,37 +124,37 @@ namespace UrbanWildlifeRooms.UI
             daysIcon.sprite = ResultsVisualCatalog.GetSprite(ResultsVisual.DaysSurvived);
             daysIcon.preserveAspect = true;
             daysIcon.raycastTarget = false;
-            SetTopCenter(daysIcon.rectTransform, -170f, 180f, 96f, 96f);
+            SetTopCenter(daysIcon.rectTransform, -128f, 156f, 108f, 108f);
 
-            days = CreateText(card.transform, "Days Survived", string.Empty, 72, TextAnchor.MiddleCenter, Graphite, FontStyle.Bold);
-            SetTopCenter(days.rectTransform, 62f, 185f, 330f, 90f);
+            days = CreateText(card.transform, "Days Survived", string.Empty, 66, TextAnchor.MiddleCenter, Graphite, FontStyle.Bold);
+            SetTopCenter(days.rectTransform, 74f, 160f, 270f, 82f);
             var badge = CreatePanel("New Record Badge", card.transform, Color.white);
             recordBadge = badge.gameObject;
             badge.sprite = ResultsVisualCatalog.GetSprite(ResultsVisual.NewRecordRibbon);
             badge.preserveAspect = false;
-            SetTopCenter(badge.rectTransform, 0f, 258f, 250f, 100f);
-            record = CreateText(badge.transform, "New Record Label", "新纪录", 19, TextAnchor.MiddleCenter, Ink, FontStyle.Bold);
-            Stretch(record.rectTransform, 28f);
+            SetTopCenter(badge.rectTransform, 58f, 236f, 220f, 64f);
+            record = CreateText(badge.transform, "New Record Label", "新纪录", 18, TextAnchor.MiddleCenter, Ink, FontStyle.Bold);
+            Stretch(record.rectTransform, 16f);
             daysReveal.Add(AddRevealGroup(daysIcon.gameObject));
             daysReveal.Add(AddRevealGroup(days.gameObject));
             daysReveal.Add(AddRevealGroup(recordBadge));
 
-            resourceValue = BuildSummaryCard(card.transform, "Resource Summary", ResultsVisual.SummaryResources, -218f);
+            resourceValue = BuildSummaryCard(card.transform, "Resource Summary", ResultsVisual.SummaryResources, -210f);
             residentValue = BuildSummaryCard(card.transform, "Resident Summary", ResultsVisual.SummaryResidents, 0f);
-            ecologyValue = BuildSummaryCard(card.transform, "Ecology Summary", ResultsVisual.SummaryEcology, 218f);
+            ecologyValue = BuildSummaryCard(card.transform, "Ecology Summary", ResultsVisual.SummaryEcology, 210f);
 
             var thumbnailFrame = CreatePanel("Final Layout Thumbnail Frame", card.transform, Color.white);
             thumbnailFrame.sprite = ResultsVisualCatalog.GetSprite(ResultsVisual.LayoutThumbnailFrame);
             thumbnailFrame.type = Image.Type.Simple;
             thumbnailFrame.preserveAspect = false;
-            SetTopCenter(thumbnailFrame.rectTransform, 0f, 500f, 620f, 280f);
+            SetTopCenter(thumbnailFrame.rectTransform, 0f, 430f, 520f, 300f);
             var thumbnailPaper = CreatePanel("Final Layout Thumbnail Paper", thumbnailFrame.transform, new Color(0.86f, 0.83f, 0.74f, 1f));
-            Stretch(thumbnailPaper.rectTransform, 30f);
+            Stretch(thumbnailPaper.rectTransform, 28f);
             var imageObject = NewUiObject("Final Layout Thumbnail", thumbnailPaper.transform, typeof(CanvasRenderer), typeof(RawImage));
             layoutThumbnail = imageObject.GetComponent<RawImage>();
             layoutThumbnail.color = Color.white;
             layoutThumbnail.raycastTarget = false;
-            Stretch(layoutThumbnail.rectTransform, 10f);
+            Stretch(layoutThumbnail.rectTransform, 6f);
             thumbnailLabel = CreateText(thumbnailPaper.transform, "Thumbnail Placeholder", "最终布局", 24, TextAnchor.MiddleCenter, Ink, FontStyle.Bold);
             Stretch(thumbnailLabel.rectTransform, 10f);
             layoutReveal.Add(AddRevealGroup(thumbnailFrame.gameObject));
@@ -156,8 +168,8 @@ namespace UrbanWildlifeRooms.UI
                 Amber,
                 Ink,
                 ResultsVisualCatalog.GetSprite(ResultsVisual.RestartButton),
-                220f);
-            SetTopCenter(restart.GetComponent<RectTransform>(), 0f, 804f, 430f, 66f);
+                72f);
+            SetTopCenter(restart.GetComponent<RectTransform>(), 0f, 746f, 390f, 72f);
             restartLabel = restart.GetComponentInChildren<Text>();
             restartButton = restart;
             actionReveal.Add(AddRevealGroup(restart.gameObject));
@@ -171,8 +183,8 @@ namespace UrbanWildlifeRooms.UI
                 Graphite,
                 WarmPaper,
                 ResultsVisualCatalog.GetSprite(ResultsVisual.MainMenuButton),
-                190f);
-            SetTopCenter(menu.GetComponent<RectTransform>(), 0f, 884f, 300f, 52f);
+                54f);
+            SetTopCenter(menu.GetComponent<RectTransform>(), 0f, 830f, 280f, 54f);
             menuLabel = menu.GetComponentInChildren<Text>();
             menuButton = menu;
             actionReveal.Add(AddRevealGroup(menu.gameObject));
@@ -185,9 +197,9 @@ namespace UrbanWildlifeRooms.UI
                 ExportResearchRecord,
                 Cyan,
                 Graphite,
-                ResultsVisualCatalog.GetSprite(ResultsVisual.MainMenuButton),
-                190f);
-            SetTopCenter(export.GetComponent<RectTransform>(), 0f, 884f, 300f, 52f);
+                ResultsVisualCatalog.GetSprite(ResultsVisual.ExportButton),
+                54f);
+            SetTopCenter(export.GetComponent<RectTransform>(), 0f, 830f, 280f, 54f);
             exportLabel = export.GetComponentInChildren<Text>();
             exportButton = export;
             export.gameObject.SetActive(false);
@@ -229,6 +241,8 @@ namespace UrbanWildlifeRooms.UI
             {
                 runtime.StateChanged -= Refresh;
             }
+
+            ReleaseCapturedLayoutThumbnail();
         }
 
         private void BeginRestartTransition()
@@ -303,23 +317,14 @@ namespace UrbanWildlifeRooms.UI
 
         private Text BuildSummaryCard(Transform parent, string name, ResultsVisual visual, float x)
         {
-            var panel = CreatePanel(name, parent, Color.clear);
-            SetTopCenter(panel.rectTransform, x, 366f, 196f, 112f);
-            CreateDecorativeArt(
-                panel.transform,
-                "Summary Card Artwork",
-                ResultsVisualCatalog.GetSprite(ResultsVisual.SummaryCard),
-                245f,
-                245f);
+            var panel = CreatePanel(name, parent, Color.white);
+            panel.sprite = ResultsVisualCatalog.GetSprite(visual);
+            panel.type = Image.Type.Simple;
+            panel.preserveAspect = false;
+            SetTopCenter(panel.rectTransform, x, 306f, 194f, 108f);
             summaryReveal.Add(AddRevealGroup(panel.gameObject));
-            var iconObject = NewUiObject("Summary Pictogram", panel.transform, typeof(CanvasRenderer), typeof(Image));
-            var icon = iconObject.GetComponent<Image>();
-            icon.sprite = ResultsVisualCatalog.GetSprite(visual);
-            icon.preserveAspect = true;
-            icon.raycastTarget = false;
-            SetTopCenter(icon.rectTransform, 0f, 6f, 58f, 58f);
-            var value = CreateText(panel.transform, "Live Value", "—", 20, TextAnchor.MiddleCenter, Ink, FontStyle.Bold);
-            SetTopCenter(value.rectTransform, 0f, 58f, 176f, 50f);
+            var value = CreateText(panel.transform, "Live Value", "—", 15, TextAnchor.MiddleCenter, Ink, FontStyle.Bold);
+            SetTopCenter(value.rectTransform, 0f, 64f, 174f, 36f);
             return value;
         }
 
@@ -345,6 +350,11 @@ namespace UrbanWildlifeRooms.UI
             }
 
             var isEntering = !wasVisible;
+            if (isEntering)
+            {
+                CaptureCurrentLayoutThumbnail();
+            }
+
             overlay.SetActive(true);
 
             var data = runtime.CurrentResults;
@@ -381,17 +391,131 @@ namespace UrbanWildlifeRooms.UI
             {
                 exportButton.gameObject.SetActive(research);
                 exportLabel.text = chinese ? "导出研究记录" : "Export Research Record";
-                SetTopCenter(restartButton.GetComponent<RectTransform>(), research ? 190f : 0f, 804f, research ? 260f : 430f, 66f);
-                SetTopCenter(exportButton.GetComponent<RectTransform>(), 0f, 884f, 280f, 52f);
-                SetTopCenter(menuButton.GetComponent<RectTransform>(), research ? -190f : 0f, research ? 804f : 884f, research ? 260f : 300f, research ? 66f : 52f);
+                SetTopCenter(restartButton.GetComponent<RectTransform>(), research ? 150f : 0f, 746f, research ? 270f : 390f, 72f);
+                SetTopCenter(menuButton.GetComponent<RectTransform>(), research ? -150f : 0f, research ? 746f : 830f, research ? 270f : 280f, research ? 72f : 54f);
+                SetTopCenter(exportButton.GetComponent<RectTransform>(), 0f, 830f, 280f, 54f);
             }
 
             if (isEntering)
             {
-                revealRoutine = StartCoroutine(PlayReveal());
+                if (Application.isPlaying)
+                {
+                    revealRoutine = StartCoroutine(PlayReveal());
+                }
+                else
+                {
+                    ShowImmediatelyForEditorPreview();
+                }
             }
 
             wasVisible = true;
+        }
+
+        private void ShowImmediatelyForEditorPreview()
+        {
+            resultsCardGroup.alpha = 1f;
+            resultsCardGroup.interactable = true;
+            resultsCardGroup.blocksRaycasts = true;
+            resultsCard.localScale = Vector3.one;
+            SetRevealAlpha(reasonReveal, 1f);
+            SetRevealAlpha(daysReveal, 1f);
+            SetRevealAlpha(summaryReveal, 1f);
+            SetRevealAlpha(layoutReveal, 1f);
+            SetRevealAlpha(actionReveal, 1f);
+        }
+
+        private void CaptureCurrentLayoutThumbnail()
+        {
+            if (capturingLayoutThumbnail || worldCamera == null || layoutThumbnail == null)
+            {
+                return;
+            }
+
+            const int width = 720;
+            const int height = 460;
+            var target = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32)
+            {
+                antiAliasing = 1,
+                name = "Results Layout Snapshot"
+            };
+            var canvas = GetComponent<Canvas>();
+            var canvasWasEnabled = canvas != null && canvas.enabled;
+            var previousTarget = worldCamera.targetTexture;
+            var previousActive = RenderTexture.active;
+            var previousAspect = worldCamera.aspect;
+
+            try
+            {
+                capturingLayoutThumbnail = true;
+                target.Create();
+                if (canvasWasEnabled)
+                {
+                    canvas.enabled = false;
+                }
+
+                worldCamera.targetTexture = target;
+                worldCamera.aspect = width / (float)height;
+                worldCamera.Render();
+                RenderTexture.active = target;
+
+                var snapshot = new Texture2D(width, height, TextureFormat.RGB24, false)
+                {
+                    name = "Final Layout Snapshot"
+                };
+                snapshot.ReadPixels(new Rect(0f, 0f, width, height), 0, 0);
+                snapshot.Apply(false, false);
+
+                ReleaseCapturedLayoutThumbnail();
+                capturedLayoutThumbnail = snapshot;
+                SetFinalLayoutThumbnail(capturedLayoutThumbnail);
+            }
+            finally
+            {
+                worldCamera.targetTexture = previousTarget;
+                worldCamera.aspect = previousAspect;
+                RenderTexture.active = previousActive;
+                if (canvas != null)
+                {
+                    canvas.enabled = canvasWasEnabled;
+                }
+
+                capturingLayoutThumbnail = false;
+                target.Release();
+                DestroyRuntimeObject(target);
+            }
+        }
+
+        private void ReleaseCapturedLayoutThumbnail()
+        {
+            if (capturedLayoutThumbnail == null)
+            {
+                return;
+            }
+
+            if (layoutThumbnail != null && layoutThumbnail.texture == capturedLayoutThumbnail)
+            {
+                layoutThumbnail.texture = null;
+            }
+
+            DestroyRuntimeObject(capturedLayoutThumbnail);
+            capturedLayoutThumbnail = null;
+        }
+
+        private static void DestroyRuntimeObject(Object target)
+        {
+            if (target == null)
+            {
+                return;
+            }
+
+            if (Application.isPlaying)
+            {
+                Destroy(target);
+            }
+            else
+            {
+                DestroyImmediate(target);
+            }
         }
 
         private IEnumerator PlayReveal()
