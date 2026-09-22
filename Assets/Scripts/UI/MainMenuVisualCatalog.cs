@@ -10,12 +10,13 @@ namespace UrbanWildlifeRooms.UI
         SandboxIcon,
         ResearchCard,
         ResearchIcon,
+        ModeHoverCard,
         EnterArrow,
         BottomButtonBase,
         SettingsIcon,
         LanguageIcon,
         ExitIcon,
-        TitleFootprints
+        TitleWordmark
     }
 
     public static class MainMenuVisualCatalog
@@ -26,16 +27,17 @@ namespace UrbanWildlifeRooms.UI
             new Dictionary<MainMenuVisual, string>
             {
                 { MainMenuVisual.BestRecordPanel, "main-menu-best-record-panel-v01" },
-                { MainMenuVisual.SandboxCard, "main-menu-sandbox-card-v01" },
-                { MainMenuVisual.SandboxIcon, "main-menu-sandbox-icon-v01" },
-                { MainMenuVisual.ResearchCard, "main-menu-research-card-v01" },
-                { MainMenuVisual.ResearchIcon, "main-menu-research-icon-v01" },
+                { MainMenuVisual.SandboxCard, "main-menu-endless-card-v02" },
+                { MainMenuVisual.SandboxIcon, "main-menu-endless-icon-v02" },
+                { MainMenuVisual.ResearchCard, "main-menu-timed-card-v02" },
+                { MainMenuVisual.ResearchIcon, "main-menu-timed-icon-v02" },
+                { MainMenuVisual.ModeHoverCard, "main-menu-mode-hover-card-v02" },
                 { MainMenuVisual.EnterArrow, "main-menu-enter-arrow-v01" },
                 { MainMenuVisual.BottomButtonBase, "main-menu-round-button-base-v01" },
                 { MainMenuVisual.SettingsIcon, "main-menu-settings-icon-v01" },
                 { MainMenuVisual.LanguageIcon, "main-menu-language-icon-v01" },
                 { MainMenuVisual.ExitIcon, "main-menu-exit-icon-v01" },
-                { MainMenuVisual.TitleFootprints, "main-menu-title-footprints-v01" }
+                { MainMenuVisual.TitleWordmark, "main-menu-title-v02" }
             };
 
         private static readonly Dictionary<MainMenuVisual, Sprite> SpriteCache = new();

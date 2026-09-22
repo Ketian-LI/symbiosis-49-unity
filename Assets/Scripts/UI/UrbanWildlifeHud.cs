@@ -1326,7 +1326,7 @@ namespace UrbanWildlifeRooms.UI
 
         private void BuildDesktopOverlay()
         {
-            var overlay = CreatePanel("Main Menu", transform, new Color(0.08f, 0.10f, 0.11f, 0.72f));
+            var overlay = CreatePanel("Main Menu", transform, new Color(0.08f, 0.09f, 0.09f, 0.56f));
             desktopOverlay = overlay.GameObject;
             desktopCanvasGroup = overlay.GameObject.AddComponent<CanvasGroup>();
             Stretch(overlay.RectTransform);
@@ -1420,7 +1420,7 @@ namespace UrbanWildlifeRooms.UI
             SetTopLeft(back.GetComponent<RectTransform>(), 34f, 54f, 62f, 62f);
             researchBackLabel = back.GetComponentInChildren<Text>();
 
-            researchSetupTitle = CreateText(card.Transform, "Research Setup Title", "研究模式", 42, TextAnchor.MiddleCenter, WarmPaper, FontStyle.Bold);
+            researchSetupTitle = CreateText(card.Transform, "Research Setup Title", "限时模式", 42, TextAnchor.MiddleCenter, WarmPaper, FontStyle.Bold);
             SetTopCenter(researchSetupTitle.rectTransform, 0f, 58f, 560f, 58f);
             var titleFlourish = CreateText(card.Transform, "Research Title Flourish", "—  ♧  —", 22, TextAnchor.MiddleCenter, new Color(0.88f, 0.80f, 0.65f, 0.94f), FontStyle.Normal);
             SetTopCenter(titleFlourish.rectTransform, 0f, 110f, 260f, 30f);
@@ -1593,34 +1593,15 @@ namespace UrbanWildlifeRooms.UI
         private void BuildDesktopTitle(Transform parent)
         {
             var title = CreateEmpty("Desktop Title", parent);
-            SetTopCenter(title, 0f, 190f, 760f, 110f);
+            SetTopCenter(title, 0f, 105f, 820f, 155f);
 
-            var wordmark = CreateText(
+            var wordmark = CreateImage(
                 title,
-                "SYMBIOSIS Wordmark",
-                "SYMBIOSIS",
-                56,
-                TextAnchor.MiddleRight,
-                WarmPaper,
-                FontStyle.Bold);
-            SetRect(wordmark.rectTransform, 18f, 10f, 402f, 90f);
-
-            var footprints = CreateImage(
-                title,
-                "Natural Footprint Trail",
-                MainMenuVisualCatalog.GetSprite(MainMenuVisual.TitleFootprints));
-            footprints.preserveAspect = true;
-            SetRect(footprints.rectTransform, 422f, 24f, 178f, 66f);
-
-            var number = CreateText(
-                title,
-                "49 Numbermark",
-                "49",
-                88,
-                TextAnchor.MiddleLeft,
-                WarmPaper,
-                FontStyle.Bold);
-            SetRect(number.rectTransform, 596f, 0f, 150f, 110f);
+                "SYMBIOSIS 49 Wordmark",
+                MainMenuVisualCatalog.GetSprite(MainMenuVisual.TitleWordmark));
+            wordmark.preserveAspect = true;
+            Stretch(wordmark.rectTransform);
+            wordmark.raycastTarget = false;
         }
 
         private Text BuildDesktopControl(
@@ -1675,30 +1656,33 @@ namespace UrbanWildlifeRooms.UI
             out Text label)
         {
             var panel = CreatePanel(name, parent, Color.white);
-            panel.Image.sprite = MainMenuVisualCatalog.GetSprite(cardVisual);
+            var normalSprite = MainMenuVisualCatalog.GetSprite(cardVisual);
+            panel.Image.sprite = normalSprite;
             panel.Image.preserveAspect = false;
             var button = panel.GameObject.AddComponent<Button>();
             button.targetGraphic = panel.Image;
-            var colors = button.colors;
-            colors.normalColor = Color.white;
-            colors.highlightedColor = new Color(1f, 0.97f, 0.88f, 1f);
-            colors.pressedColor = new Color(0.87f, 0.83f, 0.74f, 1f);
-            button.colors = colors;
+            button.transition = Selectable.Transition.None;
             button.onClick.AddListener(action);
+
+            var feedback = panel.GameObject.AddComponent<MainMenuModeCardFeedback>();
+            feedback.Initialize(
+                panel.Image,
+                normalSprite,
+                MainMenuVisualCatalog.GetSprite(MainMenuVisual.ModeHoverCard));
 
             var icon = CreateImage(panel.Transform, "Mode Pictogram", MainMenuVisualCatalog.GetSprite(iconVisual));
             icon.preserveAspect = true;
-            SetRect(icon.rectTransform, 34f, 22f, 126f, 126f);
+            SetRect(icon.rectTransform, 36f, 20f, 130f, 130f);
 
             label = CreateText(
                 panel.Transform,
                 "Live Mode Label",
                 string.Empty,
-                34,
+                36,
                 TextAnchor.MiddleCenter,
                 WarmPaper,
                 FontStyle.Bold);
-            SetRect(label.rectTransform, 178f, 35f, 430f, 100f);
+            SetRect(label.rectTransform, 175f, 35f, 430f, 100f);
 
             var arrow = CreateImage(
                 panel.Transform,
@@ -1957,19 +1941,19 @@ namespace UrbanWildlifeRooms.UI
 
             if (showSandbox && showResearch)
             {
-                SetTopCenter(desktopSandboxCardRect, 0f, 355f, 720f, 170f);
-                SetTopCenter(desktopResearchCardRect, 0f, 545f, 720f, 170f);
+                SetTopCenter(desktopSandboxCardRect, 0f, 320f, 720f, 190f);
+                SetTopCenter(desktopResearchCardRect, 0f, 525f, 720f, 190f);
                 SetTopCenter(desktopBestRecordRect, 0f, 745f, 390f, 80f);
             }
             else
             {
                 if (showSandbox)
                 {
-                    SetTopCenter(desktopSandboxCardRect, 0f, 430f, 720f, 170f);
+                    SetTopCenter(desktopSandboxCardRect, 0f, 410f, 720f, 190f);
                 }
                 if (showResearch)
                 {
-                    SetTopCenter(desktopResearchCardRect, 0f, 430f, 720f, 170f);
+                    SetTopCenter(desktopResearchCardRect, 0f, 410f, 720f, 190f);
                 }
                 SetTopCenter(desktopBestRecordRect, 0f, 635f, 390f, 80f);
             }
@@ -2026,13 +2010,11 @@ namespace UrbanWildlifeRooms.UI
             backLabel.text = chinese ? "返回" : "Back";
             var continuing = runtime.HasResumableRun;
             desktopSandboxLabel.text = continuing && runtime.Mode == GameMode.Sandbox
-                ? (chinese ? "继续沙盒" : "Continue Sandbox")
-                : BuildVariantSettings.UsesCameraRecognition
-                    ? (chinese ? "开始" : "Start")
-                    : (chinese ? "沙盒模式" : "Sandbox");
+                ? (chinese ? "继续无尽模式" : "Continue Endless")
+                : (chinese ? "无尽模式" : "Endless Mode");
             desktopResearchLabel.text = continuing && runtime.Mode == GameMode.Research
-                ? (chinese ? "继续研究" : "Continue Research")
-                : (chinese ? "研究模式" : "Research");
+                ? (chinese ? "继续限时模式" : "Continue Timed")
+                : (chinese ? "限时模式" : "Timed Mode");
             desktopSettingsLabel.text = chinese ? "设置" : "Settings";
             desktopLanguageLabel.text = chinese ? "语言" : "Language";
             desktopExitLabel.text = chinese ? "退出" : "Exit";
@@ -2043,7 +2025,7 @@ namespace UrbanWildlifeRooms.UI
                 : chinese ? "尚无记录" : "No completed record";
             if (researchSetupTitle != null)
             {
-                researchSetupTitle.text = chinese ? "研究模式" : "Research Mode";
+                researchSetupTitle.text = chinese ? "限时模式" : "Timed Mode";
                 researchParticipantLabel.text = chinese ? "参与者" : "Participant";
                 researchStartLabel.text = chinese ? "开始" : "Start";
                 researchBackLabel.text = "‹";

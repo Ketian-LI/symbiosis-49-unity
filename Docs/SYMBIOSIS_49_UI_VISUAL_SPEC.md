@@ -55,10 +55,14 @@ baked into a single screenshot.
 - Show the `SYMBIOSIS: 49` title only on the desktop/main menu.
 - Use the modular city itself as a live, softly blurred background, viewed from
   the same straight-down angle as gameplay.
-- The no-camera build presents Sandbox as the primary mode entrance and
-  Research as the secondary entrance.
-- The camera build contains Sandbox only. Replace the two mode entrances with a
-  single Start entrance and do not expose Research anywhere in that build.
+- The player-facing mode names are **Endless Mode / 无尽模式** for the Sandbox
+  ruleset and **Timed Mode / 限时模式** for the Research ruleset. Internal save
+  and code identifiers remain `Sandbox` and `Research` for compatibility.
+- The no-camera build presents Endless Mode as the primary mode entrance and
+  Timed Mode as the secondary entrance.
+- The camera build contains Endless Mode only. Replace the two mode entrances
+  with a single Endless Mode entrance and do not expose Timed Mode anywhere in
+  that build.
 - Keep only Settings, Language and Exit beneath the mode entrances.
 - After a mode is selected, move and fade the entrance UI towards the upper and
   lower edges of the screen.
@@ -152,37 +156,40 @@ baked into a single screenshot.
   vary direction, spacing, scale, pressure and completeness, with left/right
   steps alternating where appropriate.
 - Do not align the tracks vertically or symmetrically.
-- Use the approved transparent seven-print trail
-  `Images/UI/main-menu-title-footprints-v01.png` between the live SYMBIOSIS
-  wordmark and the separately enlarged live `49`. Do not render a conventional
-  colon underneath or beside it.
-- Use a matte moss-green paper card for Sandbox and a matte dusty-purple paper
-  card for Research.
+- Use the rebuilt transparent combined title artwork
+  `Assets/Resources/UI/MainMenu/main-menu-title-v02.png`; it keeps the wordmark,
+  irregular animal trail and enlarged `49` in one stable composition. Do not
+  render a conventional colon underneath or beside it.
+- Use a matte moss-green paper card for Endless Mode and a matte dusty-purple
+  paper card for Timed Mode.
 - Use the separate text-free transparent layer
-  `Images/UI/main-menu-sandbox-card-v01.png` for the approved Sandbox card
+  `Assets/Resources/UI/MainMenu/main-menu-endless-card-v02.png` for the Endless
+  Mode card
   backing; its mode icon, title and arrow remain independent UI layers.
-- Use `Images/UI/main-menu-research-card-v01.png` as the separate text-free
-  transparent Research card backing, with the research pictogram and live
+- Use `Assets/Resources/UI/MainMenu/main-menu-timed-card-v02.png` as the separate
+  text-free transparent Timed Mode card backing, with its pictogram and live
   bilingual label layered independently.
 - Use warm-cream text and line art, clipped/layered paper corners, fine paper
   grain and short contact shadows.
-- Avoid glassmorphism and bright cyan neon borders. A small cyan tab or detail
-  may indicate the currently selected mode.
-- Sandbox uses a hand placing a module into a grid as its icon concept.
-- Use `Images/UI/main-menu-sandbox-icon-v01.png` as the separate transparent
-  Sandbox pictogram. Keep its cyan module accent and loosely curved three-print
-  bird trail independent from the card backing and live labels.
-- Research uses an observation lens over a grid and animal trail as its icon
+- Avoid glassmorphism. On mouse hover or keyboard selection, replace the whole
+  card backing with the blue paper state
+  `Assets/Resources/UI/MainMenu/main-menu-mode-hover-card-v02.png`; restore the
+  original green or purple backing when focus leaves.
+- Endless Mode uses a hand placing a module into a grid as its icon concept.
+- Use `Assets/Resources/UI/MainMenu/main-menu-endless-icon-v02.png` as the
+  separate transparent Endless Mode pictogram. Keep its cyan module accent
+  independent from the card backing and live labels.
+- Timed Mode uses an observation lens over a grid and animal trail as its icon
   concept.
-- Use `Images/UI/main-menu-research-icon-v01.png` as the separate transparent
-  Research pictogram, including the single cyan observation marker. Keep it
-  independent from the purple card backing and live labels.
+- Use `Assets/Resources/UI/MainMenu/main-menu-timed-icon-v02.png` as the separate
+  transparent Timed Mode pictogram, including the single cyan observation
+  marker. Keep it independent from the purple card backing and live labels.
 - Reuse `Images/UI/main-menu-enter-arrow-v01.png` as the separate text-free
   enter chevron on both mode cards.
 - Compose every card at runtime from its backing, pictogram, live bilingual
-  mode label and shared enter chevron. If an unfinished save exists, show only
-  the matching mode card and change its live label to Continue; otherwise the
-  no-camera build shows both cards and the camera build shows one Start card.
+  mode label and shared enter chevron. If an unfinished save exists, keep both
+  no-camera choices visible and change only the matching mode label to Continue;
+  the camera build always shows its single Endless Mode card.
 - Settings, Language and Exit share the approved text-free circular paper
   backing `Images/UI/main-menu-round-button-base-v01.png`. Their symbols,
   labels, hover response and disabled/pressed states remain separate layers.
