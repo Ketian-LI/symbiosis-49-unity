@@ -194,6 +194,76 @@ namespace UrbanWildlifeRooms.Tests.Editor
             }
         }
 
+        [Test]
+        public void EachPigeonHabitatHasOneCoreOneLoftAndTwoPerches()
+        {
+            var material = UrbanVisualFactory.CreateSurfaceMaterial();
+            try
+            {
+                foreach (var spec in RoomLayoutData.All.Where(item => item.Type == RoomType.PigeonHabitat))
+                {
+                    var room = new GameObject($"Pigeon Kit {spec.Id}");
+                    try
+                    {
+                        var root = RoomInteriorVisualBuilder.Build(room.transform, spec,
+                            spec.Width * CellSize - RoomGap, spec.Height * CellSize - RoomGap,
+                            material, HideFlags.None);
+                        var names = root.GetComponentsInChildren<Renderer>().Select(item => item.name).ToArray();
+                        Assert.That(names.Count(name => name == "Ventilation Service Core"), Is.EqualTo(1), spec.Id);
+                        Assert.That(names.Count(name => name == "Open Pigeon Loft"), Is.EqualTo(1), spec.Id);
+                        Assert.That(names.Count(name => name.StartsWith("Open Pigeon Loft Nest Box")), Is.EqualTo(4), spec.Id);
+                        Assert.That(names.Count(name => name.EndsWith("Perch Rail")), Is.EqualTo(2), spec.Id);
+                        Assert.That(names, Does.Contain("Water Dish"), spec.Id);
+                        Assert.That(names, Does.Contain("Separate Seed Tray"), spec.Id);
+                    }
+                    finally
+                    {
+                        Object.DestroyImmediate(room);
+                    }
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(material);
+            }
+        }
+
+        [Test]
+        public void ShrubVariantsKeepEqualCoverAndDistinctLayouts()
+        {
+            var material = UrbanVisualFactory.CreateSurfaceMaterial();
+            var islandPositions = new List<Vector3>();
+            try
+            {
+                foreach (var spec in RoomLayoutData.All.Where(item => item.Type == RoomType.ShrubHabitat))
+                {
+                    var room = new GameObject($"Shrub Kit {spec.Id}");
+                    try
+                    {
+                        var root = RoomInteriorVisualBuilder.Build(room.transform, spec,
+                            spec.Width * CellSize - RoomGap, spec.Height * CellSize - RoomGap,
+                            material, HideFlags.None);
+                        var renderers = root.GetComponentsInChildren<Renderer>();
+                        Assert.That(renderers.Count(item => item.name.Contains("Crown")), Is.EqualTo(8), spec.Id);
+                        Assert.That(renderers.Any(item => item.name == "Dry Leaf Resting Patch"), Is.True, spec.Id);
+                        Assert.That(renderers.Any(item => item.name == "Leaf Litter Insect Point"), Is.True, spec.Id);
+                        var first = renderers.Single(item => item.name == "Cover Island A Crown 1");
+                        var second = renderers.Single(item => item.name == "Cover Island B Crown 1");
+                        islandPositions.Add(first.transform.localPosition + second.transform.localPosition * 0.1f);
+                    }
+                    finally
+                    {
+                        Object.DestroyImmediate(room);
+                    }
+                }
+                Assert.That(islandPositions.Distinct().Count(), Is.EqualTo(3));
+            }
+            finally
+            {
+                Object.DestroyImmediate(material);
+            }
+        }
+
         private static IReadOnlyList<RoomObstacle2D> BuildObstacles(Transform root)
         {
             var obstacles = new List<RoomObstacle2D>();

@@ -75,10 +75,10 @@ namespace UrbanWildlifeRooms.Presentation
                     BuildGarage(context, spec, depth);
                     break;
                 case RoomType.PigeonHabitat:
-                    BuildPigeonHabitat(context, primary, secondary, HasSecondCluster(width, depth));
+                    BuildPigeonHabitat(context, width, depth);
                     break;
                 case RoomType.ShrubHabitat:
-                    BuildShrubHabitat(context, primary);
+                    BuildShrubHabitat(context, spec.Id, width, depth);
                     break;
                 case RoomType.FoxDen:
                     BuildFoxDen(context, primary);
@@ -279,21 +279,38 @@ namespace UrbanWildlifeRooms.Presentation
             }
         }
 
-        private static void BuildPigeonHabitat(
-            BuildContext context,
-            Vector3 anchor,
-            Vector3 secondary,
-            bool extended)
+        private static void BuildPigeonHabitat(BuildContext context, float width, float depth)
         {
-            BuildPigeonRoost(context, anchor, "Primary Roost");
+            var northWest = Corner(width, depth, -1f, 1f);
+            var northEast = Corner(width, depth, 1f, 1f);
+            var southWest = Corner(width, depth, -1f, -1f);
+            var southEast = Corner(width, depth, 1f, -1f);
+
+            context.Box("Ventilation Service Core", northWest + new Vector3(0f, 0.53f, 0f), new Vector3(0.70f, 0.54f, 0.40f), SoftGrey);
+            context.Box("Ventilation Top Panel", northWest + new Vector3(0f, 0.82f, 0f), new Vector3(0.64f, 0.035f, 0.35f), Cream);
+            context.Box("Ventilation Dark Grille", northWest + new Vector3(-0.08f, 0.85f, -0.02f), new Vector3(0.32f, 0.025f, 0.22f), Graphite);
+            for (var index = 0; index < 3; index++)
+            {
+                context.Box($"Ventilation Grille Slat {index + 1}",
+                    northWest + new Vector3(-0.19f + index * 0.11f, 0.87f, -0.02f),
+                    new Vector3(0.025f, 0.012f, 0.18f), SoftGrey);
+            }
+
+            BuildPigeonRoost(context, northEast, "Open Pigeon Loft");
             context.Cylinder(
-                "Landing Perch",
-                secondary + new Vector3(0f, 0.55f, 0.10f),
-                new Vector3(0.045f, extended ? 0.34f : 0.28f, 0.045f),
+                "Loft Perch Rail",
+                northEast + new Vector3(0f, 0.43f, -0.31f),
+                new Vector3(0.035f, 0.31f, 0.035f),
                 Cream,
                 new Vector3(0f, 0f, 90f));
-            context.Cylinder("Water Dish", secondary + new Vector3(-0.19f, 0.31f, -0.12f), new Vector3(0.12f, 0.025f, 0.12f), Teal);
-            context.Box("Seed Tray", secondary + new Vector3(0.18f, 0.31f, -0.12f), new Vector3(0.24f, 0.04f, 0.17f), Ochre);
+            context.Cylinder(
+                "Landing Perch Rail",
+                southEast + new Vector3(0f, 0.48f, 0f),
+                new Vector3(0.035f, 0.31f, 0.035f),
+                WarmWood,
+                new Vector3(0f, 0f, 90f));
+            context.Cylinder("Water Dish", southWest + new Vector3(-0.16f, 0.29f, 0f), new Vector3(0.11f, 0.02f, 0.11f), Teal);
+            context.Box("Separate Seed Tray", southWest + new Vector3(0.17f, 0.29f, 0f), new Vector3(0.20f, 0.035f, 0.16f), Ochre);
         }
 
         private static void BuildPigeonRoost(BuildContext context, Vector3 anchor, string name)
@@ -322,32 +339,53 @@ namespace UrbanWildlifeRooms.Presentation
                 new Vector3(0f, 0f, 90f));
         }
 
-        private static void BuildShrubHabitat(BuildContext context, Vector3 anchor)
+        private static void BuildShrubHabitat(BuildContext context, string roomId, float width, float depth)
         {
-            var leafOffsets = new[]
+            // The three fixed kits have equal cover; only the silhouette and open route vary.
+            var northWest = Corner(width, depth, -1f, 1f);
+            var northEast = Corner(width, depth, 1f, 1f);
+            var southWest = Corner(width, depth, -1f, -1f);
+            var southEast = Corner(width, depth, 1f, -1f);
+            var first = roomId switch
             {
-                new Vector3(-0.22f, 0.48f, 0.04f),
-                new Vector3(0.22f, 0.46f, 0.10f),
-                new Vector3(0f, 0.58f, -0.18f),
-                new Vector3(0f, 0.40f, 0.23f)
+                "shrub-c" => northEast,
+                _ => northWest
             };
-            for (var index = 0; index < leafOffsets.Length; index++)
+            var second = roomId switch
             {
-                context.Sphere(
-                    $"Shrub Crown {index + 1}",
-                    anchor + leafOffsets[index],
-                    new Vector3(0.44f, 0.38f, 0.40f),
+                "shrub-b" => southEast,
+                "shrub-c" => southEast,
+                _ => southWest
+            };
+            BuildShrubIsland(context, first, "Cover Island A", roomId == "shrub-b" ? 1.05f : 1f);
+            BuildShrubIsland(context, second, "Cover Island B", roomId == "shrub-b" ? 0.95f : 1f);
+
+            var towardCentre = new Vector3(-Mathf.Sign(first.x) * 0.17f, 0f, -Mathf.Sign(first.z) * 0.15f);
+            context.Box("Dry Leaf Resting Patch", first + towardCentre + new Vector3(0f, 0.27f, 0f), new Vector3(0.30f, 0.018f, 0.20f), WarmWood, 18f);
+            context.Box("Dry Resting Leaves", first + towardCentre + new Vector3(0.04f, 0.29f, 0.02f), new Vector3(0.20f, 0.012f, 0.11f), Ochre, -17f);
+            context.Sphere("Smooth Stone A", first + new Vector3(0f, 0.30f, 0f), new Vector3(0.17f, 0.12f, 0.14f), SoftGrey);
+            context.Sphere("Smooth Stone B", second + new Vector3(0f, 0.30f, 0f), new Vector3(0.16f, 0.10f, 0.13f), SoftGrey);
+            context.Sphere("Smooth Stone C", second + new Vector3(0.15f * -Mathf.Sign(second.x), 0.29f, 0f), new Vector3(0.11f, 0.08f, 0.10f), Cream);
+            context.Box("Leaf Litter Insect Point", second + new Vector3(0f, 0.27f, -Mathf.Sign(second.z) * 0.15f), new Vector3(0.16f, 0.014f, 0.13f), DarkWood, -22f);
+            context.Sphere("White Flower A", first + new Vector3(0f, 0.73f, 0f), Vector3.one * 0.08f, Cream);
+            context.Sphere("White Flower B", second + new Vector3(0f, 0.70f, 0f), Vector3.one * 0.08f, Cream);
+        }
+
+        private static void BuildShrubIsland(BuildContext context, Vector3 anchor, string name, float size)
+        {
+            var offsets = new[]
+            {
+                new Vector3(-0.19f, 0.48f, 0.02f),
+                new Vector3(0.19f, 0.45f, 0.06f),
+                new Vector3(0f, 0.56f, -0.15f),
+                new Vector3(0f, 0.41f, 0.18f)
+            };
+            for (var index = 0; index < offsets.Length; index++)
+            {
+                context.Sphere($"{name} Crown {index + 1}", anchor + offsets[index] * size,
+                    new Vector3(0.36f, 0.33f, 0.34f) * size,
                     index % 2 == 0 ? Leaf : DeepLeaf);
             }
-
-            context.Cylinder(
-                "Shelter Log",
-                anchor + new Vector3(0.05f, 0.34f, -0.03f),
-                new Vector3(0.11f, 0.30f, 0.11f),
-                DarkWood,
-                new Vector3(0f, 0f, 90f));
-            context.Sphere("White Flower", anchor + new Vector3(-0.27f, 0.69f, -0.06f), Vector3.one * 0.085f, Cream);
-            context.Sphere("Ochre Flower", anchor + new Vector3(0.25f, 0.65f, -0.10f), Vector3.one * 0.075f, Ochre);
         }
 
         private static void BuildFoxDen(BuildContext context, Vector3 anchor)
@@ -357,6 +395,7 @@ namespace UrbanWildlifeRooms.Presentation
             var brick = new Color(0.47f, 0.33f, 0.27f);
             var stone = new Color(0.59f, 0.58f, 0.50f);
             var hollow = new Color(0.075f, 0.075f, 0.07f);
+            var restingCorner = new Vector3(-anchor.x, 0f, -anchor.z);
             context.Box("Retaining Wall Stone Cap", anchor + new Vector3(0f, 0.64f, 0.20f), new Vector3(0.80f, 0.13f, 0.26f), stone);
             context.Box("Retaining Wall Brick", anchor + new Vector3(0f, 0.40f, 0.20f), new Vector3(0.78f, 0.38f, 0.23f), brick);
             context.Box("Retaining Wall Left Stone", anchor + new Vector3(-0.30f, 0.47f, 0.06f), new Vector3(0.16f, 0.42f, 0.36f), stone);
@@ -365,9 +404,14 @@ namespace UrbanWildlifeRooms.Presentation
             context.Cylinder("Culvert Concrete Ring", anchor + new Vector3(-0.09f, 0.267f, -0.12f), new Vector3(0.30f, 0.008f, 0.30f), stone);
             context.Cylinder("Culvert Dark Opening", anchor + new Vector3(-0.09f, 0.283f, -0.12f), new Vector3(0.21f, 0.006f, 0.21f), hollow);
             context.Box("Sheltered Side Recess", anchor + new Vector3(0.25f, 0.27f, -0.12f), new Vector3(0.16f, 0.014f, 0.19f), hollow);
-            context.Box("Resting Cardboard", anchor + new Vector3(-0.19f, 0.29f, -0.31f), new Vector3(0.28f, 0.018f, 0.12f), Ochre, 12f);
-            context.Box("Resting Leaves", anchor + new Vector3(0.18f, 0.29f, -0.30f), new Vector3(0.20f, 0.018f, 0.12f), WarmWood, -18f);
+            context.Cylinder("Sheltered Resting Hollow", restingCorner + new Vector3(0f, 0.258f, 0f), new Vector3(0.50f, 0.008f, 0.42f), hollow);
+            context.Box("Resting Cardboard", restingCorner + new Vector3(-0.10f, 0.275f, 0f), new Vector3(0.25f, 0.018f, 0.17f), Ochre, 12f);
+            context.Box("Resting Leaves", restingCorner + new Vector3(0.10f, 0.288f, 0.05f), new Vector3(0.18f, 0.018f, 0.13f), WarmWood, -18f);
             context.Box("Ivy at Culvert", anchor + new Vector3(-0.29f, 0.69f, 0.12f), new Vector3(0.17f, 0.08f, 0.14f), DeepLeaf, 23f);
+            context.Sphere("Culvert Edge Weed A", anchor + new Vector3(-0.27f, 0.36f, -0.29f), new Vector3(0.20f, 0.20f, 0.16f), Leaf);
+            context.Sphere("Culvert Edge Weed B", anchor + new Vector3(0.27f, 0.35f, -0.26f), new Vector3(0.18f, 0.18f, 0.15f), DeepLeaf);
+            context.Sphere("Resting Edge Low Shrub", restingCorner + new Vector3(-0.18f, 0.40f, -0.16f), new Vector3(0.25f, 0.27f, 0.22f), DeepLeaf);
+            context.Sphere("Weathered Corner Stone", restingCorner + new Vector3(0.20f, 0.32f, 0.17f), new Vector3(0.18f, 0.13f, 0.16f), stone);
         }
 
         private static Transform NewGroup(string name, Transform parent, HideFlags hideFlags)
@@ -395,11 +439,6 @@ namespace UrbanWildlifeRooms.Presentation
             return width >= depth
                 ? new Vector3(width * 0.5f - 0.56f, 0f, depth * 0.5f - 0.56f)
                 : new Vector3(-width * 0.5f + 0.56f, 0f, -depth * 0.5f + 0.56f);
-        }
-
-        private static bool HasSecondCluster(float width, float depth)
-        {
-            return Mathf.Max(width, depth) > 4f;
         }
 
         private static Color AccentFor(string id)
