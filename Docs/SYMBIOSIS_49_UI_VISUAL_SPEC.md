@@ -841,18 +841,20 @@ appear on hover.
 - Adjust both values with left and right arrows rather than free text entry.
 - Lock the values after the session starts.
 - Do not allow parameter changes during the research session.
-- In the no-camera build, selecting Research expands the existing dusty-purple
-  mode card in place rather than navigating to a separate page.
-- The expanded card contains participant code, duration, death limit and Start.
-- Returning collapses the setup card back into the original mode entrance.
+- In the no-camera build, selecting Research opens a centred dusty-purple paper
+  setup overlay above the board while keeping the `SYMBIOSIS 49` title visible.
+- Hide the mode cards, best-record strip and bottom menu controls while this
+  overlay is open so they do not compete with the setup controls.
+- The setup card contains participant code, duration, death limit and Start.
+- Returning closes the overlay and restores the original mode entrances.
 
 ![Approved research setup direction](Images/research-mode-setup-concept-v01.png)
 
 - Use the approved expanded dusty-purple paper card as the production layout.
   Preserve the anonymous participant-code row, paired duration/death-limit
   controls, restrained cyan tab, single Start action and back arrow.
-- Use the established species-track death marker rather than a generic paw icon
-  so the configured number cannot be mistaken for current animal population.
+- Use the approved cream paper paw symbol for the death-limit stepper; its paired
+  value is a configured limit and remains locked once the session begins.
 
 ## Simulation speed
 

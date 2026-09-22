@@ -122,6 +122,7 @@ namespace UrbanWildlifeRooms.UI
         private Text researchDurationValue;
         private Text researchDeathLimitValue;
         private Text researchSetupTitle;
+        private Text researchParticipantLabel;
         private Text researchStartLabel;
         private Text researchBackLabel;
         private Button oakPlantButton;
@@ -352,6 +353,7 @@ namespace UrbanWildlifeRooms.UI
             }
             researchSetupOverlay.SetActive(true);
             researchSetupOverlay.transform.SetAsLastSibling();
+            SetDesktopMenuControlsVisible(false);
             RefreshResearchSession();
             RefreshLanguage();
         }
@@ -1403,75 +1405,140 @@ namespace UrbanWildlifeRooms.UI
                 return;
             }
 
-            var shade = CreatePanel("Research Setup Overlay", desktopOverlay.transform, new Color(0.06f, 0.07f, 0.09f, 0.74f));
+            var shade = CreatePanel("Research Setup Overlay", desktopOverlay.transform, new Color(0.05f, 0.045f, 0.055f, 0.50f));
             researchSetupOverlay = shade.GameObject;
             Stretch(shade.RectTransform);
 
-            var card = CreatePanel("Dusty Purple Research Setup Card", shade.Transform, new Color(0.28f, 0.24f, 0.36f, 0.98f));
-            SetCenter(card.RectTransform, 720f, 520f);
-            var outline = card.GameObject.AddComponent<Outline>();
-            outline.effectColor = new Color(0.63f, 0.57f, 0.72f, 0.86f);
-            outline.effectDistance = new Vector2(2f, -2f);
+            var card = CreatePanel("Handcrafted Research Setup Card", shade.Transform, Color.white);
+            card.Image.sprite = ResearchSetupVisualCatalog.GetSprite(ResearchSetupVisual.Panel);
+            card.Image.preserveAspect = false;
+            SetCenter(card.RectTransform, 760f, 650f);
+            card.RectTransform.anchoredPosition = new Vector2(0f, -65f);
 
-            researchSetupTitle = CreateText(card.Transform, "Research Setup Title", "研究设置", 38, TextAnchor.MiddleCenter, WarmPaper, FontStyle.Bold);
-            SetTopCenter(researchSetupTitle.rectTransform, 0f, 28f, 540f, 58f);
+            var back = CreateButton(card.Transform, "Back From Research Setup", "‹", 48, CloseResearchSetup);
+            back.GetComponent<Image>().color = Color.clear;
+            SetTopLeft(back.GetComponent<RectTransform>(), 34f, 54f, 62f, 62f);
+            researchBackLabel = back.GetComponentInChildren<Text>();
 
-            var codeLabel = CreateText(card.Transform, "Participant Code Label", "匿名编号", 20, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Bold);
-            SetRect(codeLabel.rectTransform, 80f, 282f, 190f, 44f);
-            var inputPanel = CreatePanel("Participant Code Input", card.Transform, new Color(0.94f, 0.90f, 0.80f, 0.96f));
-            SetRect(inputPanel.RectTransform, 278f, 278f, 350f, 52f);
+            researchSetupTitle = CreateText(card.Transform, "Research Setup Title", "研究模式", 42, TextAnchor.MiddleCenter, WarmPaper, FontStyle.Bold);
+            SetTopCenter(researchSetupTitle.rectTransform, 0f, 58f, 560f, 58f);
+            var titleFlourish = CreateText(card.Transform, "Research Title Flourish", "—  ♧  —", 22, TextAnchor.MiddleCenter, new Color(0.88f, 0.80f, 0.65f, 0.94f), FontStyle.Normal);
+            SetTopCenter(titleFlourish.rectTransform, 0f, 110f, 260f, 30f);
+
+            var participantField = CreatePanel("Participant Field Artwork", card.Transform, Color.white);
+            participantField.Image.sprite = ResearchSetupVisualCatalog.GetSprite(ResearchSetupVisual.ParticipantField);
+            participantField.Image.preserveAspect = false;
+            SetTopCenter(participantField.RectTransform, 0f, 154f, 610f, 112f);
+
+            var participantIcon = CreateImage(
+                participantField.Transform,
+                "Participant Identity Icon",
+                ResearchSetupVisualCatalog.GetSprite(ResearchSetupVisual.ParticipantIcon));
+            participantIcon.preserveAspect = true;
+            SetRect(participantIcon.rectTransform, 19f, 22f, 68f, 68f);
+
+            researchParticipantLabel = CreateText(
+                participantField.Transform,
+                "Participant Code Label",
+                "参与者",
+                22,
+                TextAnchor.MiddleLeft,
+                WarmPaper,
+                FontStyle.Bold);
+            SetRect(researchParticipantLabel.rectTransform, 108f, 22f, 166f, 68f);
+
+            var inputPanel = CreatePanel("Participant Code Input", participantField.Transform, Color.clear);
+            SetRect(inputPanel.RectTransform, 298f, 25f, 250f, 62f);
             researchCodeInput = inputPanel.GameObject.AddComponent<InputField>();
+            researchCodeInput.targetGraphic = inputPanel.Image;
             researchCodeInput.characterLimit = 16;
-            var inputText = CreateText(inputPanel.Transform, "Participant Code", "P001", 22, TextAnchor.MiddleLeft, Graphite, FontStyle.Bold);
-            Stretch(inputText.rectTransform, 18f, 6f);
+            var inputText = CreateText(inputPanel.Transform, "Participant Code", "P001", 24, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Bold);
+            Stretch(inputText.rectTransform, 12f, 5f);
             researchCodeInput.textComponent = inputText;
             researchCodeInput.text = researchSession?.Model?.ParticipantCode ?? "P001";
+
+            var editIcon = CreateImage(
+                participantField.Transform,
+                "Participant Edit Icon",
+                ResearchSetupVisualCatalog.GetSprite(ResearchSetupVisual.EditIcon));
+            editIcon.preserveAspect = true;
+            SetRect(editIcon.rectTransform, 558f, 32f, 44f, 44f);
 
             BuildResearchStepper(
                 card.Transform,
                 "Duration",
-                "研究时长",
-                190f,
+                ResearchSetupVisual.ClockIcon,
+                -160f,
+                294f,
                 () => researchSession?.AdjustDuration(-6),
                 () => researchSession?.AdjustDuration(6),
                 out researchDurationValue);
             BuildResearchStepper(
                 card.Transform,
                 "Death Limit",
-                "最大死亡数",
-                108f,
+                ResearchSetupVisual.PawIcon,
+                160f,
+                294f,
                 () => researchSession?.AdjustDeathLimit(-1),
                 () => researchSession?.AdjustDeathLimit(1),
                 out researchDeathLimitValue);
 
-            var start = CreateButton(card.Transform, "Start Research", "开始", 25, StartConfiguredResearch);
-            SetTopCenter(start.GetComponent<RectTransform>(), 88f, 405f, 300f, 64f);
-            start.GetComponent<Image>().color = Cyan;
-            researchStartLabel = start.GetComponentInChildren<Text>();
+            var startArtwork = CreatePanel("Start Research Artwork", card.Transform, Color.white);
+            startArtwork.Image.sprite = ResearchSetupVisualCatalog.GetSprite(ResearchSetupVisual.StartButton);
+            startArtwork.Image.preserveAspect = false;
+            var start = startArtwork.GameObject.AddComponent<Button>();
+            start.targetGraphic = startArtwork.Image;
+            var startColors = start.colors;
+            startColors.normalColor = Color.white;
+            startColors.highlightedColor = new Color(1f, 0.97f, 0.87f, 1f);
+            startColors.pressedColor = new Color(0.86f, 0.78f, 0.66f, 1f);
+            start.colors = startColors;
+            start.onClick.AddListener(StartConfiguredResearch);
+            SetTopCenter(startArtwork.RectTransform, 0f, 484f, 470f, 112f);
+            researchStartLabel = CreateText(
+                startArtwork.Transform,
+                "Label",
+                "开始",
+                34,
+                TextAnchor.MiddleCenter,
+                new Color(0.24f, 0.19f, 0.30f, 1f),
+                FontStyle.Bold);
+            Stretch(researchStartLabel.rectTransform, 94f, 12f);
 
-            var back = CreateButton(card.Transform, "Back From Research Setup", "返回", 20, CloseResearchSetup);
-            SetTopCenter(back.GetComponent<RectTransform>(), -188f, 412f, 180f, 52f);
-            researchBackLabel = back.GetComponentInChildren<Text>();
             researchSetupOverlay.SetActive(false);
         }
 
         private void BuildResearchStepper(
             Transform parent,
             string name,
-            string label,
+            ResearchSetupVisual iconVisual,
+            float x,
             float top,
             UnityEngine.Events.UnityAction decrement,
             UnityEngine.Events.UnityAction increment,
             out Text value)
         {
-            var rowLabel = CreateText(parent, $"{name} Label", label, 20, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Bold);
-            SetRect(rowLabel.rectTransform, 80f, top, 190f, 52f);
-            var previous = CreateButton(parent, $"{name} Previous", "‹", 28, decrement);
-            SetRect(previous.GetComponent<RectTransform>(), 278f, top, 54f, 52f);
-            value = CreateText(parent, $"{name} Value", string.Empty, 22, TextAnchor.MiddleCenter, WarmPaper, FontStyle.Bold);
-            SetRect(value.rectTransform, 340f, top, 226f, 52f);
-            var next = CreateButton(parent, $"{name} Next", "›", 28, increment);
-            SetRect(next.GetComponent<RectTransform>(), 574f, top, 54f, 52f);
+            var stepper = CreatePanel($"{name} Stepper Artwork", parent, Color.white);
+            stepper.Image.sprite = ResearchSetupVisualCatalog.GetSprite(ResearchSetupVisual.StepperCard);
+            stepper.Image.preserveAspect = false;
+            SetTopCenter(stepper.RectTransform, x, top, 300f, 128f);
+
+            var icon = CreateImage(
+                stepper.Transform,
+                $"{name} Icon",
+                ResearchSetupVisualCatalog.GetSprite(iconVisual));
+            icon.preserveAspect = true;
+            SetTopCenter(icon.rectTransform, 0f, 17f, 52f, 52f);
+
+            value = CreateText(stepper.Transform, $"{name} Value", string.Empty, 24, TextAnchor.MiddleCenter, WarmPaper, FontStyle.Bold);
+            SetTopCenter(value.rectTransform, 0f, 72f, 184f, 38f);
+
+            var previous = CreateButton(stepper.Transform, $"{name} Previous", string.Empty, 1, decrement);
+            previous.GetComponent<Image>().color = Color.clear;
+            SetRect(previous.GetComponent<RectTransform>(), 0f, 0f, 74f, 128f);
+            var next = CreateButton(stepper.Transform, $"{name} Next", string.Empty, 1, increment);
+            next.GetComponent<Image>().color = Color.clear;
+            SetRect(next.GetComponent<RectTransform>(), 226f, 0f, 74f, 128f);
         }
 
         private void StartConfiguredResearch()
@@ -1481,12 +1548,46 @@ namespace UrbanWildlifeRooms.UI
                 researchSession.Model.DurationMinutes,
                 researchSession.Model.DeathLimit);
             researchSetupOverlay?.SetActive(false);
+            SetDesktopMenuControlsVisible(true);
             runtime.StartNewRun(GameMode.Research);
         }
 
         private void CloseResearchSetup()
         {
             researchSetupOverlay?.SetActive(false);
+            SetDesktopMenuControlsVisible(true);
+        }
+
+        private void SetDesktopMenuControlsVisible(bool visible)
+        {
+            if (desktopSandboxCard != null)
+            {
+                desktopSandboxCard.SetActive(visible);
+            }
+            if (desktopResearchCard != null)
+            {
+                desktopResearchCard.SetActive(visible && !BuildVariantSettings.UsesCameraRecognition);
+            }
+            if (desktopBestRecordRect != null)
+            {
+                desktopBestRecordRect.gameObject.SetActive(visible);
+            }
+
+            SetDesktopControlVisible(desktopSettingsLabel, visible);
+            SetDesktopControlVisible(desktopLanguageLabel, visible);
+            SetDesktopControlVisible(desktopExitLabel, visible);
+            if (visible)
+            {
+                RefreshDesktopEntries();
+            }
+        }
+
+        private static void SetDesktopControlVisible(Text label, bool visible)
+        {
+            if (label != null && label.transform.parent != null)
+            {
+                label.transform.parent.gameObject.SetActive(visible);
+            }
         }
 
         private void BuildDesktopTitle(Transform parent)
@@ -1637,6 +1738,7 @@ namespace UrbanWildlifeRooms.UI
                 researchCodeInput.text = researchSession.Model.ParticipantCode;
                 researchSetupOverlay.SetActive(true);
                 researchSetupOverlay.transform.SetAsLastSibling();
+                SetDesktopMenuControlsVisible(false);
                 RefreshResearchSession();
                 return;
             }
@@ -1941,9 +2043,10 @@ namespace UrbanWildlifeRooms.UI
                 : chinese ? "尚无记录" : "No completed record";
             if (researchSetupTitle != null)
             {
-                researchSetupTitle.text = chinese ? "研究设置" : "Research Setup";
+                researchSetupTitle.text = chinese ? "研究模式" : "Research Mode";
+                researchParticipantLabel.text = chinese ? "参与者" : "Participant";
                 researchStartLabel.text = chinese ? "开始" : "Start";
-                researchBackLabel.text = chinese ? "返回" : "Back";
+                researchBackLabel.text = "‹";
             }
             if (hoveredRoom != null)
             {
