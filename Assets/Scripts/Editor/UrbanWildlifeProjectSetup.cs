@@ -180,6 +180,44 @@ namespace UrbanWildlifeRooms.Editor
             bootstrap.RebuildPreview();
         }
 
+        [MenuItem("Urban Wildlife/Capture Onboarding Preview")]
+        public static void CaptureOnboardingPreview()
+        {
+            var bootstrap = Object.FindFirstObjectByType<UrbanWildlifeBootstrap>();
+            if (bootstrap == null && File.Exists(Path.GetFullPath(MainScenePath)))
+            {
+                EditorSceneManager.OpenScene(MainScenePath, OpenSceneMode.Single);
+                bootstrap = Object.FindFirstObjectByType<UrbanWildlifeBootstrap>();
+            }
+            if (bootstrap == null)
+            {
+                throw new System.InvalidOperationException("Main scene does not contain UrbanWildlifeBootstrap.");
+            }
+
+            bootstrap.RebuildPreview();
+            var generatedRoot = bootstrap.transform.Find(UrbanWildlifeBootstrap.GeneratedRootName);
+            var onboardingRoot = generatedRoot == null ? null : generatedRoot.Find("First Run Onboarding");
+            var onboarding = onboardingRoot == null ? null : onboardingRoot.GetComponent<FirstRunOnboardingController>();
+            if (onboarding == null)
+            {
+                throw new System.InvalidOperationException("Generated preview does not contain FirstRunOnboardingController.");
+            }
+            onboarding.ShowVisualPreview(OnboardingStep.SelectResident);
+            CaptureCurrentLayoutPreview(bootstrap, "UrbanWildlifeRooms_OnboardingResident.png");
+
+            bootstrap.RebuildPreview();
+            generatedRoot = bootstrap.transform.Find(UrbanWildlifeBootstrap.GeneratedRootName);
+            onboardingRoot = generatedRoot == null ? null : generatedRoot.Find("First Run Onboarding");
+            onboarding = onboardingRoot == null ? null : onboardingRoot.GetComponent<FirstRunOnboardingController>();
+            if (onboarding == null)
+            {
+                throw new System.InvalidOperationException("Rebuilt preview does not contain FirstRunOnboardingController.");
+            }
+            onboarding.ShowVisualPreview(OnboardingStep.PracticeLayout);
+            CaptureCurrentLayoutPreview(bootstrap, "UrbanWildlifeRooms_OnboardingLayout.png");
+            bootstrap.RebuildPreview();
+        }
+
         private static void CaptureCurrentLayoutPreview(UrbanWildlifeBootstrap bootstrap)
         {
             CaptureCurrentLayoutPreview(bootstrap, "UrbanWildlifeRooms_Layout.png");

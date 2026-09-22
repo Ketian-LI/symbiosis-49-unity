@@ -25,6 +25,7 @@ namespace UrbanWildlifeRooms.Presentation
         private bool pendingLegal;
         private int pendingColumn;
         private int pendingRow;
+        private string guidedTargetRoomId;
         private Func<int, bool> trySpendResourcePoints;
         private Func<float> currentResourceBalance;
 
@@ -55,6 +56,16 @@ namespace UrbanWildlifeRooms.Presentation
 
                 return views.TryGetValue(model.TrayRoomId, out var view) ? view.Spec : null;
             }
+        }
+
+        public void SetGuidedTargetRoom(string roomId)
+        {
+            guidedTargetRoomId = string.IsNullOrWhiteSpace(roomId) ? null : roomId;
+            foreach (var view in views.Values)
+            {
+                view.SetSelected(IsEditing && view.Spec.Id == guidedTargetRoomId);
+            }
+            NotifyStateChanged();
         }
         public string StatusText => !IsEditing
             ? string.Empty
@@ -187,6 +198,7 @@ namespace UrbanWildlifeRooms.Presentation
             foreach (var view in views.Values)
             {
                 view.SetLayoutEditing(true);
+                view.SetSelected(view.Spec.Id == guidedTargetRoomId);
             }
             foreach (var marker in fixedMarkers)
             {
@@ -317,6 +329,7 @@ namespace UrbanWildlifeRooms.Presentation
             IsEditing = false;
             dragging = false;
             selectedRoom = null;
+            guidedTargetRoomId = null;
             trayRoot.SetActive(false);
             foreach (var view in views.Values)
             {
@@ -334,7 +347,8 @@ namespace UrbanWildlifeRooms.Presentation
 
         private void HandleDragStarted(RoomView view, Vector2 screenPosition)
         {
-            if (!IsEditing || !view.Spec.Movable)
+            if (!IsEditing || !view.Spec.Movable ||
+                guidedTargetRoomId != null && view.Spec.Id != guidedTargetRoomId)
             {
                 return;
             }
@@ -455,7 +469,7 @@ namespace UrbanWildlifeRooms.Presentation
         private bool IsPointInsideTray(Vector3 localPoint)
         {
             var offset = localPoint - trayRoot.transform.localPosition;
-            return Mathf.Abs(offset.x) <= cellSize * 1.25f && Mathf.Abs(offset.z) <= cellSize * 1.25f;
+            return Mathf.Abs(offset.x) <= cellSize * 1.02f && Mathf.Abs(offset.z) <= cellSize * 1.02f;
         }
 
         private Vector3 TrayRoomPosition(RoomPlacement placement)
@@ -487,18 +501,46 @@ namespace UrbanWildlifeRooms.Presentation
                 hideFlags = hideFlags
             };
             trayRoot.transform.SetParent(mapRoot, false);
-            trayRoot.transform.localPosition = new Vector3(-15.1f, 0f, 0f);
+            var halfBoard = RoomLayoutData.GridSize * cellSize * 0.5f;
+            trayRoot.transform.localPosition = new Vector3(-(halfBoard + cellSize * 0.86f), 0f, 0f);
+
+            var traySize = cellSize * 1.58f;
+            var trayColor = Color.Lerp(UrbanPalette.Board, UrbanPalette.Legal, 0.24f);
+            var rimColor = Color.Lerp(UrbanPalette.Boundary, UrbanPalette.Legal, 0.46f);
 
             UrbanVisualFactory.CreatePrimitive(
                 PrimitiveType.Cube,
                 "Tray Surface",
                 trayRoot.transform,
                 new Vector3(0f, 0.05f, 0f),
-                new Vector3(cellSize * 2.35f, 0.12f, cellSize * 2.35f),
-                new Color(0.16f, 0.19f, 0.20f),
+                new Vector3(traySize, 0.10f, traySize),
+                trayColor,
                 surfaceMaterial,
                 true,
                 hideFlags);
+
+            const float rimThickness = 0.10f;
+            var rimHeight = 0.16f;
+            UrbanVisualFactory.CreatePrimitive(
+                PrimitiveType.Cube, "Tray Rim North", trayRoot.transform,
+                new Vector3(0f, 0.13f, traySize * 0.5f),
+                new Vector3(traySize + rimThickness, rimHeight, rimThickness),
+                rimColor, surfaceMaterial, true, hideFlags);
+            UrbanVisualFactory.CreatePrimitive(
+                PrimitiveType.Cube, "Tray Rim South", trayRoot.transform,
+                new Vector3(0f, 0.13f, -traySize * 0.5f),
+                new Vector3(traySize + rimThickness, rimHeight, rimThickness),
+                rimColor, surfaceMaterial, true, hideFlags);
+            UrbanVisualFactory.CreatePrimitive(
+                PrimitiveType.Cube, "Tray Rim West", trayRoot.transform,
+                new Vector3(-traySize * 0.5f, 0.13f, 0f),
+                new Vector3(rimThickness, rimHeight, traySize + rimThickness),
+                rimColor, surfaceMaterial, true, hideFlags);
+            UrbanVisualFactory.CreatePrimitive(
+                PrimitiveType.Cube, "Tray Rim East", trayRoot.transform,
+                new Vector3(traySize * 0.5f, 0.13f, 0f),
+                new Vector3(rimThickness, rimHeight, traySize + rimThickness),
+                rimColor, surfaceMaterial, true, hideFlags);
 
             var labelObject = new GameObject("Tray Symbol", typeof(TextMesh))
             {
@@ -509,12 +551,12 @@ namespace UrbanWildlifeRooms.Presentation
             labelObject.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
             var label = labelObject.GetComponent<TextMesh>();
             label.font = UrbanFontResolver.GetFont();
-            label.fontSize = 88;
-            label.characterSize = 0.035f;
+            label.fontSize = 72;
+            label.characterSize = 0.027f;
             label.anchor = TextAnchor.MiddleCenter;
             label.alignment = TextAlignment.Center;
-            label.color = new Color(0.83f, 0.82f, 0.75f);
-            label.text = "□";
+            label.color = UrbanPalette.LightText;
+            label.text = "托盘\n1×1";
             labelObject.GetComponent<MeshRenderer>().sharedMaterial = label.font.material;
             trayRoot.SetActive(false);
         }

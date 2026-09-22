@@ -9,6 +9,7 @@ namespace UrbanWildlifeRooms.UI
         private Camera worldCamera;
         private RectTransform root;
         private RectTransform spotlight;
+        private RectTransform cardRect;
         private Text instruction;
         private Text skipLabel;
         private Transform target;
@@ -22,19 +23,23 @@ namespace UrbanWildlifeRooms.UI
             root = NewRect("First Run Onboarding", transform, hideFlags);
             Stretch(root);
 
-            var shade = NewImage("Soft Tutorial Shade", root, hideFlags, new Color(0.02f, 0.03f, 0.04f, 0.20f));
+            var shade = NewImage("Soft Tutorial Shade", root, hideFlags, new Color(0.02f, 0.03f, 0.04f, 0.12f));
             Stretch(shade.rectTransform);
             shade.raycastTarget = false;
 
-            spotlight = NewImage("Tutorial Spotlight", root, hideFlags, new Color(0.27f, 0.78f, 0.74f, 0.08f)).rectTransform;
-            spotlight.sizeDelta = new Vector2(180f, 180f);
+            var spotlightImage = NewImage("Tutorial Spotlight", root, hideFlags, new Color(0.42f, 0.96f, 0.90f, 0.96f));
+            spotlightImage.sprite = AnimalSelectionVisualCatalog.GetSprite(AnimalSelectionVisual.SelectionRing);
+            spotlightImage.preserveAspect = true;
+            spotlightImage.raycastTarget = false;
+            spotlight = spotlightImage.rectTransform;
+            spotlight.sizeDelta = new Vector2(96f, 96f);
             var outline = spotlight.gameObject.AddComponent<Outline>();
-            outline.effectColor = new Color(0.35f, 0.94f, 0.88f, 0.96f);
-            outline.effectDistance = new Vector2(4f, -4f);
-            spotlight.GetComponent<Image>().raycastTarget = false;
+            outline.effectColor = new Color(0.10f, 0.28f, 0.30f, 0.72f);
+            outline.effectDistance = new Vector2(2f, -2f);
 
             var card = NewImage("One Sentence Tutorial Card", root, hideFlags, new Color(0.10f, 0.12f, 0.15f, 0.96f));
-            SetBottomCenter(card.rectTransform, 0f, 38f, 850f, 112f);
+            cardRect = card.rectTransform;
+            SetBottomCenter(cardRect, 0f, 38f, 850f, 112f);
             var gesture = NewText("Gesture", card.transform, hideFlags, font, "☝", 38, TextAnchor.MiddleCenter);
             SetRect(gesture.rectTransform, 24f, 22f, 70f, 66f);
             instruction = NewText("Instruction", card.transform, hideFlags, font, string.Empty, 22, TextAnchor.MiddleLeft);
@@ -60,9 +65,15 @@ namespace UrbanWildlifeRooms.UI
             }
             instruction.text = InstructionFor(nextStep, chinese);
             skipLabel.text = chinese ? "跳过" : "Skip";
-            spotlight.sizeDelta = nextStep == OnboardingStep.PracticeLayout || nextStep == OnboardingStep.PlaceFood
-                ? new Vector2(900f, 900f)
-                : new Vector2(180f, 180f);
+            SetBottomCenter(cardRect, 0f, nextStep == OnboardingStep.PracticeLayout ? 118f : 38f, 850f, 112f);
+            spotlight.gameObject.SetActive(target != null && nextStep != OnboardingStep.PlaceFood);
+            spotlight.sizeDelta = nextStep switch
+            {
+                OnboardingStep.SelectResident => new Vector2(96f, 96f),
+                OnboardingStep.InspectWaste => new Vector2(156f, 156f),
+                OnboardingStep.PracticeLayout => new Vector2(156f, 156f),
+                _ => new Vector2(96f, 96f)
+            };
             UpdateSpotlight();
         }
 
@@ -71,17 +82,26 @@ namespace UrbanWildlifeRooms.UI
             if (root != null && root.gameObject.activeSelf)
             {
                 UpdateSpotlight();
+                if (spotlight.gameObject.activeSelf)
+                {
+                    var pulse = 1f + Mathf.Sin(Time.unscaledTime * 4.2f) * 0.035f;
+                    spotlight.localScale = Vector3.one * pulse;
+                }
             }
         }
 
         private void UpdateSpotlight()
         {
-            if (step == OnboardingStep.PracticeLayout || step == OnboardingStep.PlaceFood || target == null)
+            if (!spotlight.gameObject.activeSelf || target == null)
             {
-                spotlight.anchoredPosition = Vector2.zero;
                 return;
             }
             var screen = worldCamera.WorldToScreenPoint(target.position + Vector3.up * 0.35f);
+            if (screen.z <= 0f)
+            {
+                spotlight.gameObject.SetActive(false);
+                return;
+            }
             RectTransformUtility.ScreenPointToLocalPointInRectangle(root, screen, worldCamera, out var local);
             spotlight.anchoredPosition = local;
         }
@@ -92,7 +112,7 @@ namespace UrbanWildlifeRooms.UI
             {
                 OnboardingStep.SelectResident => chinese ? "点击高亮居民，查看住处—办公室—餐饮路线。" : "Select the highlighted resident to reveal their home–office–food route.",
                 OnboardingStep.InspectWaste => chinese ? "点击高亮垃圾房，查看容量与下一次清运。" : "Select the highlighted waste room to inspect capacity and collection time.",
-                OnboardingStep.PracticeLayout => chinese ? "把一个高亮 1×1 房间放入托盘，再放回原位并确认。" : "Move one highlighted 1×1 room to the tray, return it, then confirm.",
+                OnboardingStep.PracticeLayout => chinese ? "把高亮的 1×1 房间拖到左侧托盘，再放回原位并确认。" : "Drag the highlighted 1×1 room to the tray on the left, return it, then confirm.",
                 _ => chinese ? "点击空地投喂一次；本次会正常消耗 1 资源点。" : "Place one food source on open ground; it costs the normal 1 resource point."
             };
         }

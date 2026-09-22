@@ -105,6 +105,36 @@ namespace UrbanWildlifeRooms.Core
             Begin();
         }
 
+#if UNITY_EDITOR
+        public void ShowVisualPreview(OnboardingStep previewStep)
+        {
+            if (runtime.AtDesktop)
+            {
+                runtime.StartNewRun(GameMode.Sandbox);
+            }
+            if (layout.IsEditing)
+            {
+                layout.CancelEditing();
+            }
+            layout.SetGuidedTargetRoom(null);
+            runtime.SetOnboardingOpen(true);
+            if (previewStep == OnboardingStep.PracticeLayout)
+            {
+                layout.SetGuidedTargetRoom(practiceTarget?.Spec.Id);
+                layout.EnterEditing();
+            }
+
+            var previewTarget = previewStep switch
+            {
+                OnboardingStep.SelectResident => citizen?.transform,
+                OnboardingStep.InspectWaste => wasteTarget?.VisualRoot,
+                OnboardingStep.PracticeLayout => practiceTarget?.VisualRoot,
+                _ => null
+            };
+            overlay.Show(previewStep, previewTarget, IsChinese());
+        }
+#endif
+
         public void Skip()
         {
             if (!Model.IsActive)
@@ -113,6 +143,7 @@ namespace UrbanWildlifeRooms.Core
             }
             if (layout.IsEditing)
             {
+                layout.SetGuidedTargetRoom(null);
                 layout.CancelEditing();
             }
             Model.Skip();
@@ -138,6 +169,7 @@ namespace UrbanWildlifeRooms.Core
             Model.Begin();
             sawTrayOccupied = false;
             DestroyRouteLine();
+            layout.SetGuidedTargetRoom(null);
             runtime.SetOnboardingOpen(true);
             ShowCurrentStep();
         }
@@ -161,6 +193,7 @@ namespace UrbanWildlifeRooms.Core
             }
             Model.CompleteStep(OnboardingStep.InspectWaste);
             DestroyRouteLine();
+            layout.SetGuidedTargetRoom(practiceTarget?.Spec.Id);
             layout.EnterEditing();
             ShowCurrentStep();
         }
@@ -197,6 +230,7 @@ namespace UrbanWildlifeRooms.Core
         {
             PlayerPrefs.SetInt(CompletedKey, 1);
             PlayerPrefs.Save();
+            layout.SetGuidedTargetRoom(null);
             runtime.SetOnboardingOpen(false);
             overlay.Show(OnboardingStep.Complete, null, IsChinese());
             DestroyRouteLine();
