@@ -650,46 +650,48 @@ namespace UrbanWildlifeRooms.Core
                     CreateTree(parent, new Vector3(-1.45f, 0f, 1.15f), 0.88f, false);
                     CreateTree(parent, new Vector3(1.22f, 0f, 1.22f), 0.78f, false);
                     CreateBush(parent, new Vector3(1.35f, 0f, -1.1f), 0.55f);
+                    CreateBench(parent, new Vector3(0.20f, 0f, -2.18f), 0f, "South Park Bench");
+                    CreateBench(parent, new Vector3(2.18f, 0f, 0.24f), 90f, "East Park Bench");
                     break;
                 case RoomType.Residence:
-                    CreateBox("Bed Marker", parent, corner, new Vector3(0.72f, 0.38f, 0.95f), new Color(0.93f, 0.83f, 0.79f));
-                    break;
                 case RoomType.Office:
-                    CreateBox("Desk Marker", parent, corner, new Vector3(0.92f, 0.34f, 0.48f), new Color(0.82f, 0.86f, 0.88f));
-                    CreateBox("Monitor Marker", parent, corner + new Vector3(0f, 0.30f, 0f), new Vector3(0.36f, 0.28f, 0.12f), UrbanPalette.Wall);
-                    break;
                 case RoomType.Canteen:
-                    CreateCylinder("Table Marker", parent, corner, new Vector3(0.72f, 0.18f, 0.72f), new Color(0.95f, 0.78f, 0.48f));
-                    break;
                 case RoomType.Supermarket:
-                    CreateBox("Shelf Marker", parent, corner, new Vector3(0.86f, 0.44f, 0.40f), new Color(0.92f, 0.72f, 0.29f));
-                    break;
                 case RoomType.Garage:
-                    CreateBox(
-                        "Car Marker",
+                    RoomInteriorVisualBuilder.Build(
                         parent,
-                        new Vector3(-width * 0.5f + 0.54f, 0.48f, depth * 0.5f - 0.58f),
-                        new Vector3(1.00f, 0.30f, 0.72f),
-                        new Color(0.30f, 0.61f, 0.82f));
+                        spec,
+                        width,
+                        depth,
+                        surfaceMaterial,
+                        generatedHideFlags);
                     break;
                 case RoomType.Trash:
                     var wasteVisual = parent.gameObject.AddComponent<WasteRoomLoadVisual>();
                     wasteVisual.Initialize(surfaceMaterial, generatedHideFlags);
                     break;
                 case RoomType.PigeonHabitat:
-                    CreateAnimalDot(parent, corner + new Vector3(-0.22f, 0f, 0f), new Color(0.72f, 0.74f, 0.80f), 0.18f);
-                    CreateAnimalDot(parent, corner + new Vector3(0.18f, 0f, 0.12f), new Color(0.55f, 0.59f, 0.67f), 0.18f);
-                    CreateAnimalDot(parent, corner + new Vector3(0.06f, 0f, -0.20f), new Color(0.82f, 0.82f, 0.84f), 0.16f);
+                    RoomInteriorVisualBuilder.Build(
+                        parent,
+                        spec,
+                        width,
+                        depth,
+                        surfaceMaterial,
+                        generatedHideFlags);
                     break;
                 case RoomType.OakHabitat:
                     CreateOakTreeLifecycleVisual(parent, corner, spec.StartsRecovering);
+                    CreateOakGroundDetails(parent, corner);
                     break;
                 case RoomType.ShrubHabitat:
-                    CreateBush(parent, corner, 0.58f);
-                    break;
                 case RoomType.FoxDen:
-                    CreateAnimalDot(parent, corner, new Color(0.89f, 0.39f, 0.20f), 0.32f);
-                    CreateAnimalDot(parent, corner + new Vector3(0.28f, 0f, -0.18f), new Color(0.78f, 0.27f, 0.16f), 0.28f);
+                    RoomInteriorVisualBuilder.Build(
+                        parent,
+                        spec,
+                        width,
+                        depth,
+                        surfaceMaterial,
+                        generatedHideFlags);
                     break;
             }
         }
@@ -821,6 +823,50 @@ namespace UrbanWildlifeRooms.Core
                     true,
                     generatedHideFlags);
             }
+        }
+
+        private void CreateBench(
+            Transform parent,
+            Vector3 localPosition,
+            float yRotation,
+            string objectName)
+        {
+            var bench = NewObject(objectName, parent).transform;
+            bench.localPosition = localPosition;
+            bench.localRotation = Quaternion.Euler(0f, yRotation, 0f);
+            var wood = new Color(0.50f, 0.31f, 0.17f);
+            var metal = new Color(0.18f, 0.21f, 0.21f);
+            CreateBox("Seat", bench, new Vector3(0f, 0.43f, 0f), new Vector3(0.82f, 0.11f, 0.28f), wood);
+            CreateBox("Back", bench, new Vector3(0f, 0.65f, 0.11f), new Vector3(0.82f, 0.34f, 0.08f), wood);
+            CreateBox("Left Leg", bench, new Vector3(-0.29f, 0.32f, 0f), new Vector3(0.07f, 0.25f, 0.21f), metal);
+            CreateBox("Right Leg", bench, new Vector3(0.29f, 0.32f, 0f), new Vector3(0.07f, 0.25f, 0.21f), metal);
+        }
+
+        private void CreateOakGroundDetails(Transform parent, Vector3 treeAnchor)
+        {
+            CreateCylinder(
+                "Squirrel Cache Hollow",
+                parent,
+                treeAnchor + new Vector3(0.20f, -0.07f, -0.24f),
+                new Vector3(0.11f, 0.025f, 0.11f),
+                new Color(0.16f, 0.12f, 0.08f));
+            var twig = CreateBox(
+                "Fallen Twig",
+                parent,
+                treeAnchor + new Vector3(-0.24f, -0.10f, -0.24f),
+                new Vector3(0.35f, 0.045f, 0.07f),
+                new Color(0.38f, 0.25f, 0.15f));
+            twig.transform.localRotation = Quaternion.Euler(0f, 24f, 0f);
+            UrbanVisualFactory.CreatePrimitive(
+                PrimitiveType.Sphere,
+                "Oak Stone",
+                parent,
+                treeAnchor + new Vector3(0.28f, -0.08f, 0.22f),
+                new Vector3(0.18f, 0.12f, 0.16f),
+                new Color(0.48f, 0.50f, 0.45f),
+                surfaceMaterial,
+                true,
+                generatedHideFlags);
         }
 
         private void CreatePond(Transform parent, Vector3 localPosition, float scale)
@@ -1129,13 +1175,13 @@ namespace UrbanWildlifeRooms.Core
             }
             var root = NewObject("Fox Population", generatedRoot).transform;
             var center = GridToWorld(den);
-            for (var index = 0; index < 2; index++)
+            for (var index = 0; index < AnimalPopulationDefaults.Foxes; index++)
             {
                 var foxObject = NewObject($"Fox {index + 1:00}", root);
                 var fox = foxObject.AddComponent<FoxDemoAgent>();
                 fox.Initialize(
                     surfaceMaterial,
-                    center + new Vector3(index == 0 ? -0.34f : 0.34f, 0.30f, index == 0 ? 0.18f : -0.18f),
+                    center + new Vector3(-0.18f, 0.30f, 0.12f),
                     new Vector2(0.34f, 0.34f),
                     generatedHideFlags,
                     44900 + index);

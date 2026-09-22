@@ -933,10 +933,10 @@ namespace UrbanWildlifeRooms.UI
             root.anchoredPosition = new Vector2(22f, 20f);
             root.sizeDelta = new Vector2(334f, 68f);
 
-            BuildPopulationChip(root, 0, WildlifeSpecies.Pigeon, 12, new Color(0.43f, 0.51f, 0.62f));
-            BuildPopulationChip(root, 1, WildlifeSpecies.Squirrel, 4, new Color(0.35f, 0.56f, 0.31f));
-            BuildPopulationChip(root, 2, WildlifeSpecies.Hedgehog, 2, new Color(0.78f, 0.55f, 0.25f));
-            BuildPopulationChip(root, 3, WildlifeSpecies.Fox, 2, new Color(0.76f, 0.34f, 0.18f));
+            BuildPopulationChip(root, 0, WildlifeSpecies.Pigeon, AnimalPopulationDefaults.Pigeons, new Color(0.43f, 0.51f, 0.62f));
+            BuildPopulationChip(root, 1, WildlifeSpecies.Squirrel, AnimalPopulationDefaults.Squirrels, new Color(0.35f, 0.56f, 0.31f));
+            BuildPopulationChip(root, 2, WildlifeSpecies.Hedgehog, AnimalPopulationDefaults.Hedgehogs, new Color(0.78f, 0.55f, 0.25f));
+            BuildPopulationChip(root, 3, WildlifeSpecies.Fox, AnimalPopulationDefaults.Foxes, new Color(0.76f, 0.34f, 0.18f));
         }
 
         private void BuildPopulationChip(Transform parent, int index, WildlifeSpecies species, int count, Color accent)

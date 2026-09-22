@@ -49,7 +49,7 @@ namespace UrbanWildlifeRooms.Data
             new("office-d", "办公室 D", RoomType.Office, 3, 6, 1, 1, true, "工作人流与资源点来源"),
             new("oak-d", "橡树 D", RoomType.OakHabitat, 4, 6, 1, 1, true, "松鼠庇护与自然食物"),
             new("shrub-c", "灌木 C", RoomType.ShrubHabitat, 5, 6, 1, 1, true, "刺猬庇护与夜间低风险路径"),
-            new("fox-den", "狐狸洞", RoomType.FoxDen, 6, 6, 1, 1, false, "两只狐狸的固定核心庇护")
+            new("fox-den", "狐狸洞", RoomType.FoxDen, 6, 6, 1, 1, false, "一只狐狸的固定核心庇护")
         };
 
         public static IReadOnlyList<RoomSpec> All => Rooms;

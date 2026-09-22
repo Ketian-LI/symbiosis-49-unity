@@ -344,8 +344,8 @@ appear on hover.
 - The implemented portraits are separate transparent resources in
   `Assets/Resources/UI/GameplayHud/`, one PNG per species, so that later skin
   replacement does not require changing the HUD layout code.
-- Initial populations are 12 pigeons, 4 squirrels, 2 hedgehogs and 2 foxes,
-  for 20 animals in total. The four pigeon habitat rooms conceptually support
+- Initial populations are 12 pigeons, 4 squirrels, 2 hedgehogs and 1 fox,
+  for 19 animals in total. The four pigeon habitat rooms conceptually support
   three starting pigeons each.
 - After a death, dim the relevant portrait and use its outer ring as the
   20-second respawn countdown.
@@ -577,16 +577,14 @@ appear on hover.
 - Use `Images/fox-den-rest-occupancy-sample-v01.png` as the approved
   selected-room comparison for the fox den's concealed resting state.
 - The first contextual chip remains the fox-den room type. The second chip
-  contains two small front-facing fox-head positions representing the den's two
-  underground resting hollows.
-- Use a muted graphite hollow fox-head silhouette for an unoccupied position
-  and a filled rust-orange head with cream cheeks for a fox currently resting
-  underground. Show zero, one or two filled heads without adding numerals or a
-  progress ring.
+  contains one front-facing fox-head position representing the den's single
+  underground resting hollow.
+- Use a muted graphite hollow fox-head silhouette when it is unoccupied and a
+  filled rust-orange head with cream cheeks while the fox is resting
+  underground. Do not add a numeral or progress ring.
 - Use the separate transparent pictograms
-  `Images/UI/status-fox-rest-0-v01.png`,
-  `Images/UI/status-fox-rest-1-v01.png` and
-  `Images/UI/status-fox-rest-2-v01.png` over the shared circular chip backing.
+  `Images/UI/status-fox-rest-0-v01.png` and
+  `Images/UI/status-fox-rest-1-v01.png` over the shared circular chip backing.
 - The status counts only foxes currently concealed inside the den. Foxes moving
   visibly through the room or elsewhere on the board do not fill a position.
   Show the occupancy chip only while the fox den is selected.
@@ -1693,10 +1691,10 @@ appear on hover.
   restrained ivy and one main circular drainage-pipe entrance with a smaller
   sheltered side recess.
 - Include one main round pipe entrance, a smaller sheltered side recess,
-  weeds and low shrubs around the concrete edge, and two distinct resting
-  hollows lined with leaves and discarded cardboard for the two foxes.
-- Keep a concealed route between the resting area and the room opening so both
-  foxes can leave without overlapping. The entrance remains visibly open and
+  weeds and low shrubs around the concrete edge, and one resting hollow lined
+  with leaves and discarded cardboard for the fox.
+- Keep a concealed route between the resting area and the room opening so the
+  fox can leave cleanly. The entrance remains visibly open and
   readable from the straight-down game camera.
 - The den is fixed at the board's bottom-right corner and retains the universal
   four-door 1x1 shell. The fixed foundation's bottom and right boundary covers
