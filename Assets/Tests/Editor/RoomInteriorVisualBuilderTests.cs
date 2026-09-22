@@ -179,6 +179,11 @@ namespace UrbanWildlifeRooms.Tests.Editor
                         {
                             Assert.That(names.Any(name => name.Contains("Drainage Culvert")), Is.True, spec.Id);
                             Assert.That(names.Any(name => name.Contains("Retaining Wall")), Is.True, spec.Id);
+                            Assert.That(names.Count(name => name.StartsWith("Culvert Ring Stone")), Is.EqualTo(10), spec.Id);
+                            var recess = root.GetComponentsInChildren<Renderer>()
+                                .Single(item => item.name == "Sheltered Side Recess");
+                            Assert.That(recess.transform.localPosition.x, Is.GreaterThan(0f),
+                                "The smaller side recess belongs on the right-hand wall.");
                             Assert.That(names.Any(name => name.Contains("Earth Mound")), Is.False, spec.Id);
                         }
                     }
@@ -213,6 +218,9 @@ namespace UrbanWildlifeRooms.Tests.Editor
                         Assert.That(names.Count(name => name == "Open Pigeon Loft"), Is.EqualTo(1), spec.Id);
                         Assert.That(names.Count(name => name.StartsWith("Open Pigeon Loft Nest Box")), Is.EqualTo(4), spec.Id);
                         Assert.That(names.Count(name => name.EndsWith("Perch Rail")), Is.EqualTo(2), spec.Id);
+                        Assert.That(names, Does.Contain("Ventilation Turbine Dome"), spec.Id);
+                        Assert.That(names, Does.Contain("Open Pigeon Loft Rear Roof"), spec.Id);
+                        Assert.That(names, Does.Contain("Water Dish Rim"), spec.Id);
                         Assert.That(names, Does.Contain("Water Dish"), spec.Id);
                         Assert.That(names, Does.Contain("Separate Seed Tray"), spec.Id);
                     }
@@ -245,6 +253,8 @@ namespace UrbanWildlifeRooms.Tests.Editor
                             material, HideFlags.None);
                         var renderers = root.GetComponentsInChildren<Renderer>();
                         Assert.That(renderers.Count(item => item.name.Contains("Crown")), Is.EqualTo(8), spec.Id);
+                        Assert.That(renderers.Count(item => item.name.Contains("Ground Foliage")), Is.EqualTo(8), spec.Id);
+                        Assert.That(renderers.Count(item => item.name.Contains("Petal")), Is.EqualTo(10), spec.Id);
                         foreach (var crown in renderers.Where(item => item.name.Contains("Crown")))
                         {
                             Assert.That(crown.GetComponent<MeshFilter>().sharedMesh.name,

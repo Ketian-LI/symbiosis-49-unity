@@ -31,10 +31,10 @@ namespace UrbanWildlifeRooms.Presentation
                 RoomType.Supermarket => Hex("E4B85A"),
                 RoomType.Garage => Hex("5C6874"),
                 RoomType.Trash => Hex("A95441"),
-                RoomType.PigeonHabitat => Hex("A2764E"),
+                RoomType.PigeonHabitat => Hex("7D898A"),
                 RoomType.OakHabitat => Hex("46764F"),
-                RoomType.ShrubHabitat => Hex("78A65A"),
-                RoomType.FoxDen => Hex("765066"),
+                RoomType.ShrubHabitat => Hex("8EA66B"),
+                RoomType.FoxDen => Hex("988469"),
                 _ => Color.gray
             };
         }
