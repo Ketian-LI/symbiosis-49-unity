@@ -100,6 +100,61 @@ namespace UrbanWildlifeRooms.Tests.Editor
             }
         }
 
+        [Test]
+        public void GarageLaneLeavesPedestrianDoorsSeparateFromTrafficPortals()
+        {
+            foreach (var spec in RoomLayoutData.All.Where(item => item.Type == RoomType.Garage))
+            {
+                var laneX = GarageVisualLayout.LaneCenterX(spec.Width);
+                var doorways = RoomShellLayout.CreateDoorways(spec.Width, spec.Height, CellSize, RoomGap);
+                foreach (var doorway in doorways.Where(item => item.Edge is RoomEdge.North or RoomEdge.South))
+                {
+                    var separation = Mathf.Abs(laneX - doorway.LocalCenter.x);
+                    Assert.That(separation, Is.GreaterThan(0.40f + 0.36f),
+                        $"{spec.Id} vehicle portal overlaps a pedestrian door.");
+                }
+            }
+        }
+
+        [Test]
+        public void GarageAndFoxDenUseApprovedRoomObjects()
+        {
+            var material = UrbanVisualFactory.CreateSurfaceMaterial();
+            try
+            {
+                foreach (var spec in RoomLayoutData.All.Where(item => item.Type is RoomType.Garage or RoomType.FoxDen))
+                {
+                    var room = new GameObject($"Object Check {spec.Id}");
+                    try
+                    {
+                        var root = RoomInteriorVisualBuilder.Build(room.transform, spec,
+                            spec.Width * CellSize - RoomGap, spec.Height * CellSize - RoomGap,
+                            material, HideFlags.None);
+                        var names = root.GetComponentsInChildren<Renderer>().Select(item => item.name).ToArray();
+                        if (spec.Type == RoomType.Garage)
+                        {
+                            Assert.That(names.Any(name => name.Contains("Tool") || name.Contains("Tyre")), Is.False, spec.Id);
+                            Assert.That(names.Any(name => name.Contains("Lane Edge")), Is.True, spec.Id);
+                        }
+                        else
+                        {
+                            Assert.That(names.Any(name => name.Contains("Drainage Culvert")), Is.True, spec.Id);
+                            Assert.That(names.Any(name => name.Contains("Retaining Wall")), Is.True, spec.Id);
+                            Assert.That(names.Any(name => name.Contains("Earth Mound")), Is.False, spec.Id);
+                        }
+                    }
+                    finally
+                    {
+                        Object.DestroyImmediate(room);
+                    }
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(material);
+            }
+        }
+
         private static IReadOnlyList<RoomObstacle2D> BuildObstacles(Transform root)
         {
             var obstacles = new List<RoomObstacle2D>();

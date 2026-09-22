@@ -72,7 +72,7 @@ namespace UrbanWildlifeRooms.Presentation
                     BuildSupermarket(context, primary, secondary);
                     break;
                 case RoomType.Garage:
-                    BuildGarage(context, primary, secondary, HasSecondCluster(width, depth));
+                    BuildGarage(context, spec, depth);
                     break;
                 case RoomType.PigeonHabitat:
                     BuildPigeonHabitat(context, primary, secondary, HasSecondCluster(width, depth));
@@ -208,42 +208,23 @@ namespace UrbanWildlifeRooms.Presentation
             }
         }
 
-        private static void BuildGarage(
-            BuildContext context,
-            Vector3 anchor,
-            Vector3 secondary,
-            bool extended)
+        private static void BuildGarage(BuildContext context, RoomSpec spec, float depth)
         {
-            context.Box("Tool Cabinet", anchor + new Vector3(0f, 0.54f, 0f), new Vector3(0.68f, 0.58f, 0.36f), Terracotta);
-            for (var row = 0; row < 3; row++)
+            // Painted markings only: traffic is spawned separately, and no workshop clutter
+            // should occupy the pedestrian doors or imply that cars are permanently parked.
+            var laneX = GarageVisualLayout.LaneCenterX(spec.Width);
+            var markZ = Mathf.Min(0.70f, depth * 0.5f - 1.0f);
+            for (var side = -1; side <= 1; side += 2)
             {
-                context.Box(
-                    $"Tool Drawer {row + 1}",
-                    anchor + new Vector3(0f, 0.36f + row * 0.16f, -0.195f),
-                    new Vector3(0.58f, 0.105f, 0.025f),
-                    row == 0 ? Graphite : Color.Lerp(Terracotta, Cream, 0.10f));
+                for (var end = -1; end <= 1; end += 2)
+                {
+                    context.Box(
+                        $"Lane Edge {side} {end}",
+                        new Vector3(laneX + side * 0.48f, 0.254f, end * markZ),
+                        new Vector3(0.045f, 0.012f, 0.28f),
+                        SoftGrey);
+                }
             }
-
-            context.Box("Tool Cabinet Top", anchor + new Vector3(0f, 0.86f, 0f), new Vector3(0.72f, 0.07f, 0.39f), Graphite);
-            context.Box("Wrench", anchor + new Vector3(-0.17f, 0.92f, 0f), new Vector3(0.25f, 0.035f, 0.055f), SoftGrey, 18f);
-            context.Box("Hammer", anchor + new Vector3(0.17f, 0.92f, 0f), new Vector3(0.22f, 0.035f, 0.055f), Ochre, -20f);
-
-            if (!extended)
-            {
-                return;
-            }
-
-            for (var index = 0; index < 3; index++)
-            {
-                context.Cylinder(
-                    $"Tyre {index + 1}",
-                    secondary + new Vector3((index - 1) * 0.21f, 0.49f, 0f),
-                    new Vector3(0.18f, 0.075f, 0.18f),
-                    Graphite,
-                    new Vector3(90f, 0f, 0f));
-            }
-
-            context.Box("Tyre Rack", secondary + new Vector3(0f, 0.31f, 0f), new Vector3(0.70f, 0.08f, 0.30f), SoftGrey);
         }
 
         private static void BuildPigeonHabitat(
@@ -319,21 +300,22 @@ namespace UrbanWildlifeRooms.Presentation
 
         private static void BuildFoxDen(BuildContext context, Vector3 anchor)
         {
-            context.Sphere("Den Earth Mound", anchor + new Vector3(0f, 0.48f, 0.06f), new Vector3(0.80f, 0.52f, 0.62f), DarkWood);
-            context.Cylinder(
-                "Den Entrance Rim",
-                anchor + new Vector3(0f, 0.48f, -0.27f),
-                new Vector3(0.27f, 0.065f, 0.27f),
-                WarmWood,
-                new Vector3(90f, 0f, 0f));
-            context.Cylinder(
-                "Den Entrance Hollow",
-                anchor + new Vector3(0f, 0.48f, -0.32f),
-                new Vector3(0.20f, 0.04f, 0.20f),
-                new Color(0.08f, 0.065f, 0.055f),
-                new Vector3(90f, 0f, 0f));
-            context.Box("Dry Bedding", anchor + new Vector3(0f, 0.31f, -0.23f), new Vector3(0.38f, 0.035f, 0.18f), Ochre, 7f);
-            context.Box("Small Bone", anchor + new Vector3(0.27f, 0.32f, -0.18f), new Vector3(0.22f, 0.035f, 0.055f), Cream, -22f);
+            // A small urban retaining wall and open drainage culvert replace the
+            // previous woodland-like dirt mound. All pieces remain in one corner.
+            var brick = new Color(0.47f, 0.33f, 0.27f);
+            var stone = new Color(0.59f, 0.58f, 0.50f);
+            var hollow = new Color(0.075f, 0.075f, 0.07f);
+            context.Box("Retaining Wall Stone Cap", anchor + new Vector3(0f, 0.64f, 0.20f), new Vector3(0.80f, 0.13f, 0.26f), stone);
+            context.Box("Retaining Wall Brick", anchor + new Vector3(0f, 0.40f, 0.20f), new Vector3(0.78f, 0.38f, 0.23f), brick);
+            context.Box("Retaining Wall Left Stone", anchor + new Vector3(-0.30f, 0.47f, 0.06f), new Vector3(0.16f, 0.42f, 0.36f), stone);
+            context.Box("Retaining Wall Right Stone", anchor + new Vector3(0.30f, 0.45f, 0.07f), new Vector3(0.16f, 0.38f, 0.34f), stone);
+            context.Cylinder("Open Drainage Culvert", anchor + new Vector3(-0.09f, 0.27f, -0.12f), new Vector3(0.23f, 0.014f, 0.23f), hollow);
+            context.Cylinder("Culvert Concrete Ring", anchor + new Vector3(-0.09f, 0.267f, -0.12f), new Vector3(0.30f, 0.008f, 0.30f), stone);
+            context.Cylinder("Culvert Dark Opening", anchor + new Vector3(-0.09f, 0.283f, -0.12f), new Vector3(0.21f, 0.006f, 0.21f), hollow);
+            context.Box("Sheltered Side Recess", anchor + new Vector3(0.25f, 0.27f, -0.12f), new Vector3(0.16f, 0.014f, 0.19f), hollow);
+            context.Box("Resting Cardboard", anchor + new Vector3(-0.19f, 0.29f, -0.31f), new Vector3(0.28f, 0.018f, 0.12f), Ochre, 12f);
+            context.Box("Resting Leaves", anchor + new Vector3(0.18f, 0.29f, -0.30f), new Vector3(0.20f, 0.018f, 0.12f), WarmWood, -18f);
+            context.Box("Ivy at Culvert", anchor + new Vector3(-0.29f, 0.69f, 0.12f), new Vector3(0.17f, 0.08f, 0.14f), DeepLeaf, 23f);
         }
 
         private static Transform NewGroup(string name, Transform parent, HideFlags hideFlags)

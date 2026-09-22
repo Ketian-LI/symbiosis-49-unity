@@ -325,6 +325,10 @@ namespace UrbanWildlifeRooms.Core
                 generatedHideFlags);
 
             BuildRoomShell(shellRoot, spec.Width, spec.Height, width, depth);
+            if (spec.Type == RoomType.Garage)
+            {
+                GarageVisualLayout.BuildShellDetails(shellRoot, spec, depth, surfaceMaterial, generatedHideFlags);
+            }
             if (spec.Type == RoomType.Trash)
             {
                 BuildWasteRoomFloorDetails(shellRoot);

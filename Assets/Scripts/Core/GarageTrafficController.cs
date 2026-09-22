@@ -113,20 +113,34 @@ namespace UrbanWildlifeRooms.Core
             root.transform.SetParent(garage.VisualRoot, false);
             var forward = vehicleIndex % 2 == 0;
             var halfDepth = garage.Spec.Height * WorldScaleStandards.CellSizeMeters * 0.5f - 0.24f;
-            var start = new Vector3(0f, 0.34f, forward ? halfDepth : -halfDepth);
-            var end = new Vector3(0f, 0.34f, forward ? -halfDepth : halfDepth);
-            UrbanVisualFactory.CreatePrimitive(
-                PrimitiveType.Cube,
-                "Low-poly Traffic Car",
-                root.transform,
-                Vector3.zero,
-                new Vector3(0.72f, 0.42f, 1.08f),
-                forward ? new Color(0.78f, 0.22f, 0.13f) : new Color(0.22f, 0.42f, 0.62f),
-                material,
-                true,
-                generatedHideFlags);
+            var laneX = GarageVisualLayout.LaneCenterX(garage.Spec.Width);
+            var start = new Vector3(laneX, 0.34f, forward ? halfDepth : -halfDepth);
+            var end = new Vector3(laneX, 0.34f, forward ? -halfDepth : halfDepth);
+            var paint = forward ? new Color(0.78f, 0.29f, 0.20f) : new Color(0.24f, 0.45f, 0.62f);
+            CarPart("Car Body", new Vector3(0f, 0.07f, 0f), new Vector3(0.72f, 0.27f, 1.10f), paint);
+            CarPart("Car Cabin", new Vector3(0f, 0.27f, -0.05f), new Vector3(0.57f, 0.21f, 0.55f), paint);
+            CarPart("Front Windscreen", new Vector3(0f, 0.28f, 0.238f), new Vector3(0.48f, 0.12f, 0.045f),
+                new Color(0.28f, 0.38f, 0.43f));
+            CarPart("Rear Window", new Vector3(0f, 0.28f, -0.34f), new Vector3(0.46f, 0.11f, 0.045f),
+                new Color(0.28f, 0.38f, 0.43f));
+            for (var side = -1; side <= 1; side += 2)
+            {
+                for (var axle = -1; axle <= 1; axle += 2)
+                {
+                    CarPart($"Wheel {side} {axle}", new Vector3(side * 0.39f, -0.055f, axle * 0.34f),
+                        new Vector3(0.10f, 0.16f, 0.19f), new Color(0.12f, 0.13f, 0.15f));
+                }
+                CarPart($"Headlight {side}", new Vector3(side * 0.25f, 0.09f, 0.563f),
+                    new Vector3(0.11f, 0.07f, 0.025f), new Color(0.97f, 0.89f, 0.67f));
+            }
             root.AddComponent<GarageVehicleVisual>().Initialize(start, end, 1.25f);
             VehicleSpawned?.Invoke(garage.Spec.Id);
+
+            void CarPart(string name, Vector3 position, Vector3 scale, Color color)
+            {
+                UrbanVisualFactory.CreatePrimitive(PrimitiveType.Cube, name, root.transform,
+                    position, scale, color, material, true, generatedHideFlags);
+            }
         }
     }
 }
