@@ -38,7 +38,12 @@ namespace UrbanWildlifeRooms.UI
         private Text dayNumber;
         private GameObject pauseOverlay;
         private GameObject pausePanel;
+        private RectTransform pausePanelRect;
         private GameObject settingsPanel;
+        private GameObject restartPauseAction;
+        private RectTransform desktopPauseActionRect;
+        private GameObject restartConfirmationPanel;
+        private bool restartConfirmationOpen;
         private GameObject cameraCalibrationOverlay;
         private RawImage cameraCalibrationPreview;
         private Button cameraCalibrationStartButton;
@@ -78,8 +83,13 @@ namespace UrbanWildlifeRooms.UI
         private Text continueLabel;
         private Text settingsLabel;
         private Text languageLabel;
+        private Text restartLabel;
         private Text desktopLabel;
         private Text helpLabel;
+        private Text restartConfirmationTitle;
+        private Text restartConfirmationMessage;
+        private Text restartConfirmLabel;
+        private Text restartCancelLabel;
         private Text settingsTitle;
         private Text volumeLabel;
         private Image muteIcon;
@@ -400,6 +410,35 @@ namespace UrbanWildlifeRooms.UI
         {
             runtime.ContinueGame();
             onboardingController?.Replay();
+        }
+
+        private void BeginSandboxRestartConfirmation()
+        {
+            if (runtime == null || runtime.Mode != GameMode.Sandbox || !runtime.HasActiveRun)
+            {
+                return;
+            }
+
+            restartConfirmationOpen = true;
+            Refresh();
+        }
+
+        private void CancelSandboxRestart()
+        {
+            restartConfirmationOpen = false;
+            Refresh();
+        }
+
+        private void ConfirmSandboxRestart()
+        {
+            if (runtime == null || runtime.Mode != GameMode.Sandbox)
+            {
+                CancelSandboxRestart();
+                return;
+            }
+
+            restartConfirmationOpen = false;
+            runtime.RestartRun();
         }
 
         public void SetCameraCalibrationPreview(Texture previewTexture)
@@ -1193,7 +1232,8 @@ namespace UrbanWildlifeRooms.UI
             pause.Image.sprite = PauseMenuVisualCatalog.GetSprite(PauseMenuVisual.Panel);
             pause.Image.preserveAspect = false;
             pausePanel = pause.GameObject;
-            SetCenter(pause.RectTransform, 460f, 660f);
+            pausePanelRect = pause.RectTransform;
+            SetCenter(pausePanelRect, 460f, 750f);
             pauseTitle = CreateText(pause.Transform, "Pause Title", "暂停", 34, TextAnchor.MiddleCenter, Graphite, FontStyle.Bold);
             SetTopCenter(pauseTitle.rectTransform, 0f, 54f, 340f, 52f);
 
@@ -1221,12 +1261,65 @@ namespace UrbanWildlifeRooms.UI
                 PauseMenuVisual.ContinueIcon,
                 402f,
                 ReplayOnboarding);
+            restartLabel = BuildPauseAction(
+                pause.Transform,
+                "Restart Endless Mode",
+                PauseMenuVisual.RestartIcon,
+                492f,
+                BeginSandboxRestartConfirmation);
+            restartPauseAction = restartLabel.transform.parent.gameObject;
             desktopLabel = BuildPauseAction(
                 pause.Transform,
                 "Return Desktop",
                 PauseMenuVisual.ReturnDesktopIcon,
-                492f,
+                582f,
                 runtime.ReturnToDesktop);
+            desktopPauseActionRect = desktopLabel.transform.parent.GetComponent<RectTransform>();
+
+            var restartConfirmation = CreatePanel(
+                "Restart Confirmation Panel",
+                overlay.Transform,
+                Color.white);
+            restartConfirmation.Image.sprite = PauseMenuVisualCatalog.GetSprite(PauseMenuVisual.SettingsPanel);
+            restartConfirmation.Image.preserveAspect = false;
+            restartConfirmationPanel = restartConfirmation.GameObject;
+            SetCenter(restartConfirmation.RectTransform, 560f, 360f);
+            restartConfirmationTitle = CreateText(
+                restartConfirmation.Transform,
+                "Restart Confirmation Title",
+                "重新开始？",
+                32,
+                TextAnchor.MiddleCenter,
+                Graphite,
+                FontStyle.Bold);
+            SetTopCenter(restartConfirmationTitle.rectTransform, 0f, 42f, 430f, 50f);
+            restartConfirmationMessage = CreateText(
+                restartConfirmation.Transform,
+                "Restart Confirmation Message",
+                string.Empty,
+                19,
+                TextAnchor.MiddleCenter,
+                Graphite,
+                FontStyle.Normal);
+            SetTopCenter(restartConfirmationMessage.rectTransform, 0f, 108f, 440f, 78f);
+            var cancelRestartButton = CreateButton(
+                restartConfirmation.Transform,
+                "Cancel Restart",
+                string.Empty,
+                19,
+                CancelSandboxRestart);
+            SetTopCenter(cancelRestartButton.GetComponent<RectTransform>(), -108f, 230f, 190f, 62f);
+            restartCancelLabel = cancelRestartButton.GetComponentInChildren<Text>();
+            var confirmRestartButton = CreateButton(
+                restartConfirmation.Transform,
+                "Confirm Restart",
+                string.Empty,
+                19,
+                ConfirmSandboxRestart);
+            SetTopCenter(confirmRestartButton.GetComponent<RectTransform>(), 108f, 230f, 190f, 62f);
+            confirmRestartButton.GetComponent<Image>().color = new Color(0.72f, 0.30f, 0.22f, 1f);
+            restartConfirmLabel = confirmRestartButton.GetComponentInChildren<Text>();
+            restartConfirmationPanel.SetActive(false);
 
             var settings = CreatePanel("Settings Paper Panel", overlay.Transform, Color.white);
             settings.Image.sprite = PauseMenuVisualCatalog.GetSprite(PauseMenuVisual.SettingsPanel);
@@ -1853,10 +1946,26 @@ namespace UrbanWildlifeRooms.UI
             }
 
             var desktopSettingsOpen = runtime.AtDesktop && runtime.SettingsOpen;
+            var pauseVisible = runtime.PauseMenuOpen && !runtime.SettingsOpen &&
+                               !runtime.AtDesktop && !runtime.ResultsOpen;
+            var sandboxRestartVisible = runtime.Mode == GameMode.Sandbox && runtime.HasActiveRun;
+            if (!pauseVisible || !sandboxRestartVisible)
+            {
+                restartConfirmationOpen = false;
+            }
             pauseOverlay.SetActive(
                 (runtime.PauseMenuOpen && !runtime.AtDesktop && !runtime.ResultsOpen) ||
                 desktopSettingsOpen);
-            pausePanel.SetActive(runtime.PauseMenuOpen && !runtime.SettingsOpen && !runtime.AtDesktop);
+            pausePanel.SetActive(pauseVisible && !restartConfirmationOpen);
+            restartConfirmationPanel.SetActive(pauseVisible && restartConfirmationOpen);
+            restartPauseAction.SetActive(sandboxRestartVisible);
+            SetCenter(pausePanelRect, 460f, sandboxRestartVisible ? 750f : 660f);
+            SetTopCenter(
+                desktopPauseActionRect,
+                0f,
+                sandboxRestartVisible ? 582f : 492f,
+                350f,
+                82f);
             settingsPanel.SetActive(runtime.SettingsOpen);
             var calibrationOpen = cameraCalibrationOverlay != null && runtime.CameraCalibrationOpen;
             if (cameraCalibrationOverlay != null)
@@ -2100,7 +2209,14 @@ namespace UrbanWildlifeRooms.UI
             settingsLabel.text = chinese ? "设置" : "Settings";
             languageLabel.text = chinese ? "语言 · 中文" : "Language · English";
             helpLabel.text = chinese ? "重新查看引导" : "Replay Tutorial";
+            restartLabel.text = chinese ? "重新开始" : "Restart";
             desktopLabel.text = chinese ? "回到桌面" : "Return to Desktop";
+            restartConfirmationTitle.text = chinese ? "重新开始？" : "Restart?";
+            restartConfirmationMessage.text = chinese
+                ? "当前无尽模式进度将被清除，\n并从第1天、初始布局与初始资源重新开始。"
+                : "Your current Endless Mode progress will be cleared.\nRestart from day one with the initial layout and resources.";
+            restartConfirmLabel.text = chinese ? "确认重新开始" : "Restart";
+            restartCancelLabel.text = chinese ? "取消" : "Cancel";
             settingsTitle.text = chinese ? "设置" : "Settings";
             volumeLabel.text = chinese ? "游戏音量" : "Master Volume";
             muteLabel.text = runtime.Muted

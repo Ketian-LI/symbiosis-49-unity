@@ -140,6 +140,39 @@ namespace UrbanWildlifeRooms.Tests.Editor
         }
 
         [Test]
+        public void ActiveSandboxRunCanRestartFromPauseWithoutChangingMode()
+        {
+            var runtimeObject = new GameObject("Sandbox Pause Restart Test");
+            try
+            {
+                var runtime = runtimeObject.AddComponent<GameRuntimeController>();
+                var restartRequested = false;
+                runtime.RestartRequested += () => restartRequested = true;
+                runtime.Initialize(null);
+                runtime.StartNewRun(GameMode.Sandbox);
+                runtime.Clock.Advance(SimulationClockModel.CycleSeconds * 2.4d, 1f);
+                runtime.TogglePauseMenu();
+
+                Assert.That(runtime.PauseMenuOpen, Is.True);
+                Assert.That(runtime.Clock.DayNumber, Is.EqualTo(3));
+
+                runtime.RestartRun();
+
+                Assert.That(restartRequested, Is.True);
+                Assert.That(runtime.Mode, Is.EqualTo(GameMode.Sandbox));
+                Assert.That(runtime.HasActiveRun, Is.True);
+                Assert.That(runtime.PauseMenuOpen, Is.False);
+                Assert.That(runtime.Clock.DayNumber, Is.EqualTo(1));
+                Assert.That(runtime.SpeedMultiplier, Is.EqualTo(1));
+            }
+            finally
+            {
+                Time.timeScale = 1f;
+                Object.DestroyImmediate(runtimeObject);
+            }
+        }
+
+        [Test]
         public void FailedRunCannotResumeFromMainMenu()
         {
             var runtimeObject = new GameObject("Completed Run Menu Test");

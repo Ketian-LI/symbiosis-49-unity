@@ -932,18 +932,24 @@ appear on hover.
 ## Esc menu
 
 - Pressing Esc pauses the simulation and softly dims or defocuses the board.
-- The central pause panel contains: Continue, Settings, Language and Return to
-  Desktop.
+- The central pause panel contains Continue, Settings, Language, Replay
+  Tutorial and Return to Desktop. Endless Mode additionally includes Restart;
+  Timed Mode does not show this action.
 - Menu actions use an icon plus a short text label to avoid ambiguous clicks.
 - Use the approved text-free transparent panel backing
   `Images/UI/pause-menu-panel-v01.png`. The pause title, four actions and every
   interaction state remain separate runtime layers.
-- Continue, Settings, Language and Return to Desktop share the approved
+- Continue, Settings, Language, Replay Tutorial, Restart and Return to Desktop share the approved
   text-free backing `Images/UI/pause-menu-button-base-v01.png`; each action uses
   a separate pictogram and live bilingual label above this layer.
 - Continue uses the approved single-triangle paper pictogram
   `Images/UI/pause-menu-continue-icon-v01.png`. Do not use the rejected circular
   replay-like draft.
+- Endless Mode Restart uses the separate clockwise folded-paper arrow
+  `Images/UI/pause-menu-restart-icon-v01.png`. Selecting it opens a bilingual
+  confirmation panel; only confirmation clears the active run and restores day
+  one, the initial layout and the initial resource balance. Cancelling leaves
+  the run untouched.
 - Pause-menu Settings uses the separate light-on-dark gear pictogram
   `Images/UI/pause-menu-settings-icon-v01.png`; do not reuse the dark-on-light
   main-menu version on the navy button.
