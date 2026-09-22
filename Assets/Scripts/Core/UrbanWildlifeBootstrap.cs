@@ -651,8 +651,8 @@ namespace UrbanWildlifeRooms.Core
             {
                 case RoomType.CentralPark:
                     CreatePond(parent, new Vector3(-0.8f, 0.34f, -0.72f), 1.05f);
-                    CreateTree(parent, new Vector3(-1.45f, 0f, 1.15f), 0.88f, false);
-                    CreateTree(parent, new Vector3(1.22f, 0f, 1.22f), 0.78f, false);
+                    CreateTree(parent, new Vector3(-1.45f, 0f, 1.15f), 1.12f, false);
+                    CreateTree(parent, new Vector3(1.22f, 0f, 1.22f), 1.02f, false);
                     CreateBush(parent, new Vector3(1.35f, 0f, -1.1f), 0.55f);
                     CreateBench(parent, new Vector3(0.20f, 0f, -2.18f), 0f, "South Park Bench");
                     CreateBench(parent, new Vector3(2.18f, 0f, 0.24f), 90f, "East Park Bench");
@@ -755,23 +755,8 @@ namespace UrbanWildlifeRooms.Core
 
         private void CreateTree(Transform parent, Vector3 localPosition, float scale, bool seedling)
         {
-            CreateCylinder(
-                seedling ? "Young Trunk" : "Tree Trunk",
-                parent,
-                localPosition + new Vector3(0f, 0.22f * scale, 0f),
-                new Vector3(0.18f * scale, 0.40f * scale, 0.18f * scale),
-                new Color(0.42f, 0.28f, 0.18f));
-
-            UrbanVisualFactory.CreatePrimitive(
-                PrimitiveType.Sphere,
-                seedling ? "Seedling Crown" : "Tree Crown",
-                parent,
-                localPosition + new Vector3(0f, 0.60f * scale, 0f),
-                Vector3.one * scale,
-                seedling ? new Color(0.47f, 0.72f, 0.43f) : new Color(0.26f, 0.58f, 0.35f),
-                surfaceMaterial,
-                true,
-                generatedHideFlags);
+            LowPolyTreeVisualBuilder.Build(
+                parent, localPosition, scale, seedling, surfaceMaterial, generatedHideFlags);
         }
 
         private void CreateOakTreeLifecycleVisual(
@@ -789,13 +774,13 @@ namespace UrbanWildlifeRooms.Core
                 new Color(0.44f, 0.32f, 0.20f));
 
             var sapling = NewObject("Sapling Tree", parent);
-            CreateTree(sapling.transform, localPosition, 0.27f, true);
+            CreateTree(sapling.transform, localPosition, 0.30f, true);
 
             var young = NewObject("Young Tree", parent);
-            CreateTree(young.transform, localPosition, 0.47f, true);
+            CreateTree(young.transform, localPosition, 0.50f, true);
 
             var mature = NewObject("Mature Oak Tree", parent);
-            CreateTree(mature.transform, localPosition, 0.72f, false);
+            CreateTree(mature.transform, localPosition, 0.82f, false);
 
             visual.Initialize(
                 felled,
