@@ -219,8 +219,8 @@ namespace UrbanWildlifeRooms.Presentation
             context.Box("Wall Chilled Case", northWest + new Vector3(0f, 0.55f, 0f), new Vector3(0.64f, 0.62f, 0.32f), SoftGrey);
             context.Box("Chilled Case Glass", northWest + new Vector3(0f, 0.58f, -0.17f), new Vector3(0.55f, 0.48f, 0.025f), Teal);
             context.Box("Chilled Case Handle", northWest + new Vector3(0.20f, 0.58f, -0.19f), new Vector3(0.025f, 0.22f, 0.025f), Cream);
-            context.Box("Carton Stack Bottom", northWest + new Vector3(0.43f, 0.34f, 0.03f), new Vector3(0.18f, 0.18f, 0.18f), WarmWood);
-            context.Box("Carton Stack Top", northWest + new Vector3(0.43f, 0.52f, 0.03f), new Vector3(0.16f, 0.17f, 0.16f), Ochre);
+            context.Box("Carton Stack Bottom", northWest + new Vector3(-0.32f, 0.34f, -0.25f), new Vector3(0.18f, 0.18f, 0.18f), WarmWood);
+            context.Box("Carton Stack Top", northWest + new Vector3(-0.32f, 0.52f, -0.25f), new Vector3(0.16f, 0.17f, 0.16f), Ochre);
 
             context.Box("Produce Crate", northEast + new Vector3(0f, 0.42f, 0f), new Vector3(0.68f, 0.28f, 0.42f), WarmWood);
             context.Sphere("Produce Greens", northEast + new Vector3(-0.18f, 0.62f, 0f), Vector3.one * 0.17f, Leaf);
@@ -233,8 +233,8 @@ namespace UrbanWildlifeRooms.Presentation
             context.Box("Checkout Counter", southEast + new Vector3(0f, 0.48f, 0f), new Vector3(0.72f, 0.38f, 0.40f), Cream);
             context.Box("Checkout Register", southEast + new Vector3(0.16f, 0.75f, 0f), new Vector3(0.25f, 0.20f, 0.20f), Graphite);
             context.Box("Card Terminal", southEast + new Vector3(-0.19f, 0.72f, -0.08f), new Vector3(0.12f, 0.10f, 0.16f), Teal);
-            context.Box("Closed Waste Container", southEast + new Vector3(-0.47f, 0.39f, 0f), new Vector3(0.16f, 0.26f, 0.17f), DeepLeaf);
-            context.Box("Waste Container Lid", southEast + new Vector3(-0.47f, 0.54f, 0f), new Vector3(0.19f, 0.04f, 0.20f), Graphite);
+            context.Box("Closed Waste Container", southEast + new Vector3(0.36f, 0.39f, 0f), new Vector3(0.16f, 0.26f, 0.17f), DeepLeaf);
+            context.Box("Waste Container Lid", southEast + new Vector3(0.36f, 0.54f, 0f), new Vector3(0.19f, 0.04f, 0.20f), Graphite);
         }
 
         private static void BuildStockedShelf(
