@@ -1198,6 +1198,7 @@ namespace UrbanWildlifeRooms.Core
                 generatedHideFlags,
                 pigeonAgents,
                 squirrelAgents);
+            hud.BindPlayerFeeding(playerFeedingController);
         }
 
         private void BuildGarageTraffic()

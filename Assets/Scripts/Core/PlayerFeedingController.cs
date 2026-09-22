@@ -14,6 +14,7 @@ namespace UrbanWildlifeRooms.Core
         private readonly Dictionary<string, PlayerFoodSourceVisual> visuals = new();
         private readonly List<PigeonDemoAgent> pigeons = new();
         private readonly List<SquirrelDemoAgent> squirrels = new();
+        private readonly PlayerFeedingInteractionModel interaction = new();
         private GameRuntimeController runtime;
         private ResourceEconomyController economy;
         private RoomLayoutEditorController layoutEditor;
@@ -30,8 +31,16 @@ namespace UrbanWildlifeRooms.Core
         public event Action<string> FoodExpired;
         public event Action<string> InvalidPlacementAttempted;
         public event Action<IWildlifeLayoutAgent> AnimalAte;
+        public event Action FeedingModeChanged;
 
         public PlayerFoodSourceModel Model { get; private set; }
+        public bool FeedingModeActive => interaction.IsActive;
+        public bool CanActivateFeedingMode =>
+            InteractionAllowed &&
+            Model != null &&
+            Model.PlayerPlacedCount < PlayerFoodSourceModel.MaximumSources &&
+            economy != null &&
+            economy.Balance >= ResourceEconomyModel.FeedActionCost;
         public int PrimarySquirrelCachePortions => squirrels.Count > 0
             ? squirrels[0].CachePortions
             : 0;
@@ -67,6 +76,7 @@ namespace UrbanWildlifeRooms.Core
             squirrels.AddRange((squirrelAgents ?? Array.Empty<SquirrelDemoAgent>()).Where(agent => agent != null));
             Model = new PlayerFoodSourceModel();
             runtime.RestartRequested += HandleRestartRequested;
+            runtime.StateChanged += HandleRuntimeStateChanged;
         }
 
         private void OnDestroy()
@@ -74,6 +84,7 @@ namespace UrbanWildlifeRooms.Core
             if (runtime != null)
             {
                 runtime.RestartRequested -= HandleRestartRequested;
+                runtime.StateChanged -= HandleRuntimeStateChanged;
             }
         }
 
@@ -90,7 +101,13 @@ namespace UrbanWildlifeRooms.Core
                 FoodExpired?.Invoke(expiredId);
             }
 
-            if (!runtime.HasActiveRun || runtime.IsPaused && !runtime.OnboardingInteractionAllowed || layoutEditor.IsEditing ||
+            if (FeedingModeActive && Input.GetMouseButtonDown(1))
+            {
+                CancelFeedingMode();
+                return;
+            }
+
+            if (!FeedingModeActive || !InteractionAllowed ||
                 !Input.GetMouseButtonDown(0) ||
                 EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
             {
@@ -98,6 +115,36 @@ namespace UrbanWildlifeRooms.Core
             }
 
             TryHandleFeedingClick(Input.mousePosition);
+        }
+
+        public bool ToggleFeedingMode()
+        {
+            var wasActive = FeedingModeActive;
+            var active = interaction.Toggle(CanActivateFeedingMode);
+            if (wasActive != active)
+            {
+                FeedingModeChanged?.Invoke();
+            }
+            return active;
+        }
+
+        public bool ActivateFeedingMode()
+        {
+            if (!interaction.TryActivate(CanActivateFeedingMode))
+            {
+                return false;
+            }
+
+            FeedingModeChanged?.Invoke();
+            return true;
+        }
+
+        public void CancelFeedingMode()
+        {
+            if (interaction.Cancel())
+            {
+                FeedingModeChanged?.Invoke();
+            }
         }
 
         public bool TryPlaceFood(string roomId, Vector3 worldPosition)
@@ -183,9 +230,28 @@ namespace UrbanWildlifeRooms.Core
                 return;
             }
 
-            TryPlaceFood(
+            if (TryPlaceFood(
                 roomView.Spec.Id,
-                hit.point + Vector3.up * 0.16f);
+                hit.point + Vector3.up * 0.16f))
+            {
+                interaction.CompletePlacement();
+                FeedingModeChanged?.Invoke();
+            }
+        }
+
+        private bool InteractionAllowed =>
+            runtime != null &&
+            runtime.HasActiveRun &&
+            (!runtime.IsPaused || runtime.OnboardingInteractionAllowed) &&
+            layoutEditor != null &&
+            !layoutEditor.IsEditing;
+
+        private void HandleRuntimeStateChanged()
+        {
+            if (FeedingModeActive && !InteractionAllowed)
+            {
+                CancelFeedingMode();
+            }
         }
 
         private void DispatchAnimals(PlayerFoodSourceState source)
@@ -407,6 +473,7 @@ namespace UrbanWildlifeRooms.Core
 
         private void HandleRestartRequested()
         {
+            CancelFeedingMode();
             Model?.Reset();
             foreach (var squirrel in squirrels)
             {

@@ -127,6 +127,14 @@ namespace UrbanWildlifeRooms.UI
         private Text researchBackLabel;
         private Button oakPlantButton;
         private Text oakPlantLabel;
+        private PlayerFeedingController playerFeeding;
+        private GameObject feedingModeButtonObject;
+        private Button feedingModeButton;
+        private Image feedingModeButtonBackground;
+        private Image feedingModeIcon;
+        private Text feedingModeLabel;
+        private GameObject feedingModeHint;
+        private Text feedingModeHintLabel;
 
         public void Build(
             Camera camera,
@@ -202,6 +210,10 @@ namespace UrbanWildlifeRooms.UI
             {
                 researchSession.StateChanged -= RefreshResearchSession;
             }
+            if (playerFeeding != null)
+            {
+                playerFeeding.FeedingModeChanged -= RefreshFeedingControls;
+            }
         }
 
         public void BindLayoutEditor(RoomLayoutEditorController editor)
@@ -261,6 +273,27 @@ namespace UrbanWildlifeRooms.UI
                 generatedHideFlags,
                 runtime,
                 controller);
+        }
+
+        public void BindPlayerFeeding(PlayerFeedingController controller)
+        {
+            if (playerFeeding != null)
+            {
+                playerFeeding.FeedingModeChanged -= RefreshFeedingControls;
+            }
+
+            playerFeeding = controller;
+            if (playerFeeding == null || gameplayRoot == null)
+            {
+                return;
+            }
+
+            if (feedingModeButton == null)
+            {
+                BuildFeedingControls();
+            }
+            playerFeeding.FeedingModeChanged += RefreshFeedingControls;
+            RefreshFeedingControls();
         }
 
         public void BindResidentPopulation(
@@ -1078,6 +1111,78 @@ namespace UrbanWildlifeRooms.UI
             editToolbar.SetActive(false);
         }
 
+        private void BuildFeedingControls()
+        {
+            feedingModeButton = CreateButton(
+                gameplayRoot,
+                "Activate Feeding Mode",
+                string.Empty,
+                17,
+                () => playerFeeding?.ToggleFeedingMode());
+            feedingModeButtonObject = feedingModeButton.gameObject;
+            feedingModeButtonBackground = feedingModeButton.GetComponent<Image>();
+            SetTopLeft(feedingModeButton.GetComponent<RectTransform>(), 84f, 102f, 154f, 52f);
+
+            feedingModeLabel = feedingModeButton.GetComponentInChildren<Text>();
+            feedingModeLabel.alignment = TextAnchor.MiddleCenter;
+            SetRect(feedingModeLabel.rectTransform, 48f, 2f, 100f, 48f);
+
+            feedingModeIcon = CreateImage(
+                feedingModeButton.transform,
+                "Food Dish Pictogram",
+                RoomContextVisualCatalog.GetSprite(RoomContextVisual.FoodAvailable));
+            feedingModeIcon.preserveAspect = true;
+            feedingModeIcon.raycastTarget = false;
+            SetRect(feedingModeIcon.rectTransform, 8f, 8f, 36f, 36f);
+
+            var hint = CreatePanel(
+                "Feeding Mode Instruction",
+                gameplayRoot,
+                new Color(0.10f, 0.12f, 0.14f, 0.94f));
+            feedingModeHint = hint.GameObject;
+            SetTopLeft(hint.RectTransform, 248f, 102f, 410f, 52f);
+            feedingModeHintLabel = CreateText(
+                hint.Transform,
+                "Feeding Instruction",
+                string.Empty,
+                16,
+                TextAnchor.MiddleCenter,
+                WarmPaper,
+                FontStyle.Bold);
+            Stretch(feedingModeHintLabel.rectTransform, 8f);
+            feedingModeHint.SetActive(false);
+        }
+
+        private void RefreshFeedingControls()
+        {
+            if (feedingModeButton == null || playerFeeding == null || runtime == null)
+            {
+                return;
+            }
+
+            var visible = !runtime.AtDesktop && !runtime.ResultsOpen && !runtime.LayoutEditing;
+            var active = playerFeeding.FeedingModeActive;
+            var available = playerFeeding.CanActivateFeedingMode;
+            feedingModeButtonObject.SetActive(visible);
+            feedingModeButton.interactable = active || available;
+            feedingModeButtonBackground.color = active
+                ? Cyan
+                : available
+                    ? Graphite
+                    : MutedTrack;
+            feedingModeIcon.color = active ? Graphite : Color.white;
+            feedingModeLabel.color = active ? Graphite : WarmPaper;
+
+            var chinese = runtime.Language == InterfaceLanguage.Chinese;
+            feedingModeLabel.text = active
+                ? (chinese ? "取消" : "Cancel")
+                : (chinese ? "投喂 −1" : "Feed −1");
+            feedingModeHintLabel.text = chinese
+                ? "投喂模式：点击房间空地投放 · 右键取消"
+                : "Feeding mode: click open ground · right-click to cancel";
+            feedingModeHint.SetActive(visible && active);
+        }
+
         private void BuildPauseMenu()
         {
             var overlay = CreatePanel("Esc Overlay", transform, new Color(0.04f, 0.055f, 0.065f, 0.74f));
@@ -1801,6 +1906,7 @@ namespace UrbanWildlifeRooms.UI
             RefreshCameraRecognitionFeedback();
             RefreshResearchSession();
             RefreshLanguage();
+            RefreshFeedingControls();
         }
 
         private void DetectDesktopStateChange()

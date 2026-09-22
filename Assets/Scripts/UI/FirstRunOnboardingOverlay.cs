@@ -113,7 +113,9 @@ namespace UrbanWildlifeRooms.UI
                 OnboardingStep.SelectResident => chinese ? "点击高亮居民，查看住处—办公室—餐饮路线。" : "Select the highlighted resident to reveal their home–office–food route.",
                 OnboardingStep.InspectWaste => chinese ? "点击高亮垃圾房，查看容量与下一次清运。" : "Select the highlighted waste room to inspect capacity and collection time.",
                 OnboardingStep.PracticeLayout => chinese ? "把高亮的 1×1 房间拖到左侧托盘，再放回原位并确认。" : "Drag the highlighted 1×1 room to the tray on the left, return it, then confirm.",
-                _ => chinese ? "点击空地投喂一次；本次会正常消耗 1 资源点。" : "Place one food source on open ground; it costs the normal 1 resource point."
+                _ => chinese
+                    ? "先点击左上角“投喂 −1”，再点击房间空地；右键可取消。"
+                    : "Select Feed −1 at the top left, then click open ground; right-click to cancel."
             };
         }
 

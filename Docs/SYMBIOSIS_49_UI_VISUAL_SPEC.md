@@ -1108,15 +1108,19 @@ appear on hover.
 - A pigeon walks to food when it is nearby in the same room. It takes flight
   when the food is in another room or more than one board cell away, while
   still following open connections between spaces.
-- During normal play, clicking a floor area that is not occupied by a wall or
-  furniture places a small food source at that position and costs one resource
-  point.
+- During normal play, feeding uses a deliberate two-step interaction. The
+  player first activates the top-left `Feed -1` control, then clicks a floor
+  area that is not occupied by a wall or furniture. A successful placement
+  creates one small food source, costs one resource point and automatically
+  exits feeding mode. Clicking the control again or right-clicking cancels.
 - Clicking an invalid feeding position does not create food and briefly shows
   an orange prohibited marker at the attempted position; it does not spend a
   resource point. Feeding is unavailable at a zero balance.
-- Pointer interaction priority is animal selection/follow, interactive objects
-  and UI, then feeding on otherwise empty valid ground. Feeding is disabled
-  while the layout editor or pause menu is open.
+- Outside feeding mode, board clicks only select animals, rooms or interactive
+  objects and can never spend a resource point. While feeding mode is active,
+  pointer interaction priority remains animal selection/follow and interactive
+  objects before otherwise empty valid ground. Feeding is disabled while the
+  layout editor or pause menu is open.
 - Nearby pigeons detect the player-placed food, fly to it, land and eat it.
 - Each food source attracts at most five nearby pigeons, prioritising the
   closest pigeons that are not already travelling to or eating another food
@@ -1480,8 +1484,9 @@ appear on hover.
 - Step three opens layout mode and asks the player to place one highlighted 1x1
   room in the holding tray and return it to its original position. Because the
   final layout is unchanged, this practice step costs no resource points.
-- Step four highlights valid open ground and asks the player to place one food
-  source. This is a real feeding action and costs the normal one resource point.
+- Step four asks the player to activate the top-left feeding control, then
+  highlights valid open ground and asks them to place one food source. This is
+  a real feeding action and costs the normal one resource point.
 - After the four interactions complete, remove the overlay and start game time.
   Each step uses a spotlight, a highlighted edge, a gesture icon and no more
   than one short sentence.
