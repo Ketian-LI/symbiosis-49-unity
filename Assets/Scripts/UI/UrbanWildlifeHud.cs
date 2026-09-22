@@ -1848,9 +1848,8 @@ namespace UrbanWildlifeRooms.UI
             }
 
             var cameraBuild = BuildVariantSettings.UsesCameraRecognition;
-            var continuing = runtime.HasResumableRun;
-            var showSandbox = !continuing || runtime.Mode == GameMode.Sandbox;
-            var showResearch = !cameraBuild && (!continuing || runtime.Mode == GameMode.Research);
+            var showSandbox = true;
+            var showResearch = !cameraBuild;
             desktopSandboxCard.SetActive(showSandbox);
             desktopResearchCard.SetActive(showResearch);
 
