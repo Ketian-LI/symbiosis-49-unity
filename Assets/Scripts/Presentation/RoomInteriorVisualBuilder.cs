@@ -60,7 +60,7 @@ namespace UrbanWildlifeRooms.Presentation
             switch (spec.Type)
             {
                 case RoomType.Residence:
-                    BuildResidence(context, primary, secondary, HasSecondCluster(width, depth));
+                    BuildResidence(context, primary, secondary);
                     break;
                 case RoomType.Office:
                     BuildOffice(context, primary, secondary);
@@ -69,7 +69,7 @@ namespace UrbanWildlifeRooms.Presentation
                     BuildFoodShop(context, width, depth);
                     break;
                 case RoomType.Supermarket:
-                    BuildSupermarket(context, primary, secondary);
+                    BuildSupermarket(context, width, depth);
                     break;
                 case RoomType.Garage:
                     BuildGarage(context, spec, depth);
@@ -91,8 +91,7 @@ namespace UrbanWildlifeRooms.Presentation
         private static void BuildResidence(
             BuildContext context,
             Vector3 anchor,
-            Vector3 secondary,
-            bool extended)
+            Vector3 secondary)
         {
             context.Box("Bed Frame", anchor + new Vector3(0f, 0.34f, 0f), new Vector3(0.74f, 0.16f, 0.90f), WarmWood);
             context.Box("Mattress", anchor + new Vector3(0f, 0.47f, -0.01f), new Vector3(0.68f, 0.15f, 0.80f), Cream);
@@ -106,17 +105,33 @@ namespace UrbanWildlifeRooms.Presentation
             context.Sphere("Wardrobe Handle A", secondary + new Vector3(-0.035f, 0.64f, -0.22f), Vector3.one * 0.055f, Ochre);
             context.Sphere("Wardrobe Handle B", secondary + new Vector3(0.035f, 0.64f, -0.22f), Vector3.one * 0.055f, Ochre);
 
-            if (extended)
-            {
-                context.Box("Bedside Cabinet", anchor + new Vector3(-0.25f, 0.68f, 0.22f), new Vector3(0.18f, 0.16f, 0.18f), DarkWood);
-                context.Cylinder("Bedside Lamp", anchor + new Vector3(-0.25f, 0.83f, 0.22f), new Vector3(0.07f, 0.09f, 0.07f), Ochre);
-            }
+            context.Box("Bedside Cabinet", anchor + new Vector3(-0.40f, 0.49f, 0.17f), new Vector3(0.18f, 0.30f, 0.20f), DarkWood);
+            context.Cylinder("Bedside Lamp", anchor + new Vector3(-0.40f, 0.74f, 0.17f), new Vector3(0.08f, 0.08f, 0.08f), Cream);
+
+            var southWest = new Vector3(anchor.x, 0f, -anchor.z);
+            var southEast = new Vector3(secondary.x, 0f, -secondary.z);
+            context.Cylinder("Small Oval Rug", southWest + new Vector3(0f, 0.252f, 0f), new Vector3(0.68f, 0.006f, 0.44f), Linen);
+            context.Cylinder("One Person Round Table", southWest + new Vector3(-0.08f, 0.47f, 0f), new Vector3(0.32f, 0.045f, 0.32f), WarmWood);
+            context.Cylinder("Round Table Pedestal", southWest + new Vector3(-0.08f, 0.35f, 0f), new Vector3(0.055f, 0.10f, 0.055f), DarkWood);
+            context.Box("Single Chair Seat", southWest + new Vector3(0.24f, 0.39f, 0f), new Vector3(0.17f, 0.11f, 0.17f), context.Accent);
+            context.Box("Single Chair Back", southWest + new Vector3(0.32f, 0.53f, 0f), new Vector3(0.05f, 0.31f, 0.18f), WarmWood);
+            BuildPottedPlant(context, southEast, "Residence Plant");
         }
 
         private static void BuildOffice(BuildContext context, Vector3 anchor, Vector3 secondary)
         {
             BuildWorkstation(context, anchor, "Workstation A");
             BuildWorkstation(context, secondary, "Workstation B");
+
+            var southWest = new Vector3(anchor.x, 0f, -anchor.z);
+            var southEast = new Vector3(secondary.x, 0f, -secondary.z);
+            context.Box("Shared Filing Cabinet", southWest + new Vector3(0f, 0.45f, 0f), new Vector3(0.56f, 0.42f, 0.30f), Cream);
+            context.Box("Filing Drawer A", southWest + new Vector3(0f, 0.41f, -0.16f), new Vector3(0.47f, 0.12f, 0.025f), SoftGrey);
+            context.Box("Filing Drawer B", southWest + new Vector3(0f, 0.56f, -0.16f), new Vector3(0.47f, 0.12f, 0.025f), SoftGrey);
+            context.Box("Compact Printer", southWest + new Vector3(0f, 0.74f, 0f), new Vector3(0.27f, 0.16f, 0.22f), Graphite);
+            context.Box("Printer Paper", southWest + new Vector3(0f, 0.83f, 0.04f), new Vector3(0.18f, 0.025f, 0.13f), Color.white);
+            context.Cylinder("Waste Paper Basket", southWest + new Vector3(-0.28f, 0.35f, 0.30f), new Vector3(0.12f, 0.10f, 0.12f), Graphite);
+            BuildPottedPlant(context, southEast, "Office Plant");
         }
 
         private static void BuildWorkstation(BuildContext context, Vector3 anchor, string name)
@@ -137,6 +152,15 @@ namespace UrbanWildlifeRooms.Presentation
             context.Box($"{name} Chair", anchor + new Vector3(0f, 0.44f, -0.23f), new Vector3(0.34f, 0.20f, 0.20f), context.Accent);
         }
 
+        private static void BuildPottedPlant(BuildContext context, Vector3 anchor, string name)
+        {
+            context.Cylinder($"{name} Pot", anchor + new Vector3(0f, 0.36f, 0f), new Vector3(0.15f, 0.12f, 0.15f), Terracotta);
+            context.Box($"{name} Stem", anchor + new Vector3(0f, 0.57f, 0f), new Vector3(0.04f, 0.24f, 0.04f), DeepLeaf);
+            context.Sphere($"{name} Leaf A", anchor + new Vector3(-0.10f, 0.65f, 0.02f), new Vector3(0.18f, 0.11f, 0.13f), Leaf);
+            context.Sphere($"{name} Leaf B", anchor + new Vector3(0.10f, 0.68f, 0.01f), new Vector3(0.18f, 0.11f, 0.13f), DeepLeaf);
+            context.Sphere($"{name} Leaf C", anchor + new Vector3(0f, 0.72f, -0.09f), new Vector3(0.13f, 0.11f, 0.17f), Leaf);
+        }
+
         private static void BuildFoodShop(BuildContext context, float width, float depth)
         {
             var northWest = Corner(width, depth, -1f, 1f);
@@ -153,6 +177,13 @@ namespace UrbanWildlifeRooms.Presentation
             context.Box("Sink", anchor + new Vector3(0.22f, 0.79f, 0f), new Vector3(0.27f, 0.055f, 0.23f), Graphite);
             context.Box("Sink Basin", anchor + new Vector3(0.22f, 0.83f, 0f), new Vector3(0.20f, 0.025f, 0.16f), Teal);
             context.Box("Extraction Hood", anchor + new Vector3(0f, 0.96f, 0.17f), new Vector3(0.46f, 0.27f, 0.045f), SoftGrey);
+            context.Box("Low Kitchen Divider", anchor + new Vector3(0f, 0.46f, -0.34f), new Vector3(0.75f, 0.36f, 0.07f), WarmWood);
+            context.Box("Under-counter Refrigerator", anchor + new Vector3(0.22f, 0.43f, -0.18f), new Vector3(0.22f, 0.27f, 0.06f), SoftGrey);
+            context.Box("Refrigerator Handle", anchor + new Vector3(0.29f, 0.48f, -0.22f), new Vector3(0.025f, 0.13f, 0.025f), Graphite);
+            context.Box("Host Order Station", anchor + new Vector3(0.25f, 0.79f, -0.24f), new Vector3(0.20f, 0.13f, 0.08f), Graphite);
+            context.Box("Host Order Screen", anchor + new Vector3(0.25f, 0.80f, -0.29f), new Vector3(0.15f, 0.08f, 0.02f), Teal);
+            context.Box("Closed Food Waste Bin", anchor + new Vector3(-0.34f, 0.39f, 0.29f), new Vector3(0.17f, 0.29f, 0.18f), DeepLeaf);
+            context.Box("Food Waste Bin Lid", anchor + new Vector3(-0.34f, 0.55f, 0.29f), new Vector3(0.20f, 0.045f, 0.20f), Graphite);
 
             BuildDiningTable(context, northEast, "Dining Table A");
             BuildDiningTable(context, southWest, "Dining Table B");
@@ -169,20 +200,41 @@ namespace UrbanWildlifeRooms.Presentation
             context.Box($"{name} Seat B", anchor + new Vector3(0.25f, 0.38f, 0f), new Vector3(0.17f, 0.16f, 0.23f), context.Accent);
             context.Cylinder($"{name} Plate A", anchor + new Vector3(-0.10f, 0.59f, 0f), new Vector3(0.08f, 0.012f, 0.08f), Color.white);
             context.Cylinder($"{name} Plate B", anchor + new Vector3(0.10f, 0.59f, 0f), new Vector3(0.08f, 0.012f, 0.08f), Color.white);
+            context.Cylinder($"{name} Cup A", anchor + new Vector3(-0.10f, 0.61f, 0.10f), new Vector3(0.04f, 0.05f, 0.04f), Cream);
+            context.Cylinder($"{name} Cup B", anchor + new Vector3(0.10f, 0.61f, 0.10f), new Vector3(0.04f, 0.05f, 0.04f), Cream);
+            context.Box($"{name} Napkin", anchor + new Vector3(0f, 0.59f, -0.12f), new Vector3(0.12f, 0.01f, 0.07f), Linen);
         }
 
-        private static void BuildSupermarket(BuildContext context, Vector3 anchor, Vector3 secondary)
+        private static void BuildSupermarket(BuildContext context, float width, float depth)
         {
-            BuildStockedShelf(context, anchor, "Produce Shelf", Leaf, Ochre);
-            BuildStockedShelf(context, secondary, "Pantry Shelf", Terracotta, Cream);
+            var northWest = Corner(width, depth, -1f, 1f);
+            var northEast = Corner(width, depth, 1f, 1f);
+            var southWest = Corner(width, depth, -1f, -1f);
+            var southEast = Corner(width, depth, 1f, -1f);
 
-            var southWest = new Vector3(anchor.x, 0f, -anchor.z);
-            var southEast = new Vector3(secondary.x, 0f, -secondary.z);
-            context.Box("Produce Crate", southWest + new Vector3(0f, 0.42f, 0f), new Vector3(0.68f, 0.28f, 0.42f), WarmWood);
-            context.Sphere("Produce Greens", southWest + new Vector3(-0.18f, 0.62f, 0f), Vector3.one * 0.17f, Leaf);
-            context.Sphere("Produce Fruit", southWest + new Vector3(0.17f, 0.61f, 0f), Vector3.one * 0.15f, Terracotta);
+            // Two central gondolas leave routes around both ends and keep all six doors clear.
+            BuildStockedShelf(context, new Vector3(-0.82f, 0f, 0f), "Central Gondola A", Leaf, Ochre);
+            BuildStockedShelf(context, new Vector3(0.82f, 0f, 0f), "Central Gondola B", Terracotta, Cream);
+
+            context.Box("Wall Chilled Case", northWest + new Vector3(0f, 0.55f, 0f), new Vector3(0.64f, 0.62f, 0.32f), SoftGrey);
+            context.Box("Chilled Case Glass", northWest + new Vector3(0f, 0.58f, -0.17f), new Vector3(0.55f, 0.48f, 0.025f), Teal);
+            context.Box("Chilled Case Handle", northWest + new Vector3(0.20f, 0.58f, -0.19f), new Vector3(0.025f, 0.22f, 0.025f), Cream);
+            context.Box("Carton Stack Bottom", northWest + new Vector3(0.43f, 0.34f, 0.03f), new Vector3(0.18f, 0.18f, 0.18f), WarmWood);
+            context.Box("Carton Stack Top", northWest + new Vector3(0.43f, 0.52f, 0.03f), new Vector3(0.16f, 0.17f, 0.16f), Ochre);
+
+            context.Box("Produce Crate", northEast + new Vector3(0f, 0.42f, 0f), new Vector3(0.68f, 0.28f, 0.42f), WarmWood);
+            context.Sphere("Produce Greens", northEast + new Vector3(-0.18f, 0.62f, 0f), Vector3.one * 0.17f, Leaf);
+            context.Sphere("Produce Fruit", northEast + new Vector3(0.17f, 0.61f, 0f), Vector3.one * 0.15f, Terracotta);
+
+            context.Box("Shopping Basket Stack", southWest + new Vector3(0.04f, 0.37f, 0f), new Vector3(0.33f, 0.22f, 0.25f), Ochre);
+            context.Box("Basket Rim", southWest + new Vector3(0.04f, 0.50f, 0f), new Vector3(0.37f, 0.035f, 0.29f), DarkWood);
+            BuildPottedPlant(context, southWest + new Vector3(-0.27f, 0f, 0f), "Supermarket Plant");
+
             context.Box("Checkout Counter", southEast + new Vector3(0f, 0.48f, 0f), new Vector3(0.72f, 0.38f, 0.40f), Cream);
             context.Box("Checkout Register", southEast + new Vector3(0.16f, 0.75f, 0f), new Vector3(0.25f, 0.20f, 0.20f), Graphite);
+            context.Box("Card Terminal", southEast + new Vector3(-0.19f, 0.72f, -0.08f), new Vector3(0.12f, 0.10f, 0.16f), Teal);
+            context.Box("Closed Waste Container", southEast + new Vector3(-0.47f, 0.39f, 0f), new Vector3(0.16f, 0.26f, 0.17f), DeepLeaf);
+            context.Box("Waste Container Lid", southEast + new Vector3(-0.47f, 0.54f, 0f), new Vector3(0.19f, 0.04f, 0.20f), Graphite);
         }
 
         private static void BuildStockedShelf(

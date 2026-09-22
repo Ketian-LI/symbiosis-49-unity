@@ -101,6 +101,45 @@ namespace UrbanWildlifeRooms.Tests.Editor
         }
 
         [Test]
+        public void EverydayRoomsContainTheApprovedFunctionalObjects()
+        {
+            var requiredNames = new Dictionary<RoomType, string[]>
+            {
+                [RoomType.Residence] = new[] { "Bed Frame", "Bedside Cabinet", "Wardrobe", "One Person Round Table", "Single Chair Seat", "Residence Plant Pot" },
+                [RoomType.Office] = new[] { "Workstation A Desk Top", "Workstation B Desk Top", "Shared Filing Cabinet", "Compact Printer", "Waste Paper Basket", "Office Plant Pot" },
+                [RoomType.Canteen] = new[] { "Kitchen Counter", "Low Kitchen Divider", "Under-counter Refrigerator", "Host Order Station", "Dining Table A", "Dining Table B", "Wall Booth Seat", "Closed Food Waste Bin" },
+                [RoomType.Supermarket] = new[] { "Central Gondola A", "Central Gondola B", "Wall Chilled Case", "Produce Crate", "Checkout Counter", "Card Terminal", "Shopping Basket Stack", "Closed Waste Container" }
+            };
+            var material = UrbanVisualFactory.CreateSurfaceMaterial();
+            try
+            {
+                foreach (var spec in RoomLayoutData.All.Where(item => requiredNames.ContainsKey(item.Type)))
+                {
+                    var room = new GameObject($"Objects {spec.Id}");
+                    try
+                    {
+                        var root = RoomInteriorVisualBuilder.Build(room.transform, spec,
+                            spec.Width * CellSize - RoomGap, spec.Height * CellSize - RoomGap,
+                            material, HideFlags.None);
+                        var names = new HashSet<string>(root.GetComponentsInChildren<Renderer>().Select(item => item.name));
+                        foreach (var required in requiredNames[spec.Type])
+                        {
+                            Assert.That(names.Contains(required), Is.True, $"{spec.Id} is missing {required}.");
+                        }
+                    }
+                    finally
+                    {
+                        Object.DestroyImmediate(room);
+                    }
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(material);
+            }
+        }
+
+        [Test]
         public void GarageLaneLeavesPedestrianDoorsSeparateFromTrafficPortals()
         {
             foreach (var spec in RoomLayoutData.All.Where(item => item.Type == RoomType.Garage))
