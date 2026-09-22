@@ -329,6 +329,10 @@ namespace UrbanWildlifeRooms.Core
             {
                 BuildCentralParkGroundDetails(shellRoot);
             }
+            if (spec.Type == RoomType.ShrubHabitat)
+            {
+                BuildShrubGroundRoute(shellRoot, spec.Id);
+            }
             if (spec.Type == RoomType.Garage)
             {
                 GarageVisualLayout.BuildShellDetails(shellRoot, spec, depth, surfaceMaterial, generatedHideFlags);
@@ -739,6 +743,37 @@ namespace UrbanWildlifeRooms.Core
                     (start + end) * 0.5f + new Vector3(0f, 0.248f, 0f),
                     new Vector3(0.43f, 0.014f, direction.magnitude + 0.20f), color);
                 segment.transform.localRotation = Quaternion.LookRotation(direction, Vector3.up);
+            }
+        }
+
+        private void BuildShrubGroundRoute(Transform parent, string roomId)
+        {
+            var waypoints = roomId switch
+            {
+                "shrub-b" => new[]
+                {
+                    new Vector3(0.12f, 0f, 1.27f), new Vector3(-0.22f, 0f, 0.52f),
+                    new Vector3(0.20f, 0f, -0.38f), new Vector3(-0.10f, 0f, -1.27f)
+                },
+                "shrub-c" => new[]
+                {
+                    new Vector3(-0.13f, 0f, 1.27f), new Vector3(-0.25f, 0f, 0.38f),
+                    new Vector3(-0.10f, 0f, -0.48f), new Vector3(0f, 0f, -1.27f)
+                },
+                _ => new[]
+                {
+                    new Vector3(-0.12f, 0f, 1.27f), new Vector3(0.12f, 0f, 0.45f),
+                    new Vector3(0.24f, 0f, -0.37f), new Vector3(0f, 0f, -1.27f)
+                }
+            };
+            for (var index = 1; index < waypoints.Length; index++)
+            {
+                var direction = waypoints[index] - waypoints[index - 1];
+                var path = CreateBox($"{roomId} Ground Route {index}", parent,
+                    (waypoints[index] + waypoints[index - 1]) * 0.5f + new Vector3(0f, 0.249f, 0f),
+                    new Vector3(0.28f, 0.014f, direction.magnitude + 0.08f),
+                    index % 2 == 0 ? new Color(0.65f, 0.57f, 0.43f) : new Color(0.70f, 0.61f, 0.46f));
+                path.transform.localRotation = Quaternion.LookRotation(direction, Vector3.up);
             }
         }
 

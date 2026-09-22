@@ -382,9 +382,10 @@ namespace UrbanWildlifeRooms.Presentation
             };
             for (var index = 0; index < offsets.Length; index++)
             {
-                context.Sphere($"{name} Crown {index + 1}", anchor + offsets[index] * size,
-                    new Vector3(0.36f, 0.33f, 0.34f) * size,
-                    index % 2 == 0 ? Leaf : DeepLeaf);
+                context.FacetedFoliage($"{name} Crown {index + 1}", anchor + offsets[index] * size,
+                    new Vector3(0.50f, 0.40f, 0.46f) * size,
+                    index % 2 == 0 ? Leaf : DeepLeaf,
+                    index * 27f - 19f);
             }
         }
 
@@ -408,9 +409,9 @@ namespace UrbanWildlifeRooms.Presentation
             context.Box("Resting Cardboard", restingCorner + new Vector3(-0.10f, 0.275f, 0f), new Vector3(0.25f, 0.018f, 0.17f), Ochre, 12f);
             context.Box("Resting Leaves", restingCorner + new Vector3(0.10f, 0.288f, 0.05f), new Vector3(0.18f, 0.018f, 0.13f), WarmWood, -18f);
             context.Box("Ivy at Culvert", anchor + new Vector3(-0.29f, 0.69f, 0.12f), new Vector3(0.17f, 0.08f, 0.14f), DeepLeaf, 23f);
-            context.Sphere("Culvert Edge Weed A", anchor + new Vector3(-0.27f, 0.36f, -0.29f), new Vector3(0.20f, 0.20f, 0.16f), Leaf);
-            context.Sphere("Culvert Edge Weed B", anchor + new Vector3(0.27f, 0.35f, -0.26f), new Vector3(0.18f, 0.18f, 0.15f), DeepLeaf);
-            context.Sphere("Resting Edge Low Shrub", restingCorner + new Vector3(-0.18f, 0.40f, -0.16f), new Vector3(0.25f, 0.27f, 0.22f), DeepLeaf);
+            context.FacetedFoliage("Culvert Edge Weed A", anchor + new Vector3(-0.27f, 0.36f, -0.29f), new Vector3(0.20f, 0.20f, 0.16f), Leaf, 18f);
+            context.FacetedFoliage("Culvert Edge Weed B", anchor + new Vector3(0.27f, 0.35f, -0.26f), new Vector3(0.18f, 0.18f, 0.15f), DeepLeaf, -12f);
+            context.FacetedFoliage("Resting Edge Low Shrub", restingCorner + new Vector3(-0.18f, 0.40f, -0.16f), new Vector3(0.25f, 0.27f, 0.22f), DeepLeaf, 27f);
             context.Sphere("Weathered Corner Stone", restingCorner + new Vector3(0.20f, 0.32f, 0.17f), new Vector3(0.18f, 0.13f, 0.16f), stone);
         }
 
@@ -501,6 +502,12 @@ namespace UrbanWildlifeRooms.Presentation
             public GameObject Sphere(string name, Vector3 position, Vector3 scale, Color color)
             {
                 return Primitive(PrimitiveType.Sphere, name, position, scale, color);
+            }
+
+            public void FacetedFoliage(string name, Vector3 position, Vector3 diameter, Color color, float yaw)
+            {
+                LowPolyTreeVisualBuilder.BuildFacetedFoliage(
+                    name, parent, position, diameter, yaw, color, material, hideFlags);
             }
 
             private GameObject Primitive(

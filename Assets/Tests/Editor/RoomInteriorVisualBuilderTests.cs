@@ -245,6 +245,11 @@ namespace UrbanWildlifeRooms.Tests.Editor
                             material, HideFlags.None);
                         var renderers = root.GetComponentsInChildren<Renderer>();
                         Assert.That(renderers.Count(item => item.name.Contains("Crown")), Is.EqualTo(8), spec.Id);
+                        foreach (var crown in renderers.Where(item => item.name.Contains("Crown")))
+                        {
+                            Assert.That(crown.GetComponent<MeshFilter>().sharedMesh.name,
+                                Does.Contain("Flat-shaded Crown"), spec.Id);
+                        }
                         Assert.That(renderers.Any(item => item.name == "Dry Leaf Resting Patch"), Is.True, spec.Id);
                         Assert.That(renderers.Any(item => item.name == "Leaf Litter Insect Point"), Is.True, spec.Id);
                         var first = renderers.Single(item => item.name == "Cover Island A Crown 1");

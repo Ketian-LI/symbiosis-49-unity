@@ -95,6 +95,14 @@ namespace UrbanWildlifeRooms.Presentation
             return root;
         }
 
+        /// <summary>Use the same flat-shaded foliage language for low shrubs and den weeds.</summary>
+        public static void BuildFacetedFoliage(
+            string name, Transform parent, Vector3 position, Vector3 diameter,
+            float yaw, Color color, Material material, HideFlags hideFlags)
+        {
+            CreateCrown(name, parent, position, diameter * 0.5f, yaw, color, material, hideFlags);
+        }
+
         private static void CreateCrown(
             string name, Transform parent, Vector3 position, Vector3 size, float yaw,
             Color color, Material material, HideFlags hideFlags)
