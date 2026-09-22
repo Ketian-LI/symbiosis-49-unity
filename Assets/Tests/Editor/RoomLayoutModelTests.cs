@@ -25,6 +25,28 @@ namespace UrbanWildlifeRooms.Tests.Editor
         }
 
         [Test]
+        public void SameSizeMovableRoomsCanSwapInOneStep()
+        {
+            var model = new RoomLayoutModel(RoomLayoutData.All);
+
+            Assert.That(model.CanSwap("residence-e", "residence-f"), Is.True);
+            Assert.That(model.TrySwap("residence-e", "residence-f"), Is.True);
+            Assert.That(model.Get("residence-e").Column, Is.EqualTo(1));
+            Assert.That(model.Get("residence-f").Column, Is.EqualTo(0));
+            Assert.That(model.IsCompleteAndLegal(), Is.True);
+        }
+
+        [Test]
+        public void SwapRejectsFixedOrDifferentSizeRooms()
+        {
+            var model = new RoomLayoutModel(RoomLayoutData.All);
+
+            Assert.That(model.TrySwap("residence-e", "central-park"), Is.False);
+            Assert.That(model.TrySwap("residence-e", "garage-a"), Is.False);
+            Assert.That(model.IsCompleteAndLegal(), Is.True);
+        }
+
+        [Test]
         public void TrayAcceptsOnlyOneRoom()
         {
             var model = new RoomLayoutModel(RoomLayoutData.All);

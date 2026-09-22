@@ -25,6 +25,10 @@ namespace UrbanWildlifeRooms.Presentation
         private bool pendingLegal;
         private int pendingColumn;
         private int pendingRow;
+        private int dragOriginColumn;
+        private int dragOriginRow;
+        private Vector3 dragGrabOffset;
+        private string pendingSwapRoomId;
         private string guidedTargetRoomId;
         private Func<int, bool> trySpendResourcePoints;
         private Func<float> currentResourceBalance;
@@ -326,6 +330,7 @@ namespace UrbanWildlifeRooms.Presentation
 
         private void ExitEditing()
         {
+            ClearSwapPreview();
             IsEditing = false;
             dragging = false;
             selectedRoom = null;
@@ -360,6 +365,15 @@ namespace UrbanWildlifeRooms.Presentation
 
             selectedRoom = view;
             dragging = true;
+            var placement = model.Get(view.Spec.Id);
+            dragOriginColumn = placement.Column;
+            dragOriginRow = placement.Row;
+            dragGrabOffset = Vector3.zero;
+            if (TryScreenToBoard(screenPosition, out var localPoint))
+            {
+                dragGrabOffset = view.VisualRoot.localPosition - localPoint;
+                dragGrabOffset.y = 0f;
+            }
             UpdateDragPreview(view, screenPosition);
             NotifyStateChanged();
         }
@@ -384,13 +398,18 @@ namespace UrbanWildlifeRooms.Presentation
             UpdateDragPreview(view, screenPosition);
             dragging = false;
             var placement = model.Get(view.Spec.Id);
+            var swapRoomId = pendingSwapRoomId;
             var applied = pendingTray
                 ? pendingLegal && model.TryMoveToTray(view.Spec.Id)
-                : pendingLegal && model.TryPlace(
-                    view.Spec.Id,
-                    pendingColumn,
-                    pendingRow,
-                    placement.QuarterTurns);
+                : pendingLegal && !string.IsNullOrEmpty(swapRoomId)
+                    ? model.TrySwap(view.Spec.Id, swapRoomId)
+                    : pendingLegal && model.TryPlace(
+                        view.Spec.Id,
+                        pendingColumn,
+                        pendingRow,
+                        placement.QuarterTurns);
+
+            ClearSwapPreview();
 
             if (!applied)
             {
@@ -399,6 +418,10 @@ namespace UrbanWildlifeRooms.Presentation
             else
             {
                 ApplyPlacement(view);
+                if (!string.IsNullOrEmpty(swapRoomId) && views.TryGetValue(swapRoomId, out var swappedView))
+                {
+                    ApplyPlacement(swappedView);
+                }
                 TrayStateChanged?.Invoke(model.TrayOccupied);
             }
 
@@ -407,6 +430,7 @@ namespace UrbanWildlifeRooms.Presentation
 
         private void UpdateDragPreview(RoomView view, Vector2 screenPosition)
         {
+            ClearSwapPreview();
             if (!TryScreenToBoard(screenPosition, out var localPoint))
             {
                 pendingLegal = false;
@@ -415,7 +439,8 @@ namespace UrbanWildlifeRooms.Presentation
             }
 
             var placement = model.Get(view.Spec.Id);
-            pendingTray = IsPointInsideTray(localPoint);
+            var desiredCenter = localPoint + dragGrabOffset;
+            pendingTray = IsPointInsideTray(desiredCenter);
             if (pendingTray)
             {
                 pendingLegal = !model.TrayOccupied || model.TrayRoomId == view.Spec.Id;
@@ -424,14 +449,63 @@ namespace UrbanWildlifeRooms.Presentation
                 return;
             }
 
-            WorldToGridCandidate(localPoint, placement, out pendingColumn, out pendingRow);
+            WorldToGridCandidate(desiredCenter, placement, out pendingColumn, out pendingRow);
             pendingLegal = model.CanPlace(
                 view.Spec.Id,
                 pendingColumn,
                 pendingRow,
                 placement.QuarterTurns);
+            if (!pendingLegal)
+            {
+                pendingSwapRoomId = FindSwapTarget(
+                    view.Spec.Id,
+                    pendingColumn,
+                    pendingRow,
+                    placement.Width,
+                    placement.Height);
+                pendingLegal = !string.IsNullOrEmpty(pendingSwapRoomId) &&
+                               model.CanSwap(view.Spec.Id, pendingSwapRoomId);
+                if (pendingLegal && views.TryGetValue(pendingSwapRoomId, out var swapView))
+                {
+                    var swapPlacement = model.Get(pendingSwapRoomId);
+                    swapView.SetSwapPreviewLocalPosition(GridToLocal(
+                        dragOriginColumn,
+                        dragOriginRow,
+                        swapPlacement.Width,
+                        swapPlacement.Height));
+                }
+            }
             view.SetDraggedLocalPosition(GridToLocal(pendingColumn, pendingRow, placement.Width, placement.Height));
             view.SetDragPreview(pendingLegal);
+        }
+
+        private string FindSwapTarget(string draggedRoomId, int column, int row, int width, int height)
+        {
+            foreach (var candidate in model.All)
+            {
+                if (candidate.Id == draggedRoomId || candidate.InTray ||
+                    candidate.Column != column || candidate.Row != row ||
+                    candidate.Width != width || candidate.Height != height ||
+                    !model.CanMove(candidate.Id))
+                {
+                    continue;
+                }
+
+                return candidate.Id;
+            }
+
+            return null;
+        }
+
+        private void ClearSwapPreview()
+        {
+            if (!string.IsNullOrEmpty(pendingSwapRoomId) &&
+                views.TryGetValue(pendingSwapRoomId, out var swapView))
+            {
+                swapView.ClearSwapPreview();
+            }
+
+            pendingSwapRoomId = null;
         }
 
         private bool TryScreenToBoard(Vector2 screenPosition, out Vector3 localPoint)

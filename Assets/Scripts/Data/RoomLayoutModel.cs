@@ -127,6 +127,50 @@ namespace UrbanWildlifeRooms.Data
             return true;
         }
 
+        public bool CanSwap(string firstId, string secondId)
+        {
+            if (firstId == secondId || !CanMove(firstId) || !CanMove(secondId) ||
+                !placements.TryGetValue(firstId, out var first) ||
+                !placements.TryGetValue(secondId, out var second) ||
+                first.InTray || second.InTray ||
+                first.Width != second.Width || first.Height != second.Height)
+            {
+                return false;
+            }
+
+            var firstColumn = first.Column;
+            var firstRow = first.Row;
+            var secondColumn = second.Column;
+            var secondRow = second.Row;
+            first.Column = secondColumn;
+            first.Row = secondRow;
+            second.Column = firstColumn;
+            second.Row = firstRow;
+
+            var legal = CanPlace(firstId, first.Column, first.Row, first.QuarterTurns) &&
+                        CanPlace(secondId, second.Column, second.Row, second.QuarterTurns);
+
+            first.Column = firstColumn;
+            first.Row = firstRow;
+            second.Column = secondColumn;
+            second.Row = secondRow;
+            return legal;
+        }
+
+        public bool TrySwap(string firstId, string secondId)
+        {
+            if (!CanSwap(firstId, secondId))
+            {
+                return false;
+            }
+
+            var first = placements[firstId];
+            var second = placements[secondId];
+            (first.Column, second.Column) = (second.Column, first.Column);
+            (first.Row, second.Row) = (second.Row, first.Row);
+            return true;
+        }
+
         public bool TryMoveToTray(string id)
         {
             if (!CanMove(id) || (TrayOccupied && TrayRoomId != id))

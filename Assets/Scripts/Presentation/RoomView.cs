@@ -16,6 +16,7 @@ namespace UrbanWildlifeRooms.Presentation
         private float lastClickTime = -10f;
         private bool layoutEditing;
         private bool dragging;
+        private bool swapPreviewing;
         private bool? dragPreviewLegal;
         private RoomSelectionMarker selectionMarker;
 
@@ -67,6 +68,7 @@ namespace UrbanWildlifeRooms.Presentation
             if (!value)
             {
                 dragging = false;
+                swapPreviewing = false;
                 dragPreviewLegal = null;
                 visualRoot.localPosition = restingPosition;
             }
@@ -85,12 +87,30 @@ namespace UrbanWildlifeRooms.Presentation
             visualRoot.localPosition = localPosition;
         }
 
+        public void SetSwapPreviewLocalPosition(Vector3 localPosition)
+        {
+            swapPreviewing = true;
+            dragPreviewLegal = true;
+            visualRoot.localPosition = localPosition;
+            ApplyState();
+        }
+
+        public void ClearSwapPreview()
+        {
+            swapPreviewing = false;
+            dragPreviewLegal = null;
+            visualRoot.localPosition = restingPosition;
+            visualRoot.localRotation = restingRotation;
+            ApplyState();
+        }
+
         public void ApplyPlacement(Vector3 localPosition, int quarterTurns)
         {
             restingPosition = localPosition;
             restingRotation = Quaternion.Euler(0f, quarterTurns * 90f, 0f);
             visualRoot.localPosition = restingPosition;
             visualRoot.localRotation = restingRotation;
+            swapPreviewing = false;
             dragPreviewLegal = null;
             ApplyState();
         }
@@ -185,7 +205,7 @@ namespace UrbanWildlifeRooms.Presentation
                     : baseColor;
 
             UrbanVisualFactory.ApplyColor(floorRenderer, displayColor);
-            if (!dragging)
+            if (!dragging && !swapPreviewing)
             {
                 visualRoot.localPosition = restingPosition;
                 visualRoot.localRotation = restingRotation;
