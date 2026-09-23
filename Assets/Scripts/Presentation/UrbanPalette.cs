@@ -9,9 +9,9 @@ namespace UrbanWildlifeRooms.Presentation
         public static readonly Color Board = Hex("DCD5C8");
         public static readonly Color BoardSlot = Hex("CEC5B6");
         public static readonly Color BoardSlotAlternate = Hex("D6CEBF");
-        public static readonly Color Boundary = Hex("243154");
+        public static readonly Color Boundary = Hex("385593");
         public static readonly Color Doorframe = Hex("F4EEE3");
-        public static readonly Color Wall = Hex("17213F");
+        public static readonly Color Wall = Hex("36539A");
         public static readonly Color Text = Hex("10182E");
         public static readonly Color LightText = Hex("F8F4FF");
         public static readonly Color Selection = Hex("F24BC7");
@@ -19,6 +19,30 @@ namespace UrbanWildlifeRooms.Presentation
         public static readonly Color Risk = Hex("FF704D");
         public static readonly Color Recovery = Hex("7C62E8");
         public static readonly Color Safe = Hex("3CCB8C");
+
+        // Sampled from the approved room references. These are material targets,
+        // not a claim that a lit screenshot pixel will retain the same RGB value.
+        public static readonly Color PigeonConcrete = Hex("B0A9A8");
+        public static readonly Color PigeonVentMetal = Hex("BDB3B2");
+        public static readonly Color PigeonVentHighlight = Hex("D5CCC8");
+        public static readonly Color PigeonLoftWood = Hex("B37D51");
+        public static readonly Color PigeonLoftRoof = Hex("D49A68");
+        public static readonly Color PigeonWater = Hex("548FB9");
+        public static readonly Color ShrubGround = Hex("8F934C");
+        public static readonly Color ShrubLeaf = Hex("637239");
+        public static readonly Color ShrubDeepLeaf = Hex("3F5127");
+        public static readonly Color ShrubLeafHighlight = Hex("9BA04F");
+        public static readonly Color ShrubPathLight = Hex("D2A271");
+        public static readonly Color ShrubPathDark = Hex("B17A3D");
+        public static readonly Color ShrubStone = Hex("A9958E");
+        public static readonly Color FoxEarth = Hex("CDA469");
+        public static readonly Color FoxBrick = Hex("835440");
+        public static readonly Color FoxStone = Hex("9B856F");
+        public static readonly Color FoxLeaf = Hex("626A28");
+        public static readonly Color FoxDryLeaf = Hex("D4995B");
+        public static readonly Color FoxCardboard = Hex("BD9857");
+        public static readonly Color FoxHollow = Hex("1C130E");
+        public static readonly Color FoxRestEarth = Hex("704D2B");
 
         public static Color ForRoom(RoomType type)
         {
@@ -31,10 +55,10 @@ namespace UrbanWildlifeRooms.Presentation
                 RoomType.Supermarket => Hex("E4B85A"),
                 RoomType.Garage => Hex("5C6874"),
                 RoomType.Trash => Hex("A95441"),
-                RoomType.PigeonHabitat => Hex("7D898A"),
+                RoomType.PigeonHabitat => PigeonConcrete,
                 RoomType.OakHabitat => Hex("46764F"),
-                RoomType.ShrubHabitat => Hex("8EA66B"),
-                RoomType.FoxDen => Hex("988469"),
+                RoomType.ShrubHabitat => ShrubGround,
+                RoomType.FoxDen => FoxEarth,
                 _ => Color.gray
             };
         }

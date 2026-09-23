@@ -772,7 +772,7 @@ namespace UrbanWildlifeRooms.Core
                 var path = CreateBox($"{roomId} Ground Route {index}", parent,
                     (waypoints[index] + waypoints[index - 1]) * 0.5f + new Vector3(0f, 0.249f, 0f),
                     new Vector3(0.28f, 0.014f, direction.magnitude + 0.08f),
-                    index % 2 == 0 ? new Color(0.65f, 0.57f, 0.43f) : new Color(0.70f, 0.61f, 0.46f));
+                    index % 2 == 0 ? UrbanPalette.ShrubPathDark : UrbanPalette.ShrubPathLight);
                 path.transform.localRotation = Quaternion.LookRotation(direction, Vector3.up);
             }
         }

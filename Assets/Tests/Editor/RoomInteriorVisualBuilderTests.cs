@@ -180,6 +180,8 @@ namespace UrbanWildlifeRooms.Tests.Editor
                             Assert.That(names.Any(name => name.Contains("Drainage Culvert")), Is.True, spec.Id);
                             Assert.That(names.Any(name => name.Contains("Retaining Wall")), Is.True, spec.Id);
                             Assert.That(names.Count(name => name.StartsWith("Culvert Ring Stone")), Is.EqualTo(10), spec.Id);
+                            Assert.That(names.Count(name => name.Contains("Wall Top Brick")), Is.EqualTo(8), spec.Id);
+                            Assert.That(names, Does.Contain("Southwest Resting Hollow"), spec.Id);
                             var recess = root.GetComponentsInChildren<Renderer>()
                                 .Single(item => item.name == "Sheltered Side Recess");
                             Assert.That(recess.transform.localPosition.x, Is.GreaterThan(0f),
@@ -217,6 +219,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
                         Assert.That(names.Count(name => name == "Ventilation Service Core"), Is.EqualTo(1), spec.Id);
                         Assert.That(names.Count(name => name == "Open Pigeon Loft"), Is.EqualTo(1), spec.Id);
                         Assert.That(names.Count(name => name.StartsWith("Open Pigeon Loft Nest Box")), Is.EqualTo(4), spec.Id);
+                        Assert.That(names.Count(name => name.StartsWith("Open Pigeon Loft Roof Nest")), Is.EqualTo(4), spec.Id);
                         Assert.That(names.Count(name => name.EndsWith("Perch Rail")), Is.EqualTo(2), spec.Id);
                         Assert.That(names, Does.Contain("Ventilation Turbine Dome"), spec.Id);
                         Assert.That(names, Does.Contain("Open Pigeon Loft Rear Roof"), spec.Id);
@@ -277,6 +280,17 @@ namespace UrbanWildlifeRooms.Tests.Editor
             {
                 Object.DestroyImmediate(material);
             }
+        }
+
+        [Test]
+        public void WildlifeFloorColorsMatchTheExtractedReferencePalette()
+        {
+            Assert.That(ColorUtility.ToHtmlStringRGB(UrbanPalette.ForRoom(RoomType.PigeonHabitat)), Is.EqualTo("B0A9A8"));
+            Assert.That(ColorUtility.ToHtmlStringRGB(UrbanPalette.ForRoom(RoomType.ShrubHabitat)), Is.EqualTo("8F934C"));
+            Assert.That(ColorUtility.ToHtmlStringRGB(UrbanPalette.ForRoom(RoomType.FoxDen)), Is.EqualTo("CDA469"));
+            Assert.That(ColorUtility.ToHtmlStringRGB(UrbanPalette.PigeonWater), Is.EqualTo("548FB9"));
+            Assert.That(ColorUtility.ToHtmlStringRGB(UrbanPalette.ShrubLeaf), Is.EqualTo("637239"));
+            Assert.That(ColorUtility.ToHtmlStringRGB(UrbanPalette.FoxBrick), Is.EqualTo("835440"));
         }
 
         private static IReadOnlyList<RoomObstacle2D> BuildObstacles(Transform root)
