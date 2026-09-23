@@ -285,9 +285,9 @@ namespace UrbanWildlifeRooms.Tests.Editor
         [Test]
         public void WildlifeFloorColorsMatchTheExtractedReferencePalette()
         {
-            Assert.That(ColorUtility.ToHtmlStringRGB(UrbanPalette.ForRoom(RoomType.PigeonHabitat)), Is.EqualTo("B0A9A8"));
+            Assert.That(ColorUtility.ToHtmlStringRGB(UrbanPalette.ForRoom(RoomType.PigeonHabitat)), Is.EqualTo("9B989E"));
             Assert.That(ColorUtility.ToHtmlStringRGB(UrbanPalette.ForRoom(RoomType.ShrubHabitat)), Is.EqualTo("8F934C"));
-            Assert.That(ColorUtility.ToHtmlStringRGB(UrbanPalette.ForRoom(RoomType.FoxDen)), Is.EqualTo("CDA469"));
+            Assert.That(ColorUtility.ToHtmlStringRGB(UrbanPalette.ForRoom(RoomType.FoxDen)), Is.EqualTo("B39562"));
             Assert.That(ColorUtility.ToHtmlStringRGB(UrbanPalette.PigeonWater), Is.EqualTo("548FB9"));
             Assert.That(ColorUtility.ToHtmlStringRGB(UrbanPalette.ShrubLeaf), Is.EqualTo("637239"));
             Assert.That(ColorUtility.ToHtmlStringRGB(UrbanPalette.FoxBrick), Is.EqualTo("835440"));

@@ -20,9 +20,9 @@ namespace UrbanWildlifeRooms.Presentation
         public static readonly Color Recovery = Hex("7C62E8");
         public static readonly Color Safe = Hex("3CCB8C");
 
-        // Sampled from the approved room references. These are material targets,
-        // not a claim that a lit screenshot pixel will retain the same RGB value.
-        public static readonly Color PigeonConcrete = Hex("B0A9A8");
+        // Derived from approved room references; floor inputs are compensated
+        // against the game's warm URP lighting to match the sampled screen RGB.
+        public static readonly Color PigeonConcrete = Hex("9B989E");
         public static readonly Color PigeonVentMetal = Hex("BDB3B2");
         public static readonly Color PigeonVentHighlight = Hex("D5CCC8");
         public static readonly Color PigeonLoftWood = Hex("B37D51");
@@ -35,9 +35,10 @@ namespace UrbanWildlifeRooms.Presentation
         public static readonly Color ShrubPathLight = Hex("D2A271");
         public static readonly Color ShrubPathDark = Hex("B17A3D");
         public static readonly Color ShrubStone = Hex("A9958E");
-        public static readonly Color FoxEarth = Hex("CDA469");
+        public static readonly Color FoxEarth = Hex("B39562");
         public static readonly Color FoxBrick = Hex("835440");
         public static readonly Color FoxStone = Hex("9B856F");
+        public static readonly Color FoxStoneShade = Hex("7F6C52");
         public static readonly Color FoxLeaf = Hex("626A28");
         public static readonly Color FoxDryLeaf = Hex("D4995B");
         public static readonly Color FoxCardboard = Hex("BD9857");

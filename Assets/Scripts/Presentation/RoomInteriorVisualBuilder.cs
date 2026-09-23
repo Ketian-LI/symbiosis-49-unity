@@ -475,14 +475,14 @@ namespace UrbanWildlifeRooms.Presentation
             context.Box("Retaining Wall Right Stone", anchor + new Vector3(0.30f, 0.45f, 0.07f), new Vector3(0.16f, 0.38f, 0.34f), stone);
             context.Box("Right Retaining Wall Cap", northEast + new Vector3(0f, 0.64f, 0.20f), new Vector3(0.78f, 0.13f, 0.26f), stone);
             context.Box("Right Retaining Wall Brick", northEast + new Vector3(0f, 0.40f, 0.20f), new Vector3(0.76f, 0.38f, 0.23f), brick);
-            context.Box("Right Retaining Wall Front Course", northEast + new Vector3(0f, 0.48f, -0.01f), new Vector3(0.68f, 0.08f, 0.07f), Terracotta);
+            context.Box("Right Retaining Wall Front Course", northEast + new Vector3(0f, 0.48f, -0.01f), new Vector3(0.68f, 0.08f, 0.07f), UrbanPalette.FoxStoneShade);
             for (var index = 0; index < 4; index++)
             {
                 var x = -0.26f + index * 0.17f;
                 context.Box($"Left Wall Top Brick {index + 1}", anchor + new Vector3(x, 0.713f, 0.20f),
-                    new Vector3(0.13f, 0.012f, 0.15f), index % 2 == 0 ? brick : UrbanPalette.FoxCardboard);
+                    new Vector3(0.13f, 0.012f, 0.15f), index % 2 == 0 ? stone : UrbanPalette.FoxStoneShade);
                 context.Box($"Right Wall Top Brick {index + 1}", northEast + new Vector3(x, 0.713f, 0.20f),
-                    new Vector3(0.13f, 0.012f, 0.15f), index % 2 == 0 ? brick : UrbanPalette.FoxCardboard);
+                    new Vector3(0.13f, 0.012f, 0.15f), index % 2 == 0 ? stone : UrbanPalette.FoxStoneShade);
             }
 
             var culvert = anchor + new Vector3(-0.05f, 0f, -0.11f);
@@ -509,6 +509,18 @@ namespace UrbanWildlifeRooms.Presentation
                 new Vector3(0.42f, 0.008f, 0.36f), darkEarth);
             context.Box("Southwest Resting Cardboard", southWest + new Vector3(0.02f, 0.275f, -0.02f),
                 new Vector3(0.24f, 0.018f, 0.15f), UrbanPalette.FoxCardboard, -17f);
+            var restCorners = new[] { restingCorner, southWest };
+            for (var cornerIndex = 0; cornerIndex < restCorners.Length; cornerIndex++)
+            {
+                var corner = restCorners[cornerIndex];
+                for (var index = 0; index < 3; index++)
+                {
+                    context.Box($"Resting Hollow Fallen Leaf {cornerIndex + 1}-{index + 1}",
+                        corner + new Vector3(-0.12f + index * 0.11f, 0.294f, 0.13f - index * 0.06f),
+                        new Vector3(0.075f, 0.012f, 0.050f), UrbanPalette.FoxDryLeaf,
+                        -28f + index * 25f);
+                }
+            }
             context.Box("Ivy at Culvert", anchor + new Vector3(-0.29f, 0.69f, 0.12f), new Vector3(0.17f, 0.08f, 0.14f), UrbanPalette.FoxLeaf, 23f);
             context.FacetedFoliage("Ivy on Right Wall", northEast + new Vector3(0.22f, 0.71f, 0.05f), new Vector3(0.19f, 0.16f, 0.19f), UrbanPalette.FoxLeaf, -15f);
             context.FacetedFoliage("Culvert Edge Weed A", anchor + new Vector3(-0.27f, 0.36f, -0.29f), new Vector3(0.20f, 0.20f, 0.16f), UrbanPalette.FoxLeaf, 18f);
