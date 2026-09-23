@@ -594,13 +594,13 @@ namespace UrbanWildlifeRooms.Core
             float wallThickness,
             float doorwayWidth)
         {
-            const float postWidth = 0.08f;
+            const float postWidth = 0.055f;
             var name = $"{doorway.Edge} Door {doorway.SegmentIndex + 1}";
             var horizontal = doorway.Edge is RoomEdge.North or RoomEdge.South;
 
             var thresholdScale = horizontal
-                ? new Vector3(doorwayWidth, 0.05f, wallThickness * 1.72f)
-                : new Vector3(wallThickness * 1.72f, 0.05f, doorwayWidth);
+                ? new Vector3(doorwayWidth, 0.018f, wallThickness * 0.72f)
+                : new Vector3(wallThickness * 0.72f, 0.018f, doorwayWidth);
             CreateBox(
                 $"{name} Threshold",
                 parent,
@@ -609,8 +609,8 @@ namespace UrbanWildlifeRooms.Core
                 UrbanPalette.Doorframe);
 
             var postScale = horizontal
-                ? new Vector3(postWidth, wallHeight, wallThickness * 1.36f)
-                : new Vector3(wallThickness * 1.36f, wallHeight, postWidth);
+                ? new Vector3(postWidth, wallHeight, wallThickness * 0.82f)
+                : new Vector3(wallThickness * 0.82f, wallHeight, postWidth);
             var postOffset = horizontal
                 ? new Vector3(doorwayWidth * 0.5f, 0f, 0f)
                 : new Vector3(0f, 0f, doorwayWidth * 0.5f);
@@ -618,8 +618,8 @@ namespace UrbanWildlifeRooms.Core
             CreateBox($"{name} Post B", parent, doorway.LocalCenter - postOffset + new Vector3(0f, wallY, 0f), postScale, UrbanPalette.Doorframe);
 
             var lintelScale = horizontal
-                ? new Vector3(doorwayWidth + postWidth * 2f, 0.06f, wallThickness * 1.36f)
-                : new Vector3(wallThickness * 1.36f, 0.06f, doorwayWidth + postWidth * 2f);
+                ? new Vector3(doorwayWidth + postWidth * 2f, 0.026f, wallThickness * 0.40f)
+                : new Vector3(wallThickness * 0.40f, 0.026f, doorwayWidth + postWidth * 2f);
             CreateBox(
                 $"{name} Lintel",
                 parent,

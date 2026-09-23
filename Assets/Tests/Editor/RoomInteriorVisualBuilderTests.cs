@@ -257,6 +257,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
                         var renderers = root.GetComponentsInChildren<Renderer>();
                         Assert.That(renderers.Count(item => item.name.Contains("Crown")), Is.EqualTo(8), spec.Id);
                         Assert.That(renderers.Count(item => item.name.Contains("Ground Foliage")), Is.EqualTo(12), spec.Id);
+                        Assert.That(renderers.Count(item => item.name.Contains("Low Tuft")), Is.EqualTo(4), spec.Id);
                         Assert.That(renderers.Count(item => item.name.Contains("Petal")), Is.EqualTo(10), spec.Id);
                         foreach (var crown in renderers.Where(item => item.name.Contains("Crown")))
                         {
@@ -291,6 +292,19 @@ namespace UrbanWildlifeRooms.Tests.Editor
             Assert.That(ColorUtility.ToHtmlStringRGB(UrbanPalette.PigeonWater), Is.EqualTo("548FB9"));
             Assert.That(ColorUtility.ToHtmlStringRGB(UrbanPalette.ShrubLeaf), Is.EqualTo("637239"));
             Assert.That(ColorUtility.ToHtmlStringRGB(UrbanPalette.FoxBrick), Is.EqualTo("835440"));
+            Assert.That(ColorUtility.ToHtmlStringRGB(UrbanPalette.Doorframe), Is.EqualTo("C8AB82"));
+        }
+
+        [Test]
+        public void AssembledBoardColorsUseTheMutedReferencePalette()
+        {
+            Assert.That(ColorUtility.ToHtmlStringRGB(UrbanPalette.Boundary), Is.EqualTo("263653"));
+            Assert.That(ColorUtility.ToHtmlStringRGB(UrbanPalette.Wall), Is.EqualTo("24324C"));
+            Assert.That(ColorUtility.ToHtmlStringRGB(UrbanPalette.ForRoom(RoomType.CentralPark)), Is.EqualTo("718B49"));
+            Assert.That(ColorUtility.ToHtmlStringRGB(UrbanPalette.ForRoom(RoomType.Office)), Is.EqualTo("587D81"));
+            Assert.That(ColorUtility.ToHtmlStringRGB(UrbanPalette.ForRoom(RoomType.Canteen)), Is.EqualTo("A4764D"));
+            Assert.That(ColorUtility.ToHtmlStringRGB(UrbanPalette.ForRoom(RoomType.Supermarket)), Is.EqualTo("D6AC55"));
+            Assert.That(ColorUtility.ToHtmlStringRGB(UrbanPalette.ForRoom(RoomType.OakHabitat)), Is.EqualTo("6A7C45"));
         }
 
         private static IReadOnlyList<RoomObstacle2D> BuildObstacles(Transform root)

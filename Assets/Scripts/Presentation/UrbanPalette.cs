@@ -9,9 +9,12 @@ namespace UrbanWildlifeRooms.Presentation
         public static readonly Color Board = Hex("DCD5C8");
         public static readonly Color BoardSlot = Hex("CEC5B6");
         public static readonly Color BoardSlotAlternate = Hex("D6CEBF");
-        public static readonly Color Boundary = Hex("385593");
-        public static readonly Color Doorframe = Hex("F4EEE3");
-        public static readonly Color Wall = Hex("36539A");
+        // The assembled-board reference uses a charcoal-navy frame; the brighter
+        // blue from the isolated room concepts is reserved for later skins.
+        public static readonly Color Boundary = Hex("263653");
+        // Light in the scene lifts this warm cream toward the reference threshold.
+        public static readonly Color Doorframe = Hex("C8AB82");
+        public static readonly Color Wall = Hex("24324C");
         public static readonly Color Text = Hex("10182E");
         public static readonly Color LightText = Hex("F8F4FF");
         public static readonly Color Selection = Hex("F24BC7");
@@ -49,15 +52,15 @@ namespace UrbanWildlifeRooms.Presentation
         {
             return type switch
             {
-                RoomType.CentralPark => Hex("82B968"),
+                RoomType.CentralPark => Hex("718B49"),
                 RoomType.Residence => Hex("8E83AE"),
-                RoomType.Office => Hex("4F8C92"),
-                RoomType.Canteen => Hex("D59A3D"),
-                RoomType.Supermarket => Hex("E4B85A"),
+                RoomType.Office => Hex("587D81"),
+                RoomType.Canteen => Hex("A4764D"),
+                RoomType.Supermarket => Hex("D6AC55"),
                 RoomType.Garage => Hex("5C6874"),
                 RoomType.Trash => Hex("A95441"),
                 RoomType.PigeonHabitat => PigeonConcrete,
-                RoomType.OakHabitat => Hex("46764F"),
+                RoomType.OakHabitat => Hex("6A7C45"),
                 RoomType.ShrubHabitat => ShrubGround,
                 RoomType.FoxDen => FoxEarth,
                 _ => Color.gray

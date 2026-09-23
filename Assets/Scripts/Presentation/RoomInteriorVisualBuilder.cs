@@ -391,6 +391,18 @@ namespace UrbanWildlifeRooms.Presentation
                 roomId == "shrub-b" ? 5 : 4);
             BuildShrubIsland(context, second, "Cover Island B", roomId == "shrub-b" ? 0.95f : 1f,
                 roomId == "shrub-b" ? 3 : 4);
+            // Major cover remains asymmetrical, but small edge plants keep the
+            // other two corners from reading as empty painted floor.
+            var edgeCorners = roomId switch
+            {
+                "shrub-b" => new[] { northEast, southWest },
+                "shrub-c" => new[] { northWest, southWest },
+                _ => new[] { northEast, southEast }
+            };
+            for (var index = 0; index < edgeCorners.Length; index++)
+            {
+                BuildShrubEdgeGrowth(context, edgeCorners[index], $"Edge Growth {index + 1}");
+            }
 
             var towardCentre = new Vector3(-Mathf.Sign(first.x) * 0.27f, 0f, -Mathf.Sign(first.z) * 0.25f);
             context.Box("Dry Leaf Resting Patch", first + towardCentre + new Vector3(0f, 0.27f, 0f), new Vector3(0.30f, 0.018f, 0.20f), UrbanPalette.ShrubPathDark, 18f);
@@ -456,6 +468,21 @@ namespace UrbanWildlifeRooms.Presentation
                     anchor + new Vector3(Mathf.Sin(angle) * 0.07f, 0.81f, Mathf.Cos(angle) * 0.07f),
                     new Vector3(0.055f, 0.014f, 0.085f), Cream, index * 72f);
             }
+        }
+
+        private static void BuildShrubEdgeGrowth(BuildContext context, Vector3 anchor, string name)
+        {
+            var inwardX = -Mathf.Sign(anchor.x);
+            var inwardZ = -Mathf.Sign(anchor.z);
+            context.FacetedFoliage($"{name} Low Tuft A",
+                anchor + new Vector3(inwardX * 0.12f, 0.34f, inwardZ * 0.06f),
+                new Vector3(0.32f, 0.23f, 0.30f), UrbanPalette.ShrubLeaf, 18f);
+            context.FacetedFoliage($"{name} Low Tuft B",
+                anchor + new Vector3(-inwardX * 0.17f, 0.33f, inwardZ * 0.15f),
+                new Vector3(0.25f, 0.18f, 0.23f), UrbanPalette.ShrubDeepLeaf, -31f);
+            context.Box($"{name} Dry Leaf",
+                anchor + new Vector3(inwardX * 0.28f, 0.27f, inwardZ * 0.26f),
+                new Vector3(0.12f, 0.014f, 0.065f), UrbanPalette.ShrubPathDark, 35f);
         }
 
         private static void BuildFoxDen(BuildContext context, Vector3 anchor)
