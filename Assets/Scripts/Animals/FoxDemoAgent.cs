@@ -25,6 +25,8 @@ namespace UrbanWildlifeRooms.Animals
         private float stateTime;
         private float stateDuration;
         private bool initialized;
+        private GameRuntimeController runtime;
+        private AnimalNavigationCoordinator navigationCoordinator;
         private bool relocating;
         private Vector3 relocationStart;
         private Vector3 relocationTarget;
@@ -43,17 +45,50 @@ namespace UrbanWildlifeRooms.Animals
         private bool huntHazardResolved;
         private float huntTrafficWaitRemaining = -1f;
 
+        public event Action<FoxDemoAgent> Clicked;
+
         public WildlifeSpecies Species => WildlifeSpecies.Fox;
         public Transform AgentTransform => transform;
         public FoxDemoState State => state;
         public bool IsAlive => vitality == null || vitality.IsAlive;
         public WildlifeVitality Vitality => vitality;
         public bool IsHunting => hunting;
+        public Vector3 SpawnPosition => spawnPosition;
+
+        public void BindNavigation(AnimalNavigationCoordinator coordinator) =>
+            navigationCoordinator = coordinator;
+
+        public bool CancelHuntForRouteChange()
+        {
+            if (!hunting)
+            {
+                return false;
+            }
+            FinishHunt(false);
+            return true;
+        }
 
         public void SetActivityEnabled(bool value)
         {
+            if (activityEnabled == value)
+            {
+                return;
+            }
             activityEnabled = value;
-            if (!value)
+            if (value)
+            {
+                // Waking at dusk must lead to visible movement. A random run
+                // of alert/rest states can otherwise leave the fox motionless
+                // for most of its short active window.
+                var center = CurrentRoomRoamCenter();
+                var direction = transform.position.x <= center.x ? 1f : -1f;
+                targetPosition = center + new Vector3(
+                    direction * habitatHalfExtents.x * 0.8f, 0f,
+                    habitatHalfExtents.y * 0.5f);
+                targetPosition.y = spawnPosition.y;
+                BeginState(FoxDemoState.Trot, 1.5f);
+            }
+            else
             {
                 FinishHunt(false);
                 BeginState(FoxDemoState.Rest, 999f);
@@ -72,6 +107,7 @@ namespace UrbanWildlifeRooms.Animals
                 return;
             }
             initialized = true;
+            runtime = FindFirstObjectByType<GameRuntimeController>();
             random = new System.Random(randomSeed);
             spawnPosition = initialPosition;
             habitatCenter = initialPosition;
@@ -88,17 +124,50 @@ namespace UrbanWildlifeRooms.Animals
             BeginState(FoxDemoState.Rest, 1.6f);
         }
 
+        private void OnMouseDown()
+        {
+            if (Application.isPlaying && IsAlive)
+            {
+                Clicked?.Invoke(this);
+            }
+        }
+
         public void RelocateTo(Vector3 worldPosition, float durationSeconds)
         {
             var delta = worldPosition - transform.position;
-            spawnPosition += delta;
-            habitatCenter += delta;
+            ShiftHomeAnchor(delta);
             targetPosition += delta;
             relocationStart = transform.position;
             relocationTarget = worldPosition;
             relocationDuration = Mathf.Max(0.05f, durationSeconds);
             relocationTime = 0f;
             relocating = true;
+        }
+
+        public void ShiftHomeAnchor(Vector3 delta)
+        {
+            spawnPosition += delta;
+            habitatCenter += delta;
+        }
+
+        public void ResetForNewRun(Vector3 initialPosition)
+        {
+            if (!initialized) return;
+            relocating = false;
+            hunting = false;
+            huntWaypoints.Clear();
+            huntTarget = null;
+            huntTargetIsSafe = null;
+            huntCaught = null;
+            huntHazardWaypoint = -1;
+            huntHazardResolved = false;
+            huntTrafficWaitRemaining = -1f;
+            spawnPosition = initialPosition;
+            habitatCenter = initialPosition;
+            targetPosition = initialPosition;
+            vitality?.ResetForNewRun(initialPosition);
+            transform.position = initialPosition;
+            BeginState(FoxDemoState.Rest, 1.6f);
         }
 
         public bool BeginHunt(
@@ -136,9 +205,14 @@ namespace UrbanWildlifeRooms.Animals
             {
                 return;
             }
+            var deltaTime = runtime != null ? runtime.ActorPresentationDeltaTime : Time.deltaTime;
+            if (hunting && navigationCoordinator != null)
+            {
+                _ = navigationCoordinator.NavigationRevision;
+            }
             if (relocating)
             {
-                relocationTime += Time.deltaTime;
+                relocationTime += deltaTime;
                 var progress = Mathf.Clamp01(relocationTime / relocationDuration);
                 transform.position = Vector3.Lerp(relocationStart, relocationTarget, Mathf.SmoothStep(0f, 1f, progress));
                 visual.ApplyPose(state, stateTime);
@@ -146,7 +220,7 @@ namespace UrbanWildlifeRooms.Animals
                 return;
             }
 
-            stateTime += Time.deltaTime;
+            stateTime += deltaTime;
             if (!IsAlive)
             {
                 FinishHunt(false);
@@ -154,7 +228,7 @@ namespace UrbanWildlifeRooms.Animals
             }
             if (hunting)
             {
-                UpdateHunt(Time.deltaTime);
+                UpdateHunt(deltaTime);
                 visual.ApplyPose(state, stateTime);
                 return;
             }
@@ -176,8 +250,8 @@ namespace UrbanWildlifeRooms.Animals
                     transform.rotation = Quaternion.Slerp(
                         transform.rotation,
                         Quaternion.LookRotation(toTarget.normalized, Vector3.up),
-                        Time.deltaTime * 5f);
-                    transform.position = Vector3.MoveTowards(transform.position, targetPosition, Time.deltaTime * 0.72f);
+                        deltaTime * 5f);
+                    transform.position = Vector3.MoveTowards(transform.position, targetPosition, deltaTime * 0.92f);
                 }
             }
             visual.ApplyPose(state, stateTime);
@@ -271,17 +345,17 @@ namespace UrbanWildlifeRooms.Animals
         {
             if (state == FoxDemoState.Trot)
             {
-                BeginState(FoxDemoState.Sniff, RandomRange(1f, 1.7f));
+                BeginState(FoxDemoState.Sniff, RandomRange(0.8f, 1.3f));
                 return;
             }
             if (state == FoxDemoState.Sniff || state == FoxDemoState.Alert)
             {
-                BeginState(FoxDemoState.Rest, RandomRange(1.2f, 2.2f));
+                BeginState(FoxDemoState.Rest, RandomRange(0.8f, 1.5f));
                 return;
             }
-            if (random.NextDouble() < 0.55)
+            if (random.NextDouble() < 0.72)
             {
-                targetPosition = habitatCenter + new Vector3(
+                targetPosition = CurrentRoomRoamCenter() + new Vector3(
                     RandomRange(-habitatHalfExtents.x, habitatHalfExtents.x),
                     0f,
                     RandomRange(-habitatHalfExtents.y, habitatHalfExtents.y));
@@ -301,6 +375,12 @@ namespace UrbanWildlifeRooms.Animals
             stateDuration = Mathf.Max(0.01f, duration);
             visual?.ApplyPose(state, 0f);
         }
+
+        private Vector3 CurrentRoomRoamCenter() =>
+            navigationCoordinator != null &&
+            navigationCoordinator.TryGetCurrentRoomCenter(transform.position, out var center)
+                ? center
+                : habitatCenter;
 
         private float RandomRange(float minimum, float maximum)
         {

@@ -10,9 +10,9 @@ namespace UrbanWildlifeRooms.Tests.Editor
     {
         [TestCase(0, 4, 0)]
         [TestCase(2, 9, 0)]
-        [TestCase(5, 12, 3)]
-        [TestCase(8, 16, 8)]
-        [TestCase(9, 16, 12)]
+        [TestCase(5, 16, 3)]
+        [TestCase(8, 20, 8)]
+        [TestCase(9, 20, 12)]
         public void EveryStateUsesTheApprovedBinAndBagCounts(
             int units,
             int expectedBins,
@@ -31,6 +31,35 @@ namespace UrbanWildlifeRooms.Tests.Editor
                     .ToArray();
                 Assert.That(names.Count(name => name.StartsWith("Closed Bin ")), Is.EqualTo(expectedBins));
                 Assert.That(names.Count(name => name.StartsWith("Tied Bag ")), Is.EqualTo(expectedBags));
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+                Object.DestroyImmediate(material);
+            }
+        }
+
+        [Test]
+        public void FullWasteRoomHasUnevenCornerPilesAndMixedBinSizes()
+        {
+            var root = new GameObject("Waste Reference Layout Test");
+            var material = UrbanVisualFactory.CreateSurfaceMaterial();
+            try
+            {
+                var visual = root.AddComponent<WasteRoomLoadVisual>();
+                visual.Initialize(material, HideFlags.None, 8);
+                var bins = root.GetComponentsInChildren<Transform>(true)
+                    .Where(item => item.name.StartsWith("Closed Bin "))
+                    .ToArray();
+                var cornerCounts = bins.GroupBy(item =>
+                        (item.localPosition.x < 0f, item.localPosition.z < 0f))
+                    .Select(group => group.Count())
+                    .OrderBy(count => count)
+                    .ToArray();
+
+                Assert.That(cornerCounts, Is.EqualTo(new[] { 4, 5, 5, 6 }));
+                Assert.That(bins.Select(item => item.localScale.x).Distinct().Count(), Is.GreaterThan(2));
+                Assert.That(bins.Select(item => item.localScale.y).Distinct().Count(), Is.GreaterThan(2));
             }
             finally
             {

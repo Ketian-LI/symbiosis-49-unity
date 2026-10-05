@@ -18,6 +18,17 @@ namespace UrbanWildlifeRooms.Core
 
         public event Action StateChanged;
         public EcologicalMetricsSnapshot Snapshot { get; private set; }
+        public int ResidentCount { get; private set; }
+        public int NaturalFoodPortions { get; private set; }
+        public int SeedFoodPortions { get; private set; }
+        public int NutFoodPortions { get; private set; }
+        public int InsectFoodPortions { get; private set; }
+        public int DiscardedFoodPortions { get; private set; }
+        public int PlayerFoodPortions { get; private set; }
+        public int LivingAnimalCount { get; private set; }
+        public int LivingUnfedCount { get; private set; }
+        public int TotalAnimalSlots { get; private set; }
+        public int MatureOakCount { get; private set; }
 
         public void Initialize(
             WasteManagementController wasteController,
@@ -63,23 +74,38 @@ namespace UrbanWildlifeRooms.Core
         private void Refresh()
         {
             var residentStates = residents.Model?.Residents;
+            ResidentCount = residentStates?.Count ?? 0;
             var commute = residentStates != null && residentStates.Count > 0
                 ? residentStates.Average(item => item.lastEfficiency)
                 : 1f;
-            var naturalPortions = naturalFood.Model?.TotalPortions ?? 0;
-            var playerPortions = playerFood.Model?.Sources.Values.Sum(item => item.portions) ?? 0;
-            var living = population.LivingCount(WildlifeSpecies.Pigeon) +
+            NaturalFoodPortions = naturalFood.Model?.TotalPortions ?? 0;
+            var naturalSources = naturalFood.Model?.Sources.Values;
+            SeedFoodPortions = naturalSources?.Where(item => item.kind == NaturalFoodKind.Seed)
+                .Sum(item => item.portions) ?? 0;
+            NutFoodPortions = naturalSources?.Where(item => item.kind == NaturalFoodKind.Nut)
+                .Sum(item => item.portions) ?? 0;
+            InsectFoodPortions = naturalSources?.Where(item => item.kind == NaturalFoodKind.Insect)
+                .Sum(item => item.portions) ?? 0;
+            DiscardedFoodPortions = naturalSources?.Where(item => item.kind == NaturalFoodKind.DiscardedFood)
+                .Sum(item => item.portions) ?? 0;
+            PlayerFoodPortions = playerFood.Model?.Sources.Values.Sum(item => item.portions) ?? 0;
+            LivingAnimalCount = population.LivingCount(WildlifeSpecies.Pigeon) +
                          population.LivingCount(WildlifeSpecies.Squirrel) +
                          population.LivingCount(WildlifeSpecies.Hedgehog) +
                          population.LivingCount(WildlifeSpecies.Fox);
-            var matureTrees = oakTrees.Model?.Trees.Values.Count(item => item.stage == OakTreeStage.Mature) ?? 0;
+            TotalAnimalSlots = population.TotalCount(WildlifeSpecies.Pigeon) +
+                               population.TotalCount(WildlifeSpecies.Squirrel) +
+                               population.TotalCount(WildlifeSpecies.Hedgehog) +
+                               population.TotalCount(WildlifeSpecies.Fox);
+            LivingUnfedCount = needs.LivingUnfedCount;
+            MatureOakCount = oakTrees.Model?.Trees.Values.Count(item => item.stage == OakTreeStage.Mature) ?? 0;
             var hungry = needs.Model?.Animals.Values.Count(item => item.hungerDays >= 1) ?? 0;
             Snapshot = EcologicalMetricsModel.Calculate(
                 waste.HumanFunctionPenalty,
                 commute,
-                naturalPortions + playerPortions,
-                living,
-                matureTrees,
+                NaturalFoodPortions + PlayerFoodPortions,
+                LivingAnimalCount,
+                MatureOakCount,
                 hungry,
                 mortality.Model?.TotalDeaths ?? 0,
                 mortality.Model?.TrafficDeaths ?? 0);

@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 namespace UrbanWildlifeRooms.UI
 {
@@ -12,81 +11,82 @@ namespace UrbanWildlifeRooms.UI
         ISelectHandler,
         IDeselectHandler
     {
-        private Image artwork;
-        private Sprite normalSprite;
-        private Sprite highlightedSprite;
+        private RoundedPanelGraphic artwork;
         private RectTransform visualTarget;
-        private bool highlighted;
+        private bool pointerInside;
+        private bool selected;
         private bool pressed;
 
-        public void Initialize(Image targetArtwork, Sprite defaultSprite, Sprite hoverSprite)
+        private static readonly Color RestingTint = new(0.10f, 0.17f, 0.19f, 0.42f);
+        private static readonly Color HighlightTint = new(0.44f, 0.80f, 0.91f, 0.55f);
+        private static readonly Color PressedTint = new(0.42f, 0.78f, 0.89f, 0.68f);
+        private static readonly Color RestingBorder = new(0.97f, 0.92f, 0.80f, 0.75f);
+        private static readonly Color HighlightBorder = new(0.66f, 0.95f, 1f, 0.95f);
+
+        public void Initialize(RoundedPanelGraphic targetArtwork)
         {
             artwork = targetArtwork;
-            normalSprite = defaultSprite;
-            highlightedSprite = hoverSprite;
             visualTarget = targetArtwork != null ? targetArtwork.rectTransform : null;
-            Apply(false, false);
+            Apply();
         }
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            highlighted = true;
-            Apply(true, pressed);
+            pointerInside = true;
+            Apply();
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            highlighted = false;
-            Apply(false, pressed);
+            pointerInside = false;
+            Apply();
         }
 
         public void OnPointerDown(PointerEventData eventData)
         {
             pressed = true;
-            Apply(highlighted, true);
+            Apply();
         }
 
         public void OnPointerUp(PointerEventData eventData)
         {
             pressed = false;
-            Apply(highlighted, false);
+            Apply();
         }
 
         public void OnSelect(BaseEventData eventData)
         {
-            highlighted = true;
-            Apply(true, pressed);
+            selected = true;
+            Apply();
         }
 
         public void OnDeselect(BaseEventData eventData)
         {
-            highlighted = false;
+            selected = false;
             pressed = false;
-            Apply(false, false);
+            Apply();
         }
 
         private void OnDisable()
         {
-            highlighted = false;
+            pointerInside = false;
+            selected = false;
             pressed = false;
-            Apply(false, false);
+            Apply();
         }
 
-        private void Apply(bool showHighlight, bool showPressed)
+        private void Apply()
         {
+            var showHighlight = pointerInside || selected;
             if (artwork != null)
             {
-                artwork.sprite = showHighlight && highlightedSprite != null
-                    ? highlightedSprite
-                    : normalSprite;
-                artwork.color = showPressed
-                    ? new Color(0.88f, 0.92f, 0.94f, 1f)
-                    : Color.white;
+                artwork.color = pressed ? PressedTint : showHighlight ? HighlightTint : RestingTint;
+                artwork.BorderColor = showHighlight || pressed ? HighlightBorder : RestingBorder;
             }
 
             if (visualTarget != null)
             {
-                var scale = showPressed ? 0.985f : showHighlight ? 1.012f : 1f;
+                var scale = pressed ? 0.985f : showHighlight ? 1.012f : 1f;
                 visualTarget.localScale = new Vector3(scale, scale, 1f);
             }
         }

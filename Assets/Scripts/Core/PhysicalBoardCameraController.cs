@@ -15,6 +15,7 @@ namespace UrbanWildlifeRooms.Core
     /// </summary>
     public sealed class PhysicalBoardCameraController : MonoBehaviour
     {
+        private const float MaximumObservationAgeSeconds = 0.5f;
         private readonly PhysicalBoardStabilityTracker stability = new();
         private readonly List<RoomPlacementData> pendingObservation = new();
         private GameRuntimeController runtime;
@@ -25,6 +26,7 @@ namespace UrbanWildlifeRooms.Core
         private string pendingSignature = string.Empty;
         private PhysicalBoardValidationResult pendingValidation;
         private bool hasObservation;
+        private float lastObservationTime;
 
         public bool CameraAvailable => cameraTexture != null;
         public string ActiveCameraName => cameraTexture?.deviceName ?? string.Empty;
@@ -74,6 +76,15 @@ namespace UrbanWildlifeRooms.Core
             }
             if (!hasObservation || runtime.CameraCalibrationOpen || !runtime.HasActiveRun)
             {
+                return;
+            }
+            if (Time.unscaledTime - lastObservationTime > MaximumObservationAgeSeconds)
+            {
+                hasObservation = false;
+                stability.Reset();
+                if (pendingSignature != appliedSignature &&
+                    runtime.CameraRecognitionState != CameraRecognitionFeedbackState.Scanning)
+                    runtime.BeginCameraRecognition();
                 return;
             }
             if (pendingSignature == appliedSignature)
@@ -126,6 +137,7 @@ namespace UrbanWildlifeRooms.Core
             pendingValidation = PhysicalBoardRecognitionModel.Validate(pendingObservation);
             pendingSignature = pendingValidation.Signature;
             hasObservation = true;
+            lastObservationTime = Time.unscaledTime;
 
             if (!runtime.CameraCalibrationOpen)
             {
@@ -141,6 +153,37 @@ namespace UrbanWildlifeRooms.Core
                         ? CameraCalibrationCellState.Unresolved
                         : CameraCalibrationCellState.Recognised);
             }
+        }
+
+        // Detector-independent entry point: the camera/marker adapter supplies
+        // four board-boundary corners and each marker's identity, centre and top.
+        // A failed frame cancels stabilisation; an old valid frame must never
+        // be confirmed after the physical board becomes unreadable.
+        public bool SubmitImageObservations(
+            PhysicalBoardImageCalibration calibration,
+            IEnumerable<PhysicalRoomImageObservation> observations,
+            out PhysicalProjectionError error)
+        {
+            if (!PhysicalBoardProjectionModel.TryMap(calibration, observations,
+                    out var placements, out error))
+            {
+                pendingObservation.Clear();
+                pendingSignature = string.Empty;
+                hasObservation = false;
+                stability.Reset();
+                if (runtime != null && runtime.CameraCalibrationOpen)
+                    runtime.ReportRecognisedPhysicalModules(0);
+                else if (runtime != null && runtime.HasActiveRun)
+                {
+                    runtime.BeginCameraRecognition();
+                    runtime.ReportCameraRecognitionInvalidPlacement();
+                }
+                if (hud != null)
+                    hud.SetCameraInvalidPlacementRects(Array.Empty<Rect>());
+                return false;
+            }
+            SubmitObservation(placements);
+            return true;
         }
 
         private void HandleCalibrationRequested()

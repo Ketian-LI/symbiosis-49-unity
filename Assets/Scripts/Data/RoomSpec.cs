@@ -14,7 +14,19 @@ namespace UrbanWildlifeRooms.Data
         PigeonHabitat,
         OakHabitat,
         ShrubHabitat,
-        FoxDen
+        FoxDen,
+        SharedSpace,
+        EcologicalBuffer,
+        CommunitySquare
+    }
+
+    public enum ParkGreenRole
+    {
+        None,
+        Connector,
+        SquirrelGrove,
+        HedgehogGarden,
+        FoxEdge
     }
 
     [Serializable]
@@ -30,7 +42,8 @@ namespace UrbanWildlifeRooms.Data
             int height,
             bool movable,
             string description,
-            bool startsRecovering = false)
+            bool startsRecovering = false,
+            ParkGreenRole greenRole = ParkGreenRole.None)
         {
             Id = id;
             DisplayName = displayName;
@@ -42,6 +55,7 @@ namespace UrbanWildlifeRooms.Data
             Movable = movable;
             Description = description;
             StartsRecovering = startsRecovering;
+            GreenRole = greenRole;
         }
 
         public string Id { get; }
@@ -54,6 +68,9 @@ namespace UrbanWildlifeRooms.Data
         public bool Movable { get; }
         public string Description { get; }
         public bool StartsRecovering { get; }
+        public ParkGreenRole GreenRole { get; }
+        public bool IsGreen => Type is RoomType.CentralPark or RoomType.OakHabitat or
+            RoomType.ShrubHabitat || GreenRole != ParkGreenRole.None;
         public int CellCount => Width * Height;
         public string SizeLabel => $"{Width}×{Height}";
     }

@@ -17,6 +17,7 @@ namespace UrbanWildlifeRooms.Core
         private readonly PlayerFeedingInteractionModel interaction = new();
         private GameRuntimeController runtime;
         private ResourceEconomyController economy;
+        private WasteManagementController waste;
         private RoomLayoutEditorController layoutEditor;
         private AnimalNavigationCoordinator navigation;
         private GarageTrafficController traffic;
@@ -25,22 +26,35 @@ namespace UrbanWildlifeRooms.Core
         private Transform foodRoot;
         private Material material;
         private HideFlags generatedHideFlags;
+        private double lastProcessedSimulationSeconds;
+        private bool retryAnimalDispatch;
+        private int lastManualFeedingDay;
+
+        // A feed on day 1 becomes available again on day 4. This is a
+        // renewable emergency action, not a lifetime cap in Endless Mode.
+        public const int ManualFeedingIntervalDays = 3;
 
         public event Action StateChanged;
         public event Action<PlayerFoodSourceState> FoodPlaced;
         public event Action<string> FoodExpired;
+        public event Action<string, int, bool> LeftoverFoodDiscarded;
         public event Action<string> InvalidPlacementAttempted;
         public event Action<IWildlifeLayoutAgent> AnimalAte;
         public event Action FeedingModeChanged;
 
         public PlayerFoodSourceModel Model { get; private set; }
         public bool FeedingModeActive => interaction.IsActive;
+        public int LastManualFeedingDay => lastManualFeedingDay;
+        public int NextManualFeedingDay => lastManualFeedingDay <= 0
+            ? 1 : lastManualFeedingDay + ManualFeedingIntervalDays;
+        public int ManualFeedingDaysRemaining => runtime == null
+            ? 0 : Mathf.Max(0, NextManualFeedingDay - runtime.Clock.DayNumber);
         public bool CanActivateFeedingMode =>
             InteractionAllowed &&
+            runtime.CanTakeDailyAction &&
+            ManualFeedingDaysRemaining == 0 &&
             Model != null &&
-            Model.PlayerPlacedCount < PlayerFoodSourceModel.MaximumSources &&
-            economy != null &&
-            economy.Balance >= ResourceEconomyModel.FeedActionCost;
+            Model.PlayerPlacedCount < PlayerFoodSourceModel.MaximumSources;
         public int PrimarySquirrelCachePortions => squirrels.Count > 0
             ? squirrels[0].CachePortions
             : 0;
@@ -51,6 +65,7 @@ namespace UrbanWildlifeRooms.Core
         public void Initialize(
             GameRuntimeController runtimeController,
             ResourceEconomyController economyController,
+            WasteManagementController wasteController,
             RoomLayoutEditorController editorController,
             AnimalNavigationCoordinator navigationCoordinator,
             GarageTrafficController trafficController,
@@ -64,8 +79,10 @@ namespace UrbanWildlifeRooms.Core
         {
             runtime = runtimeController;
             economy = economyController;
+            waste = wasteController;
             layoutEditor = editorController;
             navigation = navigationCoordinator;
+            navigation.NavigationChanged += HandleNavigationChanged;
             traffic = trafficController;
             worldCamera = camera;
             mapRoot = boardRoot;
@@ -75,8 +92,10 @@ namespace UrbanWildlifeRooms.Core
             pigeons.AddRange((pigeonAgents ?? Array.Empty<PigeonDemoAgent>()).Where(agent => agent != null));
             squirrels.AddRange((squirrelAgents ?? Array.Empty<SquirrelDemoAgent>()).Where(agent => agent != null));
             Model = new PlayerFoodSourceModel();
+            lastProcessedSimulationSeconds = runtime.Clock.TotalSeconds;
             runtime.RestartRequested += HandleRestartRequested;
             runtime.StateChanged += HandleRuntimeStateChanged;
+            runtime.BindPlayerFeeding(this);
         }
 
         private void OnDestroy()
@@ -85,6 +104,10 @@ namespace UrbanWildlifeRooms.Core
             {
                 runtime.RestartRequested -= HandleRestartRequested;
                 runtime.StateChanged -= HandleRuntimeStateChanged;
+            }
+            if (navigation != null)
+            {
+                navigation.NavigationChanged -= HandleNavigationChanged;
             }
         }
 
@@ -95,10 +118,31 @@ namespace UrbanWildlifeRooms.Core
                 return;
             }
 
-            foreach (var expiredId in Model.Advance(Time.deltaTime))
+            var elapsed = runtime.Clock.TotalSeconds - lastProcessedSimulationSeconds;
+            lastProcessedSimulationSeconds = runtime.Clock.TotalSeconds;
+            foreach (var expired in Model.AdvanceExpired((float)Math.Max(0d, elapsed)))
             {
-                RemoveVisual(expiredId);
-                FoodExpired?.Invoke(expiredId);
+                RemoveVisual(expired.id);
+                FoodExpired?.Invoke(expired.id);
+                if (expired.playerPlaced && expired.portions > 0 && waste?.Model != null)
+                {
+                    var roomId = FindRoomId(expired.worldPosition);
+                    if (string.IsNullOrEmpty(roomId))
+                    {
+                        roomId = expired.roomId;
+                    }
+                    var routed = waste.Model.RouteWaste(roomId, 1);
+                    LeftoverFoodDiscarded?.Invoke(roomId, expired.portions, routed);
+                }
+            }
+
+            if (retryAnimalDispatch && runtime.HasActiveRun && !runtime.IsPaused)
+            {
+                retryAnimalDispatch = false;
+                foreach (var source in Model.Sources.Values.Where(item => item.portions > 0).ToArray())
+                {
+                    DispatchAnimals(source);
+                }
             }
 
             if (FeedingModeActive && Input.GetMouseButtonDown(1))
@@ -149,19 +193,17 @@ namespace UrbanWildlifeRooms.Core
 
         public bool TryPlaceFood(string roomId, Vector3 worldPosition)
         {
-            if (Model.PlayerPlacedCount >= PlayerFoodSourceModel.MaximumSources ||
-                !economy.TrySpend(ResourceEconomyModel.FeedActionCost))
+            if (runtime == null || !runtime.CanTakeDailyAction || ManualFeedingDaysRemaining > 0 ||
+                Model.PlayerPlacedCount >= PlayerFoodSourceModel.MaximumSources ||
+                string.IsNullOrEmpty(roomId) ||
+                !Model.TryCreate(roomId, worldPosition, out var source))
             {
                 ShowInvalidMarker(worldPosition);
                 InvalidPlacementAttempted?.Invoke(roomId);
                 return false;
             }
 
-            if (!Model.TryCreate(roomId, worldPosition, out var source))
-            {
-                return false;
-            }
-
+            lastManualFeedingDay = runtime.Clock.DayNumber;
             CreateVisual(source);
             DispatchAnimals(source);
             FoodPlaced?.Invoke(source);
@@ -185,10 +227,18 @@ namespace UrbanWildlifeRooms.Core
         public void RestoreSession(
             IEnumerable<PlayerFoodSourceSaveData> savedSources,
             int squirrelCachePortions = 0,
-            IEnumerable<int> allSquirrelCachePortions = null)
+            IEnumerable<int> allSquirrelCachePortions = null,
+            int lastFeedingDay = 0)
         {
             ClearVisuals();
             Model.Restore(savedSources);
+            // Older saves had no cooldown field. A still-active manual food
+            // source is evidence that a feed happened on the saved day.
+            lastManualFeedingDay = Mathf.Clamp(lastFeedingDay > 0
+                ? lastFeedingDay
+                : Model.PlayerPlacedCount > 0 ? runtime.Clock.DayNumber : 0,
+                0, runtime.Clock.DayNumber);
+            lastProcessedSimulationSeconds = runtime.Clock.TotalSeconds;
             foreach (var source in Model.Sources.Values)
             {
                 CreateVisual(source);
@@ -254,6 +304,13 @@ namespace UrbanWildlifeRooms.Core
             }
         }
 
+        private void HandleNavigationChanged()
+        {
+            // A route change can cancel a trip to player-placed food before
+            // collection. Its unclaimed portion remains available to retry.
+            retryAnimalDispatch = true;
+        }
+
         private void DispatchAnimals(PlayerFoodSourceState source)
         {
             var availablePigeons = pigeons
@@ -264,7 +321,12 @@ namespace UrbanWildlifeRooms.Core
             for (var index = 0; index < availablePigeons.Count; index++)
             {
                 var pigeon = availablePigeons[index];
-                var route = BuildWaypoints(pigeon.transform.position, source.worldPosition, source.roomId);
+                var route = BuildWaypoints(pigeon, pigeon.transform.position,
+                    source.worldPosition, source.roomId);
+                if (route.Count == 0)
+                {
+                    continue;
+                }
                 var delay = Mathf.Lerp(0.2f, 0.8f, availablePigeons.Count <= 1
                     ? 0f
                     : index / (float)(availablePigeons.Count - 1));
@@ -274,24 +336,45 @@ namespace UrbanWildlifeRooms.Core
                     () => TryClaimAndReportMeal(source.id, pigeon));
             }
 
+            DispatchSquirrels(source);
+        }
+
+        private void DispatchSquirrels(PlayerFoodSourceState source)
+        {
+            var foodRoom = FindRoomId(source.worldPosition);
+            if (string.IsNullOrEmpty(foodRoom))
+            {
+                return;
+            }
             foreach (var squirrel in squirrels
                          .Where(agent => !agent.IsRespondingToFood && agent.CanStoreFood)
                          .OrderBy(agent => (agent.transform.position - source.worldPosition).sqrMagnitude))
             {
+                var cacheRoom = FindRoomId(squirrel.CachePosition);
+                var routeMap = navigation.NavigationMapFor(squirrel);
+                if (!HabitatFoodNetworkModel.IsWithinSquirrelHomeRange(
+                        routeMap, cacheRoom, foodRoom))
+                {
+                    continue;
+                }
                 if (!TryBuildGroundWaypoints(
+                    squirrel,
                     squirrel.transform.position,
                     source.worldPosition,
-                    source.roomId,
+                    foodRoom,
                     out var routeToFood,
                     out var foodHazard,
-                    out var foodFatal) ||
+                    out var foodFatal,
+                    cacheRoom) ||
                     !TryBuildGroundWaypoints(
+                    squirrel,
                     source.worldPosition,
                     squirrel.CachePosition,
-                    FindRoomId(squirrel.CachePosition),
+                    cacheRoom,
                     out var routeToCache,
                     out var cacheHazard,
-                    out var cacheFatal))
+                    out var cacheFatal,
+                    cacheRoom))
                 {
                     continue;
                 }
@@ -344,29 +427,31 @@ namespace UrbanWildlifeRooms.Core
         }
 
         private IReadOnlyList<Vector3> BuildWaypoints(
+            IWildlifeLayoutAgent animal,
             Vector3 worldStart,
             Vector3 worldDestination,
             string destinationRoomId)
         {
-            var result = new List<Vector3>();
+            var routeMap = navigation.NavigationMapFor(animal);
             var startRoomId = FindRoomId(worldStart);
-            if (!string.IsNullOrEmpty(startRoomId) &&
-                !string.IsNullOrEmpty(destinationRoomId) &&
-                navigation.NavigationMap.TryFindRoute(startRoomId, destinationRoomId, out var route))
+            if (string.IsNullOrEmpty(startRoomId) ||
+                string.IsNullOrEmpty(destinationRoomId) ||
+                !routeMap.TryFindRoute(startRoomId, destinationRoomId, out var route))
             {
-                for (var index = 0; index < route.Count - 1; index++)
+                return Array.Empty<Vector3>();
+            }
+
+            var result = new List<Vector3>();
+            for (var index = 0; index < route.Count - 1; index++)
+            {
+                if (!routeMap.TryGetConnectionPoint(
+                        route[index], route[index + 1], out var localDoor))
                 {
-                    if (!navigation.NavigationMap.TryGetConnectionPoint(
-                            route[index],
-                            route[index + 1],
-                            out var localDoor))
-                    {
-                        continue;
-                    }
-                    var waypoint = mapRoot.TransformPoint(new Vector3(localDoor.x, 0f, localDoor.y));
-                    waypoint.y = worldStart.y;
-                    result.Add(waypoint);
+                    return Array.Empty<Vector3>();
                 }
+                var waypoint = mapRoot.TransformPoint(new Vector3(localDoor.x, 0f, localDoor.y));
+                waypoint.y = worldStart.y;
+                result.Add(waypoint);
             }
 
             var final = worldDestination;
@@ -376,24 +461,48 @@ namespace UrbanWildlifeRooms.Core
         }
 
         private bool TryBuildGroundWaypoints(
+            SquirrelDemoAgent squirrel,
             Vector3 worldStart,
             Vector3 worldDestination,
             string destinationRoomId,
             out IReadOnlyList<Vector3> waypoints,
             out int hazardWaypoint,
-            out bool fatal)
+            out bool fatal,
+            string squirrelHomeRoomId = null)
         {
             hazardWaypoint = -1;
             fatal = false;
+            var routeMap = navigation.NavigationMapFor(squirrel);
             var startRoomId = FindRoomId(worldStart);
+            if (squirrelHomeRoomId != null &&
+                (!HabitatFoodNetworkModel.IsWithinSquirrelHomeRange(
+                     routeMap, squirrelHomeRoomId, startRoomId) ||
+                 !HabitatFoodNetworkModel.IsWithinSquirrelHomeRange(
+                     routeMap, squirrelHomeRoomId, destinationRoomId)))
+            {
+                waypoints = Array.Empty<Vector3>();
+                return false;
+            }
             if (string.IsNullOrEmpty(startRoomId) || string.IsNullOrEmpty(destinationRoomId) || traffic == null)
             {
-                waypoints = BuildWaypoints(worldStart, worldDestination, destinationRoomId);
-                return true;
+                if (squirrelHomeRoomId != null &&
+                    (!routeMap.TryFindRoute(startRoomId, destinationRoomId,
+                         out var localRoute) ||
+                     !HabitatFoodNetworkModel.SquirrelRouteStaysNearHome(
+                         routeMap, squirrelHomeRoomId, localRoute)))
+                {
+                    waypoints = Array.Empty<Vector3>();
+                    return false;
+                }
+                waypoints = BuildWaypoints(squirrel, worldStart, worldDestination,
+                    destinationRoomId);
+                return waypoints.Count > 0;
             }
 
-            var plan = traffic.PlanRoute(startRoomId, destinationRoomId);
-            if (plan.Abandoned)
+            var plan = traffic.PlanRoute(startRoomId, destinationRoomId, routeMap);
+            if (plan.Abandoned ||
+                squirrelHomeRoomId != null && !HabitatFoodNetworkModel.SquirrelRouteStaysNearHome(
+                    routeMap, squirrelHomeRoomId, plan.Rooms))
             {
                 waypoints = Array.Empty<Vector3>();
                 return false;
@@ -401,7 +510,7 @@ namespace UrbanWildlifeRooms.Core
             var result = new List<Vector3>();
             for (var index = 0; index < plan.Rooms.Count - 1; index++)
             {
-                if (!navigation.NavigationMap.TryGetConnectionPoint(
+                if (!routeMap.TryGetConnectionPoint(
                         plan.Rooms[index],
                         plan.Rooms[index + 1],
                         out var localDoor))
@@ -474,7 +583,10 @@ namespace UrbanWildlifeRooms.Core
         private void HandleRestartRequested()
         {
             CancelFeedingMode();
+            retryAnimalDispatch = false;
+            lastManualFeedingDay = 0;
             Model?.Reset();
+            lastProcessedSimulationSeconds = runtime.Clock.TotalSeconds;
             foreach (var squirrel in squirrels)
             {
                 squirrel.RestoreCache(0);

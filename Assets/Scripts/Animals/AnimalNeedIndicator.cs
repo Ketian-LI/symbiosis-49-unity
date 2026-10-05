@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UrbanWildlifeRooms.Presentation;
 using UrbanWildlifeRooms.UI;
 
 namespace UrbanWildlifeRooms.Animals
@@ -14,6 +15,7 @@ namespace UrbanWildlifeRooms.Animals
         private GameObject hungerIcon;
         private GameObject habitatIcon;
         private GameObject safetyIcon;
+        private WorldStatusPips hungerPips;
         private bool selected;
         private bool alive = true;
         private bool hungry;
@@ -53,6 +55,10 @@ namespace UrbanWildlifeRooms.Animals
                 62,
                 hideFlags);
 
+            hungerPips = gameObject.AddComponent<WorldStatusPips>();
+            hungerPips.Initialize(1.02f, 0.088f, hideFlags);
+            hungerPips.SetHungerDays(0);
+
             Refresh();
         }
 
@@ -65,7 +71,18 @@ namespace UrbanWildlifeRooms.Animals
         public void SetAlive(bool value)
         {
             alive = value;
+            hungerPips?.SetVisible(value);
             Refresh();
+        }
+
+        public void SetHungerDays(int days)
+        {
+            hungerPips?.SetHungerDays(days);
+        }
+
+        public void SetFoodAccess(int hungerDays, bool mealAccessible)
+        {
+            hungerPips?.SetHungerAccess(hungerDays, mealAccessible);
         }
 
         public void SetNeeds(bool hungerNeedsAttention, bool habitatNeedsAttention, bool safetyDanger)

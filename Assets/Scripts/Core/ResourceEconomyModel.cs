@@ -10,6 +10,7 @@ namespace UrbanWildlifeRooms.Core
             float openingBalance,
             float production,
             int foodServiceCost,
+            int infrastructureCost,
             float closingBalance,
             float unstoredSurplus)
         {
@@ -17,6 +18,7 @@ namespace UrbanWildlifeRooms.Core
             OpeningBalance = openingBalance;
             Production = production;
             FoodServiceCost = foodServiceCost;
+            InfrastructureCost = infrastructureCost;
             ClosingBalance = closingBalance;
             UnstoredSurplus = unstoredSurplus;
         }
@@ -25,6 +27,8 @@ namespace UrbanWildlifeRooms.Core
         public float OpeningBalance { get; }
         public float Production { get; }
         public int FoodServiceCost { get; }
+        public int InfrastructureCost { get; }
+        public int TotalCost => FoodServiceCost + InfrastructureCost;
         public float ClosingBalance { get; }
         public float UnstoredSurplus { get; }
         public bool Failed => ClosingBalance < 0f;
@@ -33,13 +37,11 @@ namespace UrbanWildlifeRooms.Core
     [Serializable]
     public sealed class ResourceEconomyModel
     {
-        public const float StartingBalance = 8f;
+        public const float StartingBalance = 10f;
         public const float MaximumBalance = 20f;
         public const int FeedActionCost = 1;
         public const int EmergencyCollectionCost = 2;
         public const int PlantTreeCost = 6;
-        public const int MoveOneCellRoomCost = 2;
-        public const int MoveTwoCellRoomCost = 3;
 
         public float Balance { get; private set; } = StartingBalance;
         public float CumulativeIncome { get; private set; }
@@ -67,17 +69,19 @@ namespace UrbanWildlifeRooms.Core
         public ResourceSettlement SettleDay(
             int dayNumber,
             float completedWorkProduction,
-            int foodServiceCost)
+            int foodServiceCost,
+            int infrastructureCost = 0)
         {
             var opening = Balance;
             var production = Mathf.Max(0f, completedWorkProduction);
             var spending = Mathf.Max(0, foodServiceCost);
-            var uncapped = Balance + production - spending;
+            var upkeep = Mathf.Max(0, infrastructureCost);
+            var uncapped = Balance + production - spending - upkeep;
             var surplus = Mathf.Max(0f, uncapped - MaximumBalance);
 
             Balance = Mathf.Min(MaximumBalance, uncapped);
             CumulativeIncome += production;
-            CumulativeSpending += spending;
+            CumulativeSpending += spending + upkeep;
             UnstoredSurplus += surplus;
             PeakBalance = Mathf.Max(PeakBalance, Balance);
 
@@ -86,6 +90,7 @@ namespace UrbanWildlifeRooms.Core
                 opening,
                 production,
                 spending,
+                upkeep,
                 Balance,
                 surplus);
         }
@@ -140,13 +145,16 @@ namespace UrbanWildlifeRooms.Core
             return cost;
         }
 
-        public static int RoomMovementCost(int cellCount)
+        // Shared utilities scale in groups of four residents. Food service is
+        // accounted for separately; charging another point for every pair of
+        // homes made even a fully efficient seven-resident town lose resources
+        // every day before the player could make a spatial decision.
+        public static int InfrastructureCost(int residentCount, int affectedWasteRooms)
         {
-            return cellCount <= 0
-                ? 0
-                : cellCount == 1
-                    ? MoveOneCellRoomCost
-                    : MoveTwoCellRoomCost;
+            var residents = Mathf.Max(0, residentCount);
+            var affected = Mathf.Max(0, affectedWasteRooms);
+            return (residents == 0 ? 0 : 1 + residents / 4) + affected * 2;
         }
+
     }
 }

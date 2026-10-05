@@ -1,0 +1,23 @@
+fileFormatVersion: 2
+guid: 602275ef3a35e3646902eaf014e0df65
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - Nunito
+  - Noto Sans SC
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: c23e3601abb80994db041b7a58293818, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

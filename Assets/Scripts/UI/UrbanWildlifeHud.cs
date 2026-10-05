@@ -20,10 +20,23 @@ namespace UrbanWildlifeRooms.UI
         private const float DesktopEdgeFadeDuration = 0.5f;
         private const float GameplayHudFadeDuration = 0.3f;
 
-        private readonly Dictionary<int, Image> speedButtons = new();
+        private readonly Dictionary<int, RoundedPanelGraphic> speedButtons = new();
+        private readonly Dictionary<int, Text> speedButtonLabels = new();
+        private Button skipDayButton;
+        private Text skipDayLabel;
+        private GameObject marketForecastPanel;
+        private Text marketForecastLabel;
+        private GameObject needRiskPanel;
+        private Text residentRiskLabel;
+        private Text animalRiskLabel;
+        private AnimalNeedsController animalNeeds;
         private readonly Dictionary<WildlifeSpecies, Text> populationCounts = new();
+        private readonly Dictionary<WildlifeSpecies, AnimalPopulationBadgeGraphic> populationBadges = new();
+        private readonly Dictionary<WildlifeSpecies, Image> populationPortraits = new();
+        private readonly Dictionary<WildlifeSpecies, Text> populationDeathTooltips = new();
         private readonly Dictionary<EcologicalMetricKind, CircularMeterGraphic> ecologicalMeters = new();
         private readonly Dictionary<EcologicalMetricKind, Text> ecologicalTooltips = new();
+        private readonly Dictionary<EcologicalMetricKind, Text> ecologicalValueBadges = new();
         private readonly Dictionary<EcologicalMetricKind, Color> ecologicalColors = new();
 
         private Font font;
@@ -67,6 +80,10 @@ namespace UrbanWildlifeRooms.UI
         private GameObject roomUseChip;
         private Image roomFunctionIcon;
         private Image roomUseIcon;
+        private Text roomTypeTooltipText;
+        private Text roomFunctionTooltipText;
+        private Text roomUseTooltipText;
+        private readonly List<RectTransform> roomContextTooltipRects = new();
         private Transform selectedRoomTransform;
         private RoomSpec selectedRoomSpec;
         private GameObject roomHoverLabel;
@@ -90,6 +107,7 @@ namespace UrbanWildlifeRooms.UI
         private Text restartConfirmationMessage;
         private Text restartConfirmLabel;
         private Text restartCancelLabel;
+        private Font restartChineseFont;
         private Text settingsTitle;
         private Text volumeLabel;
         private Image muteIcon;
@@ -112,19 +130,42 @@ namespace UrbanWildlifeRooms.UI
         private bool desktopStateKnown;
         private bool previousDesktopState;
         private GameObject enterEditButtonObject;
+        private RoundedPanelGraphic enterEditBacking;
+        private Text enterEditLabel;
         private GameObject editToolbar;
+        private GameObject layoutImpactPanel;
+        private Text layoutImpactText;
+        private Text layoutImpactScopeText;
+        private Text layoutImpactPageLabel;
+        private Button layoutImpactPreviousButton;
+        private Button layoutImpactNextButton;
+        private readonly LayoutImpactCard[] layoutImpactCards = new LayoutImpactCard[2];
+        private int layoutImpactPage;
+        private bool layoutImpactWasEditing;
+        private GameObject hedgehogNightPanel;
+        private Text hedgehogNightText;
+        private HedgehogForagingController hedgehogForaging;
+        private GameObject dailyOutcomePanel;
+        private Text dailyOutcomeText;
+        private DailyOutcomeController dailyOutcome;
         private Image trayRoomIcon;
         private Text editStatus;
         private Button rotateEditButton;
         private Button confirmEditButton;
         private WasteCollectionNotification wasteCollectionNotification;
-        private ResourcePointCounter resourcePointCounter;
+        private RectTransform workforceCounterRect;
+        private Text workforceCounterText;
         private ResidentStatusOverlay residentStatusOverlay;
         private ResidentPopulationController residentPopulation;
         private Text residentCountText;
         private OakTreeLifecycleController oakTreeLifecycle;
         private AnimalPopulationController animalPopulation;
+        private AnimalMortalityController animalMortality;
         private EcologicalMetricsController ecologicalMetrics;
+        private bool? lastEcologicalLanguageChinese;
+        private CircularMeterGraphic mortalityMeter;
+        private Text mortalityTooltip;
+        private Text mortalityCountText;
         private ResearchSessionController researchSession;
         private FirstRunOnboardingController onboardingController;
         private CircularMeterGraphic researchDurationRing;
@@ -142,11 +183,37 @@ namespace UrbanWildlifeRooms.UI
         private PlayerFeedingController playerFeeding;
         private GameObject feedingModeButtonObject;
         private Button feedingModeButton;
-        private Image feedingModeButtonBackground;
-        private Image feedingModeIcon;
+        private RoundedPanelGraphic feedingModeButtonBacking;
+        private FeedingModeIconGraphic feedingModeIcon;
         private Text feedingModeLabel;
         private GameObject feedingModeHint;
         private Text feedingModeHintLabel;
+        private float feedingWasteNoticeUntil;
+        private string feedingWasteRoomId;
+        private int feedingWastePortions;
+        private bool feedingWasteRouted;
+        private int spatialForecastDay = -1;
+        private int spatialForecastMovementCount = -1;
+        private int spatialForecastGreenCells;
+        private int spatialForecastSeeds;
+        private int spatialForecastSeedMealCeiling = -1;
+        private int spatialForecastLivingPigeons = -1;
+
+        public RectTransform LayoutConfirmButtonRect =>
+            confirmEditButton != null ? confirmEditButton.GetComponent<RectTransform>() : null;
+        public RectTransform ClockDialRect =>
+            clockDial != null ? clockDial.transform.parent as RectTransform : null;
+        public RectTransform WorkforceCounterRect => workforceCounterRect;
+        public RectTransform LayoutEditButtonRect =>
+            enterEditButtonObject != null ? enterEditButtonObject.GetComponent<RectTransform>() : null;
+        public RectTransform FeedingModeButtonRect =>
+            feedingModeButton != null ? feedingModeButton.GetComponent<RectTransform>() : null;
+        public RectTransform GetEcologicalIndicatorRect(EcologicalMetricKind kind) =>
+            ecologicalMeters.TryGetValue(kind, out var meter) && meter != null
+                ? meter.transform.parent as RectTransform
+                : null;
+        public RectTransform AnimalDeathIndicatorRect =>
+            mortalityMeter != null ? mortalityMeter.transform.parent as RectTransform : null;
 
         public void Build(
             Camera camera,
@@ -178,7 +245,11 @@ namespace UrbanWildlifeRooms.UI
             gameplayCanvasGroup = gameplayRoot.gameObject.AddComponent<CanvasGroup>();
             BuildClock();
             BuildIndicators();
+            BuildNeedRiskPanel();
+            BuildMarketForecast();
             BuildPopulation();
+            BuildHedgehogNightReport();
+            BuildDailyOutcomeReport();
             BuildRoomHoverLabel();
             BuildRoomContext();
             BuildLayoutEditingControls();
@@ -192,6 +263,7 @@ namespace UrbanWildlifeRooms.UI
             BuildEventSystem();
 
             runtime.StateChanged += Refresh;
+            runtime.RestartRequested += InvalidateSpatialForecast;
             Refresh();
         }
 
@@ -200,11 +272,16 @@ namespace UrbanWildlifeRooms.UI
             if (runtime != null)
             {
                 runtime.StateChanged -= Refresh;
+                runtime.RestartRequested -= InvalidateSpatialForecast;
             }
             if (layoutEditor != null)
             {
                 layoutEditor.StateChanged -= RefreshLayoutEditor;
+                layoutEditor.LayoutConfirmed -= InvalidateSpatialForecast;
+                layoutEditor.LayoutRestored -= InvalidateSpatialForecast;
             }
+            if (animalNeeds != null)
+                animalNeeds.StateChanged -= RefreshNeedRisk;
             if (oakTreeLifecycle != null)
             {
                 oakTreeLifecycle.StateChanged -= RefreshSelectedRoomContext;
@@ -212,6 +289,10 @@ namespace UrbanWildlifeRooms.UI
             if (animalPopulation != null)
             {
                 animalPopulation.StateChanged -= RefreshAnimalPopulation;
+            }
+            if (animalMortality != null)
+            {
+                animalMortality.StateChanged -= RefreshMortalityIndicator;
             }
             if (ecologicalMetrics != null)
             {
@@ -228,6 +309,15 @@ namespace UrbanWildlifeRooms.UI
             if (playerFeeding != null)
             {
                 playerFeeding.FeedingModeChanged -= RefreshFeedingControls;
+                playerFeeding.LeftoverFoodDiscarded -= HandleLeftoverFoodDiscarded;
+            }
+            if (hedgehogForaging != null)
+            {
+                hedgehogForaging.NightReportChanged -= RefreshHedgehogNightReport;
+            }
+            if (dailyOutcome != null)
+            {
+                dailyOutcome.StateChanged -= RefreshDailyOutcome;
             }
         }
 
@@ -236,15 +326,199 @@ namespace UrbanWildlifeRooms.UI
             if (layoutEditor != null)
             {
                 layoutEditor.StateChanged -= RefreshLayoutEditor;
+                layoutEditor.LayoutConfirmed -= InvalidateSpatialForecast;
+                layoutEditor.LayoutRestored -= InvalidateSpatialForecast;
             }
 
             layoutEditor = editor;
             if (layoutEditor != null)
             {
                 layoutEditor.StateChanged += RefreshLayoutEditor;
+                layoutEditor.LayoutConfirmed += InvalidateSpatialForecast;
+                layoutEditor.LayoutRestored += InvalidateSpatialForecast;
             }
 
+            InvalidateSpatialForecast();
             RefreshLayoutEditor();
+        }
+
+        public void BindHedgehogForaging(HedgehogForagingController controller)
+        {
+            if (hedgehogForaging != null)
+            {
+                hedgehogForaging.NightReportChanged -= RefreshHedgehogNightReport;
+            }
+            hedgehogForaging = controller;
+            if (hedgehogForaging != null)
+            {
+                hedgehogForaging.NightReportChanged += RefreshHedgehogNightReport;
+            }
+            RefreshHedgehogNightReport();
+        }
+
+        public void BindDailyOutcome(DailyOutcomeController controller)
+        {
+            if (dailyOutcome != null)
+            {
+                dailyOutcome.StateChanged -= RefreshDailyOutcome;
+            }
+            dailyOutcome = controller;
+            if (dailyOutcome != null)
+            {
+                dailyOutcome.StateChanged += RefreshDailyOutcome;
+            }
+            RefreshDailyOutcome();
+        }
+
+        private void BuildDailyOutcomeReport()
+        {
+            var panel = CreatePanel("Daily Outcome Report", gameplayRoot,
+                new Color(0.10f, 0.12f, 0.14f, 0.82f));
+            panel.Image.raycastTarget = false;
+            RoundSolidPanel(panel, 14f);
+            dailyOutcomePanel = panel.GameObject;
+            panel.RectTransform.anchorMin = panel.RectTransform.anchorMax = Vector2.zero;
+            panel.RectTransform.pivot = Vector2.zero;
+            panel.RectTransform.anchoredPosition = new Vector2(20f, 224f);
+            panel.RectTransform.sizeDelta = new Vector2(470f, 104f);
+            dailyOutcomeText = CreateText(panel.Transform, "Daily Outcome Summary",
+                string.Empty, 14, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Normal);
+            dailyOutcomeText.raycastTarget = false;
+            dailyOutcomeText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            Stretch(dailyOutcomeText.rectTransform, 14f, 8f);
+            dailyOutcomePanel.SetActive(false);
+        }
+
+        private void RefreshDailyOutcome()
+        {
+            if (dailyOutcomePanel == null || runtime == null)
+            {
+                return;
+            }
+            var report = dailyOutcome?.Model.LastReport ?? default;
+            var visible = runtime.HasActiveRun && !runtime.AtDesktop && !runtime.LayoutEditing &&
+                          report.Day > 0 && runtime.Clock.DayNumber == report.Day + 1;
+            dailyOutcomePanel.SetActive(visible);
+            if (!visible)
+            {
+                return;
+            }
+            if (runtime.Language == InterfaceLanguage.Chinese)
+            {
+                var workers = report.WorkingResidentsKnown
+                    ? $"{report.WorkingResidents}"
+                    : "未记录";
+                var meals = report.MealsKnown
+                    ? $" · 实际进食 {report.FedAnimals}/{report.LivingAnimals}"
+                    : string.Empty;
+                var pigeons = report.MealsKnown
+                    ? $"鸽子 {report.FedPigeons}/{report.LivingPigeons} · 剩余种子 {report.SeedPortionsLeft} · "
+                    : string.Empty;
+                var causes = new List<string>();
+                if (report.StarvationDeaths > 0) causes.Add($"饿 {report.StarvationDeaths}");
+                if (report.TrafficDeaths > 0) causes.Add($"车 {report.TrafficDeaths}");
+                if (report.PredationDeaths > 0) causes.Add($"捕 {report.PredationDeaths}");
+                if (report.OtherDeaths > 0) causes.Add($"其他 {report.OtherDeaths}");
+                var deathDetails = causes.Count > 0 ? $"（{string.Join(" · ", causes)}）" : string.Empty;
+                var waste = report.WasteIssues > 0 ? $" · 垃圾 {report.WasteIssues}" : string.Empty;
+                dailyOutcomeText.text = $"第 {report.Day} 天 · 挪房 {report.MovedRooms} · 通勤 {workers}{meals}" +
+                    $"\n{pigeons}死亡 {report.Deaths}{deathDetails}{waste}" +
+                    $"\n{DailyOutcomeHint(report, true)}";
+            }
+            else
+            {
+                var workers = report.WorkingResidentsKnown
+                    ? $"{report.WorkingResidents}"
+                    : "not recorded";
+                var meals = report.MealsKnown
+                    ? $" · ate {report.FedAnimals}/{report.LivingAnimals}"
+                    : string.Empty;
+                var pigeons = report.MealsKnown
+                    ? $"Pigeons {report.FedPigeons}/{report.LivingPigeons} · seeds left {report.SeedPortionsLeft} · "
+                    : string.Empty;
+                var causes = new List<string>();
+                if (report.StarvationDeaths > 0) causes.Add($"starve {report.StarvationDeaths}");
+                if (report.TrafficDeaths > 0) causes.Add($"car {report.TrafficDeaths}");
+                if (report.PredationDeaths > 0) causes.Add($"fox {report.PredationDeaths}");
+                if (report.OtherDeaths > 0) causes.Add($"other {report.OtherDeaths}");
+                var deathDetails = causes.Count > 0 ? $" ({string.Join(" · ", causes)})" : string.Empty;
+                var waste = report.WasteIssues > 0 ? $" · waste {report.WasteIssues}" : string.Empty;
+                dailyOutcomeText.text = $"Day {report.Day} · moved {report.MovedRooms} · commute {workers}{meals}" +
+                    $"\n{pigeons}deaths {report.Deaths}{deathDetails}{waste}" +
+                    $"\n{DailyOutcomeHint(report, false)}";
+            }
+        }
+
+        private static string DailyOutcomeHint(DailyOutcomeReport report, bool chinese)
+        {
+            if (report.MealsKnown && report.FedPigeons < report.LivingPigeons)
+                return report.SeedPortionsLeft > 0
+                    ? chinese ? "仍有种子却未吃到：检查通道或抵达时间。"
+                        : "Seeds remain: check passage and arrival time."
+                    : chinese ? "种子已用尽：检查补给与鸽群数量。"
+                        : "Seeds depleted: check supply versus flock size.";
+            if (report.StarvationDeaths > 0)
+                return chinese ? "食路不等于进食：查存量、门与实际抵达。"
+                    : "A food route is not a meal: check stock, doors and arrival.";
+            if (report.PredationDeaths > 0)
+                return chinese ? "狐狸捕食：检查狐狸与猎物的通道连通。"
+                    : "Fox predation: check fox-to-prey passage links.";
+            if (report.TrafficDeaths > 0)
+                return chinese ? "车祸：检查动物是否穿越车库。"
+                    : "Traffic death: inspect animal garage crossings.";
+            if (report.WasteIssues > 0)
+                return chinese ? "垃圾异常：检查垃圾房及人行道路。"
+                    : "Waste issue: check bins and pedestrian roads.";
+            return chinese ? "以上为同期观察，不能仅归因于挪房。"
+                : "Observed together; room moves are not the sole cause.";
+        }
+
+        private void BuildHedgehogNightReport()
+        {
+            var panel = CreatePanel("Hedgehog Night Report", gameplayRoot,
+                new Color(0.10f, 0.12f, 0.14f, 0.82f));
+            panel.Image.raycastTarget = false;
+            RoundSolidPanel(panel, 14f);
+            hedgehogNightPanel = panel.GameObject;
+            panel.RectTransform.anchorMin = panel.RectTransform.anchorMax = Vector2.zero;
+            panel.RectTransform.pivot = Vector2.zero;
+            panel.RectTransform.anchoredPosition = new Vector2(20f, 136f);
+            panel.RectTransform.sizeDelta = new Vector2(470f, 76f);
+            hedgehogNightText = CreateText(panel.Transform, "Hedgehog Night Summary",
+                string.Empty, 15, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Normal);
+            hedgehogNightText.raycastTarget = false;
+            Stretch(hedgehogNightText.rectTransform, 14f, 8f);
+            hedgehogNightPanel.SetActive(false);
+        }
+
+        private void RefreshHedgehogNightReport()
+        {
+            if (hedgehogNightPanel == null || runtime == null)
+            {
+                return;
+            }
+            var report = hedgehogForaging?.LastNightReport ?? default;
+            var visible = hedgehogForaging != null && runtime.HasActiveRun && !runtime.LayoutEditing;
+            hedgehogNightPanel.SetActive(visible);
+            if (!visible)
+            {
+                return;
+            }
+            var lastNightVisible = report.Day > 0 && runtime.Clock.DayNumber == report.Day + 1;
+            if (runtime.Language == InterfaceLanguage.Chinese)
+            {
+                hedgehogNightText.text = $"刺猬庇护｜相邻灌木 {hedgehogForaging.CurrentShelterPairs} 组 · 恢复中 {hedgehogForaging.RecoveringShrubs} 株" +
+                    (lastNightVisible
+                        ? $"\n第 {report.Day} 夜｜庇护路线 {report.CoveredTrips} 次 · 其他路线 {report.OtherTrips} 次 · 觅食成功 {report.Meals} 次"
+                        : string.Empty);
+            }
+            else
+            {
+                hedgehogNightText.text = $"Hedgehog cover | {hedgehogForaging.CurrentShelterPairs} pairs, {hedgehogForaging.RecoveringShrubs} recovering" +
+                    (lastNightVisible
+                        ? $"\nNight {report.Day} | covered trips {report.CoveredTrips}, other {report.OtherTrips}, meals {report.Meals}"
+                        : string.Empty);
+            }
         }
 
         public void BindWasteManagement(WasteManagementController controller)
@@ -272,22 +546,21 @@ namespace UrbanWildlifeRooms.UI
 
         public void BindResourceEconomy(ResourceEconomyController controller)
         {
-            if (controller == null || gameplayRoot == null)
+            if (gameplayRoot == null || workforceCounterRect != null)
             {
                 return;
             }
-
-            if (resourcePointCounter == null)
-            {
-                resourcePointCounter = gameObject.AddComponent<ResourcePointCounter>();
-            }
-
-            resourcePointCounter.Build(
-                gameplayRoot,
-                font,
-                generatedHideFlags,
-                runtime,
-                controller);
+            var panel = CreatePanel("Workforce Counter", gameplayRoot,
+                new Color(0.10f, 0.12f, 0.14f, 0.88f));
+            RoundSolidPanel(panel, 14f);
+            panel.Image.raycastTarget = false;
+            workforceCounterRect = panel.RectTransform;
+            SetTopLeft(workforceCounterRect, 22f, 20f, 170f, 68f);
+            workforceCounterText = CreateText(panel.Transform, "Workforce Target",
+                string.Empty, 18, TextAnchor.MiddleCenter, WarmPaper, FontStyle.Bold);
+            workforceCounterText.raycastTarget = false;
+            Stretch(workforceCounterText.rectTransform, 8f);
+            RefreshResidentPopulation();
         }
 
         public void BindPlayerFeeding(PlayerFeedingController controller)
@@ -295,6 +568,7 @@ namespace UrbanWildlifeRooms.UI
             if (playerFeeding != null)
             {
                 playerFeeding.FeedingModeChanged -= RefreshFeedingControls;
+                playerFeeding.LeftoverFoodDiscarded -= HandleLeftoverFoodDiscarded;
             }
 
             playerFeeding = controller;
@@ -308,6 +582,16 @@ namespace UrbanWildlifeRooms.UI
                 BuildFeedingControls();
             }
             playerFeeding.FeedingModeChanged += RefreshFeedingControls;
+            playerFeeding.LeftoverFoodDiscarded += HandleLeftoverFoodDiscarded;
+            RefreshFeedingControls();
+        }
+
+        private void HandleLeftoverFoodDiscarded(string roomId, int portions, bool routed)
+        {
+            feedingWasteRoomId = roomId;
+            feedingWastePortions = portions;
+            feedingWasteRouted = routed;
+            feedingWasteNoticeUntil = Time.unscaledTime + 5f;
             RefreshFeedingControls();
         }
 
@@ -340,6 +624,17 @@ namespace UrbanWildlifeRooms.UI
                 roomTransformResolver);
             residentPopulation.StateChanged += RefreshResidentPopulation;
             RefreshResidentPopulation();
+            RefreshNeedRisk();
+        }
+
+        public void BindAnimalNeeds(AnimalNeedsController controller)
+        {
+            if (animalNeeds != null)
+                animalNeeds.StateChanged -= RefreshNeedRisk;
+            animalNeeds = controller;
+            if (animalNeeds != null)
+                animalNeeds.StateChanged += RefreshNeedRisk;
+            RefreshNeedRisk();
         }
 
         public void BindOakTreeLifecycle(OakTreeLifecycleController controller)
@@ -369,6 +664,20 @@ namespace UrbanWildlifeRooms.UI
                 animalPopulation.StateChanged += RefreshAnimalPopulation;
             }
             RefreshAnimalPopulation();
+        }
+
+        public void BindAnimalMortality(AnimalMortalityController controller)
+        {
+            if (animalMortality != null)
+            {
+                animalMortality.StateChanged -= RefreshMortalityIndicator;
+            }
+            animalMortality = controller;
+            if (animalMortality != null)
+            {
+                animalMortality.StateChanged += RefreshMortalityIndicator;
+            }
+            RefreshMortalityIndicator();
         }
 
         public void BindEcologicalMetrics(EcologicalMetricsController controller)
@@ -631,6 +940,17 @@ namespace UrbanWildlifeRooms.UI
                 worldCamera,
                 out var localPoint);
             roomContextRect.anchoredPosition = localPoint;
+            const float tooltipHalfWidth = 125f;
+            var tooltipX = Mathf.Clamp(0f,
+                gameplayRoot.rect.xMin + tooltipHalfWidth + 8f - localPoint.x,
+                gameplayRoot.rect.xMax - tooltipHalfWidth - 8f - localPoint.x);
+            var tooltipY = localPoint.y - 66f < gameplayRoot.rect.yMin + 8f
+                ? roomContextRect.rect.height + 66f
+                : -8f;
+            foreach (var tooltipRect in roomContextTooltipRects)
+            {
+                tooltipRect.anchoredPosition = new Vector2(tooltipX, tooltipY);
+            }
         }
 
         private void UpdateRoomHoverLabel()
@@ -763,16 +1083,40 @@ namespace UrbanWildlifeRooms.UI
             {
                 oakPlantLabel.gameObject.SetActive(canPlant);
                 oakPlantLabel.text = runtime.Language == InterfaceLanguage.Chinese
-                    ? "栽种 −6"
-                    : "Plant −6";
+                    ? "栽种"
+                    : "Plant";
             }
+            var chinese = runtime == null || runtime.Language == InterfaceLanguage.Chinese;
+            roomTypeTooltipText.text = chinese
+                ? $"房间类型 · {UrbanPalette.LocalizedRoomName(selectedRoomSpec, true)}"
+                : $"Room type · {UrbanPalette.LocalizedRoomName(selectedRoomSpec, false)}";
+            if (selectedRoomSpec.Type == RoomType.OakHabitat && oakTreeLifecycle?.Model != null)
+            {
+                var stage = oakTreeLifecycle.Model.StageOf(selectedRoomSpec.Id);
+                roomFunctionTooltipText.text = stage switch
+                {
+                    OakTreeStage.Felled => chinese ? "橡树状态 · 已砍伐\n点击栽种" : "Oak status · Felled\nClick to plant",
+                    OakTreeStage.Sapling => chinese ? "橡树状态 · 树苗\n等待生长" : "Oak status · Sapling\nGrowing over time",
+                    OakTreeStage.Young => chinese ? "橡树状态 · 幼树\n尚未成熟" : "Oak status · Young\nNot mature yet",
+                    _ => chinese ? "橡树状态 · 成熟\n提供栖息地与自然食物" : "Oak status · Mature\nProvides shelter and natural food"
+                };
+            }
+            else
+            {
+                roomFunctionTooltipText.text = chinese
+                    ? "当前功能 · 提供食物来源"
+                    : "Current function · Food source";
+            }
+            roomUseTooltipText.text = chinese
+                ? "当前用途 · 居民用餐区域"
+                : "Current use · Resident dining";
             LayoutRoomContextChips(showFunction, showUse);
         }
 
         private void BuildClock()
         {
             var root = CreateEmpty("Day Night Clock", gameplayRoot);
-            SetTopCenter(root, 0f, 18f, 118f, 118f);
+            SetTopCenter(root, 0f, 8f, 104f, 104f);
 
             var researchRingObject = NewUiObject(
                 "Research Duration Ring",
@@ -784,7 +1128,7 @@ namespace UrbanWildlifeRooms.UI
             researchRingRect.anchorMin = researchRingRect.anchorMax = new Vector2(0.5f, 0.5f);
             researchRingRect.pivot = new Vector2(0.5f, 0.5f);
             researchRingRect.anchoredPosition = Vector2.zero;
-            researchRingRect.sizeDelta = new Vector2(134f, 134f);
+            researchRingRect.sizeDelta = new Vector2(116f, 116f);
             researchDurationRing = researchRingObject.GetComponent<CircularMeterGraphic>();
             researchDurationRing.raycastTarget = true;
             researchDurationRing.SetValue(1f, new Color(0.48f, 0.39f, 0.62f, 0.95f));
@@ -797,7 +1141,7 @@ namespace UrbanWildlifeRooms.UI
                 TextAnchor.MiddleCenter,
                 WarmPaper,
                 FontStyle.Bold);
-            SetTopCenter(researchDurationTooltip.rectTransform, 0f, 118f, 190f, 34f);
+            SetTopCenter(researchDurationTooltip.rectTransform, 0f, 110f, 190f, 34f);
             researchDurationTooltip.gameObject.SetActive(false);
             var trigger = researchRingObject.GetComponent<EventTrigger>();
             trigger.triggers = new List<EventTrigger.Entry>();
@@ -808,58 +1152,192 @@ namespace UrbanWildlifeRooms.UI
             exit.callback.AddListener(_ => researchDurationTooltip.gameObject.SetActive(false));
             trigger.triggers.Add(exit);
 
+            var dialArtwork = CreateImage(root, "Day Night Artwork", GameplayHudVisualCatalog.GetDayNightDialSprite());
+            dialArtwork.preserveAspect = true;
+            dialArtwork.raycastTarget = false;
+            Stretch(dialArtwork.rectTransform);
+
             var dialObject = NewUiObject("Four Phase Dial", root, typeof(CanvasRenderer), typeof(DayNightDialGraphic));
             var dialRect = dialObject.GetComponent<RectTransform>();
             Stretch(dialRect);
             clockDial = dialObject.GetComponent<DayNightDialGraphic>();
             clockDial.raycastTarget = false;
+            clockDial.UseArtworkBackground();
 
-            dayNumber = CreateText(root, "Day Number", "1", 29, TextAnchor.MiddleCenter, Graphite, FontStyle.Bold);
-            Stretch(dayNumber.rectTransform);
+            dayNumber = CreateText(root, "Day Number", "1", 26, TextAnchor.MiddleCenter, WarmPaper, FontStyle.Bold);
+            dayNumber.rectTransform.anchorMin = dayNumber.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            dayNumber.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            dayNumber.rectTransform.anchoredPosition = Vector2.zero;
+            dayNumber.rectTransform.sizeDelta = new Vector2(54f, 42f);
+            var dayOutline = dayNumber.gameObject.AddComponent<Outline>();
+            dayOutline.effectColor = new Color(0.08f, 0.12f, 0.19f, 0.9f);
+            dayOutline.effectDistance = new Vector2(1.4f, -1.4f);
 
-            var speeds = CreateEmpty("Simulation Speed", gameplayRoot);
-            SetTopCenter(speeds, 0f, 142f, 222f, 38f);
-            BuildSpeedButton(speeds, 0, "Ⅱ", -84f);
-            BuildSpeedButton(speeds, 1, "▶", -28f);
-            BuildSpeedButton(speeds, 2, "2×", 28f);
-            BuildSpeedButton(speeds, 4, "4×", 84f);
+            // Keep the four speed controls centred on the time dial. Parenting
+            // them to the dial also preserves alignment at different aspect ratios.
+            var speeds = CreateEmpty("Simulation Speed", root);
+            SetTopCenter(speeds, 0f, 112f, 228f, 42f);
+            var speedRail = CreatePanel("Speed Selection Rail", speeds,
+                new Color(0.09f, 0.13f, 0.16f, 0.78f));
+            SetCenter(speedRail.RectTransform, 228f, 42f);
+            speedRail.Image.raycastTarget = false;
+            RoundSolidPanel(speedRail, 14f);
+            BuildSpeedButton(speeds, 0, "Ⅱ", -81f);
+            BuildSpeedButton(speeds, 1, "1×", -27f);
+            BuildSpeedButton(speeds, 2, "2×", 27f);
+            BuildSpeedButton(speeds, 4, "4×", 81f);
+
+            skipDayButton = CreateButton(root, "Skip To Next Day", "跳至次日", 15,
+                () => runtime.TrySkipToNextDay());
+            var skipBacking = skipDayButton.GetComponent<Image>();
+            skipBacking.sprite = PauseMenuVisualCatalog.GetSprite(PauseMenuVisual.ButtonBase);
+            skipBacking.preserveAspect = false;
+            SetTopCenter(skipDayButton.GetComponent<RectTransform>(), 185f, 112f, 122f, 36f);
+            skipDayLabel = skipDayButton.GetComponentInChildren<Text>();
         }
 
         private void BuildSpeedButton(Transform parent, int speed, string label, float x)
         {
-            var button = CreateButton(parent, $"Speed {speed}", label, 17, () => runtime.SetSpeed(speed));
-            var backing = button.GetComponent<Image>();
-            backing.sprite = PauseMenuVisualCatalog.GetSprite(PauseMenuVisual.ButtonBase);
-            backing.preserveAspect = false;
-            backing.color = Color.white;
+            var button = CreateButton(parent, $"Speed {speed}", label, 19, () => runtime.SetSpeed(speed));
+            button.transition = Selectable.Transition.None;
+            var hitArea = button.GetComponent<Image>();
+            hitArea.color = Color.clear;
             var rect = button.GetComponent<RectTransform>();
             rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
             rect.pivot = new Vector2(0.5f, 0.5f);
             rect.anchoredPosition = new Vector2(x, 0f);
-            rect.sizeDelta = new Vector2(48f, 34f);
-            speedButtons[speed] = button.GetComponent<Image>();
+            rect.sizeDelta = new Vector2(50f, 34f);
+            var segment = NewUiObject("Rounded Speed Segment", button.transform,
+                typeof(CanvasRenderer), typeof(RoundedPanelGraphic))
+                .GetComponent<RoundedPanelGraphic>();
+            segment.color = new Color(0.14f, 0.18f, 0.21f, 0.92f);
+            segment.CornerRadius = 10f;
+            segment.BorderWidth = 1f;
+            segment.BorderColor = new Color(0.94f, 0.90f, 0.80f, 0.27f);
+            segment.raycastTarget = false;
+            Stretch(segment.rectTransform);
+            segment.transform.SetAsFirstSibling();
+            speedButtons[speed] = segment;
+            speedButtonLabels[speed] = button.GetComponentInChildren<Text>();
         }
 
         private void BuildIndicators()
         {
             var root = CreateEmpty("Global Ecological Indicators", gameplayRoot);
-            root.anchorMin = root.anchorMax = new Vector2(1f, 0.5f);
-            root.pivot = new Vector2(1f, 0.5f);
-            root.anchoredPosition = new Vector2(-24f, 8f);
-            root.sizeDelta = new Vector2(84f, 360f);
+            root.anchorMin = root.anchorMax = new Vector2(1f, 1f);
+            root.pivot = new Vector2(1f, 1f);
+            root.anchoredPosition = new Vector2(-36f, -56f);
+            root.sizeDelta = new Vector2(100f, 552f);
 
             var indicators = new[]
             {
-                new Indicator(EcologicalMetricKind.HumanFunction, "Human Function", 1f, new Color(0.52f, 0.45f, 0.71f)),
-                new Indicator(EcologicalMetricKind.FoodAccessibility, "Food Accessibility", 1f, new Color(0.86f, 0.61f, 0.24f)),
-                new Indicator(EcologicalMetricKind.HabitatProvision, "Habitat Provision", 1f, new Color(0.35f, 0.66f, 0.47f)),
-                new Indicator(EcologicalMetricKind.AnimalSafety, "Animal Safety", 1f, Cyan)
+                new Indicator(EcologicalMetricKind.HumanFunction, "Resident Count", 1f, Cyan),
+                new Indicator(EcologicalMetricKind.FoodAccessibility, "Animals Fed Today", 1f, new Color(0.86f, 0.61f, 0.24f)),
+                new Indicator(EcologicalMetricKind.HabitatProvision, "Shelter Index", 1f, new Color(0.35f, 0.66f, 0.47f)),
+                new Indicator(EcologicalMetricKind.AnimalSafety, "Living Animals", 1f, Cyan)
             };
 
             for (var index = 0; index < indicators.Length; index++)
             {
                 BuildIndicator(root, indicators[index], index);
             }
+            BuildMortalityIndicator(root);
+        }
+
+        private void BuildMarketForecast()
+        {
+            var panel = CreatePanel("Neighborhood Market Forecast", gameplayRoot,
+                new Color(0.10f, 0.12f, 0.14f, 0.86f));
+            RoundSolidPanel(panel, 14f);
+            panel.Image.raycastTarget = false;
+            SetTopLeft(panel.RectTransform, 22f, 330f, 400f, 120f);
+            marketForecastPanel = panel.GameObject;
+            marketForecastLabel = CreateText(panel.Transform, "Market Forecast Text",
+                string.Empty, 14, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Normal);
+            marketForecastLabel.raycastTarget = false;
+            marketForecastLabel.horizontalOverflow = HorizontalWrapMode.Wrap;
+            Stretch(marketForecastLabel.rectTransform, 13f, 7f);
+            marketForecastPanel.SetActive(false);
+        }
+
+        private void BuildNeedRiskPanel()
+        {
+            var panel = CreatePanel("Need Risk Attention", gameplayRoot,
+                new Color(0.12f, 0.13f, 0.15f, 0.90f));
+            RoundSolidPanel(panel, 14f);
+            panel.Image.raycastTarget = false;
+            SetTopLeft(panel.RectTransform, 22f, 242f, 400f, 76f);
+            needRiskPanel = panel.GameObject;
+
+            var signal = CreateText(panel.Transform, "Risk Signal", "!", 31,
+                TextAnchor.MiddleCenter, new Color(1f, 0.42f, 0.35f), FontStyle.Bold);
+            signal.raycastTarget = false;
+            SetTopLeft(signal.rectTransform, 8f, 14f, 34f, 47f);
+            residentRiskLabel = CreateText(panel.Transform, "Resident Risk", string.Empty,
+                16, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Bold);
+            residentRiskLabel.raycastTarget = false;
+            SetTopLeft(residentRiskLabel.rectTransform, 46f, 7f, 344f, 29f);
+            animalRiskLabel = CreateText(panel.Transform, "Animal Risk", string.Empty,
+                16, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Bold);
+            animalRiskLabel.raycastTarget = false;
+            SetTopLeft(animalRiskLabel.rectTransform, 46f, 39f, 344f, 29f);
+            needRiskPanel.SetActive(false);
+        }
+
+        private void RefreshNeedRisk()
+        {
+            if (needRiskPanel == null || runtime == null) return;
+            var visible = runtime.Mode == GameMode.Sandbox && runtime.HasActiveRun &&
+                          !runtime.AtDesktop && !runtime.LayoutEditing;
+            var model = residentPopulation?.Model;
+            var residentRiskCount = 0;
+            string firstResidentHome = null;
+            if (model != null)
+                foreach (var resident in model.Residents)
+                {
+                    if (model.PreviewRouteLegs(resident.id).Complete) continue;
+                    residentRiskCount++;
+                    firstResidentHome ??= resident.residenceId;
+                }
+            var animalRiskCount = animalNeeds?.AnimalsWithoutFoodAccess ?? 0;
+            needRiskPanel.SetActive(visible && (residentRiskCount > 0 || animalRiskCount > 0));
+            if (!needRiskPanel.activeSelf) return;
+
+            var chinese = runtime.Language == InterfaceLanguage.Chinese;
+            var animalRoom = animalNeeds?.FirstFoodRiskRoomId;
+            residentRiskLabel.text = residentRiskCount > 0
+                ? chinese ? $"通勤预警 {residentRiskCount} 人 · {RiskRoomName(firstResidentHome, true)}"
+                    : $"Commute risk {residentRiskCount} · {RiskRoomName(firstResidentHome, false)}"
+                : chinese ? "居民三段路线可达" : "Resident routes reachable";
+            animalRiskLabel.text = animalRiskCount > 0
+                ? chinese ? $"觅食预警 {animalRiskCount} 只 · {RiskRoomName(animalRoom, true)}"
+                    : $"Food access risk {animalRiskCount} · {RiskRoomName(animalRoom, false)}"
+                : chinese ? "动物目前有可达食物" : "Animal food currently reachable";
+            residentRiskLabel.color = residentRiskCount > 0
+                ? new Color(1f, 0.61f, 0.52f) : new Color(0.48f, 0.85f, 0.69f);
+            animalRiskLabel.color = animalRiskCount > 0
+                ? new Color(1f, 0.61f, 0.52f) : new Color(0.48f, 0.85f, 0.69f);
+        }
+
+        private static string RiskRoomName(string roomId, bool chinese)
+        {
+            if (string.IsNullOrEmpty(roomId)) return chinese ? "查看红色动物" : "see red animals";
+            foreach (var room in RoomLayoutData.All)
+                if (room.Id == roomId)
+                {
+                    if (chinese) return room.DisplayName;
+                    var suffix = roomId.Length > 0 ? roomId[roomId.Length - 1].ToString().ToUpperInvariant() : "";
+                    return room.Type switch
+                    {
+                        RoomType.PigeonHabitat => $"Pigeon plaza {suffix}",
+                        RoomType.Residence => $"Home {suffix}",
+                        RoomType.OakHabitat => $"Oak {suffix}",
+                        RoomType.ShrubHabitat => $"Shrub {suffix}",
+                        RoomType.SharedSpace => roomId == "shared-j" ? "Fox edge" : "Green room",
+                        _ => roomId
+                    };
+                }
+            return roomId;
         }
 
         private void BuildIndicator(Transform parent, Indicator indicator, int index)
@@ -867,11 +1345,11 @@ namespace UrbanWildlifeRooms.UI
             var holder = CreateEmpty(indicator.Name, parent);
             holder.anchorMin = holder.anchorMax = new Vector2(0.5f, 1f);
             holder.pivot = new Vector2(0.5f, 1f);
-            holder.anchoredPosition = new Vector2(0f, -index * 86f);
-            holder.sizeDelta = new Vector2(76f, 76f);
+            holder.anchoredPosition = new Vector2(0f, -index * 112f);
+            holder.sizeDelta = new Vector2(100f, 100f);
 
-            var basePanel = CreatePanel("Graphite Base", holder, Graphite);
-            Stretch(basePanel.RectTransform, 7f);
+            AddHoverHitArea(holder);
+            BuildIndicatorDisc(holder);
             var meterObject = NewUiObject("Value Ring", holder, typeof(CanvasRenderer), typeof(CircularMeterGraphic));
             Stretch(meterObject.GetComponent<RectTransform>());
             var meter = meterObject.GetComponent<CircularMeterGraphic>();
@@ -887,41 +1365,148 @@ namespace UrbanWildlifeRooms.UI
             pictogram.color = Color.white;
             pictogram.rectTransform.anchorMin = pictogram.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             pictogram.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-            pictogram.rectTransform.anchoredPosition = indicator.Kind == EcologicalMetricKind.HumanFunction
-                ? new Vector2(0f, 5f)
-                : Vector2.zero;
+            pictogram.rectTransform.anchoredPosition = new Vector2(0f, 7f);
             pictogram.rectTransform.sizeDelta = indicator.Kind == EcologicalMetricKind.HumanFunction
-                ? new Vector2(36f, 36f)
-                : new Vector2(42f, 42f);
+                ? new Vector2(74f, 74f)
+                : new Vector2(68f, 68f);
 
+            var valueBadge = BuildIndicatorValueBadge(holder,
+                indicator.Kind == EcologicalMetricKind.HumanFunction
+                    ? "Resident Count Badge"
+                    : "Value Badge",
+                "Current Value",
+                indicator.Kind == EcologicalMetricKind.HumanFunction ? 42f : 62f);
+            ecologicalValueBadges[indicator.Kind] = valueBadge;
             if (indicator.Kind == EcologicalMetricKind.HumanFunction)
             {
-                var badge = CreatePanel("Resident Count Badge", holder, new Color(0.10f, 0.12f, 0.14f, 0.96f));
-                badge.RectTransform.anchorMin = badge.RectTransform.anchorMax = new Vector2(0.5f, 0f);
-                badge.RectTransform.pivot = new Vector2(0.5f, 0f);
-                badge.RectTransform.anchoredPosition = new Vector2(0f, -1f);
-                badge.RectTransform.sizeDelta = new Vector2(42f, 21f);
-                badge.Image.raycastTarget = false;
-                residentCountText = CreateText(
-                    badge.Transform,
-                    "Resident Count",
-                    "4/8",
-                    13,
-                    TextAnchor.MiddleCenter,
-                    WarmPaper,
-                    FontStyle.Bold);
-                Stretch(residentCountText.rectTransform, 2f);
+                residentCountText = valueBadge;
             }
 
             var tooltip = CreatePanel("Hover Detail", holder, new Color(0.10f, 0.12f, 0.14f, 0.96f));
             tooltip.RectTransform.anchorMin = tooltip.RectTransform.anchorMax = new Vector2(0f, 0.5f);
             tooltip.RectTransform.pivot = new Vector2(1f, 0.5f);
             tooltip.RectTransform.anchoredPosition = new Vector2(-12f, 0f);
-            tooltip.RectTransform.sizeDelta = new Vector2(270f, 62f);
-            var tooltipText = CreateText(tooltip.Transform, "Exact Value And Reason", string.Empty, 16, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Normal);
+            tooltip.RectTransform.sizeDelta = indicator.Kind == EcologicalMetricKind.FoodAccessibility
+                ? new Vector2(420f, 120f)
+                : new Vector2(310f, 76f);
+            tooltip.Image.raycastTarget = false;
+            RoundSolidPanel(tooltip, 14f);
+            var tooltipText = CreateText(tooltip.Transform, "Exact Value And Reason", string.Empty, 14, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Normal);
+            tooltipText.horizontalOverflow = HorizontalWrapMode.Wrap;
             Stretch(tooltipText.rectTransform, 12f);
             ecologicalTooltips[indicator.Kind] = tooltipText;
             holder.gameObject.AddComponent<EcologicalIndicatorHover>().Initialize(tooltip.GameObject);
+        }
+
+        private Text BuildIndicatorValueBadge(Transform holder, string name,
+            string label, float width)
+        {
+            var badge = CreatePanel(name, holder, new Color(0.10f, 0.12f, 0.14f, 0.96f));
+            badge.RectTransform.anchorMin = badge.RectTransform.anchorMax = new Vector2(0.5f, 0f);
+            badge.RectTransform.pivot = new Vector2(0.5f, 0f);
+            badge.RectTransform.anchoredPosition = new Vector2(0f, -1f);
+            badge.RectTransform.sizeDelta = new Vector2(width, 21f);
+            badge.Image.raycastTarget = false;
+            RoundSolidPanel(badge, 9f);
+            var value = CreateText(badge.Transform, label, "–", 13,
+                TextAnchor.MiddleCenter, WarmPaper, FontStyle.Bold);
+            Stretch(value.rectTransform, 2f);
+            return value;
+        }
+
+        private void BuildMortalityIndicator(Transform parent)
+        {
+            var holder = CreateEmpty("Animal Death Limit", parent);
+            holder.anchorMin = holder.anchorMax = new Vector2(0.5f, 1f);
+            holder.pivot = new Vector2(0.5f, 1f);
+            holder.anchoredPosition = new Vector2(0f, -448f);
+            holder.sizeDelta = new Vector2(100f, 100f);
+
+            AddHoverHitArea(holder);
+
+            BuildIndicatorDisc(holder);
+            var meterObject = NewUiObject("Death Limit Ring", holder,
+                typeof(CanvasRenderer), typeof(CircularMeterGraphic));
+            Stretch(meterObject.GetComponent<RectTransform>());
+            mortalityMeter = meterObject.GetComponent<CircularMeterGraphic>();
+            mortalityMeter.raycastTarget = false;
+            mortalityMeter.SetValue(0f, new Color(0.94f, 0.28f, 0.23f));
+
+            var pulseObject = NewUiObject("Heartbeat Pictogram", holder,
+                typeof(CanvasRenderer), typeof(PulseIconGraphic));
+            var pulseRect = pulseObject.GetComponent<RectTransform>();
+            pulseRect.anchorMin = pulseRect.anchorMax = new Vector2(0.5f, 0.5f);
+            pulseRect.pivot = new Vector2(0.5f, 0.5f);
+            pulseRect.anchoredPosition = Vector2.zero;
+            pulseRect.sizeDelta = new Vector2(54f, 54f);
+            pulseObject.GetComponent<PulseIconGraphic>().raycastTarget = false;
+            mortalityCountText = BuildIndicatorValueBadge(holder,
+                "Death Count Badge", "Cumulative Deaths", 62f);
+
+            var tooltip = CreatePanel("Hover Detail", holder, new Color(0.10f, 0.12f, 0.14f, 0.96f));
+            tooltip.RectTransform.anchorMin = tooltip.RectTransform.anchorMax = new Vector2(0f, 0.5f);
+            tooltip.RectTransform.pivot = new Vector2(1f, 0.5f);
+            tooltip.RectTransform.anchoredPosition = new Vector2(-12f, 0f);
+            tooltip.RectTransform.sizeDelta = new Vector2(410f, 184f);
+            tooltip.Image.raycastTarget = false;
+            RoundSolidPanel(tooltip, 14f);
+            mortalityTooltip = CreateText(tooltip.Transform, "Death Count And Limit", string.Empty,
+                15, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Normal);
+            mortalityTooltip.horizontalOverflow = HorizontalWrapMode.Wrap;
+            Stretch(mortalityTooltip.rectTransform, 12f);
+            holder.gameObject.AddComponent<EcologicalIndicatorHover>().Initialize(tooltip.GameObject);
+            RefreshMortalityIndicator();
+        }
+
+        private void BuildIndicatorDisc(Transform holder)
+        {
+            var discObject = NewUiObject("Graphite Disc", holder,
+                typeof(CanvasRenderer), typeof(DiscGraphic));
+            Stretch(discObject.GetComponent<RectTransform>(), 7f);
+            var disc = discObject.GetComponent<DiscGraphic>();
+            disc.color = Graphite;
+            disc.raycastTarget = false;
+        }
+
+        private void RefreshMortalityIndicator()
+        {
+            if (mortalityMeter == null)
+            {
+                return;
+            }
+            var deaths = animalMortality?.Model?.TotalDeaths ?? 0;
+            var limit = animalMortality?.Model?.DeathLimit ?? AnimalMortalityModel.DefaultDeathLimit;
+            var fraction = Mathf.Clamp01(deaths / (float)Mathf.Max(1, limit));
+            if (mortalityCountText != null)
+            {
+                mortalityCountText.text = $"{deaths}/{limit}";
+            }
+            var red = new Color(0.94f, 0.28f, 0.23f);
+            if (Application.isPlaying && mortalityMeter.isActiveAndEnabled)
+            {
+                mortalityMeter.AnimateTo(fraction, red);
+            }
+            else
+            {
+                mortalityMeter.SetValue(fraction, red);
+            }
+            if (mortalityTooltip != null)
+            {
+                var chinese = runtime == null || runtime.Language == InterfaceLanguage.Chinese;
+                var model = animalMortality?.Model;
+                mortalityTooltip.text = (chinese
+                        ? $"累计死亡 {deaths}/{limit} · 达上限结束"
+                        : $"Cumulative deaths {deaths}/{limit} · run ends at limit") + "\n" +
+                    (model?.BreakdownOf(WildlifeSpecies.Pigeon).LocalizedLine(chinese) ??
+                     new AnimalDeathBreakdownData { species = WildlifeSpecies.Pigeon }.LocalizedLine(chinese)) + "\n" +
+                    (model?.BreakdownOf(WildlifeSpecies.Squirrel).LocalizedLine(chinese) ??
+                     new AnimalDeathBreakdownData { species = WildlifeSpecies.Squirrel }.LocalizedLine(chinese)) + "\n" +
+                    (model?.BreakdownOf(WildlifeSpecies.Hedgehog).LocalizedLine(chinese) ??
+                     new AnimalDeathBreakdownData { species = WildlifeSpecies.Hedgehog }.LocalizedLine(chinese)) + "\n" +
+                    (model?.BreakdownOf(WildlifeSpecies.Fox).LocalizedLine(chinese) ??
+                     new AnimalDeathBreakdownData { species = WildlifeSpecies.Fox }.LocalizedLine(chinese));
+            }
+            RefreshPopulationDeathTooltips();
         }
 
         private void BuildPopulation()
@@ -929,13 +1514,13 @@ namespace UrbanWildlifeRooms.UI
             var root = CreateEmpty("Animal Population", gameplayRoot);
             root.anchorMin = root.anchorMax = Vector2.zero;
             root.pivot = Vector2.zero;
-            root.anchoredPosition = new Vector2(22f, 20f);
-            root.sizeDelta = new Vector2(334f, 68f);
+            root.anchoredPosition = new Vector2(20f, 18f);
+            root.sizeDelta = new Vector2(370f, 106f);
 
-            BuildPopulationChip(root, 0, WildlifeSpecies.Pigeon, AnimalPopulationDefaults.Pigeons, new Color(0.43f, 0.51f, 0.62f));
-            BuildPopulationChip(root, 1, WildlifeSpecies.Squirrel, AnimalPopulationDefaults.Squirrels, new Color(0.35f, 0.56f, 0.31f));
-            BuildPopulationChip(root, 2, WildlifeSpecies.Hedgehog, AnimalPopulationDefaults.Hedgehogs, new Color(0.78f, 0.55f, 0.25f));
-            BuildPopulationChip(root, 3, WildlifeSpecies.Fox, AnimalPopulationDefaults.Foxes, new Color(0.76f, 0.34f, 0.18f));
+            BuildPopulationChip(root, 0, WildlifeSpecies.Pigeon, AnimalPopulationDefaults.Pigeons, new Color(0.40f, 0.67f, 0.99f));
+            BuildPopulationChip(root, 1, WildlifeSpecies.Squirrel, AnimalPopulationDefaults.Squirrels, new Color(1f, 0.67f, 0.25f));
+            BuildPopulationChip(root, 2, WildlifeSpecies.Hedgehog, AnimalPopulationDefaults.Hedgehogs, new Color(1f, 0.82f, 0.35f));
+            BuildPopulationChip(root, 3, WildlifeSpecies.Fox, AnimalPopulationDefaults.Foxes, new Color(0.98f, 0.34f, 0.30f));
         }
 
         private void BuildPopulationChip(Transform parent, int index, WildlifeSpecies species, int count, Color accent)
@@ -943,42 +1528,99 @@ namespace UrbanWildlifeRooms.UI
             var holder = CreateEmpty($"Population {species}", parent);
             holder.anchorMin = holder.anchorMax = new Vector2(0f, 0.5f);
             holder.pivot = new Vector2(0f, 0.5f);
-            holder.anchoredPosition = new Vector2(index * 82f, 0f);
-            holder.sizeDelta = new Vector2(74f, 62f);
-            var shadow = CreatePanel("Portrait Shadow", holder, new Color(0.08f, 0.09f, 0.10f, 0.72f));
-            shadow.RectTransform.anchorMin = shadow.RectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-            shadow.RectTransform.pivot = new Vector2(0.5f, 0.5f);
-            shadow.RectTransform.anchoredPosition = new Vector2(0f, 1f);
-            shadow.RectTransform.sizeDelta = new Vector2(62f, 62f);
-            shadow.Image.raycastTarget = false;
+            holder.anchoredPosition = new Vector2(index * 92f, 0f);
+            holder.sizeDelta = new Vector2(84f, 106f);
+
+            AddHoverHitArea(holder);
+
+            var frameObject = NewUiObject(
+                "Circular Population Frame", holder, typeof(CanvasRenderer), typeof(AnimalPopulationBadgeGraphic));
+            var frameRect = frameObject.GetComponent<RectTransform>();
+            Stretch(frameRect);
+            var frame = frameObject.GetComponent<AnimalPopulationBadgeGraphic>();
+            frame.raycastTarget = false;
+            frame.SetPopulation(accent, count, count);
+            populationBadges[species] = frame;
 
             var portrait = CreateImage(holder, "Animal Portrait", GameplayHudVisualCatalog.GetPopulationSprite(species));
             portrait.preserveAspect = true;
+            portrait.raycastTarget = false;
             portrait.rectTransform.anchorMin = portrait.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             portrait.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-            portrait.rectTransform.anchoredPosition = new Vector2(0f, 4f);
-            portrait.rectTransform.sizeDelta = new Vector2(62f, 62f);
+            portrait.rectTransform.anchoredPosition = new Vector2(0f, 11f);
+            portrait.rectTransform.sizeDelta = new Vector2(93f, 82f);
+            populationPortraits[species] = portrait;
 
-            var badge = CreatePanel("Living Count Badge", holder, accent);
-            badge.RectTransform.anchorMin = badge.RectTransform.anchorMax = new Vector2(0.5f, 0f);
-            badge.RectTransform.pivot = new Vector2(0.5f, 0f);
-            badge.RectTransform.anchoredPosition = new Vector2(0f, -1f);
-            badge.RectTransform.sizeDelta = new Vector2(40f, 22f);
-            badge.Image.raycastTarget = false;
-            var amount = CreateText(badge.Transform, "Living Count", count.ToString(), 15, TextAnchor.MiddleCenter, WarmPaper, FontStyle.Bold);
-            Stretch(amount.rectTransform, 2f);
+            var amount = CreateText(holder, "Living Count", count.ToString(), 20, TextAnchor.MiddleCenter, WarmPaper, FontStyle.Bold);
+            amount.raycastTarget = false;
+            amount.rectTransform.anchorMin = amount.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            amount.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            amount.rectTransform.anchoredPosition = new Vector2(0f, -33f);
+            amount.rectTransform.sizeDelta = new Vector2(48f, 25f);
             populationCounts[species] = amount;
+
+            var tooltip = CreatePanel("Death Causes", holder, new Color(0.10f, 0.12f, 0.14f, 0.96f));
+            tooltip.RectTransform.anchorMin = tooltip.RectTransform.anchorMax = new Vector2(0f, 1f);
+            tooltip.RectTransform.pivot = new Vector2(0f, 0f);
+            // Keep every species detail in one left-column slot above the
+            // persistent hedgehog report, not over the board or each other.
+            tooltip.RectTransform.anchoredPosition = new Vector2(-index * 92f, 100f);
+            tooltip.RectTransform.sizeDelta = new Vector2(310f, 92f);
+            tooltip.Image.raycastTarget = false;
+            RoundSolidPanel(tooltip, 14f);
+            var tooltipText = CreateText(tooltip.Transform, "Species Death Causes", string.Empty,
+                15, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Normal);
+            tooltipText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            Stretch(tooltipText.rectTransform, 12f);
+            populationDeathTooltips[species] = tooltipText;
+            holder.gameObject.AddComponent<EcologicalIndicatorHover>().Initialize(tooltip.GameObject);
+        }
+
+        private void RefreshPopulationDeathTooltips()
+        {
+            var chinese = runtime == null || runtime.Language == InterfaceLanguage.Chinese;
+            foreach (var pair in populationDeathTooltips)
+            {
+                var row = animalMortality?.Model?.BreakdownOf(pair.Key) ??
+                          new AnimalDeathBreakdownData { species = pair.Key };
+                var line = row.LocalizedLine(chinese);
+                pair.Value.text = chinese
+                    ? line.Replace("：", "\n")
+                    : line.Replace(": ", "\n");
+            }
+        }
+
+        private void AddHoverHitArea(RectTransform holder)
+        {
+            var hitArea = NewUiObject("Hover Hit Area", holder, typeof(CanvasRenderer), typeof(Image));
+            Stretch(hitArea.GetComponent<RectTransform>());
+            var image = hitArea.GetComponent<Image>();
+            image.color = Color.clear;
+            image.raycastTarget = true;
+            hitArea.transform.SetAsFirstSibling();
         }
 
         private void RefreshResidentPopulation()
         {
-            if (residentCountText == null)
+            var count = residentPopulation?.Model?.ResidentCount ?? ResidentPopulationModel.StartingResidents;
+            if (residentCountText != null)
+            {
+                residentCountText.text = $"{count}/{ResidentPopulationModel.MaximumResidents}";
+            }
+            if (workforceCounterText == null || residentPopulation?.Model == null)
             {
                 return;
             }
-
-            var count = residentPopulation?.Model?.ResidentCount ?? ResidentPopulationModel.StartingResidents;
-            residentCountText.text = $"{count}/{ResidentPopulationModel.MaximumResidents}";
+            var workers = residentPopulation.Model.PreviewCommute(
+                residentPopulation.Model.NavigationMap).WorkingResidents;
+            var residents = residentPopulation.Model.ResidentCount;
+            var chinese = runtime.Language == InterfaceLanguage.Chinese;
+            workforceCounterText.text = chinese
+                ? $"通勤 {workers}/{residents}"
+                : $"Commute {workers}/{residents}";
+            workforceCounterText.color = workers >= residents
+                ? WarmPaper : new Color(1f, 0.63f, 0.46f);
+            RefreshNeedRisk();
         }
 
         private void RefreshAnimalPopulation()
@@ -989,7 +1631,38 @@ namespace UrbanWildlifeRooms.UI
             }
             foreach (var pair in populationCounts)
             {
-                pair.Value.text = animalPopulation.LivingCount(pair.Key).ToString();
+                var living = animalPopulation.LivingCount(pair.Key);
+                var total = animalPopulation.TotalCount(pair.Key);
+                var remaining = living == 0 && total > 0
+                    ? animalPopulation.SoonestRespawnRemaining(pair.Key)
+                    : 0f;
+                var dead = living == 0 && total > 0 && remaining > WildlifeVitality.RespawnDelaySeconds - 0.85f;
+                var respawning = living == 0 && total > 0 && !dead;
+                // This badge is a living-count display even while a species
+                // is waiting to respawn; seconds here looked like population.
+                pair.Value.text = living.ToString();
+                pair.Value.fontSize = 20;
+                if (populationBadges.TryGetValue(pair.Key, out var frame))
+                {
+                    var accent = pair.Key switch
+                    {
+                        WildlifeSpecies.Pigeon => new Color(0.40f, 0.67f, 0.99f),
+                        WildlifeSpecies.Squirrel => new Color(1f, 0.67f, 0.25f),
+                        WildlifeSpecies.Hedgehog => new Color(1f, 0.82f, 0.35f),
+                        _ => new Color(0.98f, 0.34f, 0.30f)
+                    };
+                    frame.SetPopulation(
+                        dead ? new Color(0.98f, 0.34f, 0.30f) :
+                        respawning ? new Color(0.27f, 0.85f, 0.86f) : accent,
+                        living,
+                        total,
+                        dead ? 0.18f :
+                        respawning ? remaining / WildlifeVitality.RespawnDelaySeconds : -1f);
+                }
+                if (populationPortraits.TryGetValue(pair.Key, out var portrait))
+                {
+                    portrait.color = living > 0 ? Color.white : new Color(0.53f, 0.55f, 0.57f, 0.72f);
+                }
             }
         }
 
@@ -1000,12 +1673,24 @@ namespace UrbanWildlifeRooms.UI
                 return;
             }
             var chinese = runtime == null || runtime.Language == InterfaceLanguage.Chinese;
+            lastEcologicalLanguageChinese = chinese;
             foreach (EcologicalMetricKind kind in System.Enum.GetValues(typeof(EcologicalMetricKind)))
             {
-                var value = ecologicalMetrics.Snapshot.ValueOf(kind);
-                var color = value < 0.30f
+                var value = kind switch
+                {
+                    EcologicalMetricKind.HumanFunction =>
+                        ecologicalMetrics.ResidentCount / (float)ResidentPopulationModel.MaximumResidents,
+                    EcologicalMetricKind.FoodAccessibility => new AnimalMealProgress(
+                        ecologicalMetrics.LivingAnimalCount,
+                        ecologicalMetrics.LivingUnfedCount).Fraction,
+                    EcologicalMetricKind.AnimalSafety => ecologicalMetrics.TotalAnimalSlots == 0
+                        ? 0f
+                        : ecologicalMetrics.LivingAnimalCount / (float)ecologicalMetrics.TotalAnimalSlots,
+                    _ => ecologicalMetrics.Snapshot.ValueOf(kind)
+                };
+                var color = kind != EcologicalMetricKind.HumanFunction && value < 0.30f
                     ? new Color(0.62f, 0.16f, 0.12f)
-                    : value < 0.60f
+                    : kind != EcologicalMetricKind.HumanFunction && value < 0.60f
                         ? new Color(0.86f, 0.46f, 0.16f)
                         : ecologicalColors[kind];
                 if (ecologicalMeters.TryGetValue(kind, out var meter))
@@ -1019,14 +1704,13 @@ namespace UrbanWildlifeRooms.UI
                         meter.SetValue(value, color);
                     }
                 }
+                if (ecologicalValueBadges.TryGetValue(kind, out var badge))
+                {
+                    badge.text = IndicatorBadge(kind, ecologicalMetrics, chinese);
+                }
                 if (ecologicalTooltips.TryGetValue(kind, out var tooltip))
                 {
-                    var population = kind == EcologicalMetricKind.HumanFunction
-                        ? $" · {(chinese ? "居民" : "Residents")} " +
-                          $"{residentPopulation?.Model?.ResidentCount ?? ResidentPopulationModel.StartingResidents}/" +
-                          ResidentPopulationModel.MaximumResidents
-                        : string.Empty;
-                    tooltip.text = $"{MetricName(kind, chinese)}  {Mathf.RoundToInt(value * 100f)}%{population}\n{MetricReason(kind, chinese)}";
+                    tooltip.text = IndicatorTooltip(kind, ecologicalMetrics, chinese);
                 }
             }
         }
@@ -1077,25 +1761,42 @@ namespace UrbanWildlifeRooms.UI
             }
         }
 
-        private static string MetricName(EcologicalMetricKind kind, bool chinese)
+        private static string IndicatorBadge(EcologicalMetricKind kind,
+            EcologicalMetricsController metrics, bool chinese)
         {
             return kind switch
             {
-                EcologicalMetricKind.HumanFunction => chinese ? "人类功能" : "Human function",
-                EcologicalMetricKind.FoodAccessibility => chinese ? "食物可达" : "Food accessibility",
-                EcologicalMetricKind.HabitatProvision => chinese ? "栖息供给" : "Habitat provision",
-                _ => chinese ? "动物安全" : "Animal safety"
+                EcologicalMetricKind.HumanFunction =>
+                    $"{metrics.ResidentCount}/{ResidentPopulationModel.MaximumResidents}",
+                EcologicalMetricKind.FoodAccessibility =>
+                    new AnimalMealProgress(metrics.LivingAnimalCount,
+                        metrics.LivingUnfedCount).Badge,
+                EcologicalMetricKind.HabitatProvision =>
+                    $"{Mathf.RoundToInt(metrics.Snapshot.HabitatProvision * 100f)}%",
+                _ => $"{metrics.LivingAnimalCount}/{metrics.TotalAnimalSlots}"
             };
         }
 
-        private static string MetricReason(EcologicalMetricKind kind, bool chinese)
+        private static string IndicatorTooltip(EcologicalMetricKind kind,
+            EcologicalMetricsController metrics, bool chinese)
         {
+            var food = metrics.NaturalFoodPortions + metrics.PlayerFoodPortions;
+            var meals = new AnimalMealProgress(metrics.LivingAnimalCount,
+                metrics.LivingUnfedCount);
             return kind switch
             {
-                EcologicalMetricKind.HumanFunction => chinese ? "通勤与垃圾负担" : "Commute and waste load",
-                EcologicalMetricKind.FoodAccessibility => chinese ? "现有食物 / 存活动物" : "Available food / living animals",
-                EcologicalMetricKind.HabitatProvision => chinese ? "固定栖息地与成熟橡树" : "Fixed habitats and mature oaks",
-                _ => chinese ? "饥饿、死亡与交通风险" : "Hunger, deaths and traffic risk"
+                EcologicalMetricKind.HumanFunction => chinese
+                    ? $"居民 {metrics.ResidentCount}/{ResidentPopulationModel.MaximumResidents} 人\n房间人形牌=规划人数/接纳上限\n通勤与垃圾功能参考 {Mathf.RoundToInt(metrics.Snapshot.HumanFunction * 100f)}%"
+                    : $"Residents {metrics.ResidentCount}/{ResidentPopulationModel.MaximumResidents}\nRoom person badge = planned / capacity\nCommute/waste index {Mathf.RoundToInt(metrics.Snapshot.HumanFunction * 100f)}%",
+                EcologicalMetricKind.FoodAccessibility => chinese
+                    ? $"今日已进食 {meals.Badge} · 尚需 {meals.UnfedAnimals}\n地图食物小牌=所在房间剩余份数（种子/坚果/昆虫/残食/投放）\n总计 {food} 份；居民路过投喂另计。有食物不代表动物可到达。"
+                    : $"Fed today {meals.Badge} · still need {meals.UnfedAnimals}\nMap food badge = portions left in that room (seeds/nuts/insects/scraps/placed)\nTotal {food}; worker meals separate. Food can still be out of reach.",
+                EcologicalMetricKind.HabitatProvision => chinese
+                    ? $"庇护指数 {Mathf.RoundToInt(metrics.Snapshot.HabitatProvision * 100f)}%\n固定庇护 75% · 成熟橡树 {metrics.MatureOakCount}/4"
+                    : $"Shelter index {Mathf.RoundToInt(metrics.Snapshot.HabitatProvision * 100f)}%\nFixed cover 75% · mature oaks {metrics.MatureOakCount}/4",
+                _ => chinese
+                    ? $"存活动物 {metrics.LivingAnimalCount}/{metrics.TotalAnimalSlots} 只\n圆环=存活比例；左下查看各物种"
+                    : $"Living animals {metrics.LivingAnimalCount}/{metrics.TotalAnimalSlots}\nRing = alive share; species at bottom left"
             };
         }
 
@@ -1148,9 +1849,7 @@ namespace UrbanWildlifeRooms.UI
             roomTypeChip = BuildRoomContextChip(roomContextRect, "Room Type", out roomContextIcon);
             roomFunctionChip = BuildRoomContextChip(roomContextRect, "Current Function", out roomFunctionIcon);
             roomUseChip = BuildRoomContextChip(roomContextRect, "Current Use", out roomUseIcon);
-            var plantHitArea = roomFunctionChip.AddComponent<Image>();
-            plantHitArea.color = Color.clear;
-            plantHitArea.raycastTarget = true;
+            var plantHitArea = roomFunctionChip.GetComponent<Image>();
             oakPlantButton = roomFunctionChip.AddComponent<Button>();
             oakPlantButton.targetGraphic = plantHitArea;
             oakPlantButton.onClick.AddListener(() =>
@@ -1163,7 +1862,7 @@ namespace UrbanWildlifeRooms.UI
             oakPlantLabel = CreateText(
                 roomFunctionChip.transform,
                 "Plant Tree Cost",
-                "栽种 −6",
+                "Plant Tree Action",
                 14,
                 TextAnchor.MiddleCenter,
                 WarmPaper,
@@ -1173,6 +1872,12 @@ namespace UrbanWildlifeRooms.UI
             oakPlantLabel.rectTransform.anchoredPosition = new Vector2(0f, -4f);
             oakPlantLabel.rectTransform.sizeDelta = new Vector2(96f, 24f);
             oakPlantLabel.gameObject.SetActive(false);
+            roomTypeChip.AddComponent<EcologicalIndicatorHover>().Initialize(
+                BuildRoomContextTooltip("Room Type Detail", out roomTypeTooltipText));
+            roomFunctionChip.AddComponent<EcologicalIndicatorHover>().Initialize(
+                BuildRoomContextTooltip("Current Function Detail", out roomFunctionTooltipText));
+            roomUseChip.AddComponent<EcologicalIndicatorHover>().Initialize(
+                BuildRoomContextTooltip("Current Use Detail", out roomUseTooltipText));
             LayoutRoomContextChips(true, true);
             roomContext.SetActive(false);
         }
@@ -1183,6 +1888,9 @@ namespace UrbanWildlifeRooms.UI
             holder.anchorMin = holder.anchorMax = Vector2.zero;
             holder.pivot = Vector2.zero;
             holder.sizeDelta = new Vector2(72f, 72f);
+            var hitArea = holder.gameObject.AddComponent<Image>();
+            hitArea.color = Color.clear;
+            hitArea.raycastTarget = true;
 
             var background = CreateImage(
                 holder,
@@ -1195,6 +1903,24 @@ namespace UrbanWildlifeRooms.UI
             Stretch(pictogram.rectTransform, 16f);
             pictogram.preserveAspect = true;
             return holder.gameObject;
+        }
+
+        private GameObject BuildRoomContextTooltip(string name, out Text tooltipText)
+        {
+            var panel = CreatePanel(name, roomContextRect,
+                new Color(0.10f, 0.12f, 0.14f, 0.94f));
+            panel.RectTransform.anchorMin = panel.RectTransform.anchorMax = new Vector2(0.5f, 0f);
+            panel.RectTransform.pivot = new Vector2(0.5f, 1f);
+            panel.RectTransform.anchoredPosition = new Vector2(0f, -8f);
+            panel.RectTransform.sizeDelta = new Vector2(250f, 58f);
+            panel.Image.raycastTarget = false;
+            RoundSolidPanel(panel, 13f);
+            tooltipText = CreateText(panel.Transform, "Explanation", string.Empty,
+                15, TextAnchor.MiddleCenter, WarmPaper, FontStyle.Normal);
+            tooltipText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            Stretch(tooltipText.rectTransform, 10f);
+            roomContextTooltipRects.Add(panel.RectTransform);
+            return panel.GameObject;
         }
 
         private void LayoutRoomContextChips(bool showFunction, bool showUse)
@@ -1212,19 +1938,34 @@ namespace UrbanWildlifeRooms.UI
 
         private void BuildLayoutEditingControls()
         {
-            var enterButton = CreateButton(gameplayRoot, "Enter Layout Editing", string.Empty, 1, () => layoutEditor?.EnterEditing());
+            var enterButton = CreateButton(gameplayRoot, "Enter Layout Editing", "Move", 18,
+                () => layoutEditor?.EnterEditing());
             enterEditButtonObject = enterButton.gameObject;
             var enterBacking = enterButton.GetComponent<Image>();
-            enterBacking.sprite = MainMenuVisualCatalog.GetSprite(MainMenuVisual.BottomButtonBase);
-            enterBacking.preserveAspect = true;
-            enterBacking.color = Color.white;
-            var enterIcon = CreateImage(
-                enterButton.transform,
-                "Layout Editing Pictogram",
-                MainMenuVisualCatalog.GetSprite(MainMenuVisual.SandboxIcon));
-            enterIcon.preserveAspect = true;
-            Stretch(enterIcon.rectTransform, 11f);
-            SetTopLeft(enterButton.GetComponent<RectTransform>(), 22f, 102f, 58f, 58f);
+            enterBacking.sprite = null;
+            enterBacking.color = Color.clear;
+            SetTopLeft(enterButton.GetComponent<RectTransform>(), 22f, 103f, 146f, 60f);
+            var moveBacking = NewUiObject("Rounded Move Button Backing", enterButton.transform,
+                typeof(CanvasRenderer), typeof(RoundedPanelGraphic))
+                .GetComponent<RoundedPanelGraphic>();
+            enterEditBacking = moveBacking;
+            moveBacking.color = Graphite;
+            moveBacking.CornerRadius = 17f;
+            moveBacking.BorderWidth = 2f;
+            moveBacking.BorderColor = new Color(0.94f, 0.90f, 0.80f, 0.76f);
+            moveBacking.raycastTarget = false;
+            Stretch(moveBacking.rectTransform);
+            moveBacking.transform.SetAsFirstSibling();
+            enterButton.targetGraphic = moveBacking;
+            var icon = NewUiObject("Shovel And Room Pictogram", enterButton.transform,
+                typeof(CanvasRenderer), typeof(RoomMoveIconGraphic))
+                .GetComponent<RoomMoveIconGraphic>();
+            icon.color = WarmPaper;
+            icon.raycastTarget = false;
+            SetRect(icon.rectTransform, 6f, 2f, 56f, 56f);
+            enterEditLabel = enterButton.GetComponentInChildren<Text>();
+            enterEditLabel.alignment = TextAnchor.MiddleCenter;
+            SetRect(enterEditLabel.rectTransform, 65f, 3f, 75f, 54f);
 
             var toolbar = CreatePanel("Layout Editing Toolbar", gameplayRoot, Color.white);
             toolbar.Image.sprite = PauseMenuVisualCatalog.GetSprite(PauseMenuVisual.ButtonBase);
@@ -1237,6 +1978,7 @@ namespace UrbanWildlifeRooms.UI
 
             var traySlot = CreatePanel("Temporary Tray Icon Slot", toolbar.Transform, new Color(0.16f, 0.19f, 0.20f, 0.92f));
             SetRect(traySlot.RectTransform, 12f, 10f, 54f, 54f);
+            RoundSolidPanel(traySlot, 12f);
             trayRoomIcon = CreateImage(traySlot.Transform, "Stored Room Pictogram", null);
             trayRoomIcon.preserveAspect = true;
             Stretch(trayRoomIcon.rectTransform, 3f);
@@ -1252,7 +1994,128 @@ namespace UrbanWildlifeRooms.UI
             confirmEditButton = CreateButton(toolbar.Transform, "Confirm Layout", "✓", 25, () => layoutEditor?.ConfirmEditing());
             StyleCompactPaperButton(confirmEditButton);
             SetRect(confirmEditButton.GetComponent<RectTransform>(), 522f, 12f, 62f, 50f);
+
+            var impact = CreatePanel("Layout Impact Preview", gameplayRoot,
+                new Color(0.10f, 0.12f, 0.14f, 0.86f));
+            impact.Image.raycastTarget = false;
+            RoundSolidPanel(impact, 16f);
+            layoutImpactPanel = impact.GameObject;
+            impact.RectTransform.anchorMin = impact.RectTransform.anchorMax = new Vector2(0.5f, 0f);
+            impact.RectTransform.pivot = new Vector2(0.5f, 0f);
+            impact.RectTransform.anchoredPosition = new Vector2(0f, 108f);
+            impact.RectTransform.sizeDelta = new Vector2(760f, 118f);
+            layoutImpactText = CreateText(impact.Transform, "Projected Layout Consequences",
+                string.Empty, 15, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Bold);
+            SetRect(layoutImpactText.rectTransform, 17f, 87f, 600f, 24f);
+            var scope = CreatePanel("Forecast Scope", impact.Transform,
+                new Color(0.25f, 0.29f, 0.29f, 0.94f));
+            SetRect(scope.RectTransform, 623f, 89f, 24f, 24f);
+            RoundSolidPanel(scope, 12f);
+            var question = CreateText(scope.Transform, "Scope Symbol", "?", 15,
+                TextAnchor.MiddleCenter, WarmPaper, FontStyle.Bold);
+            Stretch(question.rectTransform);
+            var scopeTip = CreatePanel("Scope Explanation", scope.Transform,
+                new Color(0.10f, 0.12f, 0.14f, 0.97f));
+            scopeTip.Image.raycastTarget = false;
+            RoundSolidPanel(scopeTip, 12f);
+            scopeTip.RectTransform.anchorMin = scopeTip.RectTransform.anchorMax = new Vector2(1f, 1f);
+            scopeTip.RectTransform.pivot = new Vector2(1f, 0f);
+            scopeTip.RectTransform.anchoredPosition = new Vector2(0f, 8f);
+            scopeTip.RectTransform.sizeDelta = new Vector2(356f, 62f);
+            layoutImpactScopeText = CreateText(scopeTip.Transform, "Scope Text",
+                "仅预测布局指标；不预测动物实际路线、存量或车库风险。",
+                13, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Normal);
+            layoutImpactScopeText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            Stretch(layoutImpactScopeText.rectTransform, 10f, 6f);
+            scope.GameObject.AddComponent<EcologicalIndicatorHover>().Initialize(scopeTip.GameObject);
+            for (var index = 0; index < layoutImpactCards.Length; index++)
+            {
+                layoutImpactCards[index] = BuildLayoutImpactCard(impact.Transform, index);
+            }
+            layoutImpactPreviousButton = CreateButton(impact.Transform,
+                "Previous Impact Page", "‹", 23, () => ChangeLayoutImpactPage(-1));
+            StyleCompactPaperButton(layoutImpactPreviousButton);
+            SetRect(layoutImpactPreviousButton.GetComponent<RectTransform>(), 663f, 48f, 36f, 35f);
+            layoutImpactNextButton = CreateButton(impact.Transform,
+                "Next Impact Page", "›", 23, () => ChangeLayoutImpactPage(1));
+            StyleCompactPaperButton(layoutImpactNextButton);
+            SetRect(layoutImpactNextButton.GetComponent<RectTransform>(), 709f, 48f, 36f, 35f);
+            layoutImpactPageLabel = CreateText(impact.Transform, "Impact Page Count",
+                string.Empty, 12, TextAnchor.MiddleCenter, WarmPaper, FontStyle.Normal);
+            SetRect(layoutImpactPageLabel.rectTransform, 664f, 14f, 80f, 24f);
+            layoutImpactPanel.SetActive(false);
             editToolbar.SetActive(false);
+        }
+
+        private LayoutImpactCard BuildLayoutImpactCard(Transform parent, int index)
+        {
+            var panel = CreatePanel($"Impact Metric {index + 1}", parent,
+                new Color(0.17f, 0.20f, 0.21f, 0.92f));
+            SetRect(panel.RectTransform, 14f + index * 320f, 9f, 309f, 75f);
+            RoundSolidPanel(panel, 12f);
+            panel.Image.raycastTarget = true;
+            var signal = CreateImage(panel.Transform, "Impact Signal", null);
+            SetRect(signal.rectTransform, 4f, 11f, 4f, 53f);
+            var icon = NewUiObject("Metric Icon", panel.Transform,
+                typeof(CanvasRenderer), typeof(LayoutImpactPictogramGraphic))
+                .GetComponent<LayoutImpactPictogramGraphic>();
+            icon.color = WarmPaper;
+            icon.raycastTarget = false;
+            SetRect(icon.rectTransform, 10f, 14f, 46f, 46f);
+            var label = CreateText(panel.Transform, "Metric Label", string.Empty,
+                15, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Bold);
+            SetRect(label.rectTransform, 65f, 43f, 232f, 25f);
+            var before = CreateText(panel.Transform, "Baseline Value", string.Empty,
+                16, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Normal);
+            SetRect(before.rectTransform, 65f, 9f, 87f, 31f);
+            var delta = CreateText(panel.Transform, "Delta Value", string.Empty,
+                19, TextAnchor.MiddleLeft, Cyan, FontStyle.Bold);
+            SetRect(delta.rectTransform, 159f, 9f, 135f, 31f);
+            var tooltip = CreatePanel("Metric Explanation", panel.Transform,
+                new Color(0.10f, 0.12f, 0.14f, 0.97f));
+            tooltip.Image.raycastTarget = false;
+            RoundSolidPanel(tooltip, 12f);
+            tooltip.RectTransform.anchorMin = tooltip.RectTransform.anchorMax = new Vector2(0f, 1f);
+            tooltip.RectTransform.pivot = Vector2.zero;
+            tooltip.RectTransform.anchoredPosition = new Vector2(0f, 8f);
+            tooltip.RectTransform.sizeDelta = new Vector2(344f, 68f);
+            var explanation = CreateText(tooltip.Transform, "Explanation Text", string.Empty,
+                13, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Normal);
+            explanation.horizontalOverflow = HorizontalWrapMode.Wrap;
+            Stretch(explanation.rectTransform, 10f, 6f);
+            panel.GameObject.AddComponent<EcologicalIndicatorHover>().Initialize(tooltip.GameObject);
+            return new LayoutImpactCard(panel.GameObject, signal, icon, label, before, delta, explanation);
+        }
+
+        private void ChangeLayoutImpactPage(int direction)
+        {
+            layoutImpactPage += direction;
+            RefreshLayoutEditor();
+        }
+
+        private void RenderLayoutImpactCard(LayoutImpactCard card, LayoutImpactMetric? maybeMetric,
+            bool chinese)
+        {
+            card.Root.SetActive(maybeMetric.HasValue);
+            if (!maybeMetric.HasValue)
+            {
+                return;
+            }
+
+            var metric = maybeMetric.Value;
+            card.Icon.Kind = metric.Kind;
+            card.Label.text = metric.Label;
+            card.Baseline.text = chinese ? $"原 {metric.BeforeText}" : $"Was {metric.BeforeText}";
+            var direction = metric.IsRisk ? "! " : metric.Delayed || metric.Neutral ? "· " : metric.Changed ? "✓ " : "= ";
+            card.Delta.text = $"{direction}{(metric.Changed ? metric.DeltaText : "±0")} → {metric.After:0.#}";
+            card.Delta.color = metric.Neutral ? WarmPaper : metric.Delayed
+                ? new Color(0.98f, 0.76f, 0.45f, 1f)
+                : metric.IsRisk ? new Color(0.95f, 0.62f, 0.50f, 1f)
+                : !metric.Changed ? WarmPaper : Cyan;
+            card.Signal.color = card.Delta.color;
+            card.Explanation.text = chinese
+                ? $"原 {metric.BeforeText} → 预计 {metric.After:0.#}。{metric.Detail}"
+                : $"Was {metric.BeforeText} → projected {metric.After:0.#}. {metric.Detail}";
         }
 
         private void BuildFeedingControls()
@@ -1261,25 +2124,38 @@ namespace UrbanWildlifeRooms.UI
                 gameplayRoot,
                 "Activate Feeding Mode",
                 string.Empty,
-                17,
+                18,
                 () => playerFeeding?.ToggleFeedingMode());
             feedingModeButtonObject = feedingModeButton.gameObject;
-            feedingModeButtonBackground = feedingModeButton.GetComponent<Image>();
-            feedingModeButtonBackground.sprite = PauseMenuVisualCatalog.GetSprite(PauseMenuVisual.ButtonBase);
-            feedingModeButtonBackground.preserveAspect = false;
-            SetTopLeft(feedingModeButton.GetComponent<RectTransform>(), 84f, 102f, 154f, 52f);
+            var feedingHitArea = feedingModeButton.GetComponent<Image>();
+            feedingHitArea.sprite = null;
+            feedingHitArea.color = Color.clear;
+            SetTopLeft(feedingModeButton.GetComponent<RectTransform>(), 178f, 103f, 146f, 60f);
+            feedingModeButtonBacking = NewUiObject("Rounded Feeding Button Backing", feedingModeButton.transform,
+                typeof(CanvasRenderer), typeof(RoundedPanelGraphic))
+                .GetComponent<RoundedPanelGraphic>();
+            feedingModeButtonBacking.color = Graphite;
+            feedingModeButtonBacking.CornerRadius = 17f;
+            feedingModeButtonBacking.BorderWidth = 2f;
+            feedingModeButtonBacking.BorderColor = new Color(0.94f, 0.90f, 0.80f, 0.76f);
+            feedingModeButtonBacking.raycastTarget = false;
+            Stretch(feedingModeButtonBacking.rectTransform);
+            feedingModeButtonBacking.transform.SetAsFirstSibling();
+            feedingModeButton.targetGraphic = feedingModeButtonBacking;
+            var feedingColors = feedingModeButton.colors;
+            feedingColors.disabledColor = Color.white;
+            feedingModeButton.colors = feedingColors;
 
             feedingModeLabel = feedingModeButton.GetComponentInChildren<Text>();
             feedingModeLabel.alignment = TextAnchor.MiddleCenter;
-            SetRect(feedingModeLabel.rectTransform, 48f, 2f, 100f, 48f);
+            SetRect(feedingModeLabel.rectTransform, 65f, 3f, 75f, 54f);
 
-            feedingModeIcon = CreateImage(
-                feedingModeButton.transform,
-                "Food Dish Pictogram",
-                RoomContextVisualCatalog.GetSprite(RoomContextVisual.FoodAvailable));
-            feedingModeIcon.preserveAspect = true;
+            feedingModeIcon = NewUiObject("Food Dish Pictogram", feedingModeButton.transform,
+                typeof(CanvasRenderer), typeof(FeedingModeIconGraphic))
+                .GetComponent<FeedingModeIconGraphic>();
+            feedingModeIcon.color = WarmPaper;
             feedingModeIcon.raycastTarget = false;
-            SetRect(feedingModeIcon.rectTransform, 8f, 8f, 36f, 36f);
+            SetRect(feedingModeIcon.rectTransform, 6f, 2f, 56f, 56f);
 
             var hint = CreatePanel(
                 "Feeding Mode Instruction",
@@ -1288,7 +2164,7 @@ namespace UrbanWildlifeRooms.UI
             hint.Image.sprite = PauseMenuVisualCatalog.GetSprite(PauseMenuVisual.ButtonBase);
             hint.Image.preserveAspect = false;
             feedingModeHint = hint.GameObject;
-            SetTopLeft(hint.RectTransform, 248f, 102f, 410f, 52f);
+            SetTopLeft(hint.RectTransform, 342f, 107f, 410f, 52f);
             feedingModeHintLabel = CreateText(
                 hint.Transform,
                 "Feeding Instruction",
@@ -1311,24 +2187,70 @@ namespace UrbanWildlifeRooms.UI
             var visible = !runtime.AtDesktop && !runtime.ResultsOpen && !runtime.LayoutEditing;
             var active = playerFeeding.FeedingModeActive;
             var available = playerFeeding.CanActivateFeedingMode;
+            var cooldownDays = playerFeeding.ManualFeedingDaysRemaining;
+            var actionAlreadyUsed = runtime.TodayAction is DailyActionKind.Rearrange or
+                DailyActionKind.Transform;
             feedingModeButtonObject.SetActive(visible);
             feedingModeButton.interactable = active || available;
-            feedingModeButtonBackground.color = active
+            feedingModeButtonBacking.color = active
+                ? new Color(0.18f, 0.45f, 0.43f, 0.98f)
+                : available ? Graphite : MutedTrack;
+            feedingModeButtonBacking.BorderColor = active
                 ? Cyan
                 : available
-                    ? Color.white
-                    : MutedTrack;
-            feedingModeIcon.color = active ? Graphite : Color.white;
-            feedingModeLabel.color = active ? Graphite : WarmPaper;
+                    ? new Color(0.96f, 0.69f, 0.38f, 0.94f)
+                    : new Color(0.78f, 0.75f, 0.67f, 0.46f);
+            feedingModeIcon.color = available || active
+                ? WarmPaper
+                : new Color(0.85f, 0.82f, 0.76f, 0.72f);
+            feedingModeLabel.color = available || active
+                ? WarmPaper
+                : new Color(0.91f, 0.87f, 0.77f, 0.72f);
 
             var chinese = runtime.Language == InterfaceLanguage.Chinese;
             feedingModeLabel.text = active
                 ? (chinese ? "取消" : "Cancel")
-                : (chinese ? "投喂 −1" : "Feed −1");
-            feedingModeHintLabel.text = chinese
-                ? "投喂模式：点击房间空地投放 · 右键取消"
-                : "Feeding mode: click open ground · right-click to cancel";
-            feedingModeHint.SetActive(visible && active);
+                : actionAlreadyUsed
+                    ? chinese ? "今日已行动" : "Action used"
+                : cooldownDays > 0
+                    ? chinese ? $"冷却 {cooldownDays}天" : $"Wait {cooldownDays}d"
+                    : (chinese ? "投喂" : "Feed");
+            feedingModeLabel.fontSize = (cooldownDays > 0 || actionAlreadyUsed) && !active ? 16 : 18;
+            var showWasteNotice = Time.unscaledTime < feedingWasteNoticeUntil && !active;
+            if (showWasteNotice)
+            {
+                var roomName = feedingWasteRoomId;
+                foreach (var room in RoomLayoutData.All)
+                {
+                    if (room.Id == feedingWasteRoomId)
+                    {
+                        roomName = UrbanPalette.LocalizedRoomName(room, chinese);
+                        break;
+                    }
+                }
+                feedingModeHintLabel.text = chinese
+                    ? $"{roomName}：剩食 {feedingWastePortions} 份 → 垃圾 +1{(feedingWasteRouted ? "" : "（清运受阻）")}"
+                    : $"{roomName}: {feedingWastePortions} leftovers → waste +1{(feedingWasteRouted ? "" : " (route blocked)")}";
+            }
+            else if (actionAlreadyUsed)
+            {
+                feedingModeHintLabel.text = chinese
+                    ? "今日已调整房间 · 明天才能投喂"
+                    : "Rooms rearranged today · feed tomorrow";
+            }
+            else if (cooldownDays > 0)
+            {
+                feedingModeHintLabel.text = chinese
+                    ? $"每 3 天可投喂 1 次 · 第 {playerFeeding.NextManualFeedingDay} 天可用"
+                    : $"One feed every 3 days · available on day {playerFeeding.NextManualFeedingDay}";
+            }
+            else
+            {
+                feedingModeHintLabel.text = chinese
+                    ? "每 3 天 1 次 · 点击空地投喂 · 剩食变垃圾"
+                    : "Once every 3 days · click ground · leftovers become waste";
+            }
+            feedingModeHint.SetActive(visible && (active || showWasteNotice || actionAlreadyUsed || cooldownDays > 0));
         }
 
         private void BuildPauseMenu()
@@ -1397,11 +2319,11 @@ namespace UrbanWildlifeRooms.UI
                 restartConfirmation.Transform,
                 "Restart Confirmation Title",
                 "重新开始？",
-                32,
+                30,
                 TextAnchor.MiddleCenter,
                 Graphite,
                 FontStyle.Bold);
-            SetTopCenter(restartConfirmationTitle.rectTransform, 0f, 42f, 430f, 50f);
+            SetTopCenter(restartConfirmationTitle.rectTransform, 0f, 76f, 430f, 46f);
             restartConfirmationMessage = CreateText(
                 restartConfirmation.Transform,
                 "Restart Confirmation Message",
@@ -1410,23 +2332,20 @@ namespace UrbanWildlifeRooms.UI
                 TextAnchor.MiddleCenter,
                 Graphite,
                 FontStyle.Normal);
-            SetTopCenter(restartConfirmationMessage.rectTransform, 0f, 108f, 440f, 78f);
-            var cancelRestartButton = CreateButton(
+            SetTopCenter(restartConfirmationMessage.rectTransform, 0f, 137f, 440f, 68f);
+            var cancelRestartButton = CreateRoundedRestartButton(
                 restartConfirmation.Transform,
                 "Cancel Restart",
-                string.Empty,
-                19,
+                Graphite,
                 CancelSandboxRestart);
-            SetTopCenter(cancelRestartButton.GetComponent<RectTransform>(), -108f, 230f, 190f, 62f);
+            SetTopCenter(cancelRestartButton.GetComponent<RectTransform>(), -108f, 238f, 190f, 58f);
             restartCancelLabel = cancelRestartButton.GetComponentInChildren<Text>();
-            var confirmRestartButton = CreateButton(
+            var confirmRestartButton = CreateRoundedRestartButton(
                 restartConfirmation.Transform,
                 "Confirm Restart",
-                string.Empty,
-                19,
+                new Color(0.72f, 0.30f, 0.22f, 1f),
                 ConfirmSandboxRestart);
-            SetTopCenter(confirmRestartButton.GetComponent<RectTransform>(), 108f, 230f, 190f, 62f);
-            confirmRestartButton.GetComponent<Image>().color = new Color(0.72f, 0.30f, 0.22f, 1f);
+            SetTopCenter(confirmRestartButton.GetComponent<RectTransform>(), 108f, 238f, 190f, 58f);
             restartConfirmLabel = confirmRestartButton.GetComponentInChildren<Text>();
             restartConfirmationPanel.SetActive(false);
 
@@ -1435,19 +2354,21 @@ namespace UrbanWildlifeRooms.UI
             settings.Image.preserveAspect = false;
             settingsPanel = settings.GameObject;
             var cameraSettings = BuildVariantSettings.UsesCameraRecognition;
-            SetCenter(settings.RectTransform, 620f, cameraSettings ? 480f : 420f);
-            settingsTitle = CreateText(settings.Transform, "Settings Title", "设置", 32, TextAnchor.MiddleCenter, Graphite, FontStyle.Bold);
-            SetTopCenter(settingsTitle.rectTransform, 0f, 30f, 400f, 48f);
-            volumeLabel = CreateText(settings.Transform, "Volume Label", "游戏音量", 20, TextAnchor.MiddleLeft, Graphite, FontStyle.Bold);
-            SetTopLeft(volumeLabel.rectTransform, 74f, 110f, 220f, 35f);
+            var settingsWidth = cameraSettings ? 700f : 640f;
+            SetCenter(settings.RectTransform, settingsWidth, cameraSettings ? 580f : 500f);
+            settingsTitle = CreateText(settings.Transform, "Settings Title", "设置", 26, TextAnchor.MiddleCenter, Graphite, FontStyle.Bold);
+            SetTopCenter(settingsTitle.rectTransform, 0f, 36f, 240f, 42f);
+            volumeLabel = CreateText(settings.Transform, "Volume Label", "游戏音量", 21, TextAnchor.MiddleLeft, Graphite, FontStyle.Bold);
+            var settingsContentLeft = (settingsWidth - 472f) * 0.5f;
+            SetTopLeft(volumeLabel.rectTransform, settingsContentLeft, 110f, 220f, 35f);
             volumeSlider = CreateSlider(settings.Transform, "Master Volume");
-            SetTopLeft(volumeSlider.GetComponent<RectTransform>(), 74f, 154f, 472f, 34f);
+            SetTopLeft(volumeSlider.GetComponent<RectTransform>(), settingsContentLeft, 154f, 472f, 34f);
             volumeSlider.onValueChanged.AddListener(runtime.SetMasterVolume);
             muteLabel = BuildSettingsAction(
                 settings.Transform,
                 "Mute",
                 PauseMenuVisual.MuteIcon,
-                218f,
+                202f,
                 runtime.ToggleMute,
                 out muteIcon);
             settingsLanguageLabel = BuildSettingsAction(
@@ -1463,7 +2384,7 @@ namespace UrbanWildlifeRooms.UI
                     settings.Transform,
                     "Recalibrate Camera",
                     PauseMenuVisual.CameraRecalibrateIcon,
-                    338f,
+                    354f,
                     runtime.RequestCameraRecalibration,
                     out _);
             }
@@ -1471,7 +2392,7 @@ namespace UrbanWildlifeRooms.UI
                 settings.Transform,
                 "Back",
                 PauseMenuVisual.BackIcon,
-                cameraSettings ? 398f : 338f,
+                cameraSettings ? 430f : 354f,
                 runtime.CloseSettings,
                 out _);
         }
@@ -1638,23 +2559,15 @@ namespace UrbanWildlifeRooms.UI
             desktopCanvasGroup = overlay.GameObject.AddComponent<CanvasGroup>();
             Stretch(overlay.RectTransform);
 
-            var background = CreateImage(
-                overlay.Transform,
-                "Warm Tabletop Background",
-                MainMenuVisualCatalog.GetSprite(MainMenuVisual.TabletopBackground));
-            Stretch(background.rectTransform);
-            background.preserveAspect = false;
-            background.raycastTarget = false;
-            var backgroundAspect = background.gameObject.AddComponent<AspectRatioFitter>();
-            backgroundAspect.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
-            backgroundAspect.aspectRatio = 16f / 9f;
+            // The same live board stays under both the menu and gameplay HUD.
+            // A full-screen menu illustration would hide the camera's transition
+            // and make entering a mode look like a cut to a different scene.
 
             BuildDesktopTitle(overlay.Transform);
 
             var sandboxButton = BuildModeCard(
                 overlay.Transform,
                 "Sandbox Mode Entrance",
-                MainMenuVisual.SandboxCard,
                 MainMenuVisual.SandboxIcon,
                 HandleSandboxEntry,
                 out desktopSandboxLabel);
@@ -1664,7 +2577,6 @@ namespace UrbanWildlifeRooms.UI
             var researchButton = BuildModeCard(
                 overlay.Transform,
                 "Research Mode Entrance",
-                MainMenuVisual.ResearchCard,
                 MainMenuVisual.ResearchIcon,
                 HandleResearchEntry,
                 out desktopResearchLabel);
@@ -1675,12 +2587,15 @@ namespace UrbanWildlifeRooms.UI
             recordPanel.Image.raycastTarget = false;
             desktopBestRecordRect = recordPanel.RectTransform;
             ConfigureResponsiveMenuElement(desktopBestRecordRect, new Vector2(0.5f, 0.205f), 390f, 80f);
-            var recordArtwork = CreateImage(
-                recordPanel.Transform,
-                "Best Record Panel Artwork",
-                MainMenuVisualCatalog.GetSprite(MainMenuVisual.BestRecordPanel));
-            recordArtwork.preserveAspect = false;
-            SetCenter(recordArtwork.rectTransform, 420f, 420f);
+            var recordArtwork = NewUiObject("Best Record Rounded Backing", recordPanel.Transform,
+                typeof(CanvasRenderer), typeof(RoundedPanelGraphic))
+                .GetComponent<RoundedPanelGraphic>();
+            recordArtwork.CornerRadius = 40f;
+            recordArtwork.BorderWidth = 2.5f;
+            recordArtwork.BorderColor = new Color(0.16f, 0.25f, 0.32f, 0.92f);
+            recordArtwork.color = new Color(0.96f, 0.92f, 0.82f, 0.9f);
+            recordArtwork.raycastTarget = false;
+            Stretch(recordArtwork.rectTransform);
             var recordIcon = CreateImage(
                 recordPanel.Transform,
                 "Survival Days Pictogram",
@@ -1885,11 +2800,11 @@ namespace UrbanWildlifeRooms.UI
             }
             if (desktopResearchCard != null)
             {
-                desktopResearchCard.SetActive(visible && !BuildVariantSettings.UsesCameraRecognition);
+                desktopResearchCard.SetActive(false);
             }
             if (desktopBestRecordRect != null)
             {
-                desktopBestRecordRect.gameObject.SetActive(visible);
+                desktopBestRecordRect.gameObject.SetActive(visible && runtime.BestSurvivalDays > 0);
             }
 
             SetDesktopControlVisible(desktopSettingsLabel, visible);
@@ -1912,7 +2827,7 @@ namespace UrbanWildlifeRooms.UI
         private void BuildDesktopTitle(Transform parent)
         {
             var title = CreateEmpty("Desktop Title", parent);
-            ConfigureResponsiveMenuElement(title, new Vector2(0.5f, 0.84f), 820f, 155f);
+            ConfigureResponsiveMenuElement(title, new Vector2(0.5f, 0.81f), 1060f, 200f);
 
             var wordmark = CreateImage(
                 title,
@@ -1920,6 +2835,9 @@ namespace UrbanWildlifeRooms.UI
                 MainMenuVisualCatalog.GetSprite(MainMenuVisual.TitleWordmark));
             wordmark.preserveAspect = true;
             Stretch(wordmark.rectTransform);
+            // Preserve the source wordmark's width-to-height ratio. Stretch sets
+            // the available area; Image.preserveAspect fits the cropped sprite.
+            wordmark.rectTransform.localScale = Vector3.one;
             wordmark.raycastTarget = false;
         }
 
@@ -1962,11 +2880,11 @@ namespace UrbanWildlifeRooms.UI
                 root,
                 "Live Control Label",
                 string.Empty,
-                18,
+                20,
                 TextAnchor.MiddleCenter,
-                WarmPaper,
+                Graphite,
                 FontStyle.Bold);
-            SetTopCenter(label.rectTransform, 0f, 98f, 140f, 30f);
+            SetTopCenter(label.rectTransform, 0f, 80f, 140f, 34f);
             return label;
         }
 
@@ -1987,47 +2905,58 @@ namespace UrbanWildlifeRooms.UI
         private Button BuildModeCard(
             Transform parent,
             string name,
-            MainMenuVisual cardVisual,
             MainMenuVisual iconVisual,
             UnityEngine.Events.UnityAction action,
             out Text label)
         {
-            var panel = CreatePanel(name, parent, Color.white);
-            var normalSprite = MainMenuVisualCatalog.GetSprite(cardVisual);
-            panel.Image.sprite = normalSprite;
-            panel.Image.preserveAspect = false;
-            var button = panel.GameObject.AddComponent<Button>();
-            button.targetGraphic = panel.Image;
+            var panel = NewUiObject(name, parent, typeof(CanvasRenderer), typeof(RoundedPanelGraphic));
+            var rounded = panel.GetComponent<RoundedPanelGraphic>();
+            rounded.CornerRadius = 86f;
+            rounded.BorderWidth = 3f;
+            var button = panel.AddComponent<Button>();
+            button.targetGraphic = rounded;
             button.transition = Selectable.Transition.None;
             button.onClick.AddListener(action);
 
-            var feedback = panel.GameObject.AddComponent<MainMenuModeCardFeedback>();
-            feedback.Initialize(
-                panel.Image,
-                normalSprite,
-                MainMenuVisualCatalog.GetSprite(MainMenuVisual.ModeHoverCard));
+            var feedback = panel.AddComponent<MainMenuModeCardFeedback>();
+            feedback.Initialize(rounded);
 
-            var icon = CreateImage(panel.Transform, "Mode Pictogram", MainMenuVisualCatalog.GetSprite(iconVisual));
+            var icon = CreateImage(panel.transform, "Mode Pictogram", MainMenuVisualCatalog.GetSprite(iconVisual));
             icon.preserveAspect = true;
-            SetRect(icon.rectTransform, 36f, 20f, 130f, 130f);
+            SetRect(icon.rectTransform, 48f, 31f, 148f, 148f);
 
             label = CreateText(
-                panel.Transform,
+                panel.transform,
                 "Live Mode Label",
                 string.Empty,
-                36,
+                64,
                 TextAnchor.MiddleCenter,
                 WarmPaper,
                 FontStyle.Bold);
-            SetRect(label.rectTransform, 175f, 35f, 430f, 100f);
+            label.resizeTextForBestFit = false;
+            SetRect(label.rectTransform, 226f, 30f, 395f, 150f);
 
-            var arrow = CreateImage(
-                panel.Transform,
-                "Enter Arrow",
-                MainMenuVisualCatalog.GetSprite(MainMenuVisual.EnterArrow));
-            arrow.preserveAspect = true;
-            SetRect(arrow.rectTransform, 638f, 52f, 66f, 66f);
+            var arrow = CreateText(panel.transform, "Enter Arrow", "›", 72,
+                TextAnchor.MiddleCenter, WarmPaper, FontStyle.Normal);
+            SetRect(arrow.rectTransform, 665f, 70f, 56f, 70f);
             return button;
+        }
+
+        private static void SetModeCardLabel(Text label, string caption, int preferredFontSize)
+        {
+            if (label == null || (label.text == caption && label.fontSize <= preferredFontSize))
+            {
+                return;
+            }
+
+            label.text = caption;
+            label.resizeTextForBestFit = false;
+            label.fontSize = preferredFontSize;
+            var availableWidth = label.rectTransform.rect.width - 16f;
+            while (label.fontSize > 36 && label.preferredWidth > availableWidth)
+            {
+                label.fontSize -= 2;
+            }
         }
 
         private void HandleSandboxEntry()
@@ -2077,11 +3006,34 @@ namespace UrbanWildlifeRooms.UI
             clockDial.SetTime(runtime.Clock.CycleProgress, runtime.Clock.Phase);
             DetectDesktopStateChange();
             dayNumber.text = runtime.Clock.DayNumber.ToString();
+            RefreshHedgehogNightReport();
+            RefreshDailyOutcome();
+            RefreshMarketForecast();
+            RefreshNeedRisk();
+            RefreshAnimalPopulation();
             foreach (var pair in speedButtons)
             {
-                var active = pair.Key == runtime.SpeedMultiplier && !runtime.PauseMenuOpen &&
+                var active = !runtime.IsDaySkipping && pair.Key == runtime.SpeedMultiplier && !runtime.PauseMenuOpen &&
                              !runtime.AtDesktop && !runtime.LayoutEditing;
-                pair.Value.color = active ? new Color(0.62f, 0.96f, 0.94f, 1f) : Color.white;
+                pair.Value.color = active
+                    ? new Color(0.25f, 0.62f, 0.59f, 0.98f)
+                    : new Color(0.14f, 0.18f, 0.21f, 0.92f);
+                pair.Value.BorderColor = active
+                    ? new Color(0.70f, 0.96f, 0.89f, 0.92f)
+                    : new Color(0.94f, 0.90f, 0.80f, 0.27f);
+                speedButtonLabels[pair.Key].color = active ? Color.white : WarmPaper;
+            }
+            if (skipDayButton != null)
+            {
+                skipDayButton.gameObject.SetActive(runtime.Mode == GameMode.Sandbox &&
+                                                 runtime.HasActiveRun && !runtime.AtDesktop);
+                skipDayButton.interactable = !runtime.IsPaused && !runtime.IsDaySkipping &&
+                                             runtime.HasDailyAction;
+                skipDayLabel.text = runtime.Language == InterfaceLanguage.Chinese
+                    ? runtime.IsDaySkipping ? "快进中…"
+                        : runtime.HasDailyAction ? "跳至次日" : "先选行动"
+                    : runtime.IsDaySkipping ? "Skipping…"
+                        : runtime.HasDailyAction ? "Next day" : "Choose action";
             }
 
             var desktopSettingsOpen = runtime.AtDesktop && runtime.SettingsOpen;
@@ -2106,6 +3058,12 @@ namespace UrbanWildlifeRooms.UI
                 350f,
                 82f);
             settingsPanel.SetActive(runtime.SettingsOpen);
+            if (runtime.AtDesktop)
+            {
+                SetDesktopMenuControlsVisible(
+                    !desktopSettingsOpen &&
+                    (researchSetupOverlay == null || !researchSetupOverlay.activeSelf));
+            }
             var calibrationOpen = cameraCalibrationOverlay != null && runtime.CameraCalibrationOpen;
             onboardingController?.SetOverlaySuppressed(
                 runtime.PauseMenuOpen || runtime.AtDesktop || runtime.ResultsOpen || calibrationOpen);
@@ -2156,6 +3114,7 @@ namespace UrbanWildlifeRooms.UI
             RefreshCameraRecognitionFeedback();
             RefreshResearchSession();
             RefreshLanguage();
+            RefreshMortalityIndicator();
             RefreshFeedingControls();
         }
 
@@ -2289,30 +3248,18 @@ namespace UrbanWildlifeRooms.UI
                 return;
             }
 
-            var cameraBuild = BuildVariantSettings.UsesCameraRecognition;
-            var showSandbox = true;
-            var showResearch = !cameraBuild;
+            var menuEntriesVisible = !runtime.SettingsOpen &&
+                                     (researchSetupOverlay == null || !researchSetupOverlay.activeSelf);
+            var showSandbox = menuEntriesVisible;
+            // The playable menu has one mode. The research recorder and setup
+            // remain available to the study harness, not as a second game mode.
             desktopSandboxCard.SetActive(showSandbox);
-            desktopResearchCard.SetActive(showResearch);
+            desktopResearchCard.SetActive(false);
+            desktopBestRecordRect.gameObject.SetActive(menuEntriesVisible && runtime.BestSurvivalDays > 0);
 
-            if (showSandbox && showResearch)
-            {
-                ConfigureResponsiveMenuElement(desktopSandboxCardRect, new Vector2(0.5f, 0.56f), 720f, 190f);
-                ConfigureResponsiveMenuElement(desktopResearchCardRect, new Vector2(0.5f, 0.345f), 720f, 190f);
-                ConfigureResponsiveMenuElement(desktopBestRecordRect, new Vector2(0.5f, 0.205f), 390f, 80f);
-            }
-            else
-            {
-                if (showSandbox)
-                {
-                    ConfigureResponsiveMenuElement(desktopSandboxCardRect, new Vector2(0.5f, 0.48f), 720f, 190f);
-                }
-                if (showResearch)
-                {
-                    ConfigureResponsiveMenuElement(desktopResearchCardRect, new Vector2(0.5f, 0.48f), 720f, 190f);
-                }
-                ConfigureResponsiveMenuElement(desktopBestRecordRect, new Vector2(0.5f, 0.255f), 390f, 80f);
-            }
+            if (showSandbox)
+                ConfigureResponsiveMenuElement(desktopSandboxCardRect, new Vector2(0.5f, 0.48f), 750f, 210f);
+            ConfigureResponsiveMenuElement(desktopBestRecordRect, new Vector2(0.5f, 0.255f), 390f, 80f);
         }
 
         private void RefreshLayoutEditor()
@@ -2325,6 +3272,12 @@ namespace UrbanWildlifeRooms.UI
             var editing = layoutEditor != null && layoutEditor.IsEditing;
             enterEditButtonObject.SetActive(!editing);
             editToolbar.SetActive(editing);
+            layoutImpactPanel.SetActive(editing);
+            if (editing && !layoutImpactWasEditing)
+            {
+                layoutImpactPage = 0;
+            }
+            layoutImpactWasEditing = editing;
             if (!editing)
             {
                 trayRoomIcon.gameObject.SetActive(false);
@@ -2332,6 +3285,64 @@ namespace UrbanWildlifeRooms.UI
             }
 
             editStatus.text = layoutEditor.StatusText;
+            var chinese = runtime.Language == InterfaceLanguage.Chinese;
+            var routeDay = runtime.Clock.DayNumber + (runtime.Mode == GameMode.Sandbox ? 1 : 0);
+            var routeEvent = AnimalRouteEventSchedule.ForDay(routeDay);
+            layoutImpactScopeText.text = routeEvent is { } forecastRoute
+                ? chinese
+                    ? $"第 {routeDay} 天 · 米色人行、青色动物专用；{AnimalRouteEventSchedule.ShortLabel(forecastRoute, true)}橙色封闭。食物存量未预测。"
+                    : $"Day {routeDay} · beige pedestrian, teal wildlife-only; {AnimalRouteEventSchedule.ShortLabel(forecastRoute, false)} blocked in amber. Food stock not forecast."
+                : chinese
+                    ? $"第 {routeDay} 天 · 米色人行、青色动物专用；两侧同色对齐才可通行。食物存量未预测。"
+                    : $"Day {routeDay} · beige pedestrian, teal wildlife-only; matching exits must face. Food stock not forecast.";
+            if (layoutEditor.TryGetImpactPreview(residentPopulation?.Model, out var impact))
+            {
+                var free = impact.ChangedRoomIds.Count == 0 ||
+                           layoutEditor.FreeRearrangementAvailable &&
+                           impact.ChangedRoomIds.Count <= RoomLayoutEditorController.MaximumRoomsPerFreeRearrangement;
+                var metrics = LayoutImpactFeedback.BuildVisualMetrics(impact, chinese);
+                string firstRisk = null;
+                foreach (var metric in metrics)
+                {
+                    if (!metric.IsRisk) continue;
+                    firstRisk = metric.Label;
+                    break;
+                }
+                var priority = firstRisk == null
+                    ? chinese ? "暂无已知预警 · 仍需观察" : "No known warning · observe outcomes"
+                    : chinese ? $"风险：{firstRisk}" : $"Risk: {firstRisk}";
+                layoutImpactText.text = chinese
+                    ? $"{(layoutEditor.IsDragging ? "若放下" : "待确认")} · {(free ? "今日免费" : "不可确认")} · {priority}"
+                    : $"{(layoutEditor.IsDragging ? "If dropped" : "Pending")} · {(free ? "Free today" : "Cannot confirm")} · {priority}";
+                layoutImpactText.color = firstRisk == null
+                    ? WarmPaper : new Color(0.95f, 0.70f, 0.52f, 1f);
+                var pageCount = (metrics.Count + layoutImpactCards.Length - 1) / layoutImpactCards.Length;
+                layoutImpactPage = Mathf.Clamp(layoutImpactPage, 0, Mathf.Max(0, pageCount - 1));
+                for (var index = 0; index < layoutImpactCards.Length; index++)
+                {
+                    var metricIndex = layoutImpactPage * layoutImpactCards.Length + index;
+                    RenderLayoutImpactCard(layoutImpactCards[index],
+                        metricIndex < metrics.Count ? metrics[metricIndex] : (LayoutImpactMetric?)null,
+                        chinese);
+                }
+                layoutImpactPageLabel.text = $"{layoutImpactPage + 1}/{pageCount}";
+                layoutImpactPreviousButton.interactable = layoutImpactPage > 0;
+                layoutImpactNextButton.interactable = layoutImpactPage < pageCount - 1;
+            }
+            else
+            {
+                layoutImpactText.text = layoutEditor.IsGuidedPractice
+                    ? chinese ? "引导练习 · 放回原位后确认" : "Practice · return the room before confirming"
+                    : chinese ? "拖动预览变化 · 今日只能选择调整或投喂" : "Drag to preview · choose rearrange or feed today";
+                layoutImpactText.color = WarmPaper;
+                foreach (var card in layoutImpactCards)
+                {
+                    card.Root.SetActive(false);
+                }
+                layoutImpactPageLabel.text = string.Empty;
+                layoutImpactPreviousButton.interactable = false;
+                layoutImpactNextButton.interactable = false;
+            }
             var traySpec = layoutEditor.TrayRoomSpec;
             trayRoomIcon.sprite = traySpec == null ? null : RoomIconCatalog.GetSprite(traySpec.Type);
             trayRoomIcon.gameObject.SetActive(trayRoomIcon.sprite != null);
@@ -2342,22 +3353,134 @@ namespace UrbanWildlifeRooms.UI
                 : new Color(0.25f, 0.27f, 0.28f, 0.72f);
         }
 
+        private void RefreshMarketForecast()
+        {
+            if (marketForecastPanel == null || runtime == null)
+            {
+                return;
+            }
+            var visible = runtime.Mode == GameMode.Sandbox && runtime.HasActiveRun &&
+                          !runtime.AtDesktop && !runtime.LayoutEditing;
+            marketForecastPanel.SetActive(visible);
+            if (!visible)
+            {
+                return;
+            }
+            var market = NeighborhoodMarketSchedule.NextUnprocessed(runtime.Clock.TotalSeconds);
+            var chinese = runtime.Language == InterfaceLanguage.Chinese;
+            var when = market.DayNumber == runtime.Clock.DayNumber
+                ? chinese ? "今日" : "Today"
+                : chinese ? $"第 {market.DayNumber} 天" : $"Day {market.DayNumber}";
+            var eventName = market.IsMajorMarket
+                ? chinese ? "社区集市" : "Community market"
+                : chinese ? "每日轮值" : "Daily shop rotation";
+            var nextDawn = runtime.Clock.DayNumber + 1;
+            RefreshSpatialForecast(nextDawn);
+            var tomorrowRoute = AnimalRouteEventSchedule.ForDay(nextDawn);
+            var route = tomorrowRoute is { } forecastRoute
+                ? AnimalRouteEventSchedule.ShortLabel(forecastRoute, chinese)
+                : chinese ? "通道正常" : "open passages";
+            var movedToday = layoutEditor != null &&
+                             layoutEditor.LastConfirmedMovementDay == runtime.Clock.DayNumber;
+            var status = movedToday
+                ? chinese ? "已调整" : "adjusted"
+                : chinese ? "待调整" : "adjust today";
+            var rest = ParkEdgeRestSchedule.TryGetRestingCell(nextDawn,
+                out var restColumn, out var restRow)
+                ? chinese ? $" · 轮休 C{restColumn + 1}R{restRow + 1}"
+                    : $" · rest C{restColumn + 1}R{restRow + 1}"
+                : string.Empty;
+            var seedMeals = spatialForecastSeedMealCeiling >= 0 &&
+                            spatialForecastLivingPigeons >= 0
+                ? chinese
+                    ? $"种子餐上限 {spatialForecastSeedMealCeiling}/{spatialForecastLivingPigeons}"
+                    : $"new-seed cap {spatialForecastSeedMealCeiling}/{spatialForecastLivingPigeons}"
+                : chinese ? $"种子 {spatialForecastSeeds}" : $"seeds {spatialForecastSeeds}";
+            marketForecastLabel.text = chinese
+                ? $"明日 D{nextDawn} · {route} · {status}\n绿地 {spatialForecastGreenCells}/4 · {seedMeals}{rest}\n{eventName} {when} · {MarketRoomName(market.RoomId, true)} · 垃圾 +{market.ExtraWaste}"
+                : $"D{nextDawn} · {route} · {status}\nGreen {spatialForecastGreenCells}/4 · {seedMeals}{rest}\n{eventName} {when} · {MarketRoomName(market.RoomId, false)} · waste +{market.ExtraWaste}";
+        }
+
+        private void RefreshSpatialForecast(int forecastDay)
+        {
+            if (layoutEditor == null ||
+                spatialForecastDay == forecastDay &&
+                spatialForecastMovementCount == layoutEditor.TotalRoomsMoved &&
+                spatialForecastLivingPigeons ==
+                    (animalPopulation?.LivingCount(WildlifeSpecies.Pigeon) ?? -1))
+            {
+                return;
+            }
+            var forecast = new RoomNavigationMap(layoutEditor.ExportLayout(),
+                RoomLayoutData.All, 1f, true, forecastDay);
+            spatialForecastGreenCells = GreenNetworkModel.ConnectedCount(forecast);
+            spatialForecastSeeds = HabitatFoodNetworkModel.TotalSeedCapacity(forecast, forecastDay);
+            spatialForecastSeedMealCeiling = layoutEditor.ForecastCurrentPigeonSeedMealCeiling(
+                forecast, forecastDay);
+            spatialForecastLivingPigeons = animalPopulation?.LivingCount(WildlifeSpecies.Pigeon) ?? -1;
+            spatialForecastDay = forecastDay;
+            spatialForecastMovementCount = layoutEditor.TotalRoomsMoved;
+        }
+
+        private void InvalidateSpatialForecast()
+        {
+            spatialForecastDay = -1;
+            spatialForecastMovementCount = -1;
+            spatialForecastSeedMealCeiling = -1;
+            spatialForecastLivingPigeons = -1;
+        }
+
+        private static string MarketRoomName(string roomId, bool chinese)
+        {
+            return roomId switch
+            {
+                "canteen-a" => chinese ? "餐饮商铺 A" : "Food shop A",
+                "canteen-b" => chinese ? "餐饮商铺 B" : "Food shop B",
+                "supermarket" => chinese ? "小型超市" : "Supermarket",
+                _ => roomId
+            };
+        }
+
         private void RefreshLanguage()
         {
             var chinese = runtime.Language == InterfaceLanguage.Chinese;
+            if (enterEditLabel != null)
+            {
+                var movedToday = layoutEditor != null && runtime.HasActiveRun &&
+                                 layoutEditor.LastConfirmedMovementDay == runtime.Clock.DayNumber;
+                var fedToday = runtime.HasActiveRun &&
+                               runtime.TodayAction == DailyActionKind.Feed;
+                var reviewedToday = layoutEditor != null && runtime.HasActiveRun &&
+                                    layoutEditor.LastConfirmedPlanningDay == runtime.Clock.DayNumber;
+                enterEditLabel.text = movedToday
+                    ? chinese ? "已调整" : "Adjusted"
+                    : fedToday
+                        ? chinese ? "已投喂" : "Fed today"
+                    : reviewedToday
+                        ? chinese ? "继续调整" : "Adjust"
+                        : chinese ? "规划" : "Plan";
+                if (enterEditBacking != null)
+                    enterEditBacking.BorderColor = movedToday
+                        ? Cyan : new Color(0.96f, 0.69f, 0.38f, 0.94f);
+            }
+            if (lastEcologicalLanguageChinese != chinese)
+            {
+                RefreshEcologicalMetrics();
+            }
             pauseTitle.text = chinese ? "暂停" : "Paused";
             continueLabel.text = chinese ? "继续" : "Continue";
             settingsLabel.text = chinese ? "设置" : "Settings";
             languageLabel.text = chinese ? "语言 · 中文" : "Language · English";
-            helpLabel.text = chinese ? "重新查看引导" : "Replay Tutorial";
+            helpLabel.text = chinese ? "玩法与区域导览" : "Play & Area Guide";
             restartLabel.text = chinese ? "重新开始" : "Restart";
             desktopLabel.text = chinese ? "回到桌面" : "Return to Desktop";
             restartConfirmationTitle.text = chinese ? "重新开始？" : "Restart?";
             restartConfirmationMessage.text = chinese
-                ? "当前无尽模式进度将被清除，\n并从第1天、初始布局与初始资源重新开始。"
-                : "Your current Endless Mode progress will be cleared.\nRestart from day one with the initial layout and resources.";
+                ? "当前无尽模式进度将被清除。\n从第 1 天和初始布局重新开始。"
+                : "Your current Endless Mode progress will be cleared.\nRestart from day one with the initial layout.";
             restartConfirmLabel.text = chinese ? "确认重新开始" : "Restart";
             restartCancelLabel.text = chinese ? "取消" : "Cancel";
+            ApplyRestartConfirmationTypography(chinese);
             settingsTitle.text = chinese ? "设置" : "Settings";
             volumeLabel.text = chinese ? "游戏音量" : "Master Volume";
             muteLabel.text = runtime.Muted
@@ -2372,12 +3495,16 @@ namespace UrbanWildlifeRooms.UI
             }
             backLabel.text = chinese ? "返回" : "Back";
             var continuing = runtime.HasResumableRun;
-            desktopSandboxLabel.text = continuing && runtime.Mode == GameMode.Sandbox
+            var sandboxCaption = continuing && runtime.Mode == GameMode.Sandbox
                 ? (chinese ? "继续无尽模式" : "Continue Endless")
                 : (chinese ? "无尽模式" : "Endless Mode");
-            desktopResearchLabel.text = continuing && runtime.Mode == GameMode.Research
+            var researchCaption = continuing && runtime.Mode == GameMode.Research
                 ? (chinese ? "继续限时模式" : "Continue Timed")
                 : (chinese ? "限时模式" : "Timed Mode");
+            SetModeCardLabel(desktopSandboxLabel, sandboxCaption,
+                continuing && runtime.Mode == GameMode.Sandbox ? (chinese ? 56 : 46) : (chinese ? 64 : 54));
+            SetModeCardLabel(desktopResearchLabel, researchCaption,
+                continuing && runtime.Mode == GameMode.Research ? (chinese ? 56 : 46) : (chinese ? 64 : 54));
             desktopSettingsLabel.text = chinese ? "设置" : "Settings";
             desktopLanguageLabel.text = chinese ? "语言" : "Language";
             desktopExitLabel.text = chinese ? "退出" : "Exit";
@@ -2396,6 +3523,10 @@ namespace UrbanWildlifeRooms.UI
             if (hoveredRoom != null)
             {
                 roomHoverText.text = UrbanPalette.LocalizedRoomName(hoveredRoom, chinese);
+            }
+            if (selectedRoomSpec != null)
+            {
+                RefreshSelectedRoomContext();
             }
         }
 
@@ -2514,24 +3645,24 @@ namespace UrbanWildlifeRooms.UI
             colors.pressedColor = new Color(0.78f, 0.83f, 0.75f, 1f);
             button.colors = colors;
             button.onClick.AddListener(action);
-            SetTopCenter(panel.RectTransform, 0f, top, 472f, 50f);
+            SetTopCenter(panel.RectTransform, 0f, top, 472f, 76f);
 
             icon = CreateImage(
                 panel.Transform,
                 "Action Pictogram",
                 PauseMenuVisualCatalog.GetSprite(iconVisual));
             icon.preserveAspect = true;
-            SetRect(icon.rectTransform, 24f, 4f, 42f, 42f);
+            SetRect(icon.rectTransform, 24f, 16f, 44f, 44f);
 
             var label = CreateText(
                 panel.Transform,
                 "Live Action Label",
                 string.Empty,
-                20,
-                TextAnchor.MiddleLeft,
+                23,
+                TextAnchor.MiddleCenter,
                 WarmPaper,
                 FontStyle.Bold);
-            SetRect(label.rectTransform, 82f, 2f, 360f, 46f);
+            SetRect(label.rectTransform, 80f, 11f, 312f, 54f);
             return label;
         }
 
@@ -2554,6 +3685,43 @@ namespace UrbanWildlifeRooms.UI
             var text = CreateText(panel.Transform, "Label", label, fontSize, TextAnchor.MiddleCenter, WarmPaper, FontStyle.Bold);
             Stretch(text.rectTransform, 5f);
             return button;
+        }
+
+        private Button CreateRoundedRestartButton(
+            Transform parent,
+            string name,
+            Color fill,
+            UnityEngine.Events.UnityAction action)
+        {
+            var instance = NewUiObject(name, parent,
+                typeof(CanvasRenderer), typeof(RoundedPanelGraphic));
+            var graphic = instance.GetComponent<RoundedPanelGraphic>();
+            graphic.color = fill;
+            graphic.CornerRadius = 17f;
+            graphic.BorderWidth = 1.5f;
+            graphic.BorderColor = new Color(0.96f, 0.90f, 0.77f, 0.76f);
+            var button = instance.AddComponent<Button>();
+            button.targetGraphic = graphic;
+            button.onClick.AddListener(action);
+            var label = CreateText(instance.transform, "Label", string.Empty,
+                19, TextAnchor.MiddleCenter, WarmPaper, FontStyle.Bold);
+            Stretch(label.rectTransform, 8f);
+            return button;
+        }
+
+        private void ApplyRestartConfirmationTypography(bool chinese)
+        {
+            restartChineseFont ??= Resources.Load<Font>("Fonts/NotoSansSC-Regular") ?? font;
+            var boldFont = chinese ? restartChineseFont : UrbanFontResolver.GetFont(FontStyle.Bold);
+            var bodyFont = chinese ? restartChineseFont : UrbanFontResolver.GetFont();
+            restartConfirmationTitle.font = boldFont;
+            restartConfirmationTitle.fontStyle = chinese ? FontStyle.Bold : FontStyle.Normal;
+            restartCancelLabel.font = boldFont;
+            restartConfirmLabel.font = boldFont;
+            restartCancelLabel.fontStyle = FontStyle.Normal;
+            restartConfirmLabel.fontStyle = FontStyle.Normal;
+            restartConfirmationMessage.font = bodyFont;
+            restartConfirmationMessage.fontStyle = FontStyle.Normal;
         }
 
         private static void StyleCompactPaperButton(Button button)
@@ -2628,6 +3796,23 @@ namespace UrbanWildlifeRooms.UI
             return new PanelElements(instance, instance.GetComponent<RectTransform>(), image);
         }
 
+        // Keep the existing RectTransform (and all child positions) unchanged;
+        // only replace a plain rectangular fill with a rounded one.
+        private void RoundSolidPanel(PanelElements panel, float radius)
+        {
+            var fill = panel.Image.color;
+            panel.Image.color = Color.clear;
+            var backing = NewUiObject("Rounded Backing", panel.Transform,
+                typeof(CanvasRenderer), typeof(RoundedPanelGraphic))
+                .GetComponent<RoundedPanelGraphic>();
+            backing.color = fill;
+            backing.CornerRadius = radius;
+            backing.BorderWidth = 0f;
+            backing.raycastTarget = false;
+            Stretch(backing.rectTransform);
+            backing.transform.SetAsFirstSibling();
+        }
+
         private RectTransform CreateEmpty(string name, Transform parent)
         {
             return NewUiObject(name, parent).GetComponent<RectTransform>();
@@ -2657,10 +3842,10 @@ namespace UrbanWildlifeRooms.UI
         {
             var instance = NewUiObject(name, parent, typeof(CanvasRenderer), typeof(Text));
             var text = instance.GetComponent<Text>();
-            text.font = font;
+            text.font = UrbanFontResolver.GetFont(style);
             text.text = content;
             text.fontSize = fontSize;
-            text.fontStyle = style;
+            text.fontStyle = style == FontStyle.Bold && text.font != font ? FontStyle.Normal : style;
             text.alignment = alignment;
             text.color = color;
             text.horizontalOverflow = HorizontalWrapMode.Overflow;
@@ -2722,6 +3907,29 @@ namespace UrbanWildlifeRooms.UI
             rect.pivot = Vector2.zero;
             rect.anchoredPosition = new Vector2(left, bottom);
             rect.sizeDelta = new Vector2(width, height);
+        }
+
+        private sealed class LayoutImpactCard
+        {
+            public LayoutImpactCard(GameObject root, Image signal, LayoutImpactPictogramGraphic icon, Text label,
+                Text baseline, Text delta, Text explanation)
+            {
+                Root = root;
+                Signal = signal;
+                Icon = icon;
+                Label = label;
+                Baseline = baseline;
+                Delta = delta;
+                Explanation = explanation;
+            }
+
+            public GameObject Root { get; }
+            public Image Signal { get; }
+            public LayoutImpactPictogramGraphic Icon { get; }
+            public Text Label { get; }
+            public Text Baseline { get; }
+            public Text Delta { get; }
+            public Text Explanation { get; }
         }
 
         private readonly struct Indicator

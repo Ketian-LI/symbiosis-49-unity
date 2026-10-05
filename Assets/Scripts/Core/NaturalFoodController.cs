@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UrbanWildlifeRooms.Animals;
 using UrbanWildlifeRooms.Data;
 using UrbanWildlifeRooms.Presentation;
 
@@ -14,6 +15,12 @@ namespace UrbanWildlifeRooms.Core
         private WasteManagementController wasteManagement;
         private OakTreeLifecycleController oakTrees;
         private ResourceEconomyController resourceEconomy;
+        private RoomLayoutEditorController layoutEditor;
+        private Transform mapRoot;
+        private float cellSize;
+        private RoomNavigationMap animalNavigation;
+        private RoomNavigationMap hungryAnimalNavigation;
+        private int animalNavigationDay;
         private Material material;
         private HideFlags generatedHideFlags;
         private double lastProcessedTime;
@@ -27,6 +34,9 @@ namespace UrbanWildlifeRooms.Core
             WasteManagementController wasteController,
             OakTreeLifecycleController oakTreeController,
             ResourceEconomyController economyController,
+            RoomLayoutEditorController editorController,
+            Transform boardRoot,
+            float gridCellSize,
             IEnumerable<RoomView> rooms,
             Material sharedMaterial,
             HideFlags generatedHideFlags)
@@ -35,6 +45,9 @@ namespace UrbanWildlifeRooms.Core
             wasteManagement = wasteController ?? throw new ArgumentNullException(nameof(wasteController));
             oakTrees = oakTreeController ?? throw new ArgumentNullException(nameof(oakTreeController));
             resourceEconomy = economyController ?? throw new ArgumentNullException(nameof(economyController));
+            layoutEditor = editorController ?? throw new ArgumentNullException(nameof(editorController));
+            mapRoot = boardRoot ?? throw new ArgumentNullException(nameof(boardRoot));
+            cellSize = gridCellSize;
             material = sharedMaterial;
             this.generatedHideFlags = generatedHideFlags;
             foreach (var room in rooms ?? Array.Empty<RoomView>())
@@ -43,10 +56,13 @@ namespace UrbanWildlifeRooms.Core
             }
 
             Model = new NaturalFoodModel(RoomLayoutData.All);
-            Model.ProduceDawn(1, oakTrees.Model.StageOf);
+            RebuildNavigation();
+            Model.ProduceDawn(1, oakTrees.Model.StageOf, animalNavigation);
             lastProcessedTime = runtime.Clock.TotalSeconds;
             runtime.RestartRequested += HandleRestartRequested;
             resourceEconomy.DaySettled += HandleDaySettled;
+            layoutEditor.LayoutConfirmed += RebuildNavigation;
+            layoutEditor.LayoutRestored += RebuildNavigation;
             initialized = true;
             SyncVisuals();
         }
@@ -70,6 +86,11 @@ namespace UrbanWildlifeRooms.Core
             {
                 resourceEconomy.DaySettled -= HandleDaySettled;
             }
+            if (layoutEditor != null)
+            {
+                layoutEditor.LayoutConfirmed -= RebuildNavigation;
+                layoutEditor.LayoutRestored -= RebuildNavigation;
+            }
         }
 
         public void ProcessUntil(double totalSeconds)
@@ -88,7 +109,9 @@ namespace UrbanWildlifeRooms.Core
                         Model.ProduceDusk(scheduledEvent.DayNumber, wasteManagement.OperatingFoodShopCount);
                         break;
                     case NaturalFoodScheduleEventKind.NightProduction:
-                        Model.ProduceNight(scheduledEvent.DayNumber, wasteManagement.Model.WasteRooms);
+                        RefreshAnimalNavigationDay();
+                        Model.ProduceNight(scheduledEvent.DayNumber, wasteManagement.Model.WasteRooms,
+                            animalNavigation);
                         break;
                 }
                 SyncVisuals();
@@ -108,18 +131,30 @@ namespace UrbanWildlifeRooms.Core
             return true;
         }
 
-        public bool TryConsumeAny(NaturalFoodKind kind)
+        public bool TryConsumeReachable(
+            Vector3 animalPosition,
+            WildlifeSpecies species,
+            NaturalFoodKind kind,
+            int hungerDays = 0)
         {
-            string roomId = null;
-            foreach (var source in Model.Sources.Values)
-            {
-                if (source.kind == kind)
-                {
-                    roomId = source.roomId;
-                    break;
-                }
-            }
-            return !string.IsNullOrEmpty(roomId) && TryConsume(roomId, kind);
+            RefreshAnimalNavigationDay();
+            var local = mapRoot.InverseTransformPoint(animalPosition);
+            return animalNavigation.TryFindRoomContaining(new Vector2(local.x, local.z), out var startRoom) &&
+                   TryConsumeReachable(startRoom, species, kind, hungerDays);
+        }
+
+        public bool TryConsumeReachable(
+            string homeRoomId,
+            WildlifeSpecies species,
+            NaturalFoodKind kind,
+            int hungerDays = 0)
+        {
+            RefreshAnimalNavigationDay();
+            var routeMap = RoomNavigationMap.ForWildlifeHunger(
+                animalNavigation, hungryAnimalNavigation, hungerDays);
+            return HabitatFoodNetworkModel.TryChooseReachableSource(
+                       routeMap, homeRoomId, species, kind, Model.Sources.Values, out var sourceRoom) &&
+                   TryConsume(sourceRoom, kind);
         }
 
         public bool TryGetWorldPosition(string roomId, NaturalFoodKind kind, out Vector3 worldPosition)
@@ -145,7 +180,8 @@ namespace UrbanWildlifeRooms.Core
         private void HandleRestartRequested()
         {
             Model.Reset();
-            Model.ProduceDawn(1, oakTrees.Model.StageOf);
+            RebuildNavigation();
+            Model.ProduceDawn(1, oakTrees.Model.StageOf, animalNavigation);
             lastProcessedTime = 0d;
             SyncVisuals();
             StateChanged?.Invoke();
@@ -153,9 +189,33 @@ namespace UrbanWildlifeRooms.Core
 
         private void HandleDaySettled(ResourceSettlement settlement)
         {
-            Model.ProduceDawn(settlement.DayNumber + 1, oakTrees.Model.StageOf);
+            var nextDay = runtime.Mode == GameMode.Sandbox ? settlement.DayNumber + 1 : 1;
+            var nextAnimalNavigation = new RoomNavigationMap(
+                layoutEditor.ExportLayout(), RoomLayoutData.All, cellSize, true, nextDay);
+            Model.ProduceDawn(nextDay, oakTrees.Model.StageOf, nextAnimalNavigation);
             SyncVisuals();
             StateChanged?.Invoke();
+        }
+
+        private void RebuildNavigation()
+        {
+            animalNavigationDay = runtime?.Clock.DayNumber ?? 1;
+            animalNavigation = new RoomNavigationMap(
+                layoutEditor.ExportLayout(), RoomLayoutData.All, cellSize,
+                true, animalNavigationDay);
+            hungryAnimalNavigation = new RoomNavigationMap(
+                layoutEditor.ExportLayout(), RoomLayoutData.All, cellSize,
+                animalPassagesOnly: true, animalDayNumber: animalNavigationDay,
+                hungryWildlifeMayUsePedestrianDoors: true);
+            StateChanged?.Invoke();
+        }
+
+        private void RefreshAnimalNavigationDay()
+        {
+            if (runtime != null && animalNavigationDay != runtime.Clock.DayNumber)
+            {
+                RebuildNavigation();
+            }
         }
 
         private void SyncVisuals()
@@ -164,7 +224,14 @@ namespace UrbanWildlifeRooms.Core
             {
                 if (visual != null)
                 {
-                    Destroy(visual);
+                    if (Application.isPlaying)
+                    {
+                        Destroy(visual);
+                    }
+                    else
+                    {
+                        DestroyImmediate(visual);
+                    }
                 }
             }
             visuals.Clear();
@@ -180,10 +247,12 @@ namespace UrbanWildlifeRooms.Core
                     hideFlags = generatedHideFlags
                 };
                 root.transform.SetParent(roomRoot, false);
-                root.transform.localPosition = LocalPositionFor(source.kind);
+                var sourcePosition = LocalPositionFor(source.kind);
+                root.transform.localPosition = sourcePosition;
                 root.AddComponent<NaturalFoodVisual>().Initialize(
                     source.kind,
                     source.portions,
+                    BadgePositionFor(source.kind) - sourcePosition,
                     material,
                     generatedHideFlags);
                 visuals[$"{source.roomId}:{source.kind}"] = root;
@@ -198,6 +267,19 @@ namespace UrbanWildlifeRooms.Core
                 NaturalFoodKind.Nut => new Vector3(-0.46f, 0f, 0.34f),
                 NaturalFoodKind.Insect => new Vector3(0.38f, 0f, 0.38f),
                 _ => new Vector3(-0.38f, 0f, -0.38f)
+            };
+        }
+
+        private static Vector3 BadgePositionFor(NaturalFoodKind kind)
+        {
+            // Different food kinds in one room occupy distinct corners. The
+            // badges stay legible above furniture without covering walkways.
+            return kind switch
+            {
+                NaturalFoodKind.Seed => new Vector3(0.98f, 1.67f, 1.02f),
+                NaturalFoodKind.Nut => new Vector3(-0.98f, 1.67f, 1.02f),
+                NaturalFoodKind.Insect => new Vector3(0.98f, 1.67f, -1.02f),
+                _ => new Vector3(-0.98f, 1.67f, -1.02f)
             };
         }
     }

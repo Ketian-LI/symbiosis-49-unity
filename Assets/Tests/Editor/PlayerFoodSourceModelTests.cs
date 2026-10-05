@@ -81,5 +81,25 @@ namespace UrbanWildlifeRooms.Tests.Editor
             Assert.That(model.PlayerPlacedCount, Is.EqualTo(5));
             Assert.That(model.Sources, Has.Count.EqualTo(6));
         }
+
+        [Test]
+        public void ExpiryReportsOnlyUneatenPortionsAndFullyEatenFoodDoesNotExpire()
+        {
+            var model = new PlayerFoodSourceModel();
+            model.TryCreate("central-park", Vector3.zero, out var leftover);
+            model.TryCreate("pigeon-a", Vector3.right, out var eaten);
+            Assert.That(model.TryClaimPortion(leftover.id), Is.True);
+            for (var index = 0; index < PlayerFoodSourceModel.PortionsPerSource; index++)
+            {
+                Assert.That(model.TryClaimPortion(eaten.id), Is.True);
+            }
+
+            var expired = model.AdvanceExpired(PlayerFoodSourceModel.LifetimeSeconds);
+
+            Assert.That(expired, Has.Count.EqualTo(1));
+            Assert.That(expired[0].roomId, Is.EqualTo("central-park"));
+            Assert.That(expired[0].portions, Is.EqualTo(4));
+            Assert.That(model.Sources, Is.Empty);
+        }
     }
 }

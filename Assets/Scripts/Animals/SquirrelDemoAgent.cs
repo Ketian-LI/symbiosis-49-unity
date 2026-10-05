@@ -27,6 +27,8 @@ namespace UrbanWildlifeRooms.Animals
         private float stateTime;
         private float stateDuration;
         private bool initialized;
+        private GameRuntimeController runtime;
+        private AnimalNavigationCoordinator navigationCoordinator;
         private bool relocating;
         private Vector3 relocationStart;
         private Vector3 relocationTarget;
@@ -43,6 +45,7 @@ namespace UrbanWildlifeRooms.Animals
         private Func<bool> claimFood;
         private bool foodMission;
         private bool returningToCache;
+        private bool carryingFood;
         private WildlifeVitality vitality;
         private int foodHazardWaypoint = -1;
         private int cacheHazardWaypoint = -1;
@@ -57,17 +60,24 @@ namespace UrbanWildlifeRooms.Animals
         private Vector3 postPanicDestination;
         private float predatorSafeRemaining;
 
+        public event Action<SquirrelDemoAgent> Clicked;
+
         public Vector3 SpawnPosition => spawnPosition;
         public SquirrelDemoState State => state;
         public WildlifeSpecies Species => WildlifeSpecies.Squirrel;
         public Transform AgentTransform => transform;
         public bool IsRespondingToFood => foodMission;
+        public bool HasFoodInTransit => carryingFood;
+        public bool CanResumeCacheReturn => carryingFood && !foodMission && !panicking && !relocating && IsAlive;
         public int CachePortions { get; private set; }
         public Vector3 CachePosition => cacheRoot != null ? cacheRoot.position : spawnPosition;
-        public bool CanStoreFood => CachePortions < 3;
+        public bool CanStoreFood => CachePortions < 3 && !carryingFood;
         public bool IsAlive => vitality == null || vitality.IsAlive;
         public WildlifeVitality Vitality => vitality;
         public bool IsPredatorSafe => predatorSafeRemaining > 0f;
+
+        public void BindNavigation(AnimalNavigationCoordinator coordinator) =>
+            navigationCoordinator = coordinator;
 
         public void Initialize(
             Material sharedMaterial,
@@ -82,6 +92,7 @@ namespace UrbanWildlifeRooms.Animals
             }
 
             initialized = true;
+            runtime = FindFirstObjectByType<GameRuntimeController>();
             random = new System.Random(randomSeed);
             material = sharedMaterial;
             generatedHideFlags = hideFlags;
@@ -96,10 +107,18 @@ namespace UrbanWildlifeRooms.Animals
 
             var collider = gameObject.AddComponent<BoxCollider>();
             collider.center = new Vector3(0f, 0.18f, 0f);
-            collider.size = new Vector3(0.44f, 0.44f, 0.48f);
+            collider.size = new Vector3(0.56f, 0.48f, 0.58f);
             vitality = gameObject.AddComponent<WildlifeVitality>();
             vitality.Initialize(Species, this, initialPosition, sharedMaterial, hideFlags);
             BeginState(SquirrelDemoState.Idle, 1.2f);
+        }
+
+        private void OnMouseDown()
+        {
+            if (Application.isPlaying && IsAlive)
+            {
+                Clicked?.Invoke(this);
+            }
         }
 
         public void InitializeCache(Transform container, Vector3 worldPosition)
@@ -143,7 +162,7 @@ namespace UrbanWildlifeRooms.Animals
             int routeToCacheHazardWaypoint = -1,
             bool routeToCacheFatal = false)
         {
-            if (!initialized || foodMission || !CanStoreFood ||
+            if (!initialized || !IsAlive || foodMission || !CanStoreFood ||
                 routeToFood == null || routeToFood.Count == 0 ||
                 routeToCache == null || routeToCache.Count == 0)
             {
@@ -169,8 +188,53 @@ namespace UrbanWildlifeRooms.Animals
             return true;
         }
 
+        public bool BeginCacheReturn(IReadOnlyList<Vector3> routeToCache,
+            int hazardWaypoint = -1, bool fatalTrafficCrossing = false)
+        {
+            if (!initialized || !CanResumeCacheReturn ||
+                routeToCache == null || routeToCache.Count == 0)
+            {
+                return false;
+            }
+
+            foodWaypoints.Clear();
+            cacheReturnWaypoints.Clear();
+            cacheReturnWaypoints.AddRange(routeToCache);
+            foodWaypointIndex = 0;
+            foodResponseDelay = 0f;
+            claimFood = null;
+            foodMission = true;
+            returningToCache = true;
+            foodHazardWaypoint = -1;
+            cacheHazardWaypoint = hazardWaypoint;
+            cacheHazardFatal = fatalTrafficCrossing;
+            hazardResolved = false;
+            trafficWaitRemaining = -1f;
+            BeginState(SquirrelDemoState.Hop, 999f);
+            return true;
+        }
+
+        public bool CancelFoodMissionForRouteChange()
+        {
+            if (!foodMission)
+            {
+                return false;
+            }
+
+            // Claiming already removed a portion from its source. Keep it with
+            // the squirrel until a new path to the fixed cache is available.
+            carryingFood |= returningToCache;
+            FinishFoodMission(SquirrelDemoState.Alert);
+            return true;
+        }
+
         public void RestoreCache(int portions)
         {
+            if (foodMission)
+            {
+                FinishFoodMission(SquirrelDemoState.Idle);
+            }
+            carryingFood = false;
             CachePortions = Mathf.Clamp(portions, 0, 3);
             RefreshCacheVisuals();
         }
@@ -196,8 +260,20 @@ namespace UrbanWildlifeRooms.Animals
 
         public void SetActivityEnabled(bool value)
         {
+            if (activityEnabled == value)
+            {
+                return;
+            }
             activityEnabled = value;
-            if (!value && !foodMission)
+            if (foodMission)
+            {
+                return;
+            }
+            if (value)
+            {
+                BeginState(SquirrelDemoState.Idle, RandomRange(0.35f, 0.75f));
+            }
+            else
             {
                 BeginState(SquirrelDemoState.Idle, 999f);
             }
@@ -209,7 +285,9 @@ namespace UrbanWildlifeRooms.Animals
             {
                 return;
             }
+            carryingFood |= foodMission && returningToCache;
             foodMission = false;
+            returningToCache = false;
             claimFood = null;
             foodWaypoints.Clear();
             cacheReturnWaypoints.Clear();
@@ -250,14 +328,54 @@ namespace UrbanWildlifeRooms.Animals
         public void RelocateTo(Vector3 worldPosition, float durationSeconds)
         {
             var delta = worldPosition - transform.position;
-            spawnPosition += delta;
-            habitatCenter += delta;
+            ShiftHomeAnchor(delta);
             targetPosition += delta;
             relocationStart = transform.position;
             relocationTarget = worldPosition;
             relocationDuration = Mathf.Max(0.05f, durationSeconds);
             relocationTime = 0f;
             relocating = true;
+        }
+
+        public void ShiftHomeAnchor(Vector3 delta)
+        {
+            spawnPosition += delta;
+            habitatCenter += delta;
+        }
+
+        public void ShiftCacheWithHome(Vector3 delta)
+        {
+            if (cacheRoot != null)
+                cacheRoot.position += delta;
+        }
+
+        public void ResetForNewRun(Vector3 initialPosition, Vector3 initialCachePosition)
+        {
+            if (!initialized) return;
+            relocating = false;
+            panicking = false;
+            panicRemaining = 0f;
+            predatorSafeRemaining = 0f;
+            foodMission = false;
+            returningToCache = false;
+            carryingFood = false;
+            claimFood = null;
+            foodWaypoints.Clear();
+            cacheReturnWaypoints.Clear();
+            foodHazardWaypoint = -1;
+            cacheHazardWaypoint = -1;
+            hazardResolved = false;
+            trafficWaitRemaining = -1f;
+            spawnPosition = initialPosition;
+            habitatCenter = initialPosition;
+            targetPosition = initialPosition;
+            if (cacheRoot != null) cacheRoot.position = initialCachePosition;
+            CachePortions = 0;
+            RefreshCacheVisuals();
+            vitality?.ResetForNewRun(initialPosition);
+            transform.position = initialPosition;
+            transform.rotation = Quaternion.Euler(0f, 24f, 0f);
+            BeginState(SquirrelDemoState.Idle, 1.2f);
         }
 
         private void Update()
@@ -267,23 +385,32 @@ namespace UrbanWildlifeRooms.Animals
                 return;
             }
 
+            var deltaTime = runtime != null ? runtime.ActorPresentationDeltaTime : Time.deltaTime;
+
+            if (foodMission && navigationCoordinator != null)
+            {
+                // The getter detects dawn even when this agent updates before
+                // a foraging controller. It invalidates old waypoints first.
+                _ = navigationCoordinator.NavigationRevision;
+            }
+
             if (relocating)
             {
-                UpdateRelocation(Time.deltaTime);
+                UpdateRelocation(deltaTime);
                 return;
             }
 
-            stateTime += Time.deltaTime;
-            predatorSafeRemaining = Mathf.Max(0f, predatorSafeRemaining - Time.deltaTime);
+            stateTime += deltaTime;
+            predatorSafeRemaining = Mathf.Max(0f, predatorSafeRemaining - deltaTime);
             if (panicking)
             {
-                UpdatePanic(Time.deltaTime);
+                UpdatePanic(deltaTime);
                 visual.ApplyPose(SquirrelDemoState.Hop, stateTime);
                 return;
             }
             if (foodMission)
             {
-                UpdateFoodMission(Time.deltaTime);
+                UpdateFoodMission(deltaTime);
                 visual.ApplyPose(state, stateTime);
                 return;
             }
@@ -294,7 +421,7 @@ namespace UrbanWildlifeRooms.Animals
             }
             if (state == SquirrelDemoState.Hop)
             {
-                UpdateHop(Time.deltaTime);
+                UpdateHop(deltaTime);
             }
 
             visual.ApplyPose(state, stateTime);
@@ -368,6 +495,8 @@ namespace UrbanWildlifeRooms.Animals
                     if (fatal)
                     {
                         foodMission = false;
+                        returningToCache = false;
+                        carryingFood = false;
                         claimFood = null;
                         foodWaypoints.Clear();
                         cacheReturnWaypoints.Clear();
@@ -394,6 +523,7 @@ namespace UrbanWildlifeRooms.Animals
                     }
 
                     returningToCache = true;
+                    carryingFood = true;
                     foodWaypointIndex = 0;
                     hazardResolved = false;
                     trafficWaitRemaining = -1f;
@@ -401,6 +531,7 @@ namespace UrbanWildlifeRooms.Animals
                 }
 
                 CachePortions = Mathf.Min(3, CachePortions + 1);
+                carryingFood = false;
                 RefreshCacheVisuals();
                 FinishFoodMission(SquirrelDemoState.Idle);
                 return;
@@ -453,6 +584,7 @@ namespace UrbanWildlifeRooms.Animals
         {
             foodMission = false;
             returningToCache = false;
+            claimFood = null;
             foodWaypoints.Clear();
             cacheReturnWaypoints.Clear();
             foodHazardWaypoint = -1;
@@ -485,13 +617,13 @@ namespace UrbanWildlifeRooms.Animals
                     return;
             }
 
-            if (random.NextDouble() < 0.7)
+            if (random.NextDouble() < 0.78)
             {
                 targetPosition = new Vector3(
                     habitatCenter.x + RandomRange(-habitatHalfExtents.x, habitatHalfExtents.x),
                     habitatCenter.y,
                     habitatCenter.z + RandomRange(-habitatHalfExtents.y, habitatHalfExtents.y));
-                BeginState(SquirrelDemoState.Hop, RandomRange(1.2f, 2.5f));
+                BeginState(SquirrelDemoState.Hop, RandomRange(1.3f, 2.6f));
             }
             else
             {

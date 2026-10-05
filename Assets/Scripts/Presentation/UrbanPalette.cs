@@ -63,6 +63,9 @@ namespace UrbanWildlifeRooms.Presentation
                 RoomType.OakHabitat => Hex("6A7C45"),
                 RoomType.ShrubHabitat => ShrubGround,
                 RoomType.FoxDen => FoxEarth,
+                RoomType.SharedSpace => Hex("9A9D82"),
+                RoomType.EcologicalBuffer => Hex("789064"),
+                RoomType.CommunitySquare => Hex("B49F7B"),
                 _ => Color.gray
             };
         }
@@ -82,6 +85,9 @@ namespace UrbanWildlifeRooms.Presentation
                 RoomType.OakHabitat => "橡树栖息",
                 RoomType.ShrubHabitat => "灌木栖息",
                 RoomType.FoxDen => "狐狸栖息",
+                RoomType.SharedSpace => "公共空间",
+                RoomType.EcologicalBuffer => "生态缓冲庭",
+                RoomType.CommunitySquare => "社区活动场",
                 _ => "未知"
             };
         }
@@ -98,6 +104,11 @@ namespace UrbanWildlifeRooms.Presentation
                 return room.DisplayName;
             }
 
+            if (room.Type == RoomType.SharedSpace && room.Id.StartsWith("shared-"))
+            {
+                return $"Shared Space {char.ToUpperInvariant(room.Id[room.Id.Length - 1])}";
+            }
+
             var baseName = room.Type switch
             {
                 RoomType.CentralPark => "Central Park",
@@ -111,6 +122,9 @@ namespace UrbanWildlifeRooms.Presentation
                 RoomType.OakHabitat => "Oak Habitat",
                 RoomType.ShrubHabitat => "Shrub Habitat",
                 RoomType.FoxDen => "Fox Den",
+                RoomType.SharedSpace => "Shared Space",
+                RoomType.EcologicalBuffer => "Ecological Buffer",
+                RoomType.CommunitySquare => "Community Square",
                 _ => "Room"
             };
 

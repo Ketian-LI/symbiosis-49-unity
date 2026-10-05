@@ -7,10 +7,14 @@ namespace UrbanWildlifeRooms.Presentation
     public sealed class NaturalFoodVisual : MonoBehaviour
     {
         private readonly List<GameObject> portions = new();
+        private TextMesh mapBadgeText;
+
+        public TextMesh MapBadgeText => mapBadgeText;
 
         public void Initialize(
             NaturalFoodKind kind,
             int count,
+            Vector3 badgeOffset,
             Material material,
             HideFlags hideFlags)
         {
@@ -37,6 +41,14 @@ namespace UrbanWildlifeRooms.Presentation
                     true,
                     hideFlags));
             }
+            mapBadgeText = RoomMapBadgeVisual.BuildFood(transform, kind,
+                badgeOffset, count, material, hideFlags);
+        }
+
+        private void LateUpdate()
+        {
+            if (mapBadgeText != null)
+                mapBadgeText.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
         }
     }
 }

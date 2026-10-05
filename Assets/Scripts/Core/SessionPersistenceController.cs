@@ -20,10 +20,15 @@ namespace UrbanWildlifeRooms.Core
         private AnimalMortalityController animalMortality;
         private NaturalFoodController naturalFood;
         private AnimalNeedsController animalNeeds;
+        private WorkerPasserbyFeedingController workerFeeding;
+        private HedgehogForagingController hedgehogForaging;
+        private DailyOutcomeController dailyOutcome;
         private float autosaveTimer;
         private bool initialized;
 
-        public string SavePath => Path.Combine(Application.persistentDataPath, "SYMBIOSIS_49", "session-v1.json");
+        // Keep the incompatible 35-room session-v1 file untouched. A 49-room
+        // session starts in a separate slot rather than silently overwriting it.
+        public string SavePath => Path.Combine(Application.persistentDataPath, "SYMBIOSIS_49", "session-v2.json");
         public string ProfilePath => Path.Combine(Application.persistentDataPath, "SYMBIOSIS_49", "profile-v1.json");
         public int BestSurvivalDays { get; private set; }
 
@@ -37,7 +42,10 @@ namespace UrbanWildlifeRooms.Core
             PlayerFeedingController feedingController,
             AnimalMortalityController mortalityController,
             NaturalFoodController naturalFoodController,
-            AnimalNeedsController needsController)
+            AnimalNeedsController needsController,
+            WorkerPasserbyFeedingController workerFeedingController,
+            HedgehogForagingController hedgehogForagingController,
+            DailyOutcomeController dailyOutcomeController)
         {
             runtime = runtimeController;
             layoutEditor = editorController;
@@ -49,7 +57,11 @@ namespace UrbanWildlifeRooms.Core
             animalMortality = mortalityController;
             naturalFood = naturalFoodController;
             animalNeeds = needsController;
+            workerFeeding = workerFeedingController;
+            hedgehogForaging = hedgehogForagingController;
+            dailyOutcome = dailyOutcomeController;
             layoutEditor.LayoutConfirmed += SaveNow;
+            if (playerFeeding != null) playerFeeding.FoodPlaced += HandlePlayerFoodPlaced;
             runtime.SaveRequested += SaveNow;
             runtime.RunEnded += HandleRunEnded;
             initialized = true;
@@ -121,6 +133,10 @@ namespace UrbanWildlifeRooms.Core
             {
                 layoutEditor.LayoutConfirmed -= SaveNow;
             }
+            if (playerFeeding != null)
+            {
+                playerFeeding.FoodPlaced -= HandlePlayerFoodPlaced;
+            }
             if (runtime != null)
             {
                 runtime.SaveRequested -= SaveNow;
@@ -138,6 +154,11 @@ namespace UrbanWildlifeRooms.Core
             results.isNewRecord = RecordBestSurvivalDays(results.daysSurvived);
             results.bestSurvivalDays = BestSurvivalDays;
             runtime.SetBestSurvivalDays(BestSurvivalDays);
+        }
+
+        private void HandlePlayerFoodPlaced(PlayerFoodSourceState _)
+        {
+            SaveNow();
         }
 
         public void SaveNow()
@@ -166,7 +187,7 @@ namespace UrbanWildlifeRooms.Core
                     savedAtUtc = DateTime.UtcNow.ToString("O"),
                     mode = runtime.Mode.ToString(),
                     elapsedSimulationSeconds = runtime.Clock.TotalSeconds,
-                    speedMultiplier = runtime.SpeedMultiplier,
+                    speedMultiplier = runtime.SelectedSpeedMultiplier,
                     rooms = new System.Collections.Generic.List<RoomPlacementData>(layoutEditor.ExportLayout()),
                     residentCount = wasteManagement?.ResidentCount ?? WasteManagementController.StartingResidentCount,
                     operatingFoodShopCount = wasteManagement?.OperatingFoodShopCount ?? WasteManagementController.FoodShopCount,
@@ -188,7 +209,12 @@ namespace UrbanWildlifeRooms.Core
                     treesPlanted = oakTrees?.Model?.TreesPlanted ?? 0,
                     treesMatured = oakTrees?.Model?.TreesMatured ?? 0,
                     roomMovements = layoutEditor.TotalRoomsMoved,
+                    lastRoomMovementDay = layoutEditor.LastConfirmedMovementDay,
+                    lastLayoutPlanningDay = layoutEditor.LastConfirmedPlanningDay,
+                    shrubShelters = hedgehogForaging?.Shelter.Export() ?? new System.Collections.Generic.List<ShrubShelterSaveData>(),
+                    dailyOutcome = dailyOutcome?.Model.Export(),
                     playerFoodSources = playerFeeding?.Model?.Export() ?? new System.Collections.Generic.List<PlayerFoodSourceSaveData>(),
+                    lastManualFeedingDay = playerFeeding?.LastManualFeedingDay ?? 0,
                     squirrelDemoCachePortions = playerFeeding?.PrimarySquirrelCachePortions ?? 0,
                     squirrelCachePortions = playerFeeding?.SquirrelCachePortions ?? new System.Collections.Generic.List<int>(),
                     pigeonDeaths = animalMortality?.Model?.PigeonDeaths ?? 0,
@@ -197,8 +223,13 @@ namespace UrbanWildlifeRooms.Core
                     foxDeaths = animalMortality?.Model?.FoxDeaths ?? 0,
                     starvationDeaths = animalMortality?.Model?.StarvationDeaths ?? 0,
                     trafficDeaths = animalMortality?.Model?.TrafficDeaths ?? 0,
+                    animalDeathBreakdown = animalMortality?.Model?.ExportBreakdown() ?? new System.Collections.Generic.List<AnimalDeathBreakdownData>(),
                     naturalFoodSources = naturalFood?.Model?.Export() ?? new System.Collections.Generic.List<NaturalFoodSaveData>(),
                     animalNeeds = animalNeeds?.Model?.Export() ?? new System.Collections.Generic.List<AnimalNeedSaveData>(),
+                    workerFeedDayNumber = workerFeeding?.Quota.DayNumber ?? 0,
+                    workerFedResidentIds = workerFeeding != null
+                        ? new System.Collections.Generic.List<string>(workerFeeding.Quota.FedResidents)
+                        : new System.Collections.Generic.List<string>(),
                     wasteRooms = wasteManagement?.Model?.ExportWasteRooms() ?? new System.Collections.Generic.List<WasteRoomSaveData>(),
                     blockedWaste = wasteManagement?.Model?.ExportBlockedWaste() ?? new System.Collections.Generic.List<BlockedWasteSaveData>()
                 };
@@ -221,7 +252,7 @@ namespace UrbanWildlifeRooms.Core
             try
             {
                 var save = JsonUtility.FromJson<SessionSaveData>(File.ReadAllText(SavePath));
-                if (save == null || save.schemaVersion != 1 || save.rooms == null || !layoutEditor.RestoreLayout(save.rooms))
+                if (save == null || save.schemaVersion != 2 || save.rooms == null || !layoutEditor.RestoreLayout(save.rooms))
                 {
                     Debug.LogWarning("[SYMBIOSIS: 49] Existing session was ignored because its layout is incomplete or incompatible.", this);
                     return;
@@ -259,17 +290,24 @@ namespace UrbanWildlifeRooms.Core
                 playerFeeding?.RestoreSession(
                     save.playerFoodSources,
                     save.squirrelDemoCachePortions,
-                    save.squirrelCachePortions);
+                    save.squirrelCachePortions,
+                    save.lastManualFeedingDay);
                 layoutEditor.RestoreMovementCount(save.roomMovements);
+                layoutEditor.RestoreLastMovementDay(save.lastRoomMovementDay);
+                layoutEditor.RestoreLastPlanningDay(save.lastLayoutPlanningDay);
+                hedgehogForaging?.RestoreSession(save.shrubShelters);
                 animalMortality?.RestoreSession(
                     save.pigeonDeaths,
                     save.squirrelDeaths,
                     save.hedgehogDeaths,
                     save.foxDeaths,
                     save.starvationDeaths,
-                    save.trafficDeaths);
+                    save.trafficDeaths,
+                    save.animalDeathBreakdown);
                 naturalFood?.RestoreSession(save.naturalFoodSources);
                 animalNeeds?.RestoreSession(save.animalNeeds);
+                workerFeeding?.Quota.Restore(save.workerFeedDayNumber, save.workerFedResidentIds);
+                dailyOutcome?.RestoreSession(save.dailyOutcome);
                 Debug.Log($"[SYMBIOSIS: 49] Continued saved session from {save.savedAtUtc}.", this);
             }
             catch (Exception exception)

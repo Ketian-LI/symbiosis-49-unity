@@ -30,6 +30,13 @@ namespace UrbanWildlifeRooms.Core
         public int OperatingFoodShopCount { get; private set; } = FoodShopCount;
         public bool SupermarketOperating { get; private set; } = true;
         public int HumanFunctionPenalty => Model?.HumanFunctionPenalty ?? 0;
+        public bool MarketProducerOperating(string roomId) => roomId switch
+        {
+            "canteen-a" => OperatingFoodShopCount >= 1,
+            "canteen-b" => OperatingFoodShopCount >= 2,
+            "supermarket" => SupermarketOperating,
+            _ => false
+        };
 
         public void Initialize(
             GameRuntimeController runtimeController,
@@ -113,6 +120,12 @@ namespace UrbanWildlifeRooms.Core
                             ResidentCount,
                             OperatingFoodShopCount,
                             SupermarketOperating);
+                        if (runtime.Mode == GameMode.Sandbox &&
+                            NeighborhoodMarketSchedule.ForDay(scheduledEvent.DayNumber) is { } market &&
+                            MarketProducerOperating(market.RoomId))
+                        {
+                            Model.RouteWaste(market.RoomId, market.ExtraWaste);
+                        }
                         DailyWasteProduced?.Invoke(scheduledEvent.DayNumber);
                         break;
                     case WasteScheduleEventKind.CollectionWarning:

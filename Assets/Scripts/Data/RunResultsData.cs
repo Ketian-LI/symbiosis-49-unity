@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using UrbanWildlifeRooms.Animals;
 
 namespace UrbanWildlifeRooms.Data
 {
@@ -6,7 +8,9 @@ namespace UrbanWildlifeRooms.Data
     {
         AnimalDeathLimit,
         NegativeResourceBalance,
-        ResearchTimeExpired
+        ResearchTimeExpired,
+        InsufficientWorkers,
+        InsufficientResidents
     }
 
     [Serializable]
@@ -23,6 +27,9 @@ namespace UrbanWildlifeRooms.Data
         public int peakResourceBalance;
 
         public int finalResidents;
+        public int requiredResidents;
+        public int lastWorkingResidents;
+        public int requiredWorkingResidents;
         public int peakResidents;
         public float averageCommuteEfficiency;
         public int arrivals;
@@ -40,8 +47,9 @@ namespace UrbanWildlifeRooms.Data
         public int foxDeaths;
         public int starvationDeaths;
         public int trafficDeaths;
+        public List<AnimalDeathBreakdownData> animalDeathBreakdown = new();
         public float averageHabitatProvision;
-        public int configuredDeathLimit = 5;
+        public int configuredDeathLimit = 3;
         public string researchParticipantCode;
         public float researchDurationSeconds;
         public float researchElapsedSeconds;
@@ -53,16 +61,50 @@ namespace UrbanWildlifeRooms.Data
             Math.Max(0, hedgehogDeaths) +
             Math.Max(0, foxDeaths);
 
+        public AnimalDeathBreakdownData BreakdownOf(WildlifeSpecies species)
+        {
+            var speciesTotal = species switch
+            {
+                WildlifeSpecies.Pigeon => Math.Max(0, pigeonDeaths),
+                WildlifeSpecies.Squirrel => Math.Max(0, squirrelDeaths),
+                WildlifeSpecies.Hedgehog => Math.Max(0, hedgehogDeaths),
+                WildlifeSpecies.Fox => Math.Max(0, foxDeaths),
+                _ => 0
+            };
+            if (animalDeathBreakdown != null)
+            {
+                foreach (var saved in animalDeathBreakdown)
+                {
+                    if (saved == null || saved.species != species)
+                    {
+                        continue;
+                    }
+                    var row = saved.Clone();
+                    if (row.Total <= speciesTotal)
+                    {
+                        row.unrecorded += speciesTotal - row.Total;
+                        return row;
+                    }
+                    break;
+                }
+            }
+            return new AnimalDeathBreakdownData { species = species, unrecorded = speciesTotal };
+        }
+
         public string LocalizedEndReason(bool chinese)
         {
             return endReason switch
             {
                 RunEndReason.AnimalDeathLimit => chinese
                     ? $"动物死亡达到 {Math.Max(1, configuredDeathLimit)}"
-                    : Math.Max(1, configuredDeathLimit) == 5
-                        ? "Five animal deaths"
-                        : $"{Math.Max(1, configuredDeathLimit)} animal deaths",
+                    : $"{Math.Max(1, configuredDeathLimit)} animal deaths",
                 RunEndReason.ResearchTimeExpired => chinese ? "研究时长结束" : "Research duration complete",
+                RunEndReason.InsufficientWorkers => chinese
+                    ? $"上班人数不足：{lastWorkingResidents}/{requiredWorkingResidents}"
+                    : $"Too few workers: {lastWorkingResidents}/{requiredWorkingResidents}",
+                RunEndReason.InsufficientResidents => chinese
+                    ? $"居民人数不足：{finalResidents}/{Math.Max(1, requiredResidents)}"
+                    : $"Too few residents: {finalResidents}/{Math.Max(1, requiredResidents)}",
                 _ => chinese ? "资源点结算为负数" : "Negative resource balance"
             };
         }

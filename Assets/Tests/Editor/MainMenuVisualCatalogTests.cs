@@ -21,5 +21,24 @@ namespace UrbanWildlifeRooms.Tests.Editor
                 Assert.That(MainMenuVisualCatalog.GetSprite(visual), Is.Not.Null);
             }
         }
+
+        [Test]
+        public void TitleWordmarkTrimsGenerationMarginsWithoutChangingUiPlacement()
+        {
+            var texture = Resources.Load<Texture2D>(
+                MainMenuVisualCatalog.ResourcePath(MainMenuVisual.TitleWordmark));
+            var sprite = MainMenuVisualCatalog.GetSprite(MainMenuVisual.TitleWordmark);
+
+            Assert.That(texture, Is.Not.Null);
+            TestContext.WriteLine($"Imported title texture: {texture.width}×{texture.height}");
+            Assert.That((float)texture.width / texture.height,
+                Is.EqualTo(2169f / 725f).Within(0.02f),
+                "Unity must preserve the title texture's original aspect ratio.");
+            Assert.That(sprite, Is.Not.Null);
+            Assert.That(sprite.rect.width / sprite.texture.width,
+                Is.EqualTo(2111f / 2169f).Within(0.001f));
+            Assert.That(sprite.rect.height / sprite.texture.height,
+                Is.EqualTo(360f / 725f).Within(0.001f));
+        }
     }
 }

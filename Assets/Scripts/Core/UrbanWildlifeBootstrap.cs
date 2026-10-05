@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UrbanWildlifeRooms.Animals;
@@ -17,17 +18,20 @@ namespace UrbanWildlifeRooms.Core
 
         [SerializeField, Min(2f)] private float cellSize = WorldScaleStandards.CellSizeMeters;
         [SerializeField, Range(0.05f, 0.5f)] private float roomGap = 0.16f;
-        [SerializeField] private bool showRoomLabels = true;
+        [SerializeField] private bool showRoomLabels;
 
         private readonly List<RoomView> roomViews = new();
         private readonly Dictionary<string, WasteRoomLoadVisual> wasteRoomVisuals = new();
         private readonly Dictionary<string, OakTreeStageVisual> oakTreeVisuals = new();
         private readonly List<PigeonDemoAgent> pigeonAgents = new();
+        private readonly Dictionary<PigeonDemoAgent, string> pigeonHomeRooms = new();
+        private readonly Dictionary<IWildlifeLayoutAgent, string> wildlifeHomeRooms = new();
         private readonly List<SquirrelDemoAgent> squirrelAgents = new();
         private readonly List<HedgehogDemoAgent> hedgehogAgents = new();
         private readonly List<FoxDemoAgent> foxAgents = new();
         private Transform generatedRoot;
         private Material surfaceMaterial;
+        private Material tabletopMaterial;
         private UrbanWildlifeHud hud;
         private EndRunResultsOverlay resultsOverlay;
         private BoardCameraController boardCameraController;
@@ -45,17 +49,21 @@ namespace UrbanWildlifeRooms.Core
         private NaturalFoodController naturalFoodController;
         private AnimalPopulationController animalPopulationController;
         private AnimalNeedsController animalNeedsController;
+        private WorkerPasserbyFeedingController workerFeedingController;
         private GarageTrafficController garageTrafficController;
         private AnimalActivityController animalActivityController;
         private SquirrelTreeResponseController squirrelTreeResponseController;
         private FoxPredationController foxPredationController;
         private HedgehogForagingController hedgehogForagingController;
+        private HedgehogSocialController hedgehogSocialController;
+        private DailyOutcomeController dailyOutcomeController;
         private SquirrelNaturalForagingController squirrelNaturalForagingController;
+        private PigeonNaturalForagingController pigeonNaturalForagingController;
         private EcologicalMetricsController ecologicalMetricsController;
         private ResearchSessionController researchSessionController;
         private FirstRunOnboardingController onboardingController;
         private Transform mapRoot;
-        private CitizenDemoAgent citizenDemoAgent;
+        private CitizenPopulationPresenter citizenPopulationPresenter;
         private PigeonDemoAgent pigeonDemoAgent;
         private SquirrelDemoAgent squirrelDemoAgent;
         private HedgehogDemoAgent hedgehogDemoAgent;
@@ -101,8 +109,16 @@ namespace UrbanWildlifeRooms.Core
             var existing = transform.Find(GeneratedRootName);
             if (existing != null)
             {
-                generatedRoot = existing;
-                return;
+                if (!Application.isPlaying)
+                {
+                    generatedRoot = existing;
+                    return;
+                }
+
+                // A generated editor preview can be embedded in a player build.
+                // Its runtime references are not initialized, so rebuild it for play.
+                existing.gameObject.SetActive(false);
+                Destroy(existing.gameObject);
             }
 
             BuildLayout();
@@ -113,6 +129,8 @@ namespace UrbanWildlifeRooms.Core
             isBuilding = true;
             generatedHideFlags = Application.isPlaying ? HideFlags.None : HideFlags.DontSaveInEditor;
             roomViews.Clear();
+            pigeonHomeRooms.Clear();
+            wildlifeHomeRooms.Clear();
             wasteRoomVisuals.Clear();
             oakTreeVisuals.Clear();
 
@@ -133,6 +151,7 @@ namespace UrbanWildlifeRooms.Core
             runtimeController = runtimeObject.AddComponent<GameRuntimeController>();
             runtimeController.Initialize(boardCameraController);
             BuildLighting();
+            BuildGameplayTabletopBackdrop();
             BuildMap();
             BuildHud();
             BuildLayoutEditor();
@@ -143,6 +162,7 @@ namespace UrbanWildlifeRooms.Core
             BuildOakTreeLifecycle();
             BuildNaturalFood();
             BuildPigeonAnimationDemo();
+            layoutEditorController.BindPigeonHomes(pigeonHomeRooms);
             BuildCitizenAnimationDemo();
             BuildSquirrelAnimationDemo();
             BuildHedgehogAnimationDemo();
@@ -155,17 +175,21 @@ namespace UrbanWildlifeRooms.Core
             BuildSquirrelTreeResponse();
             BuildAnimalMortality();
             BuildAnimalNeeds();
-            BuildFoxPredation();
+            BuildWorkerPasserbyFeeding();
             BuildHedgehogForaging();
+            BuildHedgehogSocial();
+            BuildFoxPredation();
             BuildSquirrelNaturalForaging();
+            BuildPigeonNaturalForaging();
             BuildEcologicalMetrics();
+            BuildDailyOutcome();
             BuildResearchSession();
             BuildFirstRunOnboarding();
             BuildSessionPersistence();
 
             if (validationErrors.Count == 0)
             {
-                Debug.Log("[Urban Wildlife Layout] 7×7 layout validated: 35 logical rooms occupy all 49 cells.", this);
+                Debug.Log("[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.", this);
             }
 
             isBuilding = false;
@@ -180,11 +204,11 @@ namespace UrbanWildlifeRooms.Core
 
             var camera = cameraObject.AddComponent<Camera>();
             camera.orthographic = true;
-            camera.orthographicSize = 14.2f;
+            camera.orthographicSize = 12.9f;
             camera.clearFlags = CameraClearFlags.SolidColor;
             camera.backgroundColor = UrbanPalette.Background;
             camera.nearClipPlane = 0.1f;
-            camera.farClipPlane = 80f;
+            camera.farClipPlane = 180f;
             camera.allowHDR = true;
             camera.allowMSAA = true;
             camera.depth = 0f;
@@ -204,6 +228,52 @@ namespace UrbanWildlifeRooms.Core
             light.color = new Color(1f, 0.95f, 0.88f);
             light.intensity = 1.05f;
             light.shadows = LightShadows.Soft;
+        }
+
+        private void BuildGameplayTabletopBackdrop()
+        {
+            const string resourcePath = "UI/GameplayHud/gameplay-tabletop-backdrop-v01";
+            var texture = Resources.Load<Texture2D>(resourcePath);
+            if (texture == null)
+            {
+                Debug.LogWarning($"[Urban Wildlife Layout] Missing gameplay tabletop backdrop: {resourcePath}", this);
+                return;
+            }
+
+            var shader = Shader.Find("Universal Render Pipeline/Unlit") ??
+                         Shader.Find("Unlit/Texture") ??
+                         Shader.Find("Standard");
+            tabletopMaterial = new Material(shader)
+            {
+                name = "Gameplay Tabletop Backdrop Material",
+                hideFlags = HideFlags.HideAndDontSave,
+                mainTexture = texture
+            };
+            if (tabletopMaterial.HasProperty("_BaseColor"))
+            {
+                tabletopMaterial.SetColor("_BaseColor", Color.white);
+            }
+
+            // A world-space plane sits below the board, so it never blocks room selection
+            // or bakes a non-interactive copy of the room layout into the background.
+            var backdrop = GameObject.CreatePrimitive(PrimitiveType.Plane);
+            backdrop.name = "Gameplay Tabletop Backdrop";
+            backdrop.hideFlags = generatedHideFlags;
+            backdrop.transform.SetParent(generatedRoot, false);
+            backdrop.transform.localPosition = new Vector3(0f, -0.58f, 0f);
+            // Unity's Plane UV appears 180 degrees rotated from the top-down camera.
+            backdrop.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
+            backdrop.transform.localScale = new Vector3(5.6f, 1f, 3.15f);
+            backdrop.AddComponent<TabletopBackdropAlignment>().Initialize(LayoutCamera);
+            var renderer = backdrop.GetComponent<MeshRenderer>();
+            renderer.sharedMaterial = tabletopMaterial;
+            renderer.shadowCastingMode = ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+            var collider = backdrop.GetComponent<Collider>();
+            if (collider != null)
+            {
+                DestroyGeneratedObject(collider);
+            }
         }
 
         private void BuildMap()
@@ -325,22 +395,52 @@ namespace UrbanWildlifeRooms.Core
                 generatedHideFlags);
 
             BuildRoomShell(shellRoot, spec.Width, spec.Height, width, depth);
+            if (spec.Type is RoomType.Residence or RoomType.Office or
+                RoomType.Supermarket or RoomType.PigeonHabitat)
+            {
+                BuildInteriorFloorDetails(shellRoot, spec.Type, width, depth);
+            }
+            if (spec.Type == RoomType.Canteen)
+            {
+                BuildFoodShopFloorDetails(shellRoot, width, depth);
+            }
             if (spec.Type == RoomType.CentralPark)
             {
-                BuildCentralParkGroundDetails(shellRoot);
+                BuildCentralParkGroundDetails(shellRoot, spec);
+            }
+            if (spec.Type is RoomType.SharedSpace or RoomType.CommunitySquare)
+            {
+                BuildSharedSpaceGroundDetails(shellRoot, spec, width, depth);
+            }
+            if (spec.Type == RoomType.EcologicalBuffer)
+            {
+                CreateBox("Buffer Meadow", shellRoot, new Vector3(0f, 0.246f, 0f),
+                    new Vector3(width - 0.10f, 0.010f, depth - 0.10f),
+                    new Color(0.57f, 0.66f, 0.43f));
             }
             if (spec.Type == RoomType.ShrubHabitat)
             {
-                BuildShrubGroundRoute(shellRoot, spec.Id);
+                BuildShrubGroundRoute(shellRoot, spec);
+            }
+            if (spec.Type == RoomType.OakHabitat)
+            {
+                BuildOakGroundTexture(shellRoot, width, depth);
+                BuildAuthoredGroundRoute(shellRoot, spec, new Color(0.70f, 0.61f, 0.43f), 0.25f);
+            }
+            if (spec.Type == RoomType.FoxDen)
+            {
+                BuildFoxGroundTexture(shellRoot);
             }
             if (spec.Type == RoomType.Garage)
             {
-                GarageVisualLayout.BuildShellDetails(shellRoot, spec, depth, surfaceMaterial, generatedHideFlags);
+                GarageVisualLayout.BuildShellDetails(shellRoot, spec, width, depth, surfaceMaterial, generatedHideFlags);
             }
             if (spec.Type == RoomType.Trash)
             {
                 BuildWasteRoomFloorDetails(shellRoot);
             }
+            AnimalPassageVisual.Build(shellRoot, spec, cellSize, roomGap,
+                surfaceMaterial, generatedHideFlags);
             BuildRoomDecoration(contentRoot, spec, width, depth);
             if (spec.Type == RoomType.Trash)
             {
@@ -442,6 +542,11 @@ namespace UrbanWildlifeRooms.Core
 
             foreach (var renderer in contentRoot.GetComponentsInChildren<Renderer>(true))
             {
+                if (RoomInteriorVisualBuilder.IsPassThroughFurnishing(renderer))
+                {
+                    continue;
+                }
+
                 GetRendererBoundsInLocalSpace(renderer, contentRoot, out var center, out var size);
                 obstacles.Add(new RoomObstacle2D(center, size));
                 foreach (var clearance in clearances)
@@ -658,12 +763,22 @@ namespace UrbanWildlifeRooms.Core
             switch (spec.Type)
             {
                 case RoomType.CentralPark:
-                    CreatePond(parent, new Vector3(-0.8f, 0.34f, -0.72f), 1.05f);
-                    CreateTree(parent, new Vector3(-1.10f, 0f, 1.05f), 1.72f, false);
-                    CreateTree(parent, new Vector3(1.12f, 0f, -1.08f), 1.62f, false);
-                    CreateBush(parent, new Vector3(1.35f, 0f, -1.1f), 0.55f);
-                    CreateBench(parent, new Vector3(0.20f, 0f, -2.18f), 0f, "South Park Bench");
-                    CreateBench(parent, new Vector3(2.18f, 0f, 0.24f), 90f, "East Park Bench");
+                    CreatePond(parent, new Vector3(-0.78f, 0.34f, -0.78f), 0.30f);
+                    CreateTree(parent, new Vector3(-0.96f, 0f, 0.88f), 0.55f, false);
+                    CreateBush(parent, new Vector3(0.88f, 0f, -0.76f), 0.38f);
+                    break;
+                case RoomType.SharedSpace:
+                    var variant = spec.Id[spec.Id.Length - 1] - 'a';
+                    CreateBush(parent,
+                        new Vector3(variant % 2 == 0 ? -0.92f : 0.92f, 0f, 0.82f), 0.35f);
+                    break;
+                case RoomType.EcologicalBuffer:
+                    CreateBush(parent, new Vector3(-0.92f, 0f, 0.88f), 0.40f);
+                    CreateBush(parent, new Vector3(0.92f, 0f, -0.88f), 0.40f);
+                    break;
+                case RoomType.CommunitySquare:
+                    CreateBush(parent, new Vector3(-0.98f, 0f, 0.95f), 0.28f);
+                    CreateBush(parent, new Vector3(0.98f, 0f, -0.95f), 0.28f);
                     break;
                 case RoomType.Residence:
                 case RoomType.Office:
@@ -708,25 +823,58 @@ namespace UrbanWildlifeRooms.Core
             }
         }
 
-        private void BuildCentralParkGroundDetails(Transform parent)
+        private void BuildCentralParkGroundDetails(Transform parent, RoomSpec spec)
         {
-            var path = new Color(0.82f, 0.75f, 0.58f);
-            var pathShade = new Color(0.77f, 0.70f, 0.54f);
-            CreatePath("North Park Walk", new Vector3(-1.55f, 0f, 2.88f),
-                new Vector3(-0.15f, 0f, 0.54f), path);
-            CreatePath("Central Park Walk", new Vector3(-0.15f, 0f, 0.54f),
-                new Vector3(0.24f, 0f, -0.50f), pathShade);
-            CreatePath("South Park Walk", new Vector3(0.24f, 0f, -0.50f),
-                new Vector3(1.55f, 0f, -2.88f), path);
-            CreatePath("East Park Walk", new Vector3(2.88f, 0f, 1.55f),
-                new Vector3(-0.02f, 0f, 0.42f), pathShade);
+            CreateBox("Park Meadow Surface", parent, new Vector3(0f, 0.245f, 0f),
+                new Vector3(2.84f, 0.008f, 2.84f), new Color(0.49f, 0.59f, 0.30f));
+            var path = new Color(0.76f, 0.66f, 0.49f);
+            BuildAuthoredGroundRoute(parent, spec, path, 0.35f);
+
+            var meadowTufts = new[]
+            {
+                new Vector3(-1.11f, 0f, 1.12f), new Vector3(-1.14f, 0f, -0.94f),
+                new Vector3(-0.84f, 0f, -1.08f), new Vector3(1.08f, 0f, 1.12f),
+                new Vector3(1.14f, 0f, -1.04f)
+            };
+            for (var index = 0; index < meadowTufts.Length; index++)
+            {
+                CreateGroundTuft(parent, $"Park Meadow Tuft {index + 1}", meadowTufts[index],
+                    index % 3 == 0 ? 0.16f : 0.12f,
+                    index % 2 == 0 ? new Color(0.30f, 0.47f, 0.23f) : new Color(0.43f, 0.55f, 0.27f));
+            }
+            for (var index = 0; index < 4; index++)
+            {
+                var point = new Vector3(-1.08f + index * 0.71f, 0.260f,
+                    index % 2 == 0 ? -1.12f : 1.13f);
+                CreateCylinder($"Park Wildflower {index + 1}", parent, point,
+                    new Vector3(0.045f, 0.006f, 0.045f),
+                    index % 3 == 0 ? new Color(0.94f, 0.81f, 0.36f) : new Color(0.93f, 0.87f, 0.72f));
+            }
+
+            // The park remains the fixed anchor; specialist wildlife refuges
+            // are now movable green rooms connected by the animal route graph.
+            CreateBox("Pigeon Resting Perch", parent,
+                new Vector3(0f, 0.283f, 1.03f), new Vector3(0.42f, 0.065f, 0.24f),
+                new Color(0.86f, 0.83f, 0.70f));
+
+            var restingColor = new Color(0.94f, 0.51f, 0.25f);
+            var westRest = CreateBox("Park Rest Warning West", parent,
+                new Vector3(-1.32f, 0.30f, 0f), new Vector3(0.18f, 0.025f, 0.95f), restingColor);
+            var eastRest = CreateBox("Park Rest Warning East", parent,
+                new Vector3(1.32f, 0.30f, 0f), new Vector3(0.18f, 0.025f, 0.95f), restingColor);
+            var southRest = CreateBox("Park Rest Warning South", parent,
+                new Vector3(0f, 0.30f, -1.32f), new Vector3(0.95f, 0.025f, 0.18f), restingColor);
+            var northRest = CreateBox("Park Rest Warning North", parent,
+                new Vector3(0f, 0.30f, 1.32f), new Vector3(0.95f, 0.025f, 0.18f), restingColor);
+            parent.gameObject.AddComponent<ParkEdgeRestVisual>().Initialize(
+                runtimeController, westRest, eastRest, southRest, northRest);
 
             // Small faceted edging makes the pond legible from the full-board camera.
             for (var index = 0; index < 9; index++)
             {
                 var angle = index * Mathf.PI * 2f / 9f;
-                var x = -0.80f + Mathf.Cos(angle) * 0.58f;
-                var z = -0.72f + Mathf.Sin(angle) * 0.45f;
+                var x = -0.78f + Mathf.Cos(angle) * 0.20f;
+                var z = -0.78f + Mathf.Sin(angle) * 0.14f;
                 var stone = CreateBox($"Pond Edge Stone {index + 1}", parent,
                     new Vector3(x, 0.28f, z),
                     new Vector3(0.14f + index % 3 * 0.03f, 0.075f, 0.13f),
@@ -736,56 +884,338 @@ namespace UrbanWildlifeRooms.Core
                 stone.transform.localRotation = Quaternion.Euler(0f, index * 31f, 0f);
             }
 
-            void CreatePath(string name, Vector3 start, Vector3 end, Color color)
+        }
+
+        private void BuildSharedSpaceGroundDetails(
+            Transform parent, RoomSpec spec, float width, float depth)
+        {
+            var green = spec.IsGreen;
+            CreateBox(green ? "Linked Green Meadow" : "Shared Space Stone Paving", parent,
+                new Vector3(0f, 0.246f, 0f),
+                new Vector3(width - 0.10f, 0.010f, depth - 0.10f),
+                green ? new Color(0.48f, 0.59f, 0.34f) : new Color(0.72f, 0.70f, 0.62f));
+            BuildAuthoredGroundRoute(parent, spec,
+                green ? new Color(0.77f, 0.68f, 0.50f) : new Color(0.84f, 0.77f, 0.64f),
+                green ? 0.32f : 0.38f);
+            if (green)
             {
-                var direction = end - start;
-                var segment = CreateBox(name, parent,
-                    (start + end) * 0.5f + new Vector3(0f, 0.248f, 0f),
-                    new Vector3(0.43f, 0.014f, direction.magnitude + 0.20f), color);
-                segment.transform.localRotation = Quaternion.LookRotation(direction, Vector3.up);
+                CreateGroundTuft(parent, $"{spec.Id} Green Niche", new Vector3(-0.88f, 0f, 0.88f),
+                    0.18f, new Color(0.33f, 0.50f, 0.26f));
+                switch (spec.GreenRole)
+                {
+                    case ParkGreenRole.SquirrelGrove:
+                        CreateCylinder("Squirrel Grove Cache", parent,
+                            new Vector3(-0.78f, 0.29f, -0.80f), new Vector3(0.24f, 0.035f, 0.24f),
+                            new Color(0.61f, 0.40f, 0.23f));
+                        break;
+                    case ParkGreenRole.HedgehogGarden:
+                        CreateBox("Hedgehog Garden Shelter", parent,
+                            new Vector3(-0.80f, 0.30f, -0.80f), new Vector3(0.42f, 0.08f, 0.27f),
+                            new Color(0.37f, 0.49f, 0.28f));
+                        break;
+                    case ParkGreenRole.FoxEdge:
+                        CreateBox("Fox Edge Nook", parent,
+                            new Vector3(-0.78f, 0.30f, -0.78f), new Vector3(0.38f, 0.08f, 0.38f),
+                            new Color(0.59f, 0.36f, 0.23f));
+                        break;
+                    case ParkGreenRole.Connector:
+                        CreateCylinder("Green Connector Flower", parent,
+                            new Vector3(0.82f, 0.29f, -0.82f), new Vector3(0.12f, 0.035f, 0.12f),
+                            new Color(0.92f, 0.81f, 0.53f));
+                        break;
+                }
             }
         }
 
-        private void BuildShrubGroundRoute(Transform parent, string roomId)
+        private void BuildShrubGroundRoute(Transform parent, RoomSpec spec)
         {
-            var waypoints = roomId switch
+            BuildAuthoredGroundRoute(parent, spec, UrbanPalette.ShrubPathLight, 0.28f);
+            var edgeTufts = new[]
             {
-                "shrub-b" => new[]
-                {
-                    new Vector3(0.12f, 0f, 1.27f), new Vector3(-0.22f, 0f, 0.52f),
-                    new Vector3(0.20f, 0f, -0.38f), new Vector3(-0.10f, 0f, -1.27f)
-                },
-                "shrub-c" => new[]
-                {
-                    new Vector3(-0.13f, 0f, 1.27f), new Vector3(-0.25f, 0f, 0.38f),
-                    new Vector3(-0.10f, 0f, -0.48f), new Vector3(0f, 0f, -1.27f)
-                },
-                _ => new[]
-                {
-                    new Vector3(-0.12f, 0f, 1.27f), new Vector3(0.12f, 0f, 0.45f),
-                    new Vector3(0.24f, 0f, -0.37f), new Vector3(0f, 0f, -1.27f)
-                }
+                new Vector3(-1.12f, 0f, 0.42f), new Vector3(-1.08f, 0f, -0.38f),
+                new Vector3(1.10f, 0f, 0.73f), new Vector3(1.09f, 0f, -0.71f),
+                new Vector3(-0.82f, 0f, 1.18f), new Vector3(0.81f, 0f, -1.17f)
             };
-            for (var index = 1; index < waypoints.Length; index++)
+            for (var index = 0; index < edgeTufts.Length; index++)
             {
-                var direction = waypoints[index] - waypoints[index - 1];
-                var path = CreateBox($"{roomId} Ground Route {index}", parent,
-                    (waypoints[index] + waypoints[index - 1]) * 0.5f + new Vector3(0f, 0.249f, 0f),
-                    new Vector3(0.28f, 0.014f, direction.magnitude + 0.08f),
-                    index % 2 == 0 ? UrbanPalette.ShrubPathDark : UrbanPalette.ShrubPathLight);
-                path.transform.localRotation = Quaternion.LookRotation(direction, Vector3.up);
+                CreateGroundTuft(parent, $"{spec.Id} Meadow Edge {index + 1}", edgeTufts[index],
+                    0.12f + index % 2 * 0.04f,
+                    index % 2 == 0 ? UrbanPalette.ShrubDeepLeaf : UrbanPalette.ShrubLeaf);
+            }
+        }
+
+        private void BuildAuthoredGroundRoute(Transform parent, RoomSpec spec, Color color, float width)
+        {
+            GroundTrailVisualBuilder.Build(parent, spec, cellSize, roomGap,
+                color, width, surfaceMaterial, generatedHideFlags);
+        }
+
+        private void BuildOakGroundTexture(Transform parent, float width, float depth)
+        {
+            CreateBox("Oak Meadow Surface", parent, new Vector3(0f, 0.245f, 0f),
+                new Vector3(width - 0.08f, 0.008f, depth - 0.08f),
+                new Color(0.48f, 0.59f, 0.30f));
+            var treeX = -width * 0.5f + 0.56f;
+            var treeZ = depth * 0.5f - 0.56f;
+            CreateCylinder("Oak Root Earth", parent, new Vector3(treeX, 0.252f, treeZ),
+                new Vector3(0.47f, 0.006f, 0.42f), new Color(0.50f, 0.43f, 0.28f));
+            var tufts = new[]
+            {
+                new Vector3(-0.92f, 0f, -0.96f), new Vector3(-1.05f, 0f, 0.16f),
+                new Vector3(0.82f, 0f, 1.00f), new Vector3(1.08f, 0f, -0.87f),
+                new Vector3(0.17f, 0f, -1.07f), new Vector3(0.92f, 0f, 0.22f)
+            };
+            for (var index = 0; index < tufts.Length; index++)
+            {
+                var position = tufts[index];
+                position.x = Mathf.Clamp(position.x, -width * 0.5f + 0.20f, width * 0.5f - 0.20f);
+                position.z = Mathf.Clamp(position.z, -depth * 0.5f + 0.20f, depth * 0.5f - 0.20f);
+                CreateGroundTuft(parent, $"Oak Meadow Tuft {index + 1}", position,
+                    index % 2 == 0 ? 0.16f : 0.11f,
+                    index % 2 == 0 ? new Color(0.29f, 0.44f, 0.20f) : new Color(0.55f, 0.63f, 0.32f));
+            }
+        }
+
+        private void BuildFoxGroundTexture(Transform parent)
+        {
+            var dryLeaf = UrbanPalette.FoxDryLeaf;
+            var moss = UrbanPalette.FoxLeaf;
+            var details = new[]
+            {
+                new Vector3(-1.10f, 0f, 0.22f), new Vector3(-0.68f, 0f, -1.02f),
+                new Vector3(1.02f, 0f, 0.30f), new Vector3(0.92f, 0f, -1.08f)
+            };
+            for (var index = 0; index < details.Length; index++)
+            {
+                CreateGroundTuft(parent, $"Fox Den Moss {index + 1}", details[index],
+                    0.12f + index % 2 * 0.05f, moss);
+                var leaf = CreateBox($"Fox Den Dry Leaf {index + 1}", parent,
+                    details[index] + new Vector3(0.14f, 0.259f, -0.12f),
+                    new Vector3(0.12f, 0.009f, 0.055f), dryLeaf);
+                leaf.transform.localRotation = Quaternion.Euler(0f, 24f + index * 37f, 0f);
+            }
+        }
+
+        private void CreateGroundTuft(Transform parent, string name, Vector3 position, float size, Color color)
+        {
+            for (var blade = 0; blade < 3; blade++)
+            {
+                var tuft = CreateBox($"{name} Blade {blade + 1}", parent,
+                    position + new Vector3(0f, 0.258f + blade * 0.001f, 0f),
+                    new Vector3(size * 0.28f, 0.009f, size),
+                    blade == 1 ? Color.Lerp(color, Color.white, 0.13f) : color);
+                tuft.transform.localRotation = Quaternion.Euler(0f, blade * 60f + 16f, 0f);
+            }
+        }
+
+        private void BuildInteriorFloorDetails(Transform parent, RoomType type, float width, float depth)
+        {
+            // All surface inlays are renderer-only, leaving the clickable floor collider and
+            // authored door navigation unchanged. The room's furnishings remain a separate kit.
+            switch (type)
+            {
+                case RoomType.Residence:
+                    CreateBox("Residence Honey Timber Base", parent, new Vector3(0f, 0.246f, 0f),
+                        new Vector3(width - 0.08f, 0.012f, depth - 0.08f),
+                        new Color(0.74f, 0.57f, 0.38f));
+                    var plankCount = Mathf.Max(1, Mathf.RoundToInt(depth / 0.34f));
+                    var plankStep = (depth - 0.10f) / plankCount;
+                    for (var index = 0; index < plankCount; index++)
+                    {
+                        var z = -(depth - 0.10f) * 0.5f + (index + 0.5f) * plankStep;
+                        CreateBox($"Residence Timber Board {index + 1}", parent,
+                            new Vector3(0f, 0.254f, z),
+                            new Vector3(width - 0.12f, 0.006f, plankStep - 0.009f),
+                            index % 3 == 0 ? new Color(0.83f, 0.67f, 0.47f) :
+                            index % 3 == 1 ? new Color(0.79f, 0.62f, 0.43f) :
+                            new Color(0.86f, 0.70f, 0.50f));
+                        var jointCount = width > 4f ? 2 : 1;
+                        for (var joint = 0; joint < jointCount; joint++)
+                        {
+                            var jointX = jointCount == 1
+                                ? (index % 2 == 0 ? -0.52f : 0.52f)
+                                : (joint == 0 ? -1.40f : 1.36f) + (index % 2 == 0 ? -0.22f : 0.22f);
+                            CreateBox($"Residence Timber Staggered Joint {index + 1}-{joint + 1}", parent,
+                                new Vector3(jointX, 0.260f, z),
+                                new Vector3(0.011f, 0.003f, plankStep - 0.014f),
+                                new Color(0.70f, 0.53f, 0.36f));
+                        }
+                    }
+                    // The slim oval rug is walkable and sits next to the bed,
+                    // not in the spare southwest furnishing corner.
+                    var rugX = -width * 0.5f + 1.16f;
+                    CreateCylinder("Small Oval Rug", parent, new Vector3(rugX, 0.264f, 0.19f),
+                        new Vector3(0.59f, 0.004f, 0.84f), new Color(0.49f, 0.55f, 0.43f));
+                    CreateCylinder("Small Oval Rug Ivory Band", parent, new Vector3(rugX, 0.270f, 0.19f),
+                        new Vector3(0.47f, 0.003f, 0.70f), new Color(0.89f, 0.82f, 0.68f));
+                    CreateCylinder("Small Oval Rug Centre", parent, new Vector3(rugX, 0.275f, 0.19f),
+                        new Vector3(0.29f, 0.003f, 0.50f), new Color(0.60f, 0.65f, 0.51f));
+                    break;
+                case RoomType.Office:
+                    CreateBox("Office Lilac Carpet", parent, new Vector3(0f, 0.248f, 0f),
+                        new Vector3(width - 0.08f, 0.016f, depth - 0.08f),
+                        new Color(0.49f, 0.43f, 0.57f));
+                    break;
+                case RoomType.Supermarket:
+                    CreateBox("Supermarket Cream Tile Base", parent, new Vector3(0f, 0.248f, 0f),
+                        new Vector3(width - 0.08f, 0.016f, depth - 0.08f),
+                        new Color(0.84f, 0.79f, 0.66f));
+                    const float tileSize = 0.36f;
+                    for (var x = -width * 0.5f + tileSize; x < width * 0.5f - 0.05f; x += tileSize)
+                    {
+                        CreateBox("Supermarket Tile Joint X", parent,
+                            new Vector3(x, 0.259f, 0f),
+                            new Vector3(0.009f, 0.004f, depth - 0.08f),
+                            new Color(0.73f, 0.68f, 0.58f));
+                    }
+                    for (var z = -depth * 0.5f + tileSize; z < depth * 0.5f - 0.05f; z += tileSize)
+                    {
+                        CreateBox("Supermarket Tile Joint Z", parent,
+                            new Vector3(0f, 0.259f, z),
+                            new Vector3(width - 0.08f, 0.004f, 0.009f),
+                            new Color(0.73f, 0.68f, 0.58f));
+                    }
+                    break;
+                case RoomType.PigeonHabitat:
+                    // A paved pocket plaza rather than an industrial rooftop.
+                    // These are thin, collider-free floor details; the centre stays walkable.
+                    CreateBox("Pigeon Plaza Stone Paving", parent, new Vector3(0f, 0.247f, 0f),
+                        new Vector3(width - 0.08f, 0.014f, depth - 0.08f),
+                        new Color(0.70f, 0.67f, 0.61f));
+                    const float plazaPaverStep = 0.48f;
+                    for (var x = -width * 0.5f + plazaPaverStep; x < width * 0.5f - 0.10f; x += plazaPaverStep)
+                    {
+                        CreateBox("Plaza Paver Joint X", parent, new Vector3(x, 0.256f, 0f),
+                            new Vector3(0.010f, 0.003f, depth - 0.08f), new Color(0.58f, 0.56f, 0.52f));
+                    }
+                    for (var z = -depth * 0.5f + plazaPaverStep; z < depth * 0.5f - 0.10f; z += plazaPaverStep)
+                    {
+                        CreateBox("Plaza Paver Joint Z", parent, new Vector3(0f, 0.256f, z),
+                            new Vector3(width - 0.08f, 0.003f, 0.010f), new Color(0.58f, 0.56f, 0.52f));
+                    }
+                    CreateCylinder("Plaza Circular Paving Border", parent, new Vector3(0f, 0.261f, 0f),
+                        new Vector3(0.90f, 0.002f, 0.90f), new Color(0.83f, 0.77f, 0.66f));
+                    CreateCylinder("Plaza Circular Paving Centre", parent, new Vector3(0f, 0.265f, 0f),
+                        new Vector3(0.74f, 0.002f, 0.74f), new Color(0.69f, 0.65f, 0.58f));
+                    break;
+            }
+        }
+
+        private void BuildFoodShopFloorDetails(Transform parent, float width, float depth)
+        {
+            // Thin, collider-free boards are part of the floor shell, not navigation obstacles.
+            // Rotate the grain with the 1x2 footprint so both shops read as the same room kit.
+            var horizontal = width >= depth;
+            var across = horizontal ? depth : width;
+            var along = horizontal ? width : depth;
+            var plankCount = Mathf.Max(1, Mathf.RoundToInt(across / 0.27f));
+            var step = across / plankCount;
+            var tones = new[]
+            {
+                new Color(0.72f, 0.49f, 0.30f),
+                new Color(0.76f, 0.53f, 0.33f),
+                new Color(0.69f, 0.46f, 0.27f),
+                new Color(0.73f, 0.50f, 0.31f)
+            };
+
+            for (var index = 0; index < plankCount; index++)
+            {
+                var coordinate = -across * 0.5f + (index + 0.5f) * step;
+                var position = horizontal
+                    ? new Vector3(0f, 0.247f, coordinate)
+                    : new Vector3(coordinate, 0.247f, 0f);
+                var size = horizontal
+                    ? new Vector3(along - 0.08f, 0.012f, step - 0.007f)
+                    : new Vector3(step - 0.007f, 0.012f, along - 0.08f);
+                CreateBox($"Food Shop Wood Plank {index + 1}", parent, position, size,
+                    tones[(index * 3 + index / 4) % tones.Length]);
+            }
+
+            // One shared dining rug makes the pair of two-person tables read as a
+            // restaurant dining zone rather than two unrelated desks. It is a
+            // floor inlay, not a pathfinding obstacle or a movable furnishing.
+            var diningRug = NewObject("Food Shop Shared Dining Rug", parent).transform;
+            if (!horizontal)
+            {
+                diningRug.localRotation = Quaternion.Euler(0f, 90f, 0f);
+            }
+            var rug = new Color(0.66f, 0.38f, 0.31f);
+            var rugBorder = new Color(0.85f, 0.67f, 0.53f);
+            CreateBox("Shared Dining Rug", diningRug, new Vector3(0f, 0.259f, -0.12f),
+                new Vector3(2.62f, 0.012f, 1.08f), rug);
+            foreach (var side in new[] { -1f, 1f })
+            {
+                CreateBox("Dining Rug Long Border", diningRug,
+                    new Vector3(0f, 0.267f, -0.12f + side * 0.45f),
+                    new Vector3(2.42f, 0.005f, 0.028f), rugBorder);
+                CreateBox("Dining Rug Short Border", diningRug,
+                    new Vector3(side * 1.20f, 0.267f, -0.12f),
+                    new Vector3(0.028f, 0.005f, 0.90f), rugBorder);
+            }
+
+            for (var side = -1; side <= 1; side += 2)
+            {
+                var x = side * 0.82f;
+                const float z = 0.43f;
+                var fixture = horizontal ? new Vector3(x, 0f, z) : new Vector3(z, 0f, -x);
+                CreateCylinder($"Food Shop Pendant {side}", parent,
+                    fixture + new Vector3(0f, 1.02f, 0f), new Vector3(0.18f, 0.065f, 0.18f),
+                    new Color(0.77f, 0.39f, 0.20f));
+                CreateCylinder($"Food Shop Pendant Stem {side}", parent,
+                    fixture + new Vector3(0f, 1.20f, 0f), new Vector3(0.012f, 0.12f, 0.012f),
+                    new Color(0.39f, 0.25f, 0.17f));
+                CreateCylinder($"Food Shop Pendant Glow {side}", parent,
+                    fixture + new Vector3(0f, 0.94f, 0f), new Vector3(0.07f, 0.018f, 0.07f),
+                    new Color(1f, 0.90f, 0.68f));
+            }
+
+            // A small physical wall plaque identifies the restaurant in the angled menu view.
+            // It is a shell detail, so it does not consume floor space or block a doorway.
+            var wallArt = NewObject("Food Shop Wall Sign", parent).transform;
+            if (!horizontal)
+            {
+                wallArt.localRotation = Quaternion.Euler(0f, 90f, 0f);
+            }
+            var northWall = across * 0.5f - 0.085f;
+            CreateBox("Restaurant Sign Frame", wallArt, new Vector3(0f, 0.43f, northWall),
+                new Vector3(0.68f, 0.26f, 0.035f), new Color(0.48f, 0.29f, 0.16f));
+            CreateBox("Restaurant Sign Paper", wallArt, new Vector3(0f, 0.43f, northWall - 0.025f),
+                new Vector3(0.60f, 0.20f, 0.012f), new Color(0.93f, 0.83f, 0.66f));
+            CreateBox("Restaurant Sign Bowl", wallArt, new Vector3(0f, 0.39f, northWall - 0.034f),
+                new Vector3(0.23f, 0.045f, 0.012f), new Color(0.54f, 0.28f, 0.14f));
+            for (var steam = -1; steam <= 1; steam++)
+            {
+                CreateBox($"Restaurant Sign Steam {steam}", wallArt,
+                    new Vector3(steam * 0.06f, 0.48f, northWall - 0.034f),
+                    new Vector3(0.012f, 0.055f, 0.012f), new Color(0.54f, 0.28f, 0.14f));
             }
         }
 
         private void BuildWasteRoomFloorDetails(Transform parent)
         {
-            const float routeHalfLength = 1.27f;
-            const float brickLength = 0.29f;
-            const float brickWidth = 0.31f;
-            const float brickGap = 0.025f;
+            const float routeHalfLength = 1.37f;
+            const float brickLength = 0.21f;
+            const float brickWidth = 0.30f;
+            const float brickGap = 0.018f;
             const float brickY = 0.258f;
-            var brickColourA = new Color(0.74f, 0.72f, 0.67f);
-            var brickColourB = new Color(0.68f, 0.67f, 0.63f);
+            var tile = new Color(0.58f, 0.59f, 0.61f);
+            var grout = new Color(0.46f, 0.47f, 0.50f);
+            var brickColourA = new Color(0.87f, 0.82f, 0.72f);
+            var brickColourB = new Color(0.81f, 0.77f, 0.68f);
+            CreateBox("Waste Grey Tile Base", parent, new Vector3(0f, 0.247f, 0f),
+                new Vector3(2.84f, 0.014f, 2.84f), tile);
+            for (var joint = -3; joint <= 3; joint++)
+            {
+                var coordinate = joint * 0.39f;
+                CreateBox("Waste Tile Joint X", parent, new Vector3(coordinate, 0.256f, 0f),
+                    new Vector3(0.008f, 0.003f, 2.80f), grout);
+                CreateBox("Waste Tile Joint Z", parent, new Vector3(0f, 0.256f, coordinate),
+                    new Vector3(2.80f, 0.003f, 0.008f), grout);
+            }
+            CreateBox("Waste North South Path Bedding", parent, new Vector3(0f, 0.258f, 0f),
+                new Vector3(0.65f, 0.008f, 2.80f), new Color(0.69f, 0.64f, 0.56f));
+            CreateBox("Waste East West Path Bedding", parent, new Vector3(0f, 0.258f, 0f),
+                new Vector3(2.80f, 0.008f, 0.65f), new Color(0.69f, 0.64f, 0.56f));
             var step = brickLength + brickGap;
             var index = 0;
 
@@ -828,6 +1258,16 @@ namespace UrbanWildlifeRooms.Core
                 new Vector3(0f, brickY + 0.025f, 0f),
                 new Vector3(0.31f, 0.07f, 0.31f),
                 new Color(0.16f, 0.17f, 0.18f));
+            CreateBox("Central Waste Drain Rim", parent, new Vector3(0f, 0.322f, 0f),
+                new Vector3(0.38f, 0.012f, 0.38f), new Color(0.54f, 0.53f, 0.49f));
+            CreateBox("Central Waste Drain Grate", parent, new Vector3(0f, 0.330f, 0f),
+                new Vector3(0.31f, 0.008f, 0.31f), new Color(0.24f, 0.25f, 0.26f));
+            for (var slot = -1; slot <= 1; slot++)
+            {
+                CreateBox("Central Waste Drain Slot", parent,
+                    new Vector3(slot * 0.075f, 0.335f, 0f),
+                    new Vector3(0.025f, 0.003f, 0.23f), new Color(0.075f, 0.08f, 0.09f));
+            }
         }
 
         private void CreateTree(Transform parent, Vector3 localPosition, float scale, bool seedling)
@@ -854,7 +1294,7 @@ namespace UrbanWildlifeRooms.Core
             CreateTree(sapling.transform, localPosition, 0.30f, true);
 
             var young = NewObject("Young Tree", parent);
-            CreateTree(young.transform, localPosition, 0.50f, true);
+            CreateTree(young.transform, localPosition, 0.64f, true);
 
             var mature = NewObject("Mature Oak Tree", parent);
             CreateTree(mature.transform, localPosition, 0.82f, false);
@@ -976,7 +1416,7 @@ namespace UrbanWildlifeRooms.Core
             text.anchor = TextAnchor.MiddleCenter;
             text.alignment = TextAlignment.Center;
             text.color = UrbanPalette.Text;
-            text.text = "7×7 模块化房间 · 35 个逻辑房间 · 无走廊";
+            text.text = "7×7 模块化房间 · 49 间单格房 · 无走廊";
             text.richText = false;
             caption.GetComponent<MeshRenderer>().sharedMaterial = text.font.material;
         }
@@ -1026,6 +1466,7 @@ namespace UrbanWildlifeRooms.Core
         {
             boardCameraController?.ReturnToOverviewIfNeeded();
             layoutEditorController?.ResetToInitialLayout();
+            animalNavigationCoordinator?.ResetWildlifeForNewRun();
         }
 
         private void BuildSessionPersistence()
@@ -1042,7 +1483,10 @@ namespace UrbanWildlifeRooms.Core
                 playerFeedingController,
                 animalMortalityController,
                 naturalFoodController,
-                animalNeedsController);
+                animalNeedsController,
+                workerFeedingController,
+                hedgehogForagingController,
+                dailyOutcomeController);
         }
 
         private void BuildWasteManagement()
@@ -1077,7 +1521,8 @@ namespace UrbanWildlifeRooms.Core
                 layoutEditorController,
                 wasteManagementController,
                 resourceEconomyController,
-                cellSize);
+                cellSize,
+                roomViews);
             hud.BindResidentPopulation(
                 residentPopulationController,
                 roomId => roomViews.Find(view => view.Spec.Id == roomId)?.VisualRoot);
@@ -1092,6 +1537,7 @@ namespace UrbanWildlifeRooms.Core
                 layoutEditorController,
                 resourceEconomyController,
                 oakTreeVisuals);
+            layoutEditorController.BindOakTreeGrowth(oakTreeLifecycleController.Model);
             hud.BindOakTreeLifecycle(oakTreeLifecycleController);
         }
 
@@ -1104,6 +1550,9 @@ namespace UrbanWildlifeRooms.Core
                 wasteManagementController,
                 oakTreeLifecycleController,
                 resourceEconomyController,
+                layoutEditorController,
+                mapRoot,
+                cellSize,
                 roomViews,
                 surfaceMaterial,
                 generatedHideFlags);
@@ -1128,10 +1577,10 @@ namespace UrbanWildlifeRooms.Core
                 }
                 var angle = index * 2.399f;
                 var radius = 0.28f + index % 3 * 0.16f;
-                var spawnPosition = GridToWorld(home) + new Vector3(
-                    Mathf.Cos(angle) * radius,
-                    0.30f,
-                    Mathf.Sin(angle) * radius);
+                var parkBird = homes[index] == "central-park";
+                var spawnPosition = GridToWorld(home) + (parkBird
+                    ? new Vector3(index == 8 ? -0.17f : 0.17f, 0.30f, 0.86f)
+                    : new Vector3(Mathf.Cos(angle) * radius, 0.30f, Mathf.Sin(angle) * radius));
                 var pigeonObject = NewObject($"Pigeon {index + 1:00}", demoRoot);
                 var pigeon = pigeonObject.AddComponent<PigeonDemoAgent>();
                 pigeon.Initialize(
@@ -1142,45 +1591,32 @@ namespace UrbanWildlifeRooms.Core
                     generatedHideFlags,
                     4900 + index);
                 pigeonAgents.Add(pigeon);
+                pigeonHomeRooms[pigeon] = homes[index];
+                wildlifeHomeRooms[pigeon] = homes[index];
             }
             pigeonDemoAgent = pigeonAgents.Count > 0 ? pigeonAgents[0] : null;
 
-            var directorObject = NewObject("Pigeon Demo Director", demoRoot);
-            var director = directorObject.AddComponent<PigeonDemoDirector>();
-            director.Initialize(boardCameraController, pigeonAgents);
         }
 
         private void BuildCitizenAnimationDemo()
         {
-            RoomSpec centralPark = null;
-            foreach (var room in RoomLayoutData.All)
-            {
-                if (room.Type == RoomType.CentralPark)
-                {
-                    centralPark = room;
-                    break;
-                }
-            }
-
-            if (centralPark == null)
-            {
-                return;
-            }
-
-            var demoRoot = NewObject("Citizen Animation Demo", generatedRoot).transform;
-            var citizenObject = NewObject("Citizen Demo Agent", demoRoot);
-            var citizen = citizenObject.AddComponent<CitizenDemoAgent>();
-            var parkCenter = GridToWorld(centralPark);
-            var spawnPosition = parkCenter + new Vector3(-0.82f, 0.30f, -0.68f);
-            citizen.Initialize(surfaceMaterial, spawnPosition, new Vector2(1.55f, 1.55f), generatedHideFlags);
-            citizenDemoAgent = citizen;
+            var peopleRoot = NewObject("Citizen Population", generatedRoot);
+            citizenPopulationPresenter = peopleRoot.AddComponent<CitizenPopulationPresenter>();
+            citizenPopulationPresenter.Initialize(
+                () => residentPopulationController?.Model?.Residents,
+                roomId => roomViews.Find(view => view.Spec.Id == roomId)?.VisualRoot,
+                surfaceMaterial,
+                generatedHideFlags,
+                residentPopulationController.Model,
+                mapRoot);
+            residentPopulationController.StateChanged += citizenPopulationPresenter.Synchronize;
         }
 
         private void BuildSquirrelAnimationDemo()
         {
             var demoRoot = NewObject("Squirrel Population", generatedRoot).transform;
             var cacheContainer = NewObject("Fixed Wildlife Locations", generatedRoot).transform;
-            var homes = new[] { "oak-a", "oak-b", "oak-d", "central-park" };
+            var homes = new[] { "oak-a", "oak-b", "oak-d", "shared-f" };
             for (var index = 0; index < homes.Length; index++)
             {
                 var home = FindRoomSpec(homes[index]);
@@ -1194,14 +1630,17 @@ namespace UrbanWildlifeRooms.Core
                 var squirrel = squirrelObject.AddComponent<SquirrelDemoAgent>();
                 squirrel.Initialize(
                     surfaceMaterial,
-                    center + direction + Vector3.up * 0.30f,
-                    new Vector2(0.64f, 0.64f),
+                    center + (homes[index] == "shared-f"
+                        ? new Vector3(0.36f, 0.30f, -0.22f)
+                        : direction + Vector3.up * 0.30f),
+                    new Vector2(0.82f, 0.82f),
                     generatedHideFlags,
                     24900 + index);
                 squirrel.InitializeCache(
                     cacheContainer,
                     center - direction + Vector3.up * 0.20f);
                 squirrelAgents.Add(squirrel);
+                wildlifeHomeRooms[squirrel] = homes[index];
             }
             squirrelDemoAgent = squirrelAgents.Count > 0 ? squirrelAgents[0] : null;
         }
@@ -1209,7 +1648,7 @@ namespace UrbanWildlifeRooms.Core
         private void BuildHedgehogAnimationDemo()
         {
             var demoRoot = NewObject("Hedgehog Population", generatedRoot).transform;
-            var homes = new[] { "shrub-a", "central-park" };
+            var homes = new[] { "shrub-a", "shared-h" };
             for (var index = 0; index < homes.Length; index++)
             {
                 var home = FindRoomSpec(homes[index]);
@@ -1218,7 +1657,9 @@ namespace UrbanWildlifeRooms.Core
                     continue;
                 }
                 var center = GridToWorld(home);
-                var spawnPosition = center + new Vector3(index == 0 ? 0.24f : -0.62f, 0.30f, index == 0 ? -0.22f : -0.74f);
+                var spawnPosition = center + (homes[index] == "shared-h"
+                    ? new Vector3(-0.28f, 0.30f, -0.20f)
+                    : new Vector3(0.24f, 0.30f, -0.22f));
                 var hedgehogObject = NewObject($"Hedgehog {index + 1:00}", demoRoot);
                 var hedgehog = hedgehogObject.AddComponent<HedgehogDemoAgent>();
                 hedgehog.Initialize(
@@ -1228,30 +1669,32 @@ namespace UrbanWildlifeRooms.Core
                     generatedHideFlags,
                     34900 + index);
                 hedgehogAgents.Add(hedgehog);
+                wildlifeHomeRooms[hedgehog] = homes[index];
             }
             hedgehogDemoAgent = hedgehogAgents.Count > 0 ? hedgehogAgents[0] : null;
         }
 
         private void BuildFoxAnimationDemo()
         {
-            var den = FindRoomSpec("fox-den");
-            if (den == null)
+            var foxRefuge = FindRoomSpec("shared-j");
+            if (foxRefuge == null)
             {
                 return;
             }
             var root = NewObject("Fox Population", generatedRoot).transform;
-            var center = GridToWorld(den);
+            var center = GridToWorld(foxRefuge);
             for (var index = 0; index < AnimalPopulationDefaults.Foxes; index++)
             {
                 var foxObject = NewObject($"Fox {index + 1:00}", root);
                 var fox = foxObject.AddComponent<FoxDemoAgent>();
                 fox.Initialize(
                     surfaceMaterial,
-                    center + new Vector3(-0.18f, 0.30f, 0.12f),
-                    new Vector2(0.34f, 0.34f),
+                    center + new Vector3(-0.32f, 0.30f, 0.02f),
+                    new Vector2(0.86f, 0.78f),
                     generatedHideFlags,
                     44900 + index);
                 foxAgents.Add(fox);
+                wildlifeHomeRooms[fox] = "shared-j";
             }
             foxDemoAgent = foxAgents.Count > 0 ? foxAgents[0] : null;
         }
@@ -1262,6 +1705,17 @@ namespace UrbanWildlifeRooms.Core
             animalPopulationController = populationObject.AddComponent<AnimalPopulationController>();
             animalPopulationController.Initialize(pigeonAgents, squirrelAgents, hedgehogAgents, foxAgents);
             hud.BindAnimalPopulation(animalPopulationController);
+            layoutEditorController.BindAnimalPopulation(animalPopulationController);
+
+            var followObject = NewObject("Wildlife Follow Director", generatedRoot);
+            var followDirector = followObject.AddComponent<PigeonDemoDirector>();
+            followDirector.Initialize(
+                boardCameraController,
+                runtimeController,
+                pigeonAgents,
+                squirrelAgents,
+                hedgehogAgents,
+                foxAgents);
         }
 
         private void BuildAnimalActivity()
@@ -1289,7 +1743,11 @@ namespace UrbanWildlifeRooms.Core
                 agents,
                 layoutEditorController,
                 mapRoot,
-                cellSize);
+                cellSize,
+                pigeonHomeRooms,
+                roomId => roomViews.Find(view => view.Spec.Id == roomId)?.VisualRoot,
+                runtimeController,
+                wildlifeHomeRooms);
         }
 
         private void BuildPlayerFeeding()
@@ -1300,6 +1758,7 @@ namespace UrbanWildlifeRooms.Core
             playerFeedingController.Initialize(
                 runtimeController,
                 resourceEconomyController,
+                wasteManagementController,
                 layoutEditorController,
                 animalNavigationCoordinator,
                 garageTrafficController,
@@ -1371,6 +1830,7 @@ namespace UrbanWildlifeRooms.Core
                 wasteManagementController,
                 pigeonAgents,
                 vitalities);
+            hud.BindAnimalMortality(animalMortalityController);
         }
 
         private void BuildAnimalNeeds()
@@ -1386,7 +1846,30 @@ namespace UrbanWildlifeRooms.Core
                 pigeonAgents,
                 squirrelAgents,
                 hedgehogAgents,
-                foxAgents);
+                foxAgents,
+                wildlifeHomeRooms,
+                animalNavigationCoordinator);
+            animalNavigationCoordinator.BindNeeds(animalNeedsController);
+            hud.BindAnimalNeeds(animalNeedsController);
+        }
+
+        private void BuildWorkerPasserbyFeeding()
+        {
+            var feedingObject = NewObject("Worker Passerby Feeding", generatedRoot);
+            workerFeedingController = feedingObject.AddComponent<WorkerPasserbyFeedingController>();
+            var animals = new List<IWildlifeLayoutAgent>();
+            animals.AddRange(pigeonAgents);
+            animals.AddRange(squirrelAgents);
+            animals.AddRange(hedgehogAgents);
+            animals.AddRange(foxAgents);
+            workerFeedingController.Initialize(
+                runtimeController,
+                residentPopulationController,
+                citizenPopulationPresenter,
+                animalNeedsController,
+                mapRoot,
+                generatedHideFlags,
+                animals);
         }
 
         private void BuildFoxPredation()
@@ -1396,6 +1879,7 @@ namespace UrbanWildlifeRooms.Core
             foxPredationController.Initialize(
                 runtimeController,
                 animalNeedsController,
+                naturalFoodController,
                 animalMortalityController,
                 animalNavigationCoordinator,
                 garageTrafficController,
@@ -1403,7 +1887,8 @@ namespace UrbanWildlifeRooms.Core
                 foxAgents,
                 pigeonAgents,
                 squirrelAgents,
-                hedgehogAgents);
+                hedgehogAgents,
+                hedgehogForagingController);
         }
 
         private void BuildHedgehogForaging()
@@ -1417,7 +1902,24 @@ namespace UrbanWildlifeRooms.Core
                 animalNavigationCoordinator,
                 garageTrafficController,
                 mapRoot,
-                hedgehogAgents);
+                hedgehogAgents,
+                layoutEditorController);
+            layoutEditorController.BindShrubShelter(hedgehogForagingController.Shelter);
+            hud.BindHedgehogForaging(hedgehogForagingController);
+        }
+
+        private void BuildHedgehogSocial()
+        {
+            var socialObject = NewObject("Hedgehog Night Meeting", generatedRoot);
+            hedgehogSocialController = socialObject.AddComponent<HedgehogSocialController>();
+            hedgehogSocialController.Initialize(
+                runtimeController,
+                animalNeedsController,
+                animalNavigationCoordinator,
+                mapRoot,
+                roomId => roomViews.Find(view => view.Spec.Id == roomId)?.VisualRoot,
+                hedgehogAgents,
+                wildlifeHomeRooms);
         }
 
         private void BuildSquirrelNaturalForaging()
@@ -1431,6 +1933,19 @@ namespace UrbanWildlifeRooms.Core
                 garageTrafficController,
                 mapRoot,
                 squirrelAgents);
+        }
+
+        private void BuildPigeonNaturalForaging()
+        {
+            var foragingObject = NewObject("Pigeon Flock Natural Foraging", generatedRoot);
+            pigeonNaturalForagingController = foragingObject.AddComponent<PigeonNaturalForagingController>();
+            pigeonNaturalForagingController.Initialize(
+                runtimeController,
+                naturalFoodController,
+                animalNeedsController,
+                animalNavigationCoordinator,
+                mapRoot,
+                pigeonHomeRooms);
         }
 
         private void BuildEcologicalMetrics()
@@ -1449,6 +1964,17 @@ namespace UrbanWildlifeRooms.Core
             hud.BindEcologicalMetrics(ecologicalMetricsController);
         }
 
+        private void BuildDailyOutcome()
+        {
+            var outcomeObject = NewObject("Daily Outcome", generatedRoot);
+            dailyOutcomeController = outcomeObject.AddComponent<DailyOutcomeController>();
+            dailyOutcomeController.Initialize(runtimeController, layoutEditorController,
+                resourceEconomyController, animalMortalityController,
+                wasteManagementController, residentPopulationController,
+                animalNeedsController);
+            hud.BindDailyOutcome(dailyOutcomeController);
+        }
+
         private void BuildResearchSession()
         {
             var researchObject = NewObject("Research Session", generatedRoot);
@@ -1457,7 +1983,9 @@ namespace UrbanWildlifeRooms.Core
                 runtimeController,
                 layoutEditorController,
                 animalMortalityController,
-                ecologicalMetricsController);
+                ecologicalMetricsController,
+                hedgehogForagingController,
+                playerFeedingController);
             hud.BindResearchSession(researchSessionController);
             resultsOverlay.BindResearchSession(researchSessionController);
         }
@@ -1471,7 +1999,8 @@ namespace UrbanWildlifeRooms.Core
                 layoutEditorController,
                 playerFeedingController,
                 residentPopulationController,
-                citizenDemoAgent,
+                wasteManagementController,
+                citizenPopulationPresenter,
                 roomViews,
                 hud,
                 LayoutCamera,
@@ -1579,6 +2108,10 @@ namespace UrbanWildlifeRooms.Core
 
         private void ClearGenerated()
         {
+            if (residentPopulationController != null && citizenPopulationPresenter != null)
+            {
+                residentPopulationController.StateChanged -= citizenPopulationPresenter.Synchronize;
+            }
             if (runtimeController != null)
             {
                 runtimeController.RestartRequested -= HandleRestartRequested;
@@ -1616,17 +2149,20 @@ namespace UrbanWildlifeRooms.Core
             animalMortalityController = null;
             animalPopulationController = null;
             animalNeedsController = null;
+            pigeonNaturalForagingController = null;
             garageTrafficController = null;
             animalActivityController = null;
             squirrelTreeResponseController = null;
             foxPredationController = null;
             hedgehogForagingController = null;
+            hedgehogSocialController = null;
+            dailyOutcomeController = null;
             squirrelNaturalForagingController = null;
             ecologicalMetricsController = null;
             researchSessionController = null;
             onboardingController = null;
             mapRoot = null;
-            citizenDemoAgent = null;
+            citizenPopulationPresenter = null;
             pigeonDemoAgent = null;
             squirrelDemoAgent = null;
             hedgehogDemoAgent = null;
@@ -1644,6 +2180,11 @@ namespace UrbanWildlifeRooms.Core
             {
                 DestroyGeneratedObject(surfaceMaterial);
                 surfaceMaterial = null;
+            }
+            if (tabletopMaterial != null)
+            {
+                DestroyGeneratedObject(tabletopMaterial);
+                tabletopMaterial = null;
             }
         }
 

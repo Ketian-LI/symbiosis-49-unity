@@ -2,9 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
+using UrbanWildlifeRooms.Animals;
 using UrbanWildlifeRooms.Core;
 using UrbanWildlifeRooms.Data;
+using UrbanWildlifeRooms.Presentation;
 
 namespace UrbanWildlifeRooms.UI
 {
@@ -51,6 +54,10 @@ namespace UrbanWildlifeRooms.UI
         private Text resourceValue;
         private Text residentValue;
         private Text ecologyValue;
+        private GameObject deathDetailsScrim;
+        private Text deathDetailsTitle;
+        private Text deathDetailsText;
+        private Text deathDetailsCloseLabel;
         private Text thumbnailLabel;
         private RawImage layoutThumbnail;
         private Text restartLabel;
@@ -139,9 +146,15 @@ namespace UrbanWildlifeRooms.UI
             daysReveal.Add(AddRevealGroup(days.gameObject));
             daysReveal.Add(AddRevealGroup(recordBadge));
 
-            resourceValue = BuildSummaryCard(card.transform, "Resource Summary", ResultsVisual.SummaryResources, -210f);
+            resourceValue = BuildSummaryCard(card.transform, "Workforce Summary", ResultsVisual.SummaryResidents, -210f);
             residentValue = BuildSummaryCard(card.transform, "Resident Summary", ResultsVisual.SummaryResidents, 0f);
             ecologyValue = BuildSummaryCard(card.transform, "Ecology Summary", ResultsVisual.SummaryEcology, 210f);
+            ecologyValue.fontSize = 13;
+            SetTopCenter(ecologyValue.rectTransform, 0f, 49f, 176f, 56f);
+            var ecologyPanel = ecologyValue.transform.parent.GetComponent<Image>();
+            var deathDetailsButton = ecologyPanel.gameObject.AddComponent<Button>();
+            deathDetailsButton.targetGraphic = ecologyPanel;
+            deathDetailsButton.onClick.AddListener(OpenDeathDetails);
 
             var thumbnailFrame = CreatePanel("Final Layout Thumbnail Frame", card.transform, Color.white);
             thumbnailFrame.sprite = ResultsVisualCatalog.GetSprite(ResultsVisual.LayoutThumbnailFrame);
@@ -204,6 +217,8 @@ namespace UrbanWildlifeRooms.UI
             exportButton = export;
             export.gameObject.SetActive(false);
             actionReveal.Add(AddRevealGroup(export.gameObject));
+
+            BuildDeathDetails(card.transform);
 
             transitionCurtain = CreatePanel("Results Transition Curtain", transform, new Color(0.025f, 0.04f, 0.055f, 0f));
             Stretch(transitionCurtain.rectTransform);
@@ -328,6 +343,37 @@ namespace UrbanWildlifeRooms.UI
             return value;
         }
 
+        private void BuildDeathDetails(Transform card)
+        {
+            var scrim = CreatePanel("Animal Death Details Scrim", card, new Color(0.03f, 0.05f, 0.07f, 0.72f));
+            Stretch(scrim.rectTransform);
+            deathDetailsScrim = scrim.gameObject;
+
+            var panel = CreatePanel("Animal Death Details Panel", scrim.transform, Graphite);
+            SetCenter(panel.rectTransform, 620f, 370f);
+            deathDetailsTitle = CreateText(panel.transform, "Death Details Title", string.Empty,
+                27, TextAnchor.MiddleCenter, WarmPaper, FontStyle.Bold);
+            SetTopCenter(deathDetailsTitle.rectTransform, 0f, 24f, 560f, 44f);
+            deathDetailsText = CreateText(panel.transform, "Death Details By Species", string.Empty,
+                20, TextAnchor.UpperLeft, WarmPaper, FontStyle.Normal);
+            deathDetailsText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            SetTopCenter(deathDetailsText.rectTransform, 0f, 84f, 540f, 212f);
+
+            var close = CreateButton(panel.transform, "Close Death Details", "关闭", 20,
+                () => deathDetailsScrim.SetActive(false), Cyan, Ink);
+            SetTopCenter(close.GetComponent<RectTransform>(), 0f, 305f, 170f, 46f);
+            deathDetailsCloseLabel = close.GetComponentInChildren<Text>();
+            deathDetailsScrim.SetActive(false);
+        }
+
+        private void OpenDeathDetails()
+        {
+            if (IsVisible && deathDetailsScrim != null)
+            {
+                deathDetailsScrim.SetActive(true);
+            }
+        }
+
         private void Refresh()
         {
             if (runtime == null || overlay == null)
@@ -345,6 +391,7 @@ namespace UrbanWildlifeRooms.UI
                 }
 
                 overlay.SetActive(false);
+                deathDetailsScrim?.SetActive(false);
                 wasVisible = false;
                 return;
             }
@@ -352,6 +399,7 @@ namespace UrbanWildlifeRooms.UI
             var isEntering = !wasVisible;
             if (isEntering)
             {
+                deathDetailsScrim?.SetActive(false);
                 CaptureCurrentLayoutThumbnail();
             }
 
@@ -367,7 +415,7 @@ namespace UrbanWildlifeRooms.UI
             endReasonIcon.sprite = ResultsVisualCatalog.GetSprite(
                 data.endReason == RunEndReason.AnimalDeathLimit
                     ? ResultsVisual.EndAnimalDeaths
-                    : ResultsVisual.EndNegativeResources);
+                    : ResultsVisual.SummaryResidents);
             endReasonIcon.enabled = endReasonIcon.sprite != null;
             days.text = research
                 ? $"{Mathf.FloorToInt(data.researchElapsedSeconds / 60f):00}:{Mathf.FloorToInt(data.researchElapsedSeconds % 60f):00}"
@@ -376,14 +424,21 @@ namespace UrbanWildlifeRooms.UI
             recordBadge.SetActive(data.isNewRecord);
 
             resourceValue.text = chinese
-                ? $"资源 {data.finalResourceBalance}\n收 {data.cumulativeResourceIncome} · 支 {data.cumulativeResourceSpending}"
-                : $"Balance {data.finalResourceBalance}\nIn {data.cumulativeResourceIncome} · Out {data.cumulativeResourceSpending}";
+                ? $"完成循环 {data.lastWorkingResidents}\n上班 → 吃饭 → 回家"
+                : $"Completed loop {data.lastWorkingResidents}\nWork → meal → home";
             residentValue.text = chinese
-                ? $"居民 {data.finalResidents}\n到达 {data.arrivals} · 离开 {data.departures}"
-                : $"Residents {data.finalResidents}\nArrived {data.arrivals} · Left {data.departures}";
+                ? $"居民 {data.finalResidents}/{ResidentPopulationController.MinimumRequiredResidents}\n到达 {data.arrivals} · 离开 {data.departures}"
+                : $"Residents {data.finalResidents}/{ResidentPopulationController.MinimumRequiredResidents}\nArrived {data.arrivals} · Left {data.departures}";
             ecologyValue.text = chinese
-                ? $"死亡 {data.TotalAnimalDeaths}\n植树 {data.treesPlanted} · 砍伐 {data.treesFelled}"
-                : $"Deaths {data.TotalAnimalDeaths}\nPlanted {data.treesPlanted} · Felled {data.treesFelled}";
+                ? $"死亡 {data.TotalAnimalDeaths}\n植树 {data.treesPlanted} · 砍伐 {data.treesFelled}\n点击查看死因"
+                : $"Deaths {data.TotalAnimalDeaths}\nPlanted {data.treesPlanted} · Felled {data.treesFelled}\nClick for causes";
+            deathDetailsTitle.text = chinese ? "各类动物死亡原因" : "Deaths by species and cause";
+            deathDetailsText.text = string.Join("\n",
+                data.BreakdownOf(WildlifeSpecies.Pigeon).LocalizedLine(chinese),
+                data.BreakdownOf(WildlifeSpecies.Squirrel).LocalizedLine(chinese),
+                data.BreakdownOf(WildlifeSpecies.Hedgehog).LocalizedLine(chinese),
+                data.BreakdownOf(WildlifeSpecies.Fox).LocalizedLine(chinese));
+            deathDetailsCloseLabel.text = chinese ? "关闭" : "Close";
             thumbnailLabel.text = chinese ? "最终布局" : "Final layout";
             restartLabel.text = chinese ? "重新开始" : "Restart";
             menuLabel.text = chinese ? "返回主菜单" : "Main Menu";
@@ -426,7 +481,8 @@ namespace UrbanWildlifeRooms.UI
 
         private void CaptureCurrentLayoutThumbnail()
         {
-            if (capturingLayoutThumbnail || worldCamera == null || layoutThumbnail == null)
+            if (capturingLayoutThumbnail || worldCamera == null || layoutThumbnail == null ||
+                SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
             {
                 return;
             }
@@ -791,10 +847,10 @@ namespace UrbanWildlifeRooms.UI
         {
             var instance = NewUiObject(name, parent, typeof(CanvasRenderer), typeof(Text));
             var text = instance.GetComponent<Text>();
-            text.font = font;
+            text.font = UrbanFontResolver.GetFont(style);
             text.text = content;
             text.fontSize = fontSize;
-            text.fontStyle = style;
+            text.fontStyle = style == FontStyle.Bold && text.font != font ? FontStyle.Normal : style;
             text.alignment = anchor;
             text.color = color;
             text.horizontalOverflow = HorizontalWrapMode.Overflow;

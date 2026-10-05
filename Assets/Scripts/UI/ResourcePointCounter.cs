@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UrbanWildlifeRooms.Core;
+using UrbanWildlifeRooms.Presentation;
 
 namespace UrbanWildlifeRooms.UI
 {
@@ -23,7 +24,6 @@ namespace UrbanWildlifeRooms.UI
         private bool pointerInside;
 
         public void Build(
-            RectTransform parent,
             Font font,
             HideFlags hideFlags,
             GameRuntimeController runtimeController,
@@ -32,11 +32,19 @@ namespace UrbanWildlifeRooms.UI
             runtime = runtimeController;
             economy = economyController;
 
-            root = NewRect("Resource Point Counter", parent, hideFlags);
+            root = GetComponent<RectTransform>();
             root.anchorMin = root.anchorMax = new Vector2(0f, 1f);
             root.pivot = new Vector2(0f, 1f);
             root.anchoredPosition = new Vector2(22f, -20f);
             root.sizeDelta = new Vector2(132f, 72f);
+
+            var hoverArea = NewImage("Resource Hover Area", root, hideFlags);
+            hoverArea.color = Color.clear;
+            hoverArea.raycastTarget = true;
+            hoverArea.rectTransform.anchorMin = Vector2.zero;
+            hoverArea.rectTransform.anchorMax = Vector2.one;
+            hoverArea.rectTransform.offsetMin = Vector2.zero;
+            hoverArea.rectTransform.offsetMax = Vector2.zero;
 
             stateImage = NewImage("Work Voucher", root, hideFlags);
             stateImage.rectTransform.anchorMin = stateImage.rectTransform.anchorMax = new Vector2(0f, 0.5f);
@@ -47,7 +55,8 @@ namespace UrbanWildlifeRooms.UI
             stateImage.raycastTarget = true;
 
             balanceText = NewText("Current Balance", root, font, 29, TextAnchor.MiddleLeft, WarmPaper);
-            balanceText.fontStyle = FontStyle.Bold;
+            balanceText.font = UrbanFontResolver.GetFont(FontStyle.Bold);
+            balanceText.fontStyle = balanceText.font != font ? FontStyle.Normal : FontStyle.Bold;
             balanceText.rectTransform.anchorMin = new Vector2(0f, 0f);
             balanceText.rectTransform.anchorMax = new Vector2(1f, 1f);
             balanceText.rectTransform.offsetMin = new Vector2(68f, 0f);
@@ -58,11 +67,13 @@ namespace UrbanWildlifeRooms.UI
             tagImage.color = Graphite;
             tagImage.rectTransform.anchorMin = tagImage.rectTransform.anchorMax = new Vector2(0f, 1f);
             tagImage.rectTransform.pivot = new Vector2(0f, 1f);
-            tagImage.rectTransform.anchoredPosition = new Vector2(0f, -76f);
-            tagImage.rectTransform.sizeDelta = new Vector2(286f, 70f);
+            // Keep the expandable detail below the layout and feeding action row.
+            tagImage.rectTransform.anchoredPosition = new Vector2(0f, -146f);
+            tagImage.rectTransform.sizeDelta = new Vector2(330f, 108f);
             tagImage.raycastTarget = false;
 
-            detailText = NewText("Resource Detail", tagImage.transform, font, 18, TextAnchor.MiddleLeft, WarmPaper);
+            detailText = NewText("Resource Detail", tagImage.transform, font, 14, TextAnchor.MiddleLeft, WarmPaper);
+            detailText.horizontalOverflow = HorizontalWrapMode.Wrap;
             detailText.rectTransform.anchorMin = Vector2.zero;
             detailText.rectTransform.anchorMax = Vector2.one;
             detailText.rectTransform.offsetMin = new Vector2(18f, 8f);
@@ -138,9 +149,13 @@ namespace UrbanWildlifeRooms.UI
             var chinese = runtime == null || runtime.Language == InterfaceLanguage.Chinese;
             if (automaticDetailRemaining <= 0f)
             {
+                var estimateBasis = economy.IncomeEstimateUsesPreviousSettlement &&
+                                    economy.FoodEstimateUsesPreviousSettlement
+                    ? (chinese ? "收入/餐饮沿用上日，运维按当前" : "Income/food from last day; upkeep current")
+                    : (chinese ? "收入/餐饮初估，运维按当前" : "Income/food estimated; upkeep current");
                 detailText.text = chinese
-                    ? $"资源点 {FormatPoints(economy.Balance)} / 20\n今日预计  +{FormatPoints(economy.ExpectedDailyIncome)}  −{economy.ExpectedDailySpending}"
-                    : $"Resources {FormatPoints(economy.Balance)} / 20\nExpected  +{FormatPoints(economy.ExpectedDailyIncome)}  −{economy.ExpectedDailySpending}";
+                    ? $"资源点 {FormatPoints(economy.Balance)} / 20\n结算参考 +{FormatPoints(economy.ExpectedDailyIncome)} −{economy.ExpectedDailySpending}\n餐饮 {economy.ExpectedFoodServiceCost} · 运维 {economy.ExpectedInfrastructureCost}\n{estimateBasis}"
+                    : $"Resources {FormatPoints(economy.Balance)} / 20\nSettlement guide +{FormatPoints(economy.ExpectedDailyIncome)} −{economy.ExpectedDailySpending}\nFood {economy.ExpectedFoodServiceCost} · Upkeep {economy.ExpectedInfrastructureCost}\n{estimateBasis}";
             }
             if (transientRemaining <= 0f)
             {
@@ -173,8 +188,8 @@ namespace UrbanWildlifeRooms.UI
         {
             var chinese = runtime == null || runtime.Language == InterfaceLanguage.Chinese;
             detailText.text = chinese
-                ? $"日终结算  +{FormatPoints(settlement.Production)}  −{settlement.FoodServiceCost}  = {FormatPoints(settlement.ClosingBalance)}"
-                : $"Daily settlement  +{FormatPoints(settlement.Production)}  −{settlement.FoodServiceCost}  = {FormatPoints(settlement.ClosingBalance)}";
+                ? $"日终 +{FormatPoints(settlement.Production)} −{settlement.TotalCost}\n餐饮 {settlement.FoodServiceCost} · 运维 {settlement.InfrastructureCost}\n结余 {FormatPoints(settlement.ClosingBalance)}"
+                : $"Daily +{FormatPoints(settlement.Production)} −{settlement.TotalCost}\nFood {settlement.FoodServiceCost} · Upkeep {settlement.InfrastructureCost}\nBalance {FormatPoints(settlement.ClosingBalance)}";
             automaticDetailRemaining = 1.8f;
             RefreshDetailVisibility();
         }

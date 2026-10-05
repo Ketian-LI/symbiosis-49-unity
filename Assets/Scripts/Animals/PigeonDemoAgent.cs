@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UrbanWildlifeRooms.Core;
 using UrbanWildlifeRooms.Presentation;
 using UrbanWildlifeRooms.UI;
 
@@ -45,6 +46,7 @@ namespace UrbanWildlifeRooms.Animals
         private float respawnRemaining;
         private bool leftFoot;
         private bool initialized;
+        private GameRuntimeController runtime;
         private bool selected;
         private bool relocating;
         private Vector3 relocationStart;
@@ -57,6 +59,7 @@ namespace UrbanWildlifeRooms.Animals
         private Action foodArrival;
         private bool foodMission;
         private bool foodMissionFlying;
+        private bool peckOnFoodArrival = true;
         private float foodGroundHeight;
         private bool activityEnabled = true;
         private bool escapingPredator;
@@ -91,6 +94,7 @@ namespace UrbanWildlifeRooms.Animals
             }
 
             initialized = true;
+            runtime = FindFirstObjectByType<GameRuntimeController>();
             random = new System.Random(randomSeed);
             material = sharedMaterial;
             effectsRoot = effectContainer;
@@ -114,7 +118,7 @@ namespace UrbanWildlifeRooms.Animals
                 transform,
                 AnimalSelectionVisualCatalog.GetSprite(AnimalSelectionVisual.SelectionRing),
                 new Vector3(0f, 0.025f, 0f),
-                0.54f,
+                0.76f,
                 30,
                 hideFlags);
             selectionRing.SetActive(false);
@@ -148,8 +152,20 @@ namespace UrbanWildlifeRooms.Animals
 
         public void SetActivityEnabled(bool value)
         {
+            if (activityEnabled == value)
+            {
+                return;
+            }
             activityEnabled = value;
-            if (!value && !foodMission && state != PigeonDemoState.Dead && state != PigeonDemoState.Respawning)
+            if (foodMission || state == PigeonDemoState.Dead || state == PigeonDemoState.Respawning)
+            {
+                return;
+            }
+            if (value)
+            {
+                BeginState(PigeonDemoState.Idle, RandomRange(0.35f, 0.75f));
+            }
+            else
             {
                 BeginState(PigeonDemoState.Idle, 999f);
             }
@@ -158,8 +174,7 @@ namespace UrbanWildlifeRooms.Animals
         public void RelocateTo(Vector3 worldPosition, float durationSeconds)
         {
             var delta = worldPosition - transform.position;
-            spawnPosition += delta;
-            habitatCenter += delta;
+            ShiftHomeAnchor(delta);
             targetPosition += delta;
             relocationStart = transform.position;
             relocationTarget = worldPosition;
@@ -168,12 +183,46 @@ namespace UrbanWildlifeRooms.Animals
             relocating = true;
         }
 
+        public void ShiftHomeAnchor(Vector3 delta)
+        {
+            spawnPosition += delta;
+            habitatCenter += delta;
+        }
+
+        public void ResetForNewRun(Vector3 initialPosition)
+        {
+            if (!initialized) return;
+            relocating = false;
+            foodMission = false;
+            foodMissionFlying = false;
+            foodArrival = null;
+            foodWaypoints.Clear();
+            foodWaypointIndex = 0;
+            escapingPredator = false;
+            predatorEscapeTime = 0f;
+            spawnPosition = initialPosition;
+            habitatCenter = initialPosition;
+            targetPosition = initialPosition;
+            foodGroundHeight = initialPosition.y;
+            transform.position = initialPosition;
+            transform.rotation = Quaternion.Euler(0f, 24f, 0f);
+            respawnRemaining = 0f;
+            clickCollider.enabled = true;
+            visual.SetVisible(true);
+            needIndicator?.SetAlive(true);
+            needIndicator?.SetNeeds(false, false, false);
+            SetSelected(false);
+            BeginState(PigeonDemoState.Idle, 1.2f);
+        }
+
         public bool BeginFoodMission(
             IReadOnlyList<Vector3> waypoints,
             float responseDelay,
-            Action onArrival)
+            Action onArrival,
+            bool peckOnArrival = true)
         {
-            if (!initialized || !IsAlive || foodMission || waypoints == null || waypoints.Count == 0)
+            if (!initialized || !IsAlive || state == PigeonDemoState.Respawning ||
+                escapingPredator || foodMission || waypoints == null || waypoints.Count == 0)
             {
                 return false;
             }
@@ -184,10 +233,29 @@ namespace UrbanWildlifeRooms.Animals
             foodResponseDelay = Mathf.Max(0f, responseDelay);
             foodArrival = onArrival;
             foodMission = true;
+            peckOnFoodArrival = peckOnArrival;
             foodGroundHeight = transform.position.y;
             var distance = Vector3.Distance(transform.position, waypoints[waypoints.Count - 1]);
             foodMissionFlying = waypoints.Count > 1 || distance > WorldScaleStandards.CellSizeMeters;
             BeginState(foodMissionFlying ? PigeonDemoState.Flutter : PigeonDemoState.Walk, 999f);
+            return true;
+        }
+
+        public bool CancelFoodMissionForRouteChange()
+        {
+            if (!foodMission)
+            {
+                return false;
+            }
+
+            foodMission = false;
+            foodMissionFlying = false;
+            peckOnFoodArrival = true;
+            foodArrival = null;
+            foodWaypoints.Clear();
+            foodGroundHeight = spawnPosition.y;
+            transform.position = new Vector3(transform.position.x, spawnPosition.y, transform.position.z);
+            BeginState(PigeonDemoState.Idle, RandomRange(0.4f, 0.8f));
             return true;
         }
 
@@ -264,7 +332,7 @@ namespace UrbanWildlifeRooms.Animals
                 return;
             }
 
-            var deltaTime = Time.deltaTime;
+            var deltaTime = runtime != null ? runtime.ActorPresentationDeltaTime : Time.deltaTime;
             if (relocating)
             {
                 UpdateRelocation(deltaTime);
@@ -359,7 +427,9 @@ namespace UrbanWildlifeRooms.Animals
                 transform.position = flatTarget;
                 foodMission = false;
                 foodWaypoints.Clear();
-                BeginState(PigeonDemoState.Peck, 1.1f);
+                BeginState(peckOnFoodArrival
+                    ? PigeonDemoState.Peck
+                    : PigeonDemoState.Idle, 1.1f);
                 var callback = foodArrival;
                 foodArrival = null;
                 callback?.Invoke();

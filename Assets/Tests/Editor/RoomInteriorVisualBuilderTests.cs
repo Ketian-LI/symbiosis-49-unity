@@ -72,12 +72,16 @@ namespace UrbanWildlifeRooms.Tests.Editor
                         0.06f);
                     var obstacles = BuildObstacles(root);
 
-                    foreach (var obstacle in obstacles)
+                    var obstacleRenderers = root.GetComponentsInChildren<Renderer>()
+                        .Where(item => !RoomInteriorVisualBuilder.IsPassThroughFurnishing(item))
+                        .ToArray();
+                    for (var index = 0; index < obstacles.Count; index++)
                     {
+                        var obstacle = obstacles[index];
                         Assert.That(
                             clearances.Any(clearance => clearance.Overlaps(obstacle.LocalCenter, obstacle.Size)),
                             Is.False,
-                            $"{spec.Id} has furniture inside a doorway landing.");
+                            $"{spec.Id} has {obstacleRenderers[index].name} inside a doorway landing.");
                     }
 
                     Assert.That(
@@ -101,14 +105,92 @@ namespace UrbanWildlifeRooms.Tests.Editor
         }
 
         [Test]
+        public void ResidenceBedIsLargerAndRemainsPassableAtDoorway()
+        {
+            var spec = RoomLayoutData.All.First(item => item.Id == "residence-c");
+            var room = new GameObject("Larger residence bed");
+            var material = UrbanVisualFactory.CreateSurfaceMaterial();
+            try
+            {
+                var root = RoomInteriorVisualBuilder.Build(room.transform, spec,
+                    spec.Width * CellSize - RoomGap, spec.Height * CellSize - RoomGap,
+                    material, HideFlags.None);
+                var frame = root.GetComponentsInChildren<Renderer>()
+                    .Single(item => item.name == "Bed Frame");
+                var wardrobe = root.GetComponentsInChildren<Renderer>()
+                    .Single(item => item.name == "Wardrobe");
+                var bounds = frame.bounds;
+                var doorClearances = RoomShellLayout.CreateDoorClearances(
+                    spec.Width, spec.Height, CellSize, RoomGap, 0.72f, 0.85f, 0.06f);
+
+                Assert.That(bounds.size.x, Is.GreaterThanOrEqualTo(1.0f));
+                Assert.That(bounds.size.z, Is.GreaterThanOrEqualTo(1.45f));
+                Assert.That(RoomInteriorVisualBuilder.IsPassThroughFurnishing(frame), Is.True);
+                Assert.That(RoomInteriorVisualBuilder.IsPassThroughFurnishing(wardrobe), Is.False);
+                Assert.That(frame.GetComponentInParent<RoomPassThroughVisual>()
+                    .GetComponentsInChildren<Collider>(), Is.Empty);
+                Assert.That(doorClearances.Any(clearance => clearance.Overlaps(
+                    new Vector2(bounds.center.x, bounds.center.z),
+                    new Vector2(bounds.size.x, bounds.size.z))), Is.True,
+                    "The larger bed may overlap a doorway visually, but must not become a movement obstacle.");
+            }
+            finally
+            {
+                Object.DestroyImmediate(room);
+                Object.DestroyImmediate(material);
+            }
+        }
+
+        [Test]
+        public void OfficesHaveTwoReadableWorkstationsAndASeparatePrinterCorner()
+        {
+            var material = UrbanVisualFactory.CreateSurfaceMaterial();
+            try
+            {
+                foreach (var spec in RoomLayoutData.All.Where(item => item.Type == RoomType.Office))
+                {
+                    var room = new GameObject($"Office Details {spec.Id}");
+                    try
+                    {
+                        var root = RoomInteriorVisualBuilder.Build(room.transform, spec,
+                            spec.Width * CellSize - RoomGap, spec.Height * CellSize - RoomGap,
+                            material, HideFlags.None);
+                        var renderers = root.GetComponentsInChildren<Renderer>();
+                        foreach (var name in new[] { "Workstation A", "Workstation B" })
+                        {
+                            var desk = renderers.Single(item => item.name == $"{name} Desk Top");
+                            var screen = renderers.Single(item => item.name == $"{name} Screen");
+                            Assert.That(desk.transform.localScale.x, Is.GreaterThanOrEqualTo(0.90f), spec.Id);
+                            Assert.That(screen.transform.localScale.z, Is.GreaterThanOrEqualTo(0.15f), spec.Id);
+                            Assert.That(renderers.Count(item => item.name.StartsWith($"{name} Key ")),
+                                Is.EqualTo(12), spec.Id);
+                            Assert.That(renderers.Any(item => item.name == $"{name} Drawer Pedestal"),
+                                Is.True, spec.Id);
+                        }
+                        Assert.That(renderers.Any(item => item.name == "Printer Output Tray"), Is.True, spec.Id);
+                        Assert.That(root.GetComponentsInChildren<Collider>(), Is.Empty, spec.Id);
+                    }
+                    finally
+                    {
+                        Object.DestroyImmediate(room);
+                    }
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(material);
+            }
+        }
+
+        [Test]
         public void EverydayRoomsContainTheApprovedFunctionalObjects()
         {
             var requiredNames = new Dictionary<RoomType, string[]>
             {
-                [RoomType.Residence] = new[] { "Bed Frame", "Bedside Cabinet", "Wardrobe", "One Person Round Table", "Single Chair Seat", "Residence Plant Pot" },
-                [RoomType.Office] = new[] { "Workstation A Desk Top", "Workstation B Desk Top", "Shared Filing Cabinet", "Compact Printer", "Waste Paper Basket", "Office Plant Pot" },
-                [RoomType.Canteen] = new[] { "Kitchen Counter", "Low Kitchen Divider", "Under-counter Refrigerator", "Host Order Station", "Dining Table A", "Dining Table B", "Wall Booth Seat", "Closed Food Waste Bin" },
-                [RoomType.Supermarket] = new[] { "Central Gondola A", "Central Gondola B", "Wall Chilled Case", "Produce Crate", "Checkout Counter", "Card Terminal", "Shopping Basket Stack", "Closed Waste Container" }
+                [RoomType.Residence] = new[] { "Bed Frame", "Bed Footboard", "Bed Side Rail -1", "Duvet Foot Stitch", "Bedside Cabinet", "Wardrobe", "Wardrobe Wood Top Rim", "One Person Round Table", "Round Table Book", "Single Chair Seat", "Residence Plant Pot" },
+                [RoomType.Office] = new[] { "Workstation A Desk Top", "Workstation B Desk Top", "Workstation A Chair Back", "Workstation B Chair Back", "Shared Filing Cabinet", "Compact Printer", "Waste Paper Basket", "Office Plant Pot" },
+                [RoomType.Canteen] = new[] { "Compact Kitchen Counter", "Compact Cooker", "Compact Sink", "Compact Dining Table", "Compact Dining Chair", "Compact Plate" },
+                [RoomType.Supermarket] = new[] { "Compact Gondola A", "Compact Gondola B", "Compact Produce Crate", "Compact Checkout Counter", "Compact Checkout Register" }
             };
             var material = UrbanVisualFactory.CreateSurfaceMaterial();
             try
@@ -140,7 +222,73 @@ namespace UrbanWildlifeRooms.Tests.Editor
         }
 
         [Test]
-        public void GarageLaneLeavesPedestrianDoorsSeparateFromTrafficPortals()
+        public void SingleCellFoodShopsUseACompactCounterAndTable()
+        {
+            var material = UrbanVisualFactory.CreateSurfaceMaterial();
+            try
+            {
+                foreach (var spec in RoomLayoutData.All.Where(item => item.Type == RoomType.Canteen))
+                {
+                    var room = new GameObject($"Dining Check {spec.Id}");
+                    try
+                    {
+                        var root = RoomInteriorVisualBuilder.Build(room.transform, spec,
+                            spec.Width * CellSize - RoomGap, spec.Height * CellSize - RoomGap,
+                            material, HideFlags.None);
+                        var renderers = root.GetComponentsInChildren<Renderer>();
+                        Assert.That(renderers.Count(item => item.name.EndsWith("Rug")), Is.Zero,
+                            "The shared dining rug belongs to the walkable floor shell, not the obstacle kit.");
+                        Assert.That(renderers.Count(item => item.name == "Compact Dining Table"), Is.EqualTo(1), spec.Id);
+                        Assert.That(renderers.Count(item => item.name == "Compact Kitchen Counter"), Is.EqualTo(1), spec.Id);
+                        Assert.That(renderers.Count(item => item.name.StartsWith("Dining Table ")), Is.Zero, spec.Id);
+                        var table = root.InverseTransformPoint(
+                            renderers.Single(item => item.name == "Compact Dining Table").transform.position);
+                        Assert.That(Mathf.Abs(table.x), Is.LessThan(1f), spec.Id);
+                        Assert.That(Mathf.Abs(table.z), Is.LessThan(1f), spec.Id);
+                    }
+                    finally
+                    {
+                        Object.DestroyImmediate(room);
+                    }
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(material);
+            }
+        }
+
+        [Test]
+        public void SupermarketHasExactlyTwoOpenStockedGondolas()
+        {
+            var spec = RoomLayoutData.All.Single(item => item.Type == RoomType.Supermarket);
+            var room = new GameObject("Supermarket Kit Check");
+            var material = UrbanVisualFactory.CreateSurfaceMaterial();
+            try
+            {
+                var root = RoomInteriorVisualBuilder.Build(room.transform, spec,
+                    spec.Width * CellSize - RoomGap, spec.Height * CellSize - RoomGap,
+                    material, HideFlags.None);
+                var renderers = root.GetComponentsInChildren<Renderer>();
+                foreach (var name in new[] { "Compact Gondola A", "Compact Gondola B" })
+                {
+                    var back = renderers.Single(item => item.name == name);
+                    Assert.That(back.transform.localScale.z, Is.LessThan(0.10f), name);
+                    Assert.That(renderers.Count(item => item.name.StartsWith($"{name} Product ")),
+                        Is.EqualTo(15), name);
+                }
+                Assert.That(renderers.Count(item => item.name is "Compact Gondola A" or "Compact Gondola B"),
+                    Is.EqualTo(2));
+            }
+            finally
+            {
+                Object.DestroyImmediate(room);
+                Object.DestroyImmediate(material);
+            }
+        }
+
+        [Test]
+        public void SingleCellGarageCentresTheSharedPedestrianAndTrafficPortal()
         {
             foreach (var spec in RoomLayoutData.All.Where(item => item.Type == RoomType.Garage))
             {
@@ -148,10 +296,49 @@ namespace UrbanWildlifeRooms.Tests.Editor
                 var doorways = RoomShellLayout.CreateDoorways(spec.Width, spec.Height, CellSize, RoomGap);
                 foreach (var doorway in doorways.Where(item => item.Edge is RoomEdge.North or RoomEdge.South))
                 {
-                    var separation = Mathf.Abs(laneX - doorway.LocalCenter.x);
-                    Assert.That(separation, Is.GreaterThan(0.40f + 0.36f),
-                        $"{spec.Id} vehicle portal overlaps a pedestrian door.");
+                    Assert.That(laneX, Is.EqualTo(doorway.LocalCenter.x).Within(0.001f),
+                        $"{spec.Id} has one shared single-cell entrance, not a separate bay.");
                 }
+            }
+        }
+
+        [Test]
+        public void GaragePavingFramesTheRoadWithoutAddingClickableColliders()
+        {
+            var material = UrbanVisualFactory.CreateSurfaceMaterial();
+            try
+            {
+                foreach (var spec in RoomLayoutData.All.Where(item => item.Type == RoomType.Garage))
+                {
+                    var room = new GameObject($"Paving Check {spec.Id}");
+                    try
+                    {
+                        var width = spec.Width * CellSize - RoomGap;
+                        var depth = spec.Height * CellSize - RoomGap;
+                        GarageVisualLayout.BuildShellDetails(room.transform, spec,
+                            width, depth, material, HideFlags.None);
+                        var renderers = room.GetComponentsInChildren<Renderer>();
+                        Assert.That(renderers.Any(item => item.name == "Single Vehicle Lane"), Is.True, spec.Id);
+                        Assert.That(renderers.Count(item => item.name.Contains("Paving Brick")),
+                            Is.GreaterThanOrEqualTo(24), spec.Id);
+                        Assert.That(room.GetComponentsInChildren<Collider>(), Is.Empty, spec.Id);
+                        foreach (var brick in renderers.Where(item => item.name.Contains("Paving Brick")))
+                        {
+                            var local = room.transform.InverseTransformPoint(brick.transform.position);
+                            Assert.That(Mathf.Abs(local.x - GarageVisualLayout.LaneCenterX(spec.Width)),
+                                Is.GreaterThan(0.47f), brick.name);
+                            Assert.That(Mathf.Abs(local.z), Is.LessThan(depth * 0.5f), brick.name);
+                        }
+                    }
+                    finally
+                    {
+                        Object.DestroyImmediate(room);
+                    }
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(material);
             }
         }
 
@@ -202,7 +389,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
         }
 
         [Test]
-        public void EachPigeonHabitatHasOneCoreOneLoftAndTwoPerches()
+        public void EachPigeonHabitatUsesOpenPlazaFurnitureWithoutRooftopOrNestBoxes()
         {
             var material = UrbanVisualFactory.CreateSurfaceMaterial();
             try
@@ -216,16 +403,14 @@ namespace UrbanWildlifeRooms.Tests.Editor
                             spec.Width * CellSize - RoomGap, spec.Height * CellSize - RoomGap,
                             material, HideFlags.None);
                         var names = root.GetComponentsInChildren<Renderer>().Select(item => item.name).ToArray();
-                        Assert.That(names.Count(name => name == "Ventilation Service Core"), Is.EqualTo(1), spec.Id);
-                        Assert.That(names.Count(name => name == "Open Pigeon Loft"), Is.EqualTo(1), spec.Id);
-                        Assert.That(names.Count(name => name.StartsWith("Open Pigeon Loft Nest Box")), Is.EqualTo(4), spec.Id);
-                        Assert.That(names.Count(name => name.StartsWith("Open Pigeon Loft Roof Nest")), Is.EqualTo(4), spec.Id);
-                        Assert.That(names.Count(name => name.EndsWith("Perch Rail")), Is.EqualTo(2), spec.Id);
-                        Assert.That(names, Does.Contain("Ventilation Turbine Dome"), spec.Id);
-                        Assert.That(names, Does.Contain("Open Pigeon Loft Rear Roof"), spec.Id);
-                        Assert.That(names, Does.Contain("Water Dish Rim"), spec.Id);
-                        Assert.That(names, Does.Contain("Water Dish"), spec.Id);
-                        Assert.That(names, Does.Contain("Separate Seed Tray"), spec.Id);
+                        Assert.That(names.Count(name => name == "Plaza Planter Base"), Is.EqualTo(1), spec.Id);
+                        Assert.That(names.Count(name => name == "Plaza Stone Bench Seat"), Is.EqualTo(1), spec.Id);
+                        Assert.That(names.Count(name => name == "Plaza Bird Bath Water"), Is.EqualTo(1), spec.Id);
+                        Assert.That(names.Count(name => name == "Plaza Feeding Stone"), Is.EqualTo(1), spec.Id);
+                        Assert.That(names.Count(name => name.StartsWith("Plaza Scattered Seed")), Is.EqualTo(4), spec.Id);
+                        Assert.That(names.Any(name => name.Contains("Ventilation") || name.Contains("Eave") ||
+                            name.Contains("Nest Box") || name.Contains("Roof Nest") || name.Contains("Perch Rail")),
+                            Is.False, spec.Id);
                     }
                     finally
                     {
@@ -257,7 +442,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
                         var renderers = root.GetComponentsInChildren<Renderer>();
                         Assert.That(renderers.Count(item => item.name.Contains("Crown")), Is.EqualTo(8), spec.Id);
                         Assert.That(renderers.Count(item => item.name.Contains("Ground Foliage")), Is.EqualTo(12), spec.Id);
-                        Assert.That(renderers.Count(item => item.name.Contains("Low Tuft")), Is.EqualTo(4), spec.Id);
+                        Assert.That(renderers.Count(item => item.name.Contains("Low Tuft")), Is.EqualTo(6), spec.Id);
                         Assert.That(renderers.Count(item => item.name.Contains("Petal")), Is.EqualTo(10), spec.Id);
                         foreach (var crown in renderers.Where(item => item.name.Contains("Crown")))
                         {
@@ -312,6 +497,11 @@ namespace UrbanWildlifeRooms.Tests.Editor
             var obstacles = new List<RoomObstacle2D>();
             foreach (var renderer in root.GetComponentsInChildren<Renderer>())
             {
+                if (RoomInteriorVisualBuilder.IsPassThroughFurnishing(renderer))
+                {
+                    continue;
+                }
+
                 var bounds = renderer.localBounds;
                 var minimum = new Vector2(float.PositiveInfinity, float.PositiveInfinity);
                 var maximum = new Vector2(float.NegativeInfinity, float.NegativeInfinity);

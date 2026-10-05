@@ -15,12 +15,14 @@ namespace UrbanWildlifeRooms.Core
     {
         public const float DetourProbability = 0.5f;
         public const float FatalJudgementProbability = 0.5f;
+        public const float BufferedFatalJudgementProbability = 0.25f;
 
         public static GarageCrossingDecision Decide(
             bool routeContainsGarage,
             bool detourExists,
             float routeChoiceRoll,
-            float safetyRoll)
+            float safetyRoll,
+            bool garageBuffered = false)
         {
             if (!routeContainsGarage)
             {
@@ -32,7 +34,9 @@ namespace UrbanWildlifeRooms.Core
                     ? GarageCrossingDecision.Detour
                     : GarageCrossingDecision.Abandon;
             }
-            return safetyRoll < FatalJudgementProbability
+            return safetyRoll < (garageBuffered
+                    ? BufferedFatalJudgementProbability
+                    : FatalJudgementProbability)
                 ? GarageCrossingDecision.CrossFatally
                 : GarageCrossingDecision.CrossSafely;
         }

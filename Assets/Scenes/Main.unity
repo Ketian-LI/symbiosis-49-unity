@@ -150,7 +150,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: UrbanWildlifeRooms.Runtime::UrbanWildlifeRooms.Core.UrbanWildlifeBootstrap
   cellSize: 3.1
   roomGap: 0.16
-  showRoomLabels: 1
+  showRoomLabels: 0
 --- !u!4 &1275857195
 Transform:
   m_ObjectHideFlags: 0

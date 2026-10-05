@@ -1,13 +1,16 @@
 using UnityEngine;
+using UrbanWildlifeRooms.Data;
 
 namespace UrbanWildlifeRooms.Presentation
 {
     public sealed class BoardCameraController : MonoBehaviour
     {
         private const float MenuTiltFromTopDownDegrees = 16f;
+        private const float MenuCameraHeight = 55f;
         private const float MenuOverviewScale = 1.18f;
 
         public event System.Action OverviewRestored;
+        public event System.Action FollowingStopped;
 
         private Camera controlledCamera;
         private Vector3 overviewPosition;
@@ -36,6 +39,9 @@ namespace UrbanWildlifeRooms.Presentation
 
         public bool IsFocused => focused;
         public bool IsMenuView => menuView;
+        public bool IsFollowing => followTarget != null;
+        public Vector3 TargetPosition => targetPosition;
+        public float TargetSize => targetSize;
 
         public void Initialize(Camera camera)
         {
@@ -65,9 +71,17 @@ namespace UrbanWildlifeRooms.Presentation
                 overviewEuler.y,
                 overviewEuler.z);
             var menuForward = menuRotation * Vector3.forward;
-            var menuDistance = overviewPosition.y / Mathf.Max(0.001f, -menuForward.y);
+            var menuDistance = MenuCameraHeight / Mathf.Max(0.001f, -menuForward.y);
             menuPosition = focusPoint - menuForward * menuDistance;
             menuSize = overviewSize * MenuOverviewScale;
+        }
+
+        private static float PerspectiveFieldOfView(Camera camera, float halfHeightAtGround)
+        {
+            var forward = camera.transform.forward;
+            var distanceToGround = camera.transform.position.y /
+                Mathf.Max(0.001f, -forward.y);
+            return 2f * Mathf.Atan(halfHeightAtGround / distanceToGround) * Mathf.Rad2Deg;
         }
 
         private void Update()
@@ -88,11 +102,11 @@ namespace UrbanWildlifeRooms.Presentation
                 ReturnToOverviewIfNeeded();
             }
 
-            if (!focused && !menuView)
+            if (!menuView)
             {
-                UpdateOverviewInput();
+                UpdateGameplayInput();
             }
-            else if (followTarget != null)
+            if (followTarget != null)
             {
                 var focus = followTarget.position;
                 targetPosition = focus + Vector3.up * Mathf.Max(10f, targetSize * 1.55f);
@@ -102,6 +116,10 @@ namespace UrbanWildlifeRooms.Presentation
             controlledCamera.transform.position = Vector3.Lerp(controlledCamera.transform.position, targetPosition, interpolation);
             controlledCamera.transform.rotation = Quaternion.Slerp(controlledCamera.transform.rotation, targetRotation, interpolation);
             controlledCamera.orthographicSize = Mathf.Lerp(controlledCamera.orthographicSize, targetSize, interpolation);
+            if (!controlledCamera.orthographic)
+            {
+                controlledCamera.fieldOfView = PerspectiveFieldOfView(controlledCamera, controlledCamera.orthographicSize);
+            }
         }
 
         public void SetMenuViewImmediate()
@@ -121,6 +139,8 @@ namespace UrbanWildlifeRooms.Presentation
             controlledCamera.transform.position = menuPosition;
             controlledCamera.transform.rotation = menuRotation;
             controlledCamera.orthographicSize = menuSize;
+            controlledCamera.fieldOfView = PerspectiveFieldOfView(controlledCamera, menuSize);
+            controlledCamera.orthographic = false;
         }
 
         public void SetGameplayViewImmediate()
@@ -140,6 +160,7 @@ namespace UrbanWildlifeRooms.Presentation
             controlledCamera.transform.position = overviewPosition;
             controlledCamera.transform.rotation = overviewRotation;
             controlledCamera.orthographicSize = overviewSize;
+            controlledCamera.orthographic = true;
         }
 
         public void BeginGameplayViewTransition(float durationSeconds)
@@ -186,6 +207,11 @@ namespace UrbanWildlifeRooms.Presentation
             transitionEndRotation = endRotation;
             transitionEndSize = endSize;
             transitionEndsAtMenu = endsAtMenu;
+            if (controlledCamera.orthographic)
+            {
+                controlledCamera.fieldOfView = PerspectiveFieldOfView(controlledCamera, transitionStartSize);
+                controlledCamera.orthographic = false;
+            }
         }
 
         private void UpdateViewTransition()
@@ -205,6 +231,9 @@ namespace UrbanWildlifeRooms.Presentation
                 transitionStartSize,
                 transitionEndSize,
                 eased);
+            controlledCamera.fieldOfView = PerspectiveFieldOfView(
+                controlledCamera,
+                controlledCamera.orthographicSize);
 
             if (progress < 1f)
             {
@@ -213,6 +242,10 @@ namespace UrbanWildlifeRooms.Presentation
 
             viewTransitionActive = false;
             menuView = transitionEndsAtMenu;
+            if (!menuView)
+            {
+                controlledCamera.orthographic = true;
+            }
             targetPosition = transitionEndPosition;
             targetRotation = transitionEndRotation;
             targetSize = transitionEndSize;
@@ -261,12 +294,14 @@ namespace UrbanWildlifeRooms.Presentation
             return true;
         }
 
-        private void UpdateOverviewInput()
+        private void UpdateGameplayInput()
         {
             var scroll = Input.mouseScrollDelta.y;
             if (Mathf.Abs(scroll) > 0.001f)
             {
-                targetSize = Mathf.Clamp(targetSize - scroll * 1.1f, 9.5f, overviewSize);
+                var step = focused ? targetSize * 0.12f : 1.1f;
+                targetSize = Mathf.Clamp(targetSize - scroll * step,
+                    focused ? 1.2f : 9.5f, overviewSize);
             }
 
             if (Input.GetMouseButtonDown(2))
@@ -281,19 +316,53 @@ namespace UrbanWildlifeRooms.Presentation
 
             var delta = Input.mousePosition - lastMousePosition;
             lastMousePosition = Input.mousePosition;
-            var right = controlledCamera.transform.right;
-            var forward = Vector3.ProjectOnPlane(controlledCamera.transform.up, Vector3.up).normalized;
-            var scale = targetSize * 0.0018f;
-            var move = (-right * delta.x - forward * delta.y) * scale;
+            PanByPixels(new Vector2(delta.x, delta.y), controlledCamera.pixelHeight);
+        }
+
+        public bool PanByPixels(Vector2 delta, float viewportHeight)
+        {
+            if (controlledCamera == null || menuView || viewTransitionActive ||
+                delta.sqrMagnitude < 0.01f)
+            {
+                return false;
+            }
+
+            if (followTarget != null)
+            {
+                // Keep the image steady when a drag switches from tracking an
+                // animal to free camera movement at the same zoom level.
+                followTarget = null;
+                targetPosition = controlledCamera.transform.position;
+                targetRotation = controlledCamera.transform.rotation;
+                targetSize = controlledCamera.orthographicSize;
+                FollowingStopped?.Invoke();
+            }
+
+            var right = targetRotation * Vector3.right;
+            var up = Vector3.ProjectOnPlane(targetRotation * Vector3.up, Vector3.up).normalized;
+            var scale = 2f * targetSize / Mathf.Max(1f, viewportHeight);
+            var move = (-right * delta.x - up * delta.y) * scale;
             targetPosition += move;
 
-            var centerOffset = targetPosition - overviewPosition;
-            centerOffset.y = 0f;
-            centerOffset = Vector3.ClampMagnitude(centerOffset, 5.5f);
-            targetPosition = new Vector3(
-                overviewPosition.x + centerOffset.x,
-                targetPosition.y,
-                overviewPosition.z + centerOffset.z);
+            if (focused)
+            {
+                var halfBoard = RoomLayoutData.GridSize * WorldScaleStandards.CellSizeMeters * 0.5f;
+                targetPosition.x = Mathf.Clamp(targetPosition.x,
+                    overviewPosition.x - halfBoard, overviewPosition.x + halfBoard);
+                targetPosition.z = Mathf.Clamp(targetPosition.z,
+                    overviewPosition.z - halfBoard, overviewPosition.z + halfBoard);
+            }
+            else
+            {
+                var centerOffset = targetPosition - overviewPosition;
+                centerOffset.y = 0f;
+                centerOffset = Vector3.ClampMagnitude(centerOffset, 5.5f);
+                targetPosition = new Vector3(
+                    overviewPosition.x + centerOffset.x,
+                    targetPosition.y,
+                    overviewPosition.z + centerOffset.z);
+            }
+            return true;
         }
 
     }

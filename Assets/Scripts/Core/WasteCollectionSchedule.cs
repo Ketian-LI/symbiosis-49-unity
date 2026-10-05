@@ -36,6 +36,20 @@ namespace UrbanWildlifeRooms.Core
         public const double MunicipalCollectionSeconds =
             SimulationClockModel.CycleSeconds * 22d / 24d;
 
+        public static int NextMunicipalCollectionDayNumber(double totalSeconds)
+        {
+            var now = Math.Max(0d, totalSeconds);
+            var dayIndex = (int)(now / SimulationClockModel.CycleSeconds);
+            var dayNumber = dayIndex + 1;
+            var collectionTime = dayIndex * SimulationClockModel.CycleSeconds +
+                                 MunicipalCollectionSeconds;
+            if (dayNumber % 2 == 0 && now < collectionTime)
+            {
+                return dayNumber;
+            }
+            return dayNumber + (dayNumber % 2 == 0 ? 2 : 1);
+        }
+
         public static IReadOnlyList<WasteScheduleEvent> EventsBetween(
             double previousTotalSeconds,
             double currentTotalSeconds)
@@ -102,6 +116,83 @@ namespace UrbanWildlifeRooms.Core
             {
                 events.Add(new WasteScheduleEvent(kind, dayNumber));
             }
+        }
+    }
+
+    public readonly struct NeighborhoodMarketEvent
+    {
+        public NeighborhoodMarketEvent(int dayNumber, string roomId, int extraWaste,
+            int extraIncome, int cleanBonus, bool isMajorMarket)
+        {
+            DayNumber = dayNumber;
+            RoomId = roomId;
+            ExtraWaste = extraWaste;
+            ExtraIncome = extraIncome;
+            CleanBonus = cleanBonus;
+            IsMajorMarket = isMajorMarket;
+        }
+
+        public int DayNumber { get; }
+        public string RoomId { get; }
+        public int ExtraWaste { get; }
+        public int ExtraIncome { get; }
+        public int CleanBonus { get; }
+        public bool IsMajorMarket { get; }
+    }
+
+    // A predictable spatial pressure, not a penalty for leaving the controls idle.
+    // The player can prepare for a known producer, accept the extra cleanup, or
+    // build a layout resilient to several producers at once.
+    public static class NeighborhoodMarketSchedule
+    {
+        public const int FirstDailyDay = 4;
+        public const int FirstDay = 7;
+        public const int IntervalDays = 4;
+        public const int DailyExtraWaste = 3;
+        public const int DailyExtraIncome = 1;
+        public const int ExtraWaste = 5;
+        public const int ExtraIncome = 3;
+        public const int CleanBonus = 2;
+
+        private static readonly string[] Producers =
+        {
+            "canteen-a", "canteen-b", "supermarket"
+        };
+
+        public static NeighborhoodMarketEvent? ForDay(int dayNumber)
+        {
+            if (dayNumber < FirstDailyDay)
+            {
+                return null;
+            }
+
+            // The active shop changes every day. The stronger market still
+            // returns every four days, but it does not leave the intervening
+            // days strategically identical.
+            var index = (dayNumber - FirstDailyDay) % Producers.Length;
+            var isMajorMarket = dayNumber >= FirstDay &&
+                                (dayNumber - FirstDay) % IntervalDays == 0;
+            return new NeighborhoodMarketEvent(dayNumber,
+                Producers[index],
+                isMajorMarket ? ExtraWaste : DailyExtraWaste,
+                isMajorMarket ? ExtraIncome : DailyExtraIncome,
+                isMajorMarket ? CleanBonus : 0,
+                isMajorMarket);
+        }
+
+        public static NeighborhoodMarketEvent NextOnOrAfter(int dayNumber)
+        {
+            return ForDay(Math.Max(FirstDailyDay, dayNumber)).Value;
+        }
+
+        public static NeighborhoodMarketEvent NextUnprocessed(double totalSeconds)
+        {
+            var now = Math.Max(0d, totalSeconds);
+            var dayIndex = (int)(now / SimulationClockModel.CycleSeconds);
+            var dayNumber = dayIndex + 1;
+            var wasteProductionTime = dayIndex * SimulationClockModel.CycleSeconds +
+                                      WasteCollectionSchedule.DailyProductionSeconds;
+            return NextOnOrAfter(now >= wasteProductionTime ? dayNumber + 1 : dayNumber);
         }
     }
 }

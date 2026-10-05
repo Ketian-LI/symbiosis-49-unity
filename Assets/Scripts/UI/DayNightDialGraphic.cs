@@ -14,6 +14,13 @@ namespace UrbanWildlifeRooms.UI
 
         [SerializeField, Range(0f, 1f)] private float progress;
         [SerializeField] private DayPhase phase;
+        [SerializeField] private bool artworkBackground;
+
+        public void UseArtworkBackground()
+        {
+            artworkBackground = true;
+            SetVerticesDirty();
+        }
 
         public void SetTime(float cycleProgress, DayPhase currentPhase)
         {
@@ -26,6 +33,12 @@ namespace UrbanWildlifeRooms.UI
         {
             vh.Clear();
             var radius = Mathf.Min(rectTransform.rect.width, rectTransform.rect.height) * 0.5f;
+            if (artworkBackground)
+            {
+                AddArc(vh, 0f, progress, new Color(1f, 0.92f, 0.73f, 0.94f), radius + 2f, radius - 2f);
+                AddPointer(vh, radius + 5f);
+                return;
+            }
             var inner = radius - 12f;
             var dawnEnd = (float)(SimulationClockModel.DawnSeconds / SimulationClockModel.CycleSeconds);
             var dayEnd = (float)((SimulationClockModel.DawnSeconds + SimulationClockModel.DaySeconds) / SimulationClockModel.CycleSeconds);

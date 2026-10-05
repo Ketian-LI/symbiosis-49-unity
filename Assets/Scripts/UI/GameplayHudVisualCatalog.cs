@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UrbanWildlifeRooms.Animals;
@@ -5,6 +6,21 @@ using UrbanWildlifeRooms.Core;
 
 namespace UrbanWildlifeRooms.UI
 {
+    public readonly struct AnimalMealProgress
+    {
+        public AnimalMealProgress(int livingAnimals, int livingUnfedAnimals)
+        {
+            LivingAnimals = Math.Max(0, livingAnimals);
+            UnfedAnimals = Math.Min(LivingAnimals, Math.Max(0, livingUnfedAnimals));
+        }
+
+        public int LivingAnimals { get; }
+        public int UnfedAnimals { get; }
+        public int FedAnimals => LivingAnimals - UnfedAnimals;
+        public float Fraction => LivingAnimals == 0 ? 0f : FedAnimals / (float)LivingAnimals;
+        public string Badge => $"{FedAnimals}/{LivingAnimals}";
+    }
+
     public static class GameplayHudVisualCatalog
     {
         private const string PopulationRoot = "UI/GameplayHud/";
@@ -12,10 +28,10 @@ namespace UrbanWildlifeRooms.UI
         private static readonly IReadOnlyDictionary<WildlifeSpecies, string> PopulationResources =
             new Dictionary<WildlifeSpecies, string>
             {
-                { WildlifeSpecies.Pigeon, PopulationRoot + "population-pigeon-v01" },
-                { WildlifeSpecies.Squirrel, PopulationRoot + "population-squirrel-v01" },
-                { WildlifeSpecies.Hedgehog, PopulationRoot + "population-hedgehog-v01" },
-                { WildlifeSpecies.Fox, PopulationRoot + "population-fox-v01" }
+                { WildlifeSpecies.Pigeon, PopulationRoot + "population-pigeon-v02" },
+                { WildlifeSpecies.Squirrel, PopulationRoot + "population-squirrel-v02" },
+                { WildlifeSpecies.Hedgehog, PopulationRoot + "population-hedgehog-v02" },
+                { WildlifeSpecies.Fox, PopulationRoot + "population-fox-v02" }
             };
 
         private static readonly IReadOnlyDictionary<EcologicalMetricKind, string> MetricResources =
@@ -47,6 +63,11 @@ namespace UrbanWildlifeRooms.UI
         public static Sprite GetMetricSprite(EcologicalMetricKind kind)
         {
             return LoadSprite(MetricResourcePath(kind));
+        }
+
+        public static Sprite GetDayNightDialSprite()
+        {
+            return LoadSprite(PopulationRoot + "day-night-dial-v02");
         }
 
         private static Sprite LoadSprite(string path)

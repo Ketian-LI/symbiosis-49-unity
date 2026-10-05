@@ -13,18 +13,19 @@ namespace UrbanWildlifeRooms.Tests.Editor
         }
 
         [Test]
-        public void LayoutContainsThirtyFiveRoomsAndFortyNineCells()
+        public void LayoutContainsFortyNineIndependentRoomsAndFortyNineCells()
         {
-            Assert.That(RoomLayoutData.All.Count, Is.EqualTo(35));
+            Assert.That(RoomLayoutData.All.Count, Is.EqualTo(49));
             Assert.That(RoomLayoutData.All.Sum(room => room.CellCount), Is.EqualTo(49));
         }
 
         [Test]
         public void LayoutUsesExpectedFootprints()
         {
-            Assert.That(RoomLayoutData.All.Count(room => room.Width == 1 && room.Height == 1), Is.EqualTo(23));
-            Assert.That(RoomLayoutData.All.Count(room => room.Width * room.Height == 2), Is.EqualTo(11));
-            Assert.That(RoomLayoutData.All.Count(room => room.Width == 2 && room.Height == 2), Is.EqualTo(1));
+            Assert.That(RoomLayoutData.All.All(room => room.Width == 1 && room.Height == 1), Is.True);
+            Assert.That(RoomLayoutData.All.Count(room => room.Type == RoomType.SharedSpace), Is.EqualTo(12));
+            Assert.That(RoomLayoutData.All.Count(room => room.Type == RoomType.EcologicalBuffer), Is.EqualTo(1));
+            Assert.That(RoomLayoutData.All.Count(room => room.Type == RoomType.CommunitySquare), Is.EqualTo(1));
         }
 
         [TestCase(RoomType.Residence, 8)]
@@ -46,8 +47,8 @@ namespace UrbanWildlifeRooms.Tests.Editor
             var park = RoomLayoutData.All.Single(room => room.Type == RoomType.CentralPark);
             Assert.That(park.Column, Is.EqualTo(2));
             Assert.That(park.Row, Is.EqualTo(2));
-            Assert.That(park.Width, Is.EqualTo(2));
-            Assert.That(park.Height, Is.EqualTo(2));
+            Assert.That(park.Width, Is.EqualTo(1));
+            Assert.That(park.Height, Is.EqualTo(1));
             Assert.That(park.Movable, Is.False);
         }
 

@@ -38,17 +38,26 @@ namespace UrbanWildlifeRooms.Core
 
         public void ProduceDawn(
             int dayNumber,
-            Func<string, OakTreeStage> oakStage)
+            Func<string, OakTreeStage> oakStage,
+            RoomNavigationMap navigation = null)
         {
+            var connectedGreen = GreenNetworkModel.ConnectedRooms(navigation);
             foreach (var room in rooms)
             {
                 if (room.Type == RoomType.PigeonHabitat)
                 {
-                    Ensure(room.Id, NaturalFoodKind.Seed, 1);
+                    Ensure(room.Id, NaturalFoodKind.Seed,
+                        HabitatFoodNetworkModel.SeedCapacity(navigation, room.Id, dayNumber));
                 }
                 else if (room.Type == RoomType.CentralPark)
                 {
-                    Ensure(room.Id, NaturalFoodKind.Seed, 3);
+                    Ensure(room.Id, NaturalFoodKind.Seed, 1);
+                }
+                else if (room.GreenRole == ParkGreenRole.SquirrelGrove &&
+                         connectedGreen.Count >= GreenNetworkModel.StableCellCount &&
+                         connectedGreen.Contains(room.Id))
+                {
+                    Ensure(room.Id, NaturalFoodKind.Nut, 1);
                 }
                 else if (room.Type == RoomType.OakHabitat &&
                          oakStage != null && oakStage(room.Id) == OakTreeStage.Mature)
@@ -71,14 +80,23 @@ namespace UrbanWildlifeRooms.Core
 
         public void ProduceNight(
             int dayNumber,
-            IReadOnlyDictionary<string, WasteRoomLoadModel> wasteRooms)
+            IReadOnlyDictionary<string, WasteRoomLoadModel> wasteRooms,
+            RoomNavigationMap animalNavigation = null)
         {
+            var connectedGreen = GreenNetworkModel.ConnectedRooms(animalNavigation);
             foreach (var room in rooms)
             {
                 if (room.Type == RoomType.CentralPark)
                 {
                     Ensure(room.Id, NaturalFoodKind.Insect, 1);
                     continue;
+                }
+
+                if (room.GreenRole == ParkGreenRole.HedgehogGarden &&
+                    connectedGreen.Count >= GreenNetworkModel.StableCellCount &&
+                    connectedGreen.Contains(room.Id))
+                {
+                    Ensure(room.Id, NaturalFoodKind.Insect, 1);
                 }
 
                 if ((room.Type == RoomType.ShrubHabitat || room.Type == RoomType.Trash) &&
@@ -171,6 +189,7 @@ namespace UrbanWildlifeRooms.Core
 
         private void Ensure(string roomId, NaturalFoodKind kind, int maximumPortions)
         {
+            if (maximumPortions <= 0) return;
             var key = Key(roomId, kind);
             if (sources.TryGetValue(key, out var source))
             {

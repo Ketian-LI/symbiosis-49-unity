@@ -23,6 +23,7 @@ namespace UrbanWildlifeRooms.Data
             BaseHeight = spec.Height;
             Column = spec.Column;
             Row = spec.Row;
+            canRotate = AnimalPassageLayout.CanRotate(spec);
         }
 
         private RoomPlacement(RoomPlacement source)
@@ -34,7 +35,10 @@ namespace UrbanWildlifeRooms.Data
             Row = source.Row;
             QuarterTurns = source.QuarterTurns;
             InTray = source.InTray;
+            canRotate = source.canRotate;
         }
+
+        private readonly bool canRotate;
 
         public string Id { get; }
         public int BaseWidth { get; }
@@ -45,7 +49,7 @@ namespace UrbanWildlifeRooms.Data
         public bool InTray { get; internal set; }
         public int Width => QuarterTurns % 2 == 0 ? BaseWidth : BaseHeight;
         public int Height => QuarterTurns % 2 == 0 ? BaseHeight : BaseWidth;
-        public bool CanRotate => BaseWidth != BaseHeight;
+        public bool CanRotate => canRotate;
 
         public RoomPlacement Clone()
         {
@@ -129,21 +133,31 @@ namespace UrbanWildlifeRooms.Data
 
         public bool CanSwap(string firstId, string secondId)
         {
+            return placements.TryGetValue(firstId, out var first) &&
+                   CanSwap(firstId, secondId, first.QuarterTurns);
+        }
+
+        public bool CanSwap(string firstId, string secondId, int firstQuarterTurns)
+        {
             if (firstId == secondId || !CanMove(firstId) || !CanMove(secondId) ||
                 !placements.TryGetValue(firstId, out var first) ||
                 !placements.TryGetValue(secondId, out var second) ||
                 first.InTray || second.InTray ||
-                first.Width != second.Width || first.Height != second.Height)
+                first.Width != second.Width || first.Height != second.Height ||
+                (NormalizeTurns(firstQuarterTurns) % 2 == 0 ? first.BaseWidth : first.BaseHeight) != second.Width ||
+                (NormalizeTurns(firstQuarterTurns) % 2 == 0 ? first.BaseHeight : first.BaseWidth) != second.Height)
             {
                 return false;
             }
 
+            var firstTurns = first.QuarterTurns;
             var firstColumn = first.Column;
             var firstRow = first.Row;
             var secondColumn = second.Column;
             var secondRow = second.Row;
             first.Column = secondColumn;
             first.Row = secondRow;
+            first.QuarterTurns = NormalizeTurns(firstQuarterTurns);
             second.Column = firstColumn;
             second.Row = firstRow;
 
@@ -152,6 +166,7 @@ namespace UrbanWildlifeRooms.Data
 
             first.Column = firstColumn;
             first.Row = firstRow;
+            first.QuarterTurns = firstTurns;
             second.Column = secondColumn;
             second.Row = secondRow;
             return legal;
@@ -159,7 +174,13 @@ namespace UrbanWildlifeRooms.Data
 
         public bool TrySwap(string firstId, string secondId)
         {
-            if (!CanSwap(firstId, secondId))
+            return placements.TryGetValue(firstId, out var first) &&
+                   TrySwap(firstId, secondId, first.QuarterTurns);
+        }
+
+        public bool TrySwap(string firstId, string secondId, int firstQuarterTurns)
+        {
+            if (!CanSwap(firstId, secondId, firstQuarterTurns))
             {
                 return false;
             }
@@ -168,10 +189,169 @@ namespace UrbanWildlifeRooms.Data
             var second = placements[secondId];
             (first.Column, second.Column) = (second.Column, first.Column);
             (first.Row, second.Row) = (second.Row, first.Row);
+            first.QuarterTurns = NormalizeTurns(firstQuarterTurns);
+            return true;
+        }
+
+        // A two-cell room can exchange with the movable one-cell rooms covering
+        // its destination. Moving by one cell displaces one room; moving to a
+        // separate two-cell area displaces two. The displaced rooms fill only
+        // the cells vacated by the larger room.
+        public bool TryPlanSwapWithSingles(
+            string largeRoomId,
+            int column,
+            int row,
+            out IReadOnlyList<RoomPlacementData> plannedPlacements)
+        {
+            plannedPlacements = Array.Empty<RoomPlacementData>();
+            return placements.TryGetValue(largeRoomId, out var large) &&
+                   TryPlanSwapWithSingles(largeRoomId, column, row, large.QuarterTurns, out plannedPlacements);
+        }
+
+        public bool TryPlanSwapWithSingles(
+            string largeRoomId,
+            int column,
+            int row,
+            int quarterTurns,
+            out IReadOnlyList<RoomPlacementData> plannedPlacements)
+        {
+            plannedPlacements = Array.Empty<RoomPlacementData>();
+            var turns = NormalizeTurns(quarterTurns);
+            if (!CanMove(largeRoomId) || !placements.TryGetValue(largeRoomId, out var large) ||
+                large.InTray || large.BaseWidth * large.BaseHeight != 2)
+            {
+                return false;
+            }
+
+            var targetWidth = turns % 2 == 0 ? large.BaseWidth : large.BaseHeight;
+            var targetHeight = turns % 2 == 0 ? large.BaseHeight : large.BaseWidth;
+            if (
+                column < 0 || row < 0 ||
+                column + targetWidth > RoomLayoutData.GridSize ||
+                row + targetHeight > RoomLayoutData.GridSize)
+            {
+                return false;
+            }
+
+            var displaced = new List<RoomPlacement>();
+            for (var targetRow = row; targetRow < row + targetHeight; targetRow++)
+            {
+                for (var targetColumn = column; targetColumn < column + targetWidth; targetColumn++)
+                {
+                    if (ContainsCell(large, targetColumn, targetRow))
+                    {
+                        continue;
+                    }
+
+                    var occupant = placements.Values.FirstOrDefault(item =>
+                        item.Id != largeRoomId && !item.InTray &&
+                        ContainsCell(item, targetColumn, targetRow));
+                    if (occupant == null || occupant.Width != 1 || occupant.Height != 1 ||
+                        !CanMove(occupant.Id) || displaced.Contains(occupant))
+                    {
+                        return false;
+                    }
+                    displaced.Add(occupant);
+                }
+            }
+
+            var vacated = new List<(int column, int row)>();
+            for (var sourceRow = large.Row; sourceRow < large.Row + large.Height; sourceRow++)
+            {
+                for (var sourceColumn = large.Column; sourceColumn < large.Column + large.Width; sourceColumn++)
+                {
+                    if (sourceColumn < column || sourceColumn >= column + targetWidth ||
+                        sourceRow < row || sourceRow >= row + targetHeight)
+                    {
+                        vacated.Add((sourceColumn, sourceRow));
+                    }
+                }
+            }
+
+            if (displaced.Count == 0 || displaced.Count != vacated.Count)
+            {
+                return false;
+            }
+
+            var plan = new List<RoomPlacementData>
+            {
+                new()
+                {
+                    id = largeRoomId,
+                    column = column,
+                    row = row,
+                    quarterTurns = turns
+                }
+            };
+            for (var index = 0; index < displaced.Count; index++)
+            {
+                plan.Add(new RoomPlacementData
+                {
+                    id = displaced[index].Id,
+                    column = vacated[index].column,
+                    row = vacated[index].row,
+                    quarterTurns = displaced[index].QuarterTurns
+                });
+            }
+
+            var originalPositions = plan.Select(item =>
+                (placement: placements[item.id], column: placements[item.id].Column,
+                    row: placements[item.id].Row, turns: placements[item.id].QuarterTurns)).ToArray();
+            try
+            {
+                foreach (var item in plan)
+                {
+                    placements[item.id].Column = item.column;
+                    placements[item.id].Row = item.row;
+                    placements[item.id].QuarterTurns = item.quarterTurns;
+                }
+                if (plan.Any(item => !CanPlace(item.id, item.column, item.row, item.quarterTurns)))
+                {
+                    return false;
+                }
+            }
+            finally
+            {
+                foreach (var original in originalPositions)
+                {
+                    original.placement.Column = original.column;
+                    original.placement.Row = original.row;
+                    original.placement.QuarterTurns = original.turns;
+                }
+            }
+
+            plannedPlacements = plan;
+            return true;
+        }
+
+        public bool TrySwapWithSingles(string largeRoomId, int column, int row)
+        {
+            return placements.TryGetValue(largeRoomId, out var large) &&
+                   TrySwapWithSingles(largeRoomId, column, row, large.QuarterTurns);
+        }
+
+        public bool TrySwapWithSingles(string largeRoomId, int column, int row, int quarterTurns)
+        {
+            if (!TryPlanSwapWithSingles(largeRoomId, column, row, quarterTurns, out var plan))
+            {
+                return false;
+            }
+            foreach (var item in plan)
+            {
+                placements[item.id].Column = item.column;
+                placements[item.id].Row = item.row;
+                placements[item.id].QuarterTurns = item.quarterTurns;
+            }
             return true;
         }
 
         public bool TryMoveToTray(string id)
+        {
+            return placements.TryGetValue(id, out var placement) &&
+                   TryMoveToTray(id, placement.QuarterTurns);
+        }
+
+        public bool TryMoveToTray(string id, int quarterTurns)
         {
             if (!CanMove(id) || (TrayOccupied && TrayRoomId != id))
             {
@@ -179,6 +359,7 @@ namespace UrbanWildlifeRooms.Data
             }
 
             placements[id].InTray = true;
+            placements[id].QuarterTurns = NormalizeTurns(quarterTurns);
             return true;
         }
 
@@ -312,6 +493,12 @@ namespace UrbanWildlifeRooms.Data
         private static int NormalizeTurns(int value)
         {
             return ((value % 4) + 4) % 4;
+        }
+
+        private static bool ContainsCell(RoomPlacement placement, int column, int row)
+        {
+            return column >= placement.Column && column < placement.Column + placement.Width &&
+                   row >= placement.Row && row < placement.Row + placement.Height;
         }
 
         private static bool RectanglesOverlap(

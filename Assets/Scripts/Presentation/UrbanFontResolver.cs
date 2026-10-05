@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using UnityEngine;
 
 namespace UrbanWildlifeRooms.Presentation
@@ -7,6 +5,7 @@ namespace UrbanWildlifeRooms.Presentation
     public static class UrbanFontResolver
     {
         private static Font cachedFont;
+        private static Font cachedBoldFont;
 
         public static Font GetFont()
         {
@@ -15,31 +14,30 @@ namespace UrbanWildlifeRooms.Presentation
                 return cachedFont;
             }
 
-            var installedFonts = Font.GetOSInstalledFontNames();
-            var preferredFonts = new[]
+            // A packaged font keeps English typography identical in editor and builds.
+            // The importer chains Noto Sans SC for glyphs Nunito does not contain.
+            cachedFont = Resources.Load<Font>("Fonts/Nunito-Regular");
+            if (cachedFont == null)
             {
-                "Microsoft YaHei UI",
-                "Microsoft YaHei",
-                "DengXian",
-                "SimHei",
-                "Noto Sans CJK SC",
-                "Arial Unicode MS"
-            };
-
-            var selected = preferredFonts.FirstOrDefault(preferred =>
-                installedFonts.Any(installed => string.Equals(installed, preferred, StringComparison.OrdinalIgnoreCase)));
-
-            cachedFont = !string.IsNullOrEmpty(selected)
-                ? Font.CreateDynamicFontFromOSFont(selected, 64)
-                : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-
-            if (cachedFont != null)
-            {
-                cachedFont.hideFlags = HideFlags.HideAndDontSave;
+                cachedFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             }
 
             return cachedFont;
         }
+
+        public static Font GetFont(FontStyle style)
+        {
+            if (style != FontStyle.Bold)
+            {
+                return GetFont();
+            }
+
+            if (cachedBoldFont == null)
+            {
+                cachedBoldFont = Resources.Load<Font>("Fonts/Nunito-Bold");
+            }
+
+            return cachedBoldFont != null ? cachedBoldFont : GetFont();
+        }
     }
 }
-

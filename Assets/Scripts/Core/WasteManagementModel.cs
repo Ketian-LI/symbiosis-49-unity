@@ -34,13 +34,15 @@ namespace UrbanWildlifeRooms.Core
         public IReadOnlyDictionary<string, WasteRoomLoadModel> WasteRooms => wasteRooms;
         public IReadOnlyDictionary<string, int> BlockedWaste => blockedWaste;
         public int TotalWasteUnits => wasteRooms.Values.Sum(room => room.Units) + blockedWaste.Values.Sum();
+        public int AffectedWasteRoomCount =>
+            wasteRooms.Values.Count(room => room.IsOverflowing) +
+            blockedWaste.Count(pair => pair.Value > 0);
         public int HumanFunctionPenalty
         {
             get
             {
-                var affectedRooms = wasteRooms.Values.Count(room => room.IsOverflowing) +
-                                    blockedWaste.Count(pair => pair.Value > 0);
-                return Math.Min(MaximumWastePenalty, affectedRooms * PenaltyPerAffectedRoom);
+                return Math.Min(MaximumWastePenalty,
+                    AffectedWasteRoomCount * PenaltyPerAffectedRoom);
             }
         }
 

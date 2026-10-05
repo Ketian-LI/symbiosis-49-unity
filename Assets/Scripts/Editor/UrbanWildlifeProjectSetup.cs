@@ -65,7 +65,7 @@ namespace UrbanWildlifeRooms.Editor
             var validationErrors = RoomLayoutData.Validate();
             if (validationErrors.Count == 0)
             {
-                Debug.Log("[Urban Wildlife Layout] Validation passed: 35 rooms, 49 occupied cells, fixed 2×2 central park.");
+                Debug.Log("[Urban Wildlife Layout] Validation passed: 49 single-cell rooms, 49 occupied cells, fixed one-cell central park.");
                 return;
             }
 
@@ -206,7 +206,22 @@ namespace UrbanWildlifeRooms.Editor
                 throw new System.InvalidOperationException("Generated preview does not contain RoomLayoutEditorController.");
             }
 
+            var runtime = bootstrap.transform.Find(UrbanWildlifeBootstrap.GeneratedRootName)
+                ?.GetComponentInChildren<GameRuntimeController>(true);
+            if (runtime == null)
+            {
+                throw new System.InvalidOperationException("Generated preview does not contain GameRuntimeController.");
+            }
+            runtime.StartNewRun(GameMode.Sandbox);
+            runtime.SetOnboardingOpen(false);
+            var onboarding = bootstrap.transform.Find(UrbanWildlifeBootstrap.GeneratedRootName)
+                ?.GetComponentInChildren<FirstRunOnboardingOverlay>(true);
+            var onboardingPanel = onboarding?.transform.Find("First Run Onboarding");
+            if (onboardingPanel != null) onboardingPanel.gameObject.SetActive(false);
             layoutEditor.EnterEditing();
+            bootstrap.transform.Find(UrbanWildlifeBootstrap.GeneratedRootName)
+                ?.GetComponentInChildren<UrbanWildlifeHud>(true)
+                ?.SendMessage("Refresh", SendMessageOptions.DontRequireReceiver);
             CaptureCurrentLayoutPreview(bootstrap, "UrbanWildlifeRooms_LayoutEditing.png");
         }
 
@@ -306,7 +321,7 @@ namespace UrbanWildlifeRooms.Editor
             runtime.EndRun(new RunResultsData
             {
                 endReason = RunEndReason.AnimalDeathLimit,
-                configuredDeathLimit = 5,
+                configuredDeathLimit = AnimalMortalityModel.DefaultDeathLimit,
                 daysSurvived = 23,
                 bestSurvivalDays = 23,
                 isNewRecord = true,

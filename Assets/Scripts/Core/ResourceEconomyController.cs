@@ -9,7 +9,6 @@ namespace UrbanWildlifeRooms.Core
     {
         private GameRuntimeController runtime;
         private WasteManagementController wasteManagement;
-        private RoomLayoutEditorController layoutEditor;
         private double lastProcessedTime;
         private float? dailyProductionOverride;
         private int? dailyFoodCostOverride;
@@ -25,12 +24,21 @@ namespace UrbanWildlifeRooms.Core
         public event Action<ResourceSettlement> DaySettled;
 
         public ResourceEconomyModel Model { get; private set; }
+        public int CurrentSettlementDay { get; private set; }
         public float Balance => Model?.Balance ?? 0f;
-        public float ExpectedDailyIncome => dailyProductionOverride ?? CalculateDefaultProduction();
-        public int ExpectedDailySpending => dailyFoodCostOverride ??
-                                            ResourceEconomyModel.FoodServiceCost(
-                                                wasteManagement?.ResidentCount ?? 0,
-                                                wasteManagement?.OperatingFoodShopCount ?? 0);
+        public float ExpectedDailyIncome =>
+            (dailyProductionOverride ?? CalculateDefaultProduction()) + MarketIncomeForDay(
+                CurrentSettlementDay > 0 ? CurrentSettlementDay : runtime?.Clock.DayNumber ?? 0);
+        public bool IncomeEstimateUsesPreviousSettlement => dailyProductionOverride.HasValue;
+        public bool FoodEstimateUsesPreviousSettlement => dailyFoodCostOverride.HasValue;
+        public int ExpectedFoodServiceCost => dailyFoodCostOverride ??
+                                              ResourceEconomyModel.FoodServiceCost(
+                                                  wasteManagement?.ResidentCount ?? 0,
+                                                  wasteManagement?.OperatingFoodShopCount ?? 0);
+        public int ExpectedInfrastructureCost => ResourceEconomyModel.InfrastructureCost(
+            wasteManagement?.ResidentCount ?? 0,
+            wasteManagement?.Model?.AffectedWasteRoomCount ?? 0);
+        public int ExpectedDailySpending => ExpectedFoodServiceCost + ExpectedInfrastructureCost;
 
         public void Initialize(
             GameRuntimeController runtimeController,
@@ -39,12 +47,11 @@ namespace UrbanWildlifeRooms.Core
         {
             runtime = runtimeController ?? throw new ArgumentNullException(nameof(runtimeController));
             wasteManagement = wasteController ?? throw new ArgumentNullException(nameof(wasteController));
-            layoutEditor = editorController ?? throw new ArgumentNullException(nameof(editorController));
+            _ = editorController ?? throw new ArgumentNullException(nameof(editorController));
             Model = new ResourceEconomyModel();
             lastProcessedTime = runtime.Clock.TotalSeconds;
             runtime.RestartRequested += HandleRestartRequested;
             wasteManagement.StateChanged += HandleDependencyStateChanged;
-            layoutEditor.BindResourceEconomy(TrySpend, () => Balance);
             initialized = true;
             StateChanged?.Invoke();
         }
@@ -95,16 +102,9 @@ namespace UrbanWildlifeRooms.Core
 
         public bool TrySpend(int cost)
         {
-            if (Model == null || !Model.TrySpend(cost))
-            {
-                var missing = Mathf.Max(0, Mathf.CeilToInt(cost - Balance));
-                InsufficientResources?.Invoke(missing);
-                return false;
-            }
-
-            ResourceSpent?.Invoke(cost);
-            StateChanged?.Invoke();
-            return true;
+            // Retained only for callers compiled against older revisions.
+            // Currency has no active gameplay meaning and cannot be spent.
+            return false;
         }
 
         public void BindRunSummaryProvider(Action<RunResultsData> populateResults)
@@ -112,24 +112,48 @@ namespace UrbanWildlifeRooms.Core
             populateRunSummary = populateResults;
         }
 
+        public void EndRunForInsufficientWorkers(int completedDay, int workingResidents, int requiredWorkers)
+        {
+            if (runtime == null || !runtime.HasActiveRun)
+            {
+                return;
+            }
+
+            var results = new RunResultsData
+            {
+                endReason = RunEndReason.InsufficientWorkers,
+                daysSurvived = Mathf.Max(1, completedDay),
+                lastWorkingResidents = Mathf.Max(0, workingResidents),
+                requiredWorkingResidents = Mathf.Max(1, requiredWorkers)
+            };
+            populateRunSummary?.Invoke(results);
+            runtime.EndRun(results);
+        }
+
+        public void EndRunForInsufficientResidents(int completedDay, int residentCount, int minimumResidents)
+        {
+            if (runtime == null || !runtime.HasActiveRun)
+            {
+                return;
+            }
+
+            var results = new RunResultsData
+            {
+                endReason = RunEndReason.InsufficientResidents,
+                daysSurvived = Mathf.Max(1, completedDay),
+                finalResidents = Mathf.Max(0, residentCount),
+                requiredResidents = Mathf.Max(1, minimumResidents)
+            };
+            populateRunSummary?.Invoke(results);
+            runtime.EndRun(results);
+        }
+
         public bool TryEmergencyCollect(string wasteRoomId)
         {
-            if (!Model.CanAfford(ResourceEconomyModel.EmergencyCollectionCost))
-            {
-                InsufficientResources?.Invoke(
-                    Mathf.CeilToInt(ResourceEconomyModel.EmergencyCollectionCost - Balance));
-                return false;
-            }
-
-            if (!wasteManagement.TryEmergencyCollect(
-                    wasteRoomId,
-                    Mathf.FloorToInt(Balance),
-                    out var cost))
-            {
-                return false;
-            }
-
-            return TrySpend(cost);
+            // Manual collection formerly consumed resource points. Keep the
+            // scheduled waste service; do not turn this into a free unlimited
+            // action merely because the currency has been removed.
+            return false;
         }
 
         public void ProcessUntil(double totalSeconds)
@@ -181,50 +205,29 @@ namespace UrbanWildlifeRooms.Core
 
         private void SettleDay(int completedDay)
         {
-            SettlementPreparing?.Invoke(completedDay);
-            var before = Balance;
-            var settlement = Model.SettleDay(
-                completedDay,
-                ExpectedDailyIncome,
-                ExpectedDailySpending);
+            CurrentSettlementDay = completedDay;
+            try
+            {
+                SettlementPreparing?.Invoke(completedDay);
+                // Preparing the settlement can kill an animal and end the run.
+                // Never apply another resource settlement or replace its result.
+                if (!runtime.HasActiveRun)
+                {
+                    return;
+                }
 
-            if (settlement.Production > 0f)
-            {
-                ResourceGained?.Invoke(settlement.Production);
+                // DaySettled is also the day-boundary signal for ecology,
+                // waste and reporting. Emit it without a hidden currency
+                // calculation now that resource points are not a rule.
+                var settlement = new ResourceSettlement(
+                    completedDay, 0f, 0f, 0, 0, 0f, 0f);
+                DaySettled?.Invoke(settlement);
+                StateChanged?.Invoke();
             }
-            if (settlement.FoodServiceCost > 0)
+            finally
             {
-                ResourceSpent?.Invoke(settlement.FoodServiceCost);
+                CurrentSettlementDay = 0;
             }
-            if (before < ResourceEconomyModel.MaximumBalance &&
-                Mathf.Approximately(Balance, ResourceEconomyModel.MaximumBalance))
-            {
-                FullCapacityReached?.Invoke();
-            }
-
-            DaySettled?.Invoke(settlement);
-            StateChanged?.Invoke();
-            if (settlement.Failed)
-            {
-                runtime.EndRun(BuildNegativeResourceResults(settlement));
-            }
-        }
-
-        private RunResultsData BuildNegativeResourceResults(ResourceSettlement settlement)
-        {
-            var results = new RunResultsData
-            {
-                endReason = RunEndReason.NegativeResourceBalance,
-                daysSurvived = Mathf.Max(1, settlement.DayNumber),
-                cumulativeResourceIncome = Mathf.RoundToInt(Model.CumulativeIncome),
-                cumulativeResourceSpending = Mathf.RoundToInt(Model.CumulativeSpending),
-                finalResourceBalance = Mathf.FloorToInt(Model.Balance),
-                peakResourceBalance = Mathf.RoundToInt(Model.PeakBalance),
-                finalResidents = wasteManagement.ResidentCount,
-                peakResidents = wasteManagement.ResidentCount
-            };
-            populateRunSummary?.Invoke(results);
-            return results;
         }
 
         private float CalculateDefaultProduction()
@@ -237,6 +240,21 @@ namespace UrbanWildlifeRooms.Core
             return Mathf.Min(
                 wasteManagement.ResidentCount,
                 wasteManagement.OperatingFoodShopCount * 4);
+        }
+
+        private int MarketIncomeForDay(int dayNumber)
+        {
+            if (runtime == null || runtime.Mode != GameMode.Sandbox ||
+                NeighborhoodMarketSchedule.ForDay(dayNumber) is not { } market ||
+                wasteManagement == null || !wasteManagement.MarketProducerOperating(market.RoomId))
+            {
+                return 0;
+            }
+            return market.ExtraIncome +
+                   (CurrentSettlementDay == dayNumber &&
+                    wasteManagement.Model?.AffectedWasteRoomCount == 0
+                       ? market.CleanBonus
+                       : 0);
         }
 
         private void HandleRestartRequested()

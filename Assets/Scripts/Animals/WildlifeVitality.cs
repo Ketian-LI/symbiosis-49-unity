@@ -28,6 +28,7 @@ namespace UrbanWildlifeRooms.Animals
 
         public WildlifeSpecies Species => species;
         public bool IsAlive { get; private set; } = true;
+        public float RespawnRemainingSeconds => IsAlive ? 0f : Mathf.Max(0f, RespawnDelaySeconds - deathTime);
 
         public void Initialize(
             WildlifeSpecies animalSpecies,
@@ -79,6 +80,22 @@ namespace UrbanWildlifeRooms.Animals
         public void SetRespawnPosition(Vector3 worldPosition)
         {
             respawnPosition = worldPosition;
+        }
+
+        public void ResetForNewRun(Vector3 worldPosition)
+        {
+            if (!initialized) return;
+            respawnPosition = worldPosition;
+            transform.position = worldPosition;
+            deathTime = 0f;
+            glowTime = 0f;
+            respawnGlow = false;
+            IsAlive = true;
+            SetRenderersVisible(true);
+            foreach (var collider in colliders)
+                if (collider != null) collider.enabled = true;
+            if (movementBehaviour != null) movementBehaviour.enabled = true;
+            StateChanged?.Invoke();
         }
 
         private void Update()

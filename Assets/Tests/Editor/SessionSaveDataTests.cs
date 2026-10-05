@@ -51,6 +51,22 @@ namespace UrbanWildlifeRooms.Tests.Editor
                 treesFelled = 2,
                 treesPlanted = 1,
                 roomMovements = 7,
+                lastRoomMovementDay = 4,
+                lastLayoutPlanningDay = 5,
+                lastManualFeedingDay = 3,
+                shrubShelters = new List<ShrubShelterSaveData>
+                {
+                    new() { roomId = "shrub-a", readyDay = 6 }
+                },
+                dailyOutcome = new DailyOutcomeSaveData
+                {
+                    pendingDay = 5,
+                    pendingMovedRooms = 2,
+                    previousTotalDeaths = 3,
+                    lastDay = 4,
+                    lastMovedRooms = 1,
+                    lastWasteIssues = 2
+                },
                 playerFoodSources = new List<PlayerFoodSourceSaveData>
                 {
                     new()
@@ -89,11 +105,11 @@ namespace UrbanWildlifeRooms.Tests.Editor
             };
 
             var restored = JsonUtility.FromJson<SessionSaveData>(JsonUtility.ToJson(original));
-            Assert.That(restored.schemaVersion, Is.EqualTo(1));
+            Assert.That(restored.schemaVersion, Is.EqualTo(2));
             Assert.That(restored.mode, Is.EqualTo("Sandbox"));
             Assert.That(restored.elapsedSimulationSeconds, Is.EqualTo(123.5d));
             Assert.That(restored.speedMultiplier, Is.EqualTo(4));
-            Assert.That(restored.rooms, Has.Count.EqualTo(35));
+            Assert.That(restored.rooms, Has.Count.EqualTo(49));
             Assert.That(restored.residentCount, Is.EqualTo(6));
             Assert.That(restored.resourceBalance, Is.EqualTo(11.5f));
             Assert.That(restored.cumulativeResourceIncome, Is.EqualTo(18.5f));
@@ -114,6 +130,14 @@ namespace UrbanWildlifeRooms.Tests.Editor
             Assert.That(restored.squirrelDemoCachePortions, Is.EqualTo(2));
             Assert.That(restored.squirrelCachePortions, Is.EqualTo(new[] { 2, 1, 0, 3 }));
             Assert.That(restored.roomMovements, Is.EqualTo(7));
+            Assert.That(restored.lastRoomMovementDay, Is.EqualTo(4));
+            Assert.That(restored.lastLayoutPlanningDay, Is.EqualTo(5));
+            Assert.That(restored.lastManualFeedingDay, Is.EqualTo(3));
+            Assert.That(restored.shrubShelters, Has.Count.EqualTo(1));
+            Assert.That(restored.shrubShelters[0].readyDay, Is.EqualTo(6));
+            Assert.That(restored.dailyOutcome.pendingMovedRooms, Is.EqualTo(2));
+            Assert.That(restored.dailyOutcome.previousTotalDeaths, Is.EqualTo(3));
+            Assert.That(restored.dailyOutcome.lastWasteIssues, Is.EqualTo(2));
             Assert.That(restored.pigeonDeaths, Is.EqualTo(2));
             Assert.That(restored.squirrelDeaths, Is.EqualTo(1));
             Assert.That(restored.trafficDeaths, Is.EqualTo(2));

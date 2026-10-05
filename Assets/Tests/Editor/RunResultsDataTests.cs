@@ -2,6 +2,7 @@ using NUnit.Framework;
 using UnityEngine;
 using UrbanWildlifeRooms.Core;
 using UrbanWildlifeRooms.Data;
+using UrbanWildlifeRooms.Animals;
 
 namespace UrbanWildlifeRooms.Tests.Editor
 {
@@ -96,15 +97,44 @@ namespace UrbanWildlifeRooms.Tests.Editor
         }
 
         [Test]
+        public void EndReportNamesTheRecordedCausesAndDoesNotInventLegacyCauses()
+        {
+            var data = new RunResultsData
+            {
+                pigeonDeaths = 2,
+                hedgehogDeaths = 1,
+                animalDeathBreakdown = new System.Collections.Generic.List<AnimalDeathBreakdownData>
+                {
+                    new() { species = WildlifeSpecies.Pigeon, predation = 1, starvation = 1 }
+                }
+            };
+
+            Assert.That(data.BreakdownOf(WildlifeSpecies.Pigeon).LocalizedLine(true),
+                Is.EqualTo("鸽子 2：饥饿 1、狐狸捕食 1"));
+            Assert.That(data.BreakdownOf(WildlifeSpecies.Hedgehog).LocalizedLine(true),
+                Is.EqualTo("刺猬 1：原因未记录 1"));
+            Assert.That(data.BreakdownOf(WildlifeSpecies.Fox).LocalizedLine(false),
+                Is.EqualTo("Fox: no deaths"));
+        }
+
+        [Test]
         public void EndReasonsAreLocalizedWithoutVictoryOrFailureLabels()
         {
             var deaths = new RunResultsData { endReason = RunEndReason.AnimalDeathLimit };
             var resources = new RunResultsData { endReason = RunEndReason.NegativeResourceBalance };
+            var workers = new RunResultsData
+            {
+                endReason = RunEndReason.InsufficientWorkers,
+                lastWorkingResidents = 2,
+                requiredWorkingResidents = 3
+            };
 
-            Assert.That(deaths.LocalizedEndReason(true), Is.EqualTo("动物死亡达到 5"));
-            Assert.That(deaths.LocalizedEndReason(false), Is.EqualTo("Five animal deaths"));
+            Assert.That(deaths.LocalizedEndReason(true), Is.EqualTo("动物死亡达到 3"));
+            Assert.That(deaths.LocalizedEndReason(false), Is.EqualTo("3 animal deaths"));
             Assert.That(resources.LocalizedEndReason(true), Is.EqualTo("资源点结算为负数"));
             Assert.That(resources.LocalizedEndReason(false), Is.EqualTo("Negative resource balance"));
+            Assert.That(workers.LocalizedEndReason(true), Is.EqualTo("上班人数不足：2/3"));
+            Assert.That(workers.LocalizedEndReason(false), Is.EqualTo("Too few workers: 2/3"));
         }
 
         [Test]

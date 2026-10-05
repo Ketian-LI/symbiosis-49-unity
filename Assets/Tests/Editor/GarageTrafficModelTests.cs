@@ -34,5 +34,16 @@ namespace UrbanWildlifeRooms.Tests.Editor
                 GarageTrafficModel.Decide(true, true, 0.5f, 0.5f),
                 Is.EqualTo(GarageCrossingDecision.CrossSafely));
         }
+
+        [Test]
+        public void AdjacentBufferReducesButDoesNotRemoveFatalCrossingRisk()
+        {
+            Assert.That(GarageTrafficModel.Decide(true, false, 0.8f, 0.24f, true),
+                Is.EqualTo(GarageCrossingDecision.CrossFatally));
+            Assert.That(GarageTrafficModel.Decide(true, false, 0.8f, 0.25f, true),
+                Is.EqualTo(GarageCrossingDecision.CrossSafely));
+            Assert.That(GarageTrafficModel.Decide(true, false, 0.8f, 0.25f),
+                Is.EqualTo(GarageCrossingDecision.CrossFatally));
+        }
     }
 }

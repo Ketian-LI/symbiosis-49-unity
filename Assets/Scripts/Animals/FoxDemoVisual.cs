@@ -9,6 +9,10 @@ namespace UrbanWildlifeRooms.Animals
         private Transform visualRoot;
         private GameObject importedVisual;
         private AnimationClip importedAnimation;
+        private AnimationClip idleClip;
+        private AnimationClip walkClip;
+        private AnimationClip forageClip;
+        private AnimationClip alertClip;
         private bool initialized;
 
         public void Initialize(Material fallbackMaterial, HideFlags hideFlags)
@@ -18,7 +22,7 @@ namespace UrbanWildlifeRooms.Animals
                 return;
             }
             initialized = true;
-            if (!TryBuildImportedModel(hideFlags))
+            if (!TryBuildQuaterniusModel(hideFlags) && !TryBuildImportedModel(hideFlags))
             {
                 BuildFallback(fallbackMaterial, hideFlags);
             }
@@ -27,13 +31,29 @@ namespace UrbanWildlifeRooms.Animals
 
         public void ApplyPose(FoxDemoState state, float continuousTime)
         {
-            if (!initialized || importedVisual == null || importedAnimation == null)
+            if (!initialized || importedVisual == null)
             {
                 return;
             }
             visualRoot.localPosition = Vector3.zero;
             visualRoot.localRotation = Quaternion.identity;
             visualRoot.localScale = Vector3.one;
+            if (idleClip != null)
+            {
+                var clip = state switch
+                {
+                    FoxDemoState.Trot => walkClip,
+                    FoxDemoState.Sniff => forageClip,
+                    FoxDemoState.Alert => alertClip,
+                    _ => idleClip
+                };
+                clip.SampleAnimation(importedVisual, Mathf.Repeat(continuousTime, clip.length));
+                return;
+            }
+            if (importedAnimation == null)
+            {
+                return;
+            }
             var sampleTime = state switch
             {
                 FoxDemoState.Trot => 1f + Mathf.Repeat(continuousTime, 2f),
@@ -43,6 +63,59 @@ namespace UrbanWildlifeRooms.Animals
             };
             importedAnimation.SampleAnimation(importedVisual, Mathf.Min(sampleTime, importedAnimation.length));
         }
+
+        private bool TryBuildQuaterniusModel(HideFlags hideFlags)
+        {
+            const string resourcePath = "Animals/Fox/QuaterniusFox_v01";
+            var prefab = Resources.Load<GameObject>(resourcePath);
+            var clips = Resources.LoadAll<AnimationClip>(resourcePath);
+            idleClip = FindClip(clips, "Idle");
+            walkClip = FindClip(clips, "Walk");
+            forageClip = FindClip(clips, "Eating");
+            alertClip = FindClip(clips, "Idle_2");
+            if (prefab == null || idleClip == null || walkClip == null ||
+                forageClip == null || alertClip == null)
+            {
+                idleClip = null;
+                return false;
+            }
+
+            visualRoot = NewPivot("Replaceable Fox Visual", transform, hideFlags);
+            var axis = NewPivot("Quaternius Fox Axis", visualRoot, hideFlags);
+            importedVisual = Instantiate(prefab, axis, false);
+            importedVisual.name = "Quaternius Fox CC0";
+            importedVisual.hideFlags = hideFlags;
+            var animator = importedVisual.GetComponent<Animator>();
+            if (animator != null)
+            {
+                animator.enabled = false;
+            }
+            var renderer = importedVisual.GetComponentInChildren<SkinnedMeshRenderer>();
+            if (renderer == null ||
+                Mathf.Max(renderer.bounds.size.x, renderer.bounds.size.z) < 0.001f)
+            {
+                if (Application.isPlaying)
+                {
+                    Destroy(visualRoot.gameObject);
+                }
+                else
+                {
+                    DestroyImmediate(visualRoot.gameObject);
+                }
+                importedVisual = null;
+                idleClip = null;
+                return false;
+            }
+            // The rig's longest horizontal axis is X in Unity. Use the actual
+            // horizontal extent so the visible fox fits its world-scale target.
+            var sourceLength = Mathf.Max(renderer.bounds.size.x, renderer.bounds.size.z);
+            axis.localScale = Vector3.one * (WorldScaleStandards.FoxTargetLength / sourceLength);
+            return true;
+        }
+
+        private static AnimationClip FindClip(AnimationClip[] clips, string name) =>
+            clips.FirstOrDefault(clip => clip.name == "AnimalArmature|" + name) ??
+            clips.FirstOrDefault(clip => clip.name == name);
 
         private bool TryBuildImportedModel(HideFlags hideFlags)
         {

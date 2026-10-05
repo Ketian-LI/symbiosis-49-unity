@@ -12,14 +12,18 @@ namespace UrbanWildlifeRooms.Presentation
     {
         private static readonly Vector2[] BinPositions =
         {
-            new(-1.11f, 1.11f), new(1.11f, 1.11f),
-            new(-1.11f, -1.11f), new(1.11f, -1.11f),
-            new(-0.80f, 1.11f), new(0.80f, 1.11f),
-            new(-0.80f, -1.11f), new(0.80f, -1.11f),
-            new(-1.11f, 0.80f), new(1.11f, 0.80f),
-            new(-1.11f, -0.80f), new(1.11f, -0.80f),
-            new(-0.80f, 0.80f), new(0.80f, 0.80f),
-            new(-0.80f, -0.80f), new(0.80f, -0.80f)
+            // Interleave corners so every fill state is balanced, but the four
+            // piles never become identical nine-bin grids.
+            new(-1.12f, 1.12f), new(1.15f, 1.14f),
+            new(-1.16f, -1.16f), new(1.14f, -1.16f),
+            new(-0.84f, 1.19f), new(0.84f, 1.19f),
+            new(-1.20f, 0.84f), new(0.84f, -1.17f),
+            new(-0.85f, -1.20f), new(1.20f, 0.84f),
+            new(-0.86f, 0.86f), new(0.84f, 0.87f),
+            new(1.22f, -0.86f), new(-1.08f, 0.70f),
+            new(-1.22f, -0.84f), new(0.88f, -0.86f),
+            new(1.06f, 0.69f), new(1.10f, -0.69f),
+            new(-0.87f, -0.86f), new(0.72f, 1.00f)
         };
 
         private static readonly Vector2[] BagPositions =
@@ -32,10 +36,11 @@ namespace UrbanWildlifeRooms.Presentation
 
         private static readonly Color[] BinColours =
         {
-            new(0.20f, 0.43f, 0.28f),
-            new(0.31f, 0.55f, 0.36f),
-            new(0.42f, 0.56f, 0.66f),
-            new(0.34f, 0.34f, 0.34f)
+            new(0.19f, 0.40f, 0.24f),
+            new(0.31f, 0.54f, 0.30f),
+            new(0.40f, 0.57f, 0.70f),
+            new(0.43f, 0.43f, 0.45f),
+            new(0.54f, 0.55f, 0.57f)
         };
 
         private Material surfaceMaterial;
@@ -86,8 +91,8 @@ namespace UrbanWildlifeRooms.Presentation
             {
                 WasteRoomLoadStage.Empty => 4,
                 WasteRoomLoadStage.Low => 9,
-                WasteRoomLoadStage.Medium => 12,
-                _ => 16
+                WasteRoomLoadStage.Medium => 16,
+                _ => 20
             };
             var bagCount = DisplayedStage switch
             {
@@ -116,9 +121,9 @@ namespace UrbanWildlifeRooms.Presentation
         private void CreateBin(int index, Vector2 position)
         {
             var colour = BinColours[index % BinColours.Length];
-            var height = 0.42f + (index % 3) * 0.035f;
-            var width = 0.27f + (index % 2) * 0.025f;
-            var angle = (index % 5 - 2) * 4f;
+            var height = 0.35f + (index * 3 % 5) * 0.038f;
+            var width = 0.24f + (index * 2 % 5) * 0.017f;
+            var angle = (index * 7 % 9 - 4) * 3f;
 
             var bin = CreatePrimitive(
                 PrimitiveType.Cube,
@@ -135,6 +140,22 @@ namespace UrbanWildlifeRooms.Presentation
                 new Vector3(width * 1.08f, 0.055f, width),
                 Color.Lerp(colour, Color.white, 0.08f));
             lid.transform.localRotation = Quaternion.Euler(0f, angle, 0f);
+
+            var inset = CreatePrimitive(
+                PrimitiveType.Cube,
+                $"Lid Recess {index + 1}",
+                new Vector3(position.x, 0.320f + height, position.y),
+                new Vector3(width * 0.78f, 0.008f, width * 0.65f),
+                Color.Lerp(colour, Color.white, 0.18f));
+            inset.transform.localRotation = Quaternion.Euler(0f, angle, 0f);
+
+            var handle = CreatePrimitive(
+                PrimitiveType.Cube,
+                $"Lid Handle {index + 1}",
+                new Vector3(position.x, 0.340f + height, position.y - width * 0.19f),
+                new Vector3(width * 0.34f, 0.027f, 0.042f),
+                Color.Lerp(colour, Color.black, 0.30f));
+            handle.transform.localRotation = Quaternion.Euler(0f, angle, 0f);
         }
 
         private void CreateBag(int index, Vector2 position)
@@ -162,7 +183,10 @@ namespace UrbanWildlifeRooms.Presentation
             {
                 new Vector3(-0.73f, 0.29f, 1.02f),
                 new Vector3(1.02f, 0.29f, 0.73f),
-                new Vector3(0.73f, 0.29f, -1.02f)
+                new Vector3(0.73f, 0.29f, -1.02f),
+                new Vector3(-1.02f, 0.29f, -0.72f),
+                new Vector3(0.81f, 0.29f, 0.82f),
+                new Vector3(-0.84f, 0.29f, -0.86f)
             };
 
             for (var index = 0; index < scrapPositions.Length; index++)

@@ -6,6 +6,9 @@ namespace UrbanWildlifeRooms.Presentation
     public sealed class PlayerFoodSourceVisual : MonoBehaviour
     {
         private readonly List<GameObject> portions = new();
+        private TextMesh mapBadgeText;
+
+        public TextMesh MapBadgeText => mapBadgeText;
 
         public void Initialize(Material material, HideFlags hideFlags)
         {
@@ -41,6 +44,8 @@ namespace UrbanWildlifeRooms.Presentation
                     false,
                     hideFlags));
             }
+            mapBadgeText = RoomMapBadgeVisual.BuildPlacedFood(transform,
+                new Vector3(0f, 1.56f, 0f), 0, material, hideFlags);
         }
 
         public void SetPortions(int count)
@@ -49,6 +54,8 @@ namespace UrbanWildlifeRooms.Presentation
             {
                 portions[index].SetActive(index < count);
             }
+            if (mapBadgeText != null)
+                mapBadgeText.text = Mathf.Max(0, count).ToString();
         }
     }
 }

@@ -12,6 +12,7 @@ namespace UrbanWildlifeRooms.Core
     {
         private readonly Dictionary<string, RoomView> garages = new();
         private readonly HashSet<string> garageIds = new();
+        private readonly HashSet<string> bufferIds = new();
         private readonly System.Random random = new(4907);
         private GameRuntimeController runtime;
         private AnimalNavigationCoordinator navigation;
@@ -35,6 +36,10 @@ namespace UrbanWildlifeRooms.Core
             this.generatedHideFlags = generatedHideFlags;
             foreach (var room in rooms ?? Array.Empty<RoomView>())
             {
+                if (room.Spec.Type == RoomType.EcologicalBuffer)
+                {
+                    bufferIds.Add(room.Spec.Id);
+                }
                 if (room.Spec.Type != RoomType.Garage)
                 {
                     continue;
@@ -50,7 +55,7 @@ namespace UrbanWildlifeRooms.Core
             {
                 return;
             }
-            nextVehicleTime -= Time.deltaTime;
+            nextVehicleTime -= runtime.ActorPresentationDeltaTime;
             if (nextVehicleTime > 0f || garages.Count == 0)
             {
                 return;
@@ -62,9 +67,11 @@ namespace UrbanWildlifeRooms.Core
             nextVehicleTime = 4f + (float)random.NextDouble() * 4f;
         }
 
-        public GroundRoutePlan PlanRoute(string startRoomId, string destinationRoomId)
+        public GroundRoutePlan PlanRoute(string startRoomId, string destinationRoomId,
+            RoomNavigationMap routeMap = null)
         {
-            if (!navigation.NavigationMap.TryFindRoute(startRoomId, destinationRoomId, out var route))
+            routeMap ??= navigation.NavigationMap;
+            if (!routeMap.TryFindRoute(startRoomId, destinationRoomId, out var route))
             {
                 return new GroundRoutePlan { Decision = GarageCrossingDecision.Abandon };
             }
@@ -86,7 +93,7 @@ namespace UrbanWildlifeRooms.Core
                 };
             }
 
-            var hasDetour = navigation.NavigationMap.TryFindRoute(
+            var hasDetour = routeMap.TryFindRoute(
                 startRoomId,
                 destinationRoomId,
                 garageIds,
@@ -95,7 +102,9 @@ namespace UrbanWildlifeRooms.Core
                 true,
                 hasDetour,
                 (float)random.NextDouble(),
-                (float)random.NextDouble());
+                (float)random.NextDouble(),
+                routeMap.NeighboursOf(route[garageIndex])
+                    .Any(bufferIds.Contains));
             return new GroundRoutePlan
             {
                 Rooms = decision == GarageCrossingDecision.Detour ? detour : route,

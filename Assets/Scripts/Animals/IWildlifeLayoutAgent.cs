@@ -15,5 +15,6 @@ namespace UrbanWildlifeRooms.Animals
         WildlifeSpecies Species { get; }
         Transform AgentTransform { get; }
         void RelocateTo(Vector3 worldPosition, float durationSeconds);
+        void ShiftHomeAnchor(Vector3 delta);
     }
 }

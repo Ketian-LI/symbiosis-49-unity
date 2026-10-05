@@ -12,7 +12,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
         {
             var layout = new RoomLayoutModel(RoomLayoutData.All);
             var navigation = new RoomNavigationMap(layout.ExportData(), RoomLayoutData.All, 3.1f);
-            Assert.That(navigation.RoomCount, Is.EqualTo(35));
+            Assert.That(navigation.RoomCount, Is.EqualTo(49));
         }
 
         [Test]
@@ -21,7 +21,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
             var layout = new RoomLayoutModel(RoomLayoutData.All);
             var navigation = new RoomNavigationMap(layout.ExportData(), RoomLayoutData.All, 3.1f);
             Assert.That(navigation.NeighboursOf("garage-a"), Does.Contain("pigeon-a"));
-            Assert.That(navigation.NeighboursOf("garage-a"), Does.Contain("residence-a"));
+            Assert.That(navigation.NeighboursOf("garage-a"), Does.Contain("shared-a"));
         }
 
         [Test]
@@ -83,10 +83,10 @@ namespace UrbanWildlifeRooms.Tests.Editor
             var navigation = new RoomNavigationMap(layout.ExportData(), RoomLayoutData.All, 3.1f);
 
             Assert.That(
-                navigation.TryFindRoute("garage-a", "residence-a", out var route),
+                navigation.TryFindRoute("garage-a", "shared-a", out var route),
                 Is.True);
             Assert.That(route.First(), Is.EqualTo("garage-a"));
-            Assert.That(route.Last(), Is.EqualTo("residence-a"));
+            Assert.That(route.Last(), Is.EqualTo("shared-a"));
             Assert.That(
                 navigation.TryGetConnectionPoint(route[0], route[1], out var connection),
                 Is.True);

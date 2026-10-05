@@ -17,9 +17,20 @@ namespace UrbanWildlifeRooms.Core
         English
     }
 
+    public enum DailyActionKind
+    {
+        None,
+        Rearrange,
+        Feed,
+        Transform
+    }
+
+    [DefaultExecutionOrder(-100)]
     public sealed class GameRuntimeController : MonoBehaviour
     {
-        public const int RequiredPhysicalModuleCount = 35;
+        public const int RequiredPhysicalModuleCount = 49;
+        public const int DaySkipSpeed = 72;
+        public const double DaySkipDurationSeconds = 5d;
 
         private const string LanguageKey = "symbiosis49.language";
         private const string VolumeKey = "symbiosis49.masterVolume";
@@ -27,6 +38,8 @@ namespace UrbanWildlifeRooms.Core
 
         private readonly SimulationClockModel clock = new();
         private BoardCameraController boardCamera;
+        private RoomLayoutEditorController layoutEditor;
+        private PlayerFeedingController playerFeeding;
         private bool activeRun;
         private bool pauseMenuOpen;
         private bool settingsOpen;
@@ -41,6 +54,10 @@ namespace UrbanWildlifeRooms.Core
         private bool muted;
         private float masterVolume = 0.8f;
         private int speedMultiplier = 1;
+        private int daySkipSpeed;
+        private bool daySkipActive;
+        private double daySkipTargetSeconds;
+        private float lastSimulationDeltaTime;
 
         public event Action StateChanged;
         public event Action SaveRequested;
@@ -50,7 +67,7 @@ namespace UrbanWildlifeRooms.Core
 
         public SimulationClockModel Clock => clock;
         public GameMode Mode { get; private set; } = GameMode.Sandbox;
-        public InterfaceLanguage Language { get; private set; } = InterfaceLanguage.Chinese;
+        public InterfaceLanguage Language { get; private set; } = InterfaceLanguage.English;
         public bool PauseMenuOpen => pauseMenuOpen;
         public bool SettingsOpen => settingsOpen;
         public bool AtDesktop => atDesktop;
@@ -63,7 +80,22 @@ namespace UrbanWildlifeRooms.Core
         public bool IsPaused => pauseMenuOpen || atDesktop || layoutEditing || resultsOpen ||
                                 cameraCalibrationOpen || onboardingOpen || CameraRecognitionBlocksSimulation ||
                                 SpeedMultiplier == 0;
-        public int SpeedMultiplier => Mode == GameMode.Research ? 1 : speedMultiplier;
+        public int SelectedSpeedMultiplier => Mode == GameMode.Research ? 1 : speedMultiplier;
+        public int SpeedMultiplier => Mode == GameMode.Research ? 1 : daySkipActive ? daySkipSpeed : speedMultiplier;
+        public bool IsDaySkipping => daySkipActive;
+        // Today's successful action, not merely entering a tool or inspecting a plan.
+        // Transform is reserved for the later room-type conversion feature.
+        public DailyActionKind TodayAction =>
+            layoutEditor != null && layoutEditor.LastConfirmedMovementDay == clock.DayNumber
+                ? DailyActionKind.Rearrange
+                : playerFeeding != null && playerFeeding.LastManualFeedingDay == clock.DayNumber
+                    ? DailyActionKind.Feed
+                    : DailyActionKind.None;
+        public bool CanTakeDailyAction => TodayAction == DailyActionKind.None;
+        public bool HasDailyAction => layoutEditor == null || !CanTakeDailyAction;
+        // Keep the old API for existing integrations; it now means any daily action.
+        public bool HasDailySpatialDecision => HasDailyAction;
+        public double DaySkipTargetSeconds => daySkipActive ? daySkipTargetSeconds : 0d;
         public float MasterVolume => masterVolume;
         public bool Muted => muted;
         public bool CameraCalibrationOpen => cameraCalibrationOpen;
@@ -71,6 +103,13 @@ namespace UrbanWildlifeRooms.Core
         public bool OnboardingInteractionAllowed => onboardingOpen && !pauseMenuOpen && !atDesktop &&
                                                     !layoutEditing && !resultsOpen && !cameraCalibrationOpen &&
                                                     !CameraRecognitionBlocksSimulation;
+        // The tutorial freezes the clock but lets actors demonstrate ordinary
+        // motion. During play, use the actual clock advance: Time.deltaTime is
+        // capped by Unity's Maximum Allowed Timestep during a 72x day skip.
+        public float ActorPresentationDeltaTime => activeRun && SelectedSpeedMultiplier > 0 &&
+            OnboardingInteractionAllowed && Time.timeScale <= 0f
+            ? Time.unscaledDeltaTime
+            : activeRun && !IsPaused ? lastSimulationDeltaTime : 0f;
         public int RecognisedPhysicalModuleCount => recognisedPhysicalModuleCount;
         public bool CameraCalibrationReady =>
             recognisedPhysicalModuleCount >= RequiredPhysicalModuleCount;
@@ -85,7 +124,9 @@ namespace UrbanWildlifeRooms.Core
         public void Initialize(BoardCameraController cameraController)
         {
             boardCamera = cameraController;
-            Language = (InterfaceLanguage)Mathf.Clamp(PlayerPrefs.GetInt(LanguageKey, 0), 0, 1);
+            // English is the first-launch default; an explicit player choice still wins.
+            Language = (InterfaceLanguage)Mathf.Clamp(
+                PlayerPrefs.GetInt(LanguageKey, (int)InterfaceLanguage.English), 0, 1);
             masterVolume = Mathf.Clamp01(PlayerPrefs.GetFloat(VolumeKey, 0.8f));
             muted = PlayerPrefs.GetInt(MuteKey, 0) != 0;
             atDesktop = true;
@@ -129,13 +170,44 @@ namespace UrbanWildlifeRooms.Core
                 TogglePauseMenu();
             }
 
-            if (!pauseMenuOpen && !atDesktop && !layoutEditing && !resultsOpen &&
-                !cameraCalibrationOpen && !onboardingOpen && !CameraRecognitionBlocksSimulation)
-            {
-                clock.Advance(Time.unscaledDeltaTime, SpeedMultiplier);
-            }
+            AdvanceSimulation(Time.unscaledDeltaTime);
 
             StateChanged?.Invoke();
+        }
+
+        public void AdvanceSimulation(double unscaledDeltaSeconds)
+        {
+            lastSimulationDeltaTime = 0f;
+            if (!activeRun || IsPaused || unscaledDeltaSeconds <= 0d)
+            {
+                return;
+            }
+
+            var simulatedSeconds = unscaledDeltaSeconds * SpeedMultiplier;
+            if (daySkipActive)
+            {
+                simulatedSeconds = Math.Min(simulatedSeconds,
+                    Math.Max(0d, daySkipTargetSeconds - clock.TotalSeconds));
+            }
+            if (Mode == GameMode.Sandbox && !HasDailyAction)
+            {
+                // Hold just before dawn so ordinary 1x/2x/4x play cannot
+                // bypass the same daily decision required by the skip button.
+                var nextDawn = (Math.Floor(clock.TotalSeconds / SimulationClockModel.CycleSeconds) + 1d) *
+                               SimulationClockModel.CycleSeconds;
+                simulatedSeconds = Math.Min(simulatedSeconds,
+                    Math.Max(0d, nextDawn - clock.TotalSeconds - 0.0001d));
+            }
+            var before = clock.TotalSeconds;
+            clock.Advance(simulatedSeconds, 1f);
+            lastSimulationDeltaTime = activeRun
+                ? (float)Math.Max(0d, clock.TotalSeconds - before)
+                : 0f;
+            if (daySkipActive && clock.TotalSeconds >= daySkipTargetSeconds - 0.0001d)
+            {
+                daySkipActive = false;
+                ApplyTimeScale();
+            }
         }
 
         private void OnDisable()
@@ -148,6 +220,7 @@ namespace UrbanWildlifeRooms.Core
 
         public void SetMode(GameMode mode)
         {
+            daySkipActive = false;
             Mode = NormalizeModeForBuild(mode);
             if (Mode == GameMode.Research)
             {
@@ -160,6 +233,7 @@ namespace UrbanWildlifeRooms.Core
 
         public void RestoreSession(double elapsedSeconds, int multiplier, GameMode mode)
         {
+            daySkipActive = false;
             clock.Restore(elapsedSeconds);
             Mode = NormalizeModeForBuild(mode);
             activeRun = true;
@@ -178,6 +252,7 @@ namespace UrbanWildlifeRooms.Core
 
         public void SetSpeed(int multiplier)
         {
+            daySkipActive = false;
             if (Mode == GameMode.Research)
             {
                 multiplier = 1;
@@ -191,6 +266,42 @@ namespace UrbanWildlifeRooms.Core
                 _ => 1
             };
             ApplyTimeScale();
+            StateChanged?.Invoke();
+        }
+
+        public bool TrySkipToNextDay()
+        {
+            if (!activeRun || Mode != GameMode.Sandbox || IsPaused || daySkipActive ||
+                !HasDailyAction)
+            {
+                return false;
+            }
+
+            daySkipTargetSeconds =
+                (Math.Floor(clock.TotalSeconds / SimulationClockModel.CycleSeconds) + 1d) *
+                SimulationClockModel.CycleSeconds;
+            // Advance through the remaining day in at most five unpaused real
+            // seconds, keeping the normal clock-driven daily events active.
+            daySkipSpeed = Mathf.Clamp(
+                (int)Math.Ceiling((daySkipTargetSeconds - clock.TotalSeconds) /
+                                  DaySkipDurationSeconds),
+                1,
+                DaySkipSpeed);
+            daySkipActive = true;
+            ApplyTimeScale();
+            StateChanged?.Invoke();
+            return true;
+        }
+
+        public void BindLayoutEditor(RoomLayoutEditorController editor)
+        {
+            layoutEditor = editor;
+            StateChanged?.Invoke();
+        }
+
+        public void BindPlayerFeeding(PlayerFeedingController controller)
+        {
+            playerFeeding = controller;
             StateChanged?.Invoke();
         }
 
@@ -220,6 +331,7 @@ namespace UrbanWildlifeRooms.Core
 
         public void ReturnToDesktop()
         {
+            daySkipActive = false;
             atDesktop = true;
             onboardingOpen = false;
             pauseMenuOpen = false;
@@ -239,6 +351,7 @@ namespace UrbanWildlifeRooms.Core
             }
 
             CurrentResults = results;
+            daySkipActive = false;
             activeRun = false;
             resultsOpen = true;
             pauseMenuOpen = false;
@@ -255,6 +368,8 @@ namespace UrbanWildlifeRooms.Core
 
         public void RestartRun()
         {
+            daySkipActive = false;
+            lastSimulationDeltaTime = 0f;
             clock.Reset();
             CurrentResults = null;
             activeRun = true;

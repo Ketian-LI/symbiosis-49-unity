@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using UrbanWildlifeRooms.Animals;
+using UrbanWildlifeRooms.Data;
 
 namespace UrbanWildlifeRooms.Core
 {
@@ -7,13 +9,17 @@ namespace UrbanWildlifeRooms.Core
     {
         Other,
         Starvation,
-        Traffic
+        Traffic,
+        Predation,
+        Unrecorded
     }
 
     [Serializable]
     public sealed class AnimalMortalityModel
     {
-        public const int DefaultDeathLimit = 5;
+        public const int DefaultDeathLimit = 3;
+
+        private readonly Dictionary<WildlifeSpecies, AnimalDeathBreakdownData> breakdown = new();
 
         public int PigeonDeaths { get; private set; }
         public int SquirrelDeaths { get; private set; }
@@ -21,6 +27,16 @@ namespace UrbanWildlifeRooms.Core
         public int FoxDeaths { get; private set; }
         public int StarvationDeaths { get; private set; }
         public int TrafficDeaths { get; private set; }
+        public int PredationDeaths
+        {
+            get
+            {
+                var total = 0;
+                foreach (var row in breakdown.Values)
+                    total += Math.Max(0, row.predation);
+                return total;
+            }
+        }
         public int TotalDeaths => PigeonDeaths + SquirrelDeaths + HedgehogDeaths + FoxDeaths;
         public int DeathLimit { get; private set; } = DefaultDeathLimit;
         public bool LimitReached => TotalDeaths >= DeathLimit;
@@ -53,7 +69,32 @@ namespace UrbanWildlifeRooms.Core
             {
                 TrafficDeaths++;
             }
+            var row = GetOrCreateBreakdown(species);
+            switch (cause)
+            {
+                case AnimalDeathCause.Starvation: row.starvation++; break;
+                case AnimalDeathCause.Traffic: row.traffic++; break;
+                case AnimalDeathCause.Predation: row.predation++; break;
+                case AnimalDeathCause.Unrecorded: row.unrecorded++; break;
+                default: row.other++; break;
+            }
             return LimitReached;
+        }
+
+        public AnimalDeathBreakdownData BreakdownOf(WildlifeSpecies species)
+        {
+            return GetOrCreateBreakdown(species).Clone();
+        }
+
+        public List<AnimalDeathBreakdownData> ExportBreakdown()
+        {
+            return new List<AnimalDeathBreakdownData>
+            {
+                BreakdownOf(WildlifeSpecies.Pigeon),
+                BreakdownOf(WildlifeSpecies.Squirrel),
+                BreakdownOf(WildlifeSpecies.Hedgehog),
+                BreakdownOf(WildlifeSpecies.Fox)
+            };
         }
 
         public void SetDeathLimit(int deathLimit)
@@ -68,7 +109,8 @@ namespace UrbanWildlifeRooms.Core
             int foxDeaths,
             int starvationDeaths,
             int trafficDeaths,
-            int deathLimit = DefaultDeathLimit)
+            int deathLimit = DefaultDeathLimit,
+            IEnumerable<AnimalDeathBreakdownData> savedBreakdown = null)
         {
             PigeonDeaths = Math.Max(0, pigeonDeaths);
             SquirrelDeaths = Math.Max(0, squirrelDeaths);
@@ -77,6 +119,39 @@ namespace UrbanWildlifeRooms.Core
             StarvationDeaths = Math.Max(0, starvationDeaths);
             TrafficDeaths = Math.Max(0, trafficDeaths);
             DeathLimit = Math.Max(1, deathLimit);
+            breakdown.Clear();
+            if (savedBreakdown != null)
+            {
+                foreach (var saved in savedBreakdown)
+                {
+                    if (saved == null || !IsKnownSpecies(saved.species) || breakdown.ContainsKey(saved.species))
+                    {
+                        continue;
+                    }
+                    var row = saved.Clone();
+                    var speciesTotal = DeathsOf(saved.species);
+                    if (row.Total <= speciesTotal)
+                    {
+                        row.unrecorded += speciesTotal - row.Total;
+                        breakdown[saved.species] = row;
+                    }
+                }
+            }
+            foreach (var species in new[]
+                     {
+                         WildlifeSpecies.Pigeon, WildlifeSpecies.Squirrel,
+                         WildlifeSpecies.Hedgehog, WildlifeSpecies.Fox
+                     })
+            {
+                if (!breakdown.ContainsKey(species))
+                {
+                    breakdown[species] = new AnimalDeathBreakdownData
+                    {
+                        species = species,
+                        unrecorded = DeathsOf(species)
+                    };
+                }
+            }
         }
 
         public void Reset()
@@ -88,6 +163,35 @@ namespace UrbanWildlifeRooms.Core
             StarvationDeaths = 0;
             TrafficDeaths = 0;
             DeathLimit = DefaultDeathLimit;
+            breakdown.Clear();
+        }
+
+        private int DeathsOf(WildlifeSpecies species)
+        {
+            return species switch
+            {
+                WildlifeSpecies.Pigeon => PigeonDeaths,
+                WildlifeSpecies.Squirrel => SquirrelDeaths,
+                WildlifeSpecies.Hedgehog => HedgehogDeaths,
+                WildlifeSpecies.Fox => FoxDeaths,
+                _ => 0
+            };
+        }
+
+        private AnimalDeathBreakdownData GetOrCreateBreakdown(WildlifeSpecies species)
+        {
+            if (!breakdown.TryGetValue(species, out var row))
+            {
+                row = new AnimalDeathBreakdownData { species = species };
+                breakdown[species] = row;
+            }
+            return row;
+        }
+
+        private static bool IsKnownSpecies(WildlifeSpecies species)
+        {
+            return species == WildlifeSpecies.Pigeon || species == WildlifeSpecies.Squirrel ||
+                   species == WildlifeSpecies.Hedgehog || species == WildlifeSpecies.Fox;
         }
     }
 }

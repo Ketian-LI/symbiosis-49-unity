@@ -4,6 +4,17 @@
 **Last updated:** 21 September 2026
 **Implementation target:** Unity desktop demo, 1920 × 1080
 
+**2026-10-03 rules update:** Resource points, their income/spending display,
+and negative-balance defeat are superseded by a daily workforce minimum.
+At least three residents must complete a home-to-office-to-food route each
+day. The HUD previews this count; fewer than three at day-end ends the run.
+Manual feeding is available once every three game days and planting has no
+point cost. Older resource-point sections below are retained as design history,
+not current implementation instructions.
+The community square, when shared by an office and food shop, extends the
+viable home-to-work journey by one room; this replaces its formerly currency-
+only strategic benefit.
+
 This document records visual and interface decisions confirmed with the project
 owner. Update it whenever a new item is confirmed. Items not recorded as
 confirmed remain open for later discussion.
@@ -42,6 +53,9 @@ baked into a single screenshot.
 - Do not allow free camera rotation.
 - Allow zoom with the mouse wheel and limited panning while holding the middle
   mouse button.
+- In a close animal-follow view, middle-button dragging stops following at the
+  current zoom level and pans freely within the board; right-click or Esc still
+  returns to the overview.
 - Double-clicking a room or animal smoothly moves closer to the target.
 - Right-click or Esc returns the camera to the complete 7 × 7 board view.
 - In a close animal view, follow the selected animal with slow smoothing.
@@ -1181,6 +1195,10 @@ appear on hover.
 - Squirrels use the central park and oak habitat rooms as their primary shelter
   and foraging areas, and may make short visits to residences and adjoining
   rooms.
+- Ordinary squirrel foraging is anchored to each squirrel's current home/cache:
+  food may be collected in that room or one directly connected neighbouring
+  room. A farther food source does not pull the squirrel across the board;
+  panic and relocation are separate behaviours.
 - Garages and waste rooms have no inherent avoidance penalty for squirrels and
   remain normally accessible. Immediate human activity or noise may still
   increase caution independently of the room category.

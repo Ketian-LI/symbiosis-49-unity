@@ -6,7 +6,7 @@ namespace UrbanWildlifeRooms.Data
     [Serializable]
     public sealed class SessionSaveData
     {
-        public int schemaVersion = 1;
+        public int schemaVersion = 2;
         public string savedAtUtc;
         public string mode = "Sandbox";
         public double elapsedSimulationSeconds;
@@ -32,7 +32,12 @@ namespace UrbanWildlifeRooms.Data
         public int treesPlanted;
         public int treesMatured;
         public int roomMovements;
+        public int lastRoomMovementDay;
+        public int lastLayoutPlanningDay;
+        public List<ShrubShelterSaveData> shrubShelters = new();
+        public DailyOutcomeSaveData dailyOutcome;
         public List<PlayerFoodSourceSaveData> playerFoodSources = new();
+        public int lastManualFeedingDay;
         public int squirrelDemoCachePortions;
         public List<int> squirrelCachePortions = new();
         public int pigeonDeaths;
@@ -41,8 +46,11 @@ namespace UrbanWildlifeRooms.Data
         public int foxDeaths;
         public int starvationDeaths;
         public int trafficDeaths;
+        public List<AnimalDeathBreakdownData> animalDeathBreakdown = new();
         public List<NaturalFoodSaveData> naturalFoodSources = new();
         public List<AnimalNeedSaveData> animalNeeds = new();
+        public int workerFeedDayNumber;
+        public List<string> workerFedResidentIds = new();
         public List<WasteRoomSaveData> wasteRooms = new();
         public List<BlockedWasteSaveData> blockedWaste = new();
     }
@@ -79,6 +87,43 @@ namespace UrbanWildlifeRooms.Data
         public string roomId;
         public string stage = "Mature";
         public int completeDaysSincePlanting = 2;
+    }
+
+    [Serializable]
+    public sealed class ShrubShelterSaveData
+    {
+        public string roomId;
+        public int readyDay;
+    }
+
+    [Serializable]
+    public sealed class DailyOutcomeSaveData
+    {
+        public int pendingDay;
+        public int pendingMovedRooms;
+        public int previousTotalDeaths;
+        public int previousStarvationDeaths;
+        public int previousTrafficDeaths;
+        public int previousPredationDeaths;
+        public bool predationHistoryKnown;
+        public int lastDay;
+        public int lastMovedRooms;
+        public int lastWorkingResidents;
+        public bool lastWorkingResidentsKnown;
+        public float lastProduction;
+        public int lastSpending;
+        public float lastClosingBalance;
+        public int lastDeaths;
+        public int lastStarvationDeaths;
+        public int lastTrafficDeaths;
+        public int lastPredationDeaths;
+        public int lastWasteIssues;
+        public bool lastMealsKnown;
+        public int lastFedAnimals;
+        public int lastLivingAnimals;
+        public int lastFedPigeons;
+        public int lastLivingPigeons;
+        public int lastSeedPortionsLeft;
     }
 
     [Serializable]

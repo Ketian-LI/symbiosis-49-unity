@@ -17,7 +17,7 @@ namespace UrbanWildlifeRooms.Core
     public sealed class ResearchSessionModel
     {
         public const int DefaultDurationMinutes = 18;
-        public const int DefaultDeathLimit = 5;
+        public const int DefaultDeathLimit = AnimalMortalityModel.DefaultDeathLimit;
 
         private readonly List<ResearchEventData> events = new();
 

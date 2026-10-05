@@ -96,7 +96,13 @@ namespace UrbanWildlifeRooms.Core
                 var results = new RunResultsData
                 {
                     endReason = RunEndReason.AnimalDeathLimit,
-                    daysSurvived = Mathf.Max(1, runtime.Clock.DayNumber)
+                    // The clock may already be into the next day when the
+                    // previous day's settlement processes this death.
+                    daysSurvived = Mathf.Max(1,
+                        resourceEconomy.CurrentSettlementDay > 0
+                            ? resourceEconomy.CurrentSettlementDay
+                            : Mathf.CeilToInt((float)(runtime.Clock.TotalSeconds /
+                                SimulationClockModel.CycleSeconds)))
                 };
                 PopulateResults(results);
                 runtime.EndRun(results);
@@ -125,7 +131,8 @@ namespace UrbanWildlifeRooms.Core
             int hedgehogDeaths,
             int foxDeaths,
             int starvationDeaths,
-            int trafficDeaths)
+            int trafficDeaths,
+            IEnumerable<AnimalDeathBreakdownData> deathBreakdown = null)
         {
             Model?.Restore(
                 pigeonDeaths,
@@ -133,7 +140,9 @@ namespace UrbanWildlifeRooms.Core
                 hedgehogDeaths,
                 foxDeaths,
                 starvationDeaths,
-                trafficDeaths);
+                trafficDeaths,
+                AnimalMortalityModel.DefaultDeathLimit,
+                deathBreakdown);
             StateChanged?.Invoke();
         }
 
@@ -152,6 +161,10 @@ namespace UrbanWildlifeRooms.Core
             results.finalResourceBalance = Mathf.FloorToInt(economy?.Balance ?? 0f);
             results.peakResourceBalance = Mathf.RoundToInt(economy?.PeakBalance ?? 0f);
             results.finalResidents = population?.ResidentCount ?? wasteManagement.ResidentCount;
+            results.lastWorkingResidents = residents.LastReport.DayNumber > 0
+                ? residents.LastReport.WorkingResidents
+                : population?.PreviewCommute(population.NavigationMap).WorkingResidents ?? 0;
+            results.requiredResidents = ResidentPopulationController.MinimumRequiredResidents;
             results.peakResidents = population?.PeakResidents ?? results.finalResidents;
             results.averageCommuteEfficiency = population != null && population.Residents.Count > 0
                 ? population.Residents.Average(item => item.lastEfficiency)
@@ -169,6 +182,7 @@ namespace UrbanWildlifeRooms.Core
             results.foxDeaths = Model?.FoxDeaths ?? 0;
             results.starvationDeaths = Model?.StarvationDeaths ?? 0;
             results.trafficDeaths = Model?.TrafficDeaths ?? 0;
+            results.animalDeathBreakdown = Model?.ExportBreakdown() ?? new List<AnimalDeathBreakdownData>();
             results.configuredDeathLimit = Model?.DeathLimit ?? AnimalMortalityModel.DefaultDeathLimit;
         }
 

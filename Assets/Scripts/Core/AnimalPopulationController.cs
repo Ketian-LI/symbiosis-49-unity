@@ -68,6 +68,42 @@ namespace UrbanWildlifeRooms.Core
             };
         }
 
+        public int TotalCount(WildlifeSpecies species)
+        {
+            return species switch
+            {
+                WildlifeSpecies.Pigeon => pigeons.Count(item => item != null),
+                WildlifeSpecies.Squirrel => squirrels.Count(item => item != null),
+                WildlifeSpecies.Hedgehog => hedgehogs.Count(item => item != null),
+                WildlifeSpecies.Fox => foxes.Count(item => item != null),
+                _ => 0
+            };
+        }
+
+        public float SoonestRespawnRemaining(WildlifeSpecies species)
+        {
+            return species switch
+            {
+                WildlifeSpecies.Pigeon => pigeons
+                    .Where(item => item != null && !item.IsAlive)
+                    .Select(item => item.RespawnRemaining)
+                    .DefaultIfEmpty(0f).Min(),
+                WildlifeSpecies.Squirrel => squirrels
+                    .Where(item => item != null && !item.IsAlive && item.Vitality != null)
+                    .Select(item => item.Vitality.RespawnRemainingSeconds)
+                    .DefaultIfEmpty(0f).Min(),
+                WildlifeSpecies.Hedgehog => hedgehogs
+                    .Where(item => item != null && !item.IsAlive && item.Vitality != null)
+                    .Select(item => item.Vitality.RespawnRemainingSeconds)
+                    .DefaultIfEmpty(0f).Min(),
+                WildlifeSpecies.Fox => foxes
+                    .Where(item => item != null && !item.IsAlive && item.Vitality != null)
+                    .Select(item => item.Vitality.RespawnRemainingSeconds)
+                    .DefaultIfEmpty(0f).Min(),
+                _ => 0f
+            };
+        }
+
         private void HandlePigeonStateChanged(PigeonDemoAgent agent, PigeonDemoState state)
         {
             StateChanged?.Invoke();

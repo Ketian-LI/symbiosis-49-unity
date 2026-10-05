@@ -39,7 +39,7 @@ namespace UrbanWildlifeRooms.UI
                 { MainMenuVisual.SettingsIcon, "main-menu-settings-icon-v01" },
                 { MainMenuVisual.LanguageIcon, "main-menu-language-icon-v01" },
                 { MainMenuVisual.ExitIcon, "main-menu-exit-icon-v01" },
-                { MainMenuVisual.TitleWordmark, "main-menu-title-v02" }
+                { MainMenuVisual.TitleWordmark, "main-menu-title-v04-rounded" }
             };
 
         private static readonly Dictionary<MainMenuVisual, Sprite> SpriteCache = new();
@@ -59,7 +59,32 @@ namespace UrbanWildlifeRooms.UI
             }
 
             var path = ResourcePath(visual);
-            var sprite = Resources.Load<Sprite>(path);
+            Sprite sprite = null;
+            if (visual == MainMenuVisual.TitleWordmark)
+            {
+                var wordmarkTexture = Resources.Load<Texture2D>(path);
+                if (wordmarkTexture != null)
+                {
+                    // The edited transparent PNG includes empty canvas above and
+                    // below the mark. Use normalized crop coordinates because
+                    // Unity may downscale the imported texture per platform.
+                    var width = wordmarkTexture.width;
+                    var height = wordmarkTexture.height;
+                    sprite = Sprite.Create(
+                        wordmarkTexture,
+                        new Rect(
+                            width * (20f / 2169f),
+                            height * (190f / 725f),
+                            width * (2111f / 2169f),
+                            height * (360f / 725f)),
+                        new Vector2(0.5f, 0.5f),
+                        100f,
+                        0,
+                        SpriteMeshType.FullRect);
+                    sprite.name = "Main Menu Title Wordmark v04 Rounded";
+                }
+            }
+            sprite ??= Resources.Load<Sprite>(path);
             if (sprite == null)
             {
                 var texture = Resources.Load<Texture2D>(path);

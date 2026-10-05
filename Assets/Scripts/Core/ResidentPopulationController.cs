@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UrbanWildlifeRooms.Data;
 using UrbanWildlifeRooms.Presentation;
@@ -7,11 +8,13 @@ namespace UrbanWildlifeRooms.Core
 {
     public sealed class ResidentPopulationController : MonoBehaviour
     {
+        public const int MinimumRequiredResidents = 3;
         private GameRuntimeController runtime;
         private RoomLayoutEditorController layoutEditor;
         private WasteManagementController wasteManagement;
         private ResourceEconomyController resourceEconomy;
         private float cellSize;
+        private readonly List<RoomView> facilityRooms = new();
 
         public event Action StateChanged;
         public event Action<ResidentDayReport> DayCompleted;
@@ -24,7 +27,8 @@ namespace UrbanWildlifeRooms.Core
             RoomLayoutEditorController editorController,
             WasteManagementController wasteController,
             ResourceEconomyController resourceController,
-            float gridCellSize)
+            float gridCellSize,
+            IEnumerable<RoomView> rooms)
         {
             runtime = runtimeController ?? throw new ArgumentNullException(nameof(runtimeController));
             layoutEditor = editorController ?? throw new ArgumentNullException(nameof(editorController));
@@ -33,8 +37,14 @@ namespace UrbanWildlifeRooms.Core
             cellSize = gridCellSize;
 
             Model = new ResidentPopulationModel(BuildNavigation(), RoomLayoutData.All);
+            facilityRooms.Clear();
+            foreach (var room in rooms ?? Array.Empty<RoomView>())
+                if (room?.Spec?.Type is RoomType.Office or RoomType.Canteen)
+                    facilityRooms.Add(room);
+            RefreshFacilityBadges();
             wasteManagement.SetResidentCount(Model.ResidentCount);
             layoutEditor.LayoutConfirmed += HandleLayoutConfirmed;
+            layoutEditor.LayoutRestored += HandleLayoutConfirmed;
             runtime.RestartRequested += HandleRestartRequested;
             resourceEconomy.SettlementPreparing += HandleSettlementPreparing;
         }
@@ -44,6 +54,7 @@ namespace UrbanWildlifeRooms.Core
             if (layoutEditor != null)
             {
                 layoutEditor.LayoutConfirmed -= HandleLayoutConfirmed;
+                layoutEditor.LayoutRestored -= HandleLayoutConfirmed;
             }
             if (runtime != null)
             {
@@ -73,7 +84,7 @@ namespace UrbanWildlifeRooms.Core
                 departures,
                 peakResidentCount);
             wasteManagement.SetResidentCount(Model?.ResidentCount ?? ResidentPopulationModel.StartingResidents);
-            StateChanged?.Invoke();
+            NotifyStateChanged();
         }
 
         private void HandleSettlementPreparing(int completedDay)
@@ -96,20 +107,45 @@ namespace UrbanWildlifeRooms.Core
                 LastReport.FoodServiceCost);
             wasteManagement.SetResidentCount(Model.ResidentCount);
             DayCompleted?.Invoke(LastReport);
-            StateChanged?.Invoke();
+            NotifyStateChanged();
+            if (Model.ResidentCount < MinimumRequiredResidents && runtime.HasActiveRun)
+            {
+                resourceEconomy.EndRunForInsufficientResidents(
+                    completedDay, Model.ResidentCount, MinimumRequiredResidents);
+            }
         }
 
         private void HandleLayoutConfirmed()
         {
             Model?.UpdateNavigation(BuildNavigation());
-            StateChanged?.Invoke();
+            NotifyStateChanged();
         }
 
         private void HandleRestartRequested()
         {
             Model?.Reset();
             wasteManagement.SetResidentCount(Model?.ResidentCount ?? ResidentPopulationModel.StartingResidents);
+            NotifyStateChanged();
+        }
+
+        private void NotifyStateChanged()
+        {
+            RefreshFacilityBadges();
             StateChanged?.Invoke();
+        }
+
+        private void RefreshFacilityBadges()
+        {
+            if (Model == null) return;
+            var use = Model.PreviewFacilityUse();
+            foreach (var room in facilityRooms)
+            {
+                if (room == null) continue;
+                var counts = room.Spec.Type == RoomType.Office
+                    ? use.Offices : use.FoodShops;
+                room.SetFacilityCapacity(counts.TryGetValue(room.Spec.Id, out var used)
+                    ? used : 0);
+            }
         }
 
         private RoomNavigationMap BuildNavigation()
@@ -117,7 +153,7 @@ namespace UrbanWildlifeRooms.Core
             return new RoomNavigationMap(
                 layoutEditor.ExportLayout(),
                 RoomLayoutData.All,
-                cellSize);
+                cellSize, humanRoadsOnly: true);
         }
     }
 }

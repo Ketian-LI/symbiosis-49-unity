@@ -71,11 +71,6 @@ namespace UrbanWildlifeRooms.Core
                 return false;
             }
 
-            if (!resourceEconomy.TrySpend(ResourceEconomyModel.PlantTreeCost))
-            {
-                return false;
-            }
-
             if (!Model.Plant(roomId))
             {
                 return false;

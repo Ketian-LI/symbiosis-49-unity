@@ -45,6 +45,8 @@ namespace UrbanWildlifeRooms.Core
         private RoomLayoutEditorController layout;
         private AnimalMortalityController mortality;
         private EcologicalMetricsController metrics;
+        private HedgehogForagingController hedgehogForaging;
+        private PlayerFeedingController playerFeeding;
         private ResearchRecordData record;
         private string lastMetricSignature;
         private bool endingForTime;
@@ -57,12 +59,16 @@ namespace UrbanWildlifeRooms.Core
             GameRuntimeController runtimeController,
             RoomLayoutEditorController layoutController,
             AnimalMortalityController mortalityController,
-            EcologicalMetricsController metricsController)
+            EcologicalMetricsController metricsController,
+            HedgehogForagingController hedgehogForagingController,
+            PlayerFeedingController playerFeedingController)
         {
             runtime = runtimeController;
             layout = layoutController;
             mortality = mortalityController;
             metrics = metricsController;
+            hedgehogForaging = hedgehogForagingController;
+            playerFeeding = playerFeedingController;
             Model = new ResearchSessionModel();
             Model.Configure(SuggestParticipantCode(), ResearchSessionModel.DefaultDurationMinutes, ResearchSessionModel.DefaultDeathLimit);
             runtime.RestartRequested += HandleRestartRequested;
@@ -70,6 +76,8 @@ namespace UrbanWildlifeRooms.Core
             layout.LayoutConfirmed += HandleLayoutConfirmed;
             mortality.AnimalDied += HandleAnimalDied;
             metrics.StateChanged += HandleMetricsChanged;
+            hedgehogForaging.ForagingRouteStarted += HandleHedgehogRouteStarted;
+            playerFeeding.LeftoverFoodDiscarded += HandleLeftoverFoodDiscarded;
         }
 
         private void OnDestroy()
@@ -90,6 +98,14 @@ namespace UrbanWildlifeRooms.Core
             if (metrics != null)
             {
                 metrics.StateChanged -= HandleMetricsChanged;
+            }
+            if (hedgehogForaging != null)
+            {
+                hedgehogForaging.ForagingRouteStarted -= HandleHedgehogRouteStarted;
+            }
+            if (playerFeeding != null)
+            {
+                playerFeeding.LeftoverFoodDiscarded -= HandleLeftoverFoodDiscarded;
             }
         }
 
@@ -222,6 +238,24 @@ namespace UrbanWildlifeRooms.Core
             if (Model.IsRunning)
             {
                 Model.AddEvent("animal_death", $"species={species};cause={cause};total={totalDeaths}");
+            }
+        }
+
+        private void HandleHedgehogRouteStarted(bool covered, string sourceRoomId)
+        {
+            if (Model.IsRunning)
+            {
+                Model.AddEvent("hedgehog_foraging_route_started",
+                    $"day={runtime.Clock.DayNumber};covered={covered};source={sourceRoomId}");
+            }
+        }
+
+        private void HandleLeftoverFoodDiscarded(string roomId, int portions, bool routed)
+        {
+            if (Model.IsRunning)
+            {
+                Model.AddEvent("feeding_leftovers",
+                    $"day={runtime.Clock.DayNumber};room={roomId};portions={portions};wasteRouted={routed}");
             }
         }
 

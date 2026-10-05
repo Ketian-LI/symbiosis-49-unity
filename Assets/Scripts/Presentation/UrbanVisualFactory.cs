@@ -6,15 +6,23 @@ namespace UrbanWildlifeRooms.Presentation
     {
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
         private static readonly int ColorId = Shader.PropertyToID("_Color");
+        private static readonly int InkStrengthId = Shader.PropertyToID("_InkStrength");
 
         public static Material CreateSurfaceMaterial()
         {
-            var shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
-            var material = new Material(shader)
-            {
-                name = "Urban Wildlife Runtime Surface",
-                hideFlags = HideFlags.HideAndDontSave
-            };
+            // Keeping the source material in Resources makes the line weight and
+            // paper grain adjustable in the Inspector and prevents build stripping.
+            var template = Resources.Load<Material>("Materials/SketchSurface");
+            var sketchShader = Shader.Find("Symbiosis/Sketch Surface");
+            var fallbackShader = Shader.Find("Universal Render Pipeline/Lit") ??
+                                 Shader.Find("Standard");
+            var material = template != null && template.shader != null && template.shader.isSupported
+                ? new Material(template)
+                : new Material(sketchShader != null && sketchShader.isSupported
+                    ? sketchShader
+                    : fallbackShader);
+            material.name = "Symbiosis Runtime Sketch Surface";
+            material.hideFlags = HideFlags.HideAndDontSave;
 
             if (material.HasProperty("_Smoothness"))
             {
@@ -50,6 +58,15 @@ namespace UrbanWildlifeRooms.Presentation
             var renderer = instance.GetComponent<Renderer>();
             renderer.sharedMaterial = material;
             ApplyColor(renderer, color);
+            // The ink follows the perimeter UVs on box faces. Curved and imported
+            // meshes keep their clean silhouettes instead of acquiring UV seams.
+            if (material.HasProperty(InkStrengthId))
+            {
+                var block = new MaterialPropertyBlock();
+                renderer.GetPropertyBlock(block);
+                block.SetFloat(InkStrengthId, primitiveType == PrimitiveType.Cube ? 1f : 0f);
+                renderer.SetPropertyBlock(block);
+            }
 
             if (removeCollider)
             {
@@ -80,4 +97,3 @@ namespace UrbanWildlifeRooms.Presentation
         }
     }
 }
-

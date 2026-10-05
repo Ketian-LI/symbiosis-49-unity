@@ -28,12 +28,35 @@ namespace UrbanWildlifeRooms.Core
             runtime = runtimeController;
             naturalFood = foodController;
             navigation = navigationCoordinator;
+            navigation.NavigationChanged += HandleNavigationChanged;
             traffic = trafficController;
             mapRoot = boardRoot;
             squirrels.AddRange(agents ?? Array.Empty<SquirrelDemoAgent>());
             foreach (var squirrel in squirrels)
             {
                 retryTimers[squirrel] = 1.1f;
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (navigation != null)
+            {
+                navigation.NavigationChanged -= HandleNavigationChanged;
+            }
+        }
+
+        private void HandleNavigationChanged()
+        {
+            foreach (var squirrel in squirrels)
+            {
+                if (squirrel == null || !squirrel.IsAlive || squirrel.IsRespondingToFood)
+                {
+                    continue;
+                }
+                // Player food gets the first chance to redispatch; a carried
+                // portion instead needs an immediate new route to the cache.
+                retryTimers[squirrel] = squirrel.HasFoodInTransit ? 0f : 0.6f;
             }
         }
 
@@ -45,9 +68,10 @@ namespace UrbanWildlifeRooms.Core
             }
             foreach (var squirrel in squirrels)
             {
-                retryTimers[squirrel] = Mathf.Max(0f, retryTimers[squirrel] - Time.deltaTime);
+                retryTimers[squirrel] = Mathf.Max(0f,
+                    retryTimers[squirrel] - runtime.ActorPresentationDeltaTime);
             }
-            evaluationTimer -= Time.deltaTime;
+            evaluationTimer -= runtime.ActorPresentationDeltaTime;
             if (evaluationTimer > 0f)
             {
                 return;
@@ -56,23 +80,53 @@ namespace UrbanWildlifeRooms.Core
             var active = runtime.Clock.Phase == DayPhase.Dawn ||
                          runtime.Clock.Phase == DayPhase.Day ||
                          runtime.Clock.Phase == DayPhase.Dusk;
-            if (!active)
-            {
-                return;
-            }
             foreach (var squirrel in squirrels)
             {
                 if (squirrel == null || !squirrel.IsAlive || squirrel.IsRespondingToFood ||
-                    !squirrel.CanStoreFood || retryTimers[squirrel] > 0f)
+                    retryTimers[squirrel] > 0f)
                 {
                     continue;
                 }
-                TryBeginForaging(squirrel);
+                if (squirrel.HasFoodInTransit)
+                {
+                    TryBeginCacheReturn(squirrel);
+                }
+                else if (active && squirrel.CanStoreFood)
+                {
+                    TryBeginForaging(squirrel);
+                }
             }
+        }
+
+        private void TryBeginCacheReturn(SquirrelDemoAgent squirrel)
+        {
+            if (!squirrel.CanResumeCacheReturn)
+            {
+                retryTimers[squirrel] = 0.5f;
+                return;
+            }
+            var cacheRoom = FindRoomId(squirrel.CachePosition);
+            if (TryBuildRoute(squirrel, squirrel.transform.position, squirrel.CachePosition, cacheRoom,
+                    out var route, out var hazard, out var fatal) &&
+                squirrel.BeginCacheReturn(route, hazard, fatal))
+            {
+                retryTimers[squirrel] = 1f;
+                return;
+            }
+            retryTimers[squirrel] = 1f;
         }
 
         private void TryBeginForaging(SquirrelDemoAgent squirrel)
         {
+            var routeMap = navigation.NavigationMapFor(squirrel);
+            var cacheRoom = FindRoomId(squirrel.CachePosition);
+            var currentRoom = FindRoomId(squirrel.transform.position);
+            if (!HabitatFoodNetworkModel.IsWithinSquirrelHomeRange(
+                    routeMap, cacheRoom, currentRoom))
+            {
+                retryTimers[squirrel] = 1.8f;
+                return;
+            }
             var sources = naturalFood.Model.Sources.Values
                 .Where(item => item.kind == NaturalFoodKind.Nut && item.portions > 0)
                 .Select(item => item.roomId)
@@ -89,11 +143,18 @@ namespace UrbanWildlifeRooms.Core
 
             foreach (var source in sources)
             {
-                var cacheRoom = FindRoomId(squirrel.CachePosition);
-                if (!TryBuildRoute(squirrel.transform.position, source.Position, source.RoomId,
-                        out var toFood, out var foodHazard, out var foodFatal) ||
-                    !TryBuildRoute(source.Position, squirrel.CachePosition, cacheRoom,
-                        out var toCache, out var cacheHazard, out var cacheFatal))
+                if (!HabitatFoodNetworkModel.IsWithinSquirrelHomeRange(
+                        routeMap, cacheRoom, source.RoomId) ||
+                    !HabitatFoodNetworkModel.CanReachSource(
+                        routeMap, currentRoom,
+                        squirrel.Species, source.RoomId, out _))
+                {
+                    continue;
+                }
+                if (!TryBuildRoute(squirrel, squirrel.transform.position, source.Position, source.RoomId,
+                        out var toFood, out var foodHazard, out var foodFatal, cacheRoom) ||
+                    !TryBuildRoute(squirrel, source.Position, squirrel.CachePosition, cacheRoom,
+                        out var toCache, out var cacheHazard, out var cacheFatal, cacheRoom))
                 {
                     continue;
                 }
@@ -115,12 +176,14 @@ namespace UrbanWildlifeRooms.Core
         }
 
         private bool TryBuildRoute(
+            SquirrelDemoAgent squirrel,
             Vector3 worldStart,
             Vector3 worldDestination,
             string destinationRoom,
             out IReadOnlyList<Vector3> waypoints,
             out int hazardWaypoint,
-            out bool fatal)
+            out bool fatal,
+            string homeRoomId = null)
         {
             waypoints = Array.Empty<Vector3>();
             hazardWaypoint = -1;
@@ -130,15 +193,18 @@ namespace UrbanWildlifeRooms.Core
             {
                 return false;
             }
-            var plan = traffic.PlanRoute(startRoom, destinationRoom);
-            if (plan.Abandoned)
+            var routeMap = navigation.NavigationMapFor(squirrel);
+            var plan = traffic.PlanRoute(startRoom, destinationRoom, routeMap);
+            if (plan.Abandoned ||
+                homeRoomId != null && !HabitatFoodNetworkModel.SquirrelRouteStaysNearHome(
+                    routeMap, homeRoomId, plan.Rooms))
             {
                 return false;
             }
             var result = new List<Vector3>();
             for (var index = 0; index < plan.Rooms.Count - 1; index++)
             {
-                if (!navigation.NavigationMap.TryGetConnectionPoint(
+                if (!routeMap.TryGetConnectionPoint(
                         plan.Rooms[index], plan.Rooms[index + 1], out var localDoor))
                 {
                     continue;

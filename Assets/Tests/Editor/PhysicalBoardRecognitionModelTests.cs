@@ -8,13 +8,13 @@ namespace UrbanWildlifeRooms.Tests.Editor
     public sealed class PhysicalBoardRecognitionModelTests
     {
         [Test]
-        public void CompleteInitialThirtyFiveModuleLayoutIsLegal()
+        public void CompleteInitialFortyNineModuleLayoutIsLegal()
         {
             var placements = new RoomLayoutModel(RoomLayoutData.All).ExportData();
             var result = PhysicalBoardRecognitionModel.Validate(placements);
 
             Assert.That(result.IsCompleteAndLegal, Is.True);
-            Assert.That(result.RecognisedModuleCount, Is.EqualTo(35));
+            Assert.That(result.RecognisedModuleCount, Is.EqualTo(49));
             Assert.That(result.AffectedCells, Is.Empty);
         }
 
@@ -26,7 +26,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
             var result = PhysicalBoardRecognitionModel.Validate(placements);
 
             Assert.That(result.IsCompleteAndLegal, Is.False);
-            Assert.That(result.RecognisedModuleCount, Is.EqualTo(34));
+            Assert.That(result.RecognisedModuleCount, Is.EqualTo(48));
             Assert.That(result.AffectedCells, Is.Not.Empty);
         }
 

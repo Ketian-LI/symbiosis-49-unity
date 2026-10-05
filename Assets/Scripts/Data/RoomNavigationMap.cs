@@ -5,23 +5,38 @@ using UnityEngine;
 namespace UrbanWildlifeRooms.Data
 {
     /// <summary>
-    /// Layout-derived room adjacency and safe floor interiors.
-    /// Ecological preferences can later filter this shared physical graph per species.
+    /// Layout-derived room adjacency and safe floor interiors. The default graph
+    /// represents physical doorways for legacy systems. Pedestrian road mode
+    /// requires facing visible routes; animal mode uses separate hidden ports.
     /// </summary>
     public sealed class RoomNavigationMap
     {
         private readonly List<Node> nodes;
         private readonly Dictionary<string, Node> nodesById = new();
         private readonly Dictionary<string, List<string>> neighbours = new();
+        private readonly Dictionary<(string, string), Vector2> restrictedConnections = new();
+        private readonly Dictionary<(string, string), AnimalPassagePort> animalConnectionPorts = new();
         private readonly float cellSize;
+        private readonly bool animalPassagesOnly;
+        private readonly bool humanRoadsOnly;
 
         public RoomNavigationMap(
             IEnumerable<RoomPlacementData> placementData,
             IEnumerable<RoomSpec> roomSpecs,
-            float gridCellSize)
+            float gridCellSize, bool animalPassagesOnly = false,
+            int animalDayNumber = 1, bool humanRoadsOnly = false,
+            bool hungryWildlifeMayUsePedestrianDoors = false)
         {
             cellSize = gridCellSize;
+            this.animalPassagesOnly = animalPassagesOnly;
+            this.humanRoadsOnly = humanRoadsOnly;
+            if (animalPassagesOnly && humanRoadsOnly)
+                throw new System.ArgumentException("Choose animal passages or human roads, not both.");
+            ActiveAnimalRouteEvent = animalPassagesOnly
+                ? AnimalRouteEventSchedule.ForDay(animalDayNumber)
+                : null;
             var specs = roomSpecs.ToDictionary(item => item.Id);
+            var ports = new Dictionary<string, IReadOnlyList<AnimalPassagePort>>();
             nodes = new List<Node>();
             foreach (var placement in placementData)
             {
@@ -39,6 +54,20 @@ namespace UrbanWildlifeRooms.Data
                     rotated ? spec.Width : spec.Height));
                 nodesById[placement.id] = nodes[nodes.Count - 1];
                 neighbours[placement.id] = new List<string>();
+                if (animalPassagesOnly)
+                {
+                    var animalPorts = AnimalPassageLayout.Ports(spec, placement.quarterTurns);
+                    var usablePorts = hungryWildlifeMayUsePedestrianDoors
+                        ? animalPorts.Concat(HumanRoadLayout.Ports(spec, placement.quarterTurns))
+                        : animalPorts.AsEnumerable();
+                    ports[placement.id] = ActiveAnimalRouteEvent is { } routeEvent
+                        ? usablePorts.Where(port => !routeEvent.Blocks(placement.id, port)).ToArray()
+                        : usablePorts.ToArray();
+                }
+                else if (humanRoadsOnly)
+                {
+                    ports[placement.id] = HumanRoadLayout.Ports(spec, placement.quarterTurns);
+                }
             }
 
             for (var first = 0; first < nodes.Count; first++)
@@ -50,6 +79,21 @@ namespace UrbanWildlifeRooms.Data
                         continue;
                     }
 
+                    if (animalPassagesOnly || humanRoadsOnly)
+                    {
+                        if (!TryMatchPort(nodes[first], ports[nodes[first].Id],
+                                nodes[second], ports[nodes[second].Id], out var point,
+                                out var firstPort, out var secondPort))
+                            continue;
+                        restrictedConnections[(nodes[first].Id, nodes[second].Id)] = point;
+                        restrictedConnections[(nodes[second].Id, nodes[first].Id)] = point;
+                        if (animalPassagesOnly)
+                        {
+                            animalConnectionPorts[(nodes[first].Id, nodes[second].Id)] = firstPort;
+                            animalConnectionPorts[(nodes[second].Id, nodes[first].Id)] = secondPort;
+                        }
+                    }
+
                     neighbours[nodes[first].Id].Add(nodes[second].Id);
                     neighbours[nodes[second].Id].Add(nodes[first].Id);
                 }
@@ -57,6 +101,27 @@ namespace UrbanWildlifeRooms.Data
         }
 
         public int RoomCount => nodes.Count;
+        public int ConnectionCount => neighbours.Values.Sum(items => items.Count) / 2;
+        public AnimalRouteEvent? ActiveAnimalRouteEvent { get; }
+
+        // The same hunger threshold must select the same doorway graph for
+        // visible movement and for the food settlement at the end of a day.
+        public static RoomNavigationMap ForWildlifeHunger(
+            RoomNavigationMap ordinary, RoomNavigationMap desperate, int hungerDays) =>
+            hungerDays >= 2 ? desperate : ordinary;
+
+        public bool TryGetOrigin(string roomId, out int column, out int row)
+        {
+            if (nodesById.TryGetValue(roomId, out var node))
+            {
+                column = node.Column;
+                row = node.Row;
+                return true;
+            }
+
+            column = row = -1;
+            return false;
+        }
 
         public IReadOnlyList<string> NeighboursOf(string roomId)
         {
@@ -214,9 +279,17 @@ namespace UrbanWildlifeRooms.Data
             localBoardPoint = default;
             if (!nodesById.TryGetValue(firstRoomId, out var first) ||
                 !nodesById.TryGetValue(secondRoomId, out var second) ||
-                !AreAdjacent(first, second))
+                !AreAdjacent(first, second) ||
+                (animalPassagesOnly || humanRoadsOnly) &&
+                !restrictedConnections.ContainsKey((firstRoomId, secondRoomId)))
             {
                 return false;
+            }
+
+            if (animalPassagesOnly || humanRoadsOnly)
+            {
+                localBoardPoint = restrictedConnections[(firstRoomId, secondRoomId)];
+                return true;
             }
 
             var halfBoard = RoomLayoutData.GridSize * cellSize * 0.5f;
@@ -244,6 +317,12 @@ namespace UrbanWildlifeRooms.Data
                 halfBoard - boundaryRow * cellSize);
             return true;
         }
+
+        // The planning overlay reads the exact port chosen by animal navigation,
+        // so its visible lines cannot claim a connection that animals cannot use.
+        public bool TryGetAnimalConnectionPort(string roomId, string neighbourId,
+            out AnimalPassagePort port) =>
+            animalConnectionPorts.TryGetValue((roomId, neighbourId), out port);
 
         public Vector2 FindNearestLegalFloorPoint(Vector2 point, float wallClearance)
         {
@@ -281,6 +360,63 @@ namespace UrbanWildlifeRooms.Data
             var horizontalOverlap = first.Column < second.Column + second.Width &&
                                     first.Column + first.Width > second.Column;
             return horizontalTouch && verticalOverlap || verticalTouch && horizontalOverlap;
+        }
+
+        private bool TryMatchPort(Node first, IReadOnlyList<AnimalPassagePort> firstPorts,
+            Node second, IReadOnlyList<AnimalPassagePort> secondPorts, out Vector2 point,
+            out AnimalPassagePort firstPort, out AnimalPassagePort secondPort)
+        {
+            foreach (var a in firstPorts)
+            foreach (var b in secondPorts)
+            {
+                var boundary = 0;
+                var segment = 0;
+                var vertical = false;
+                if (a.Edge == AnimalPassageEdge.East && b.Edge == AnimalPassageEdge.West &&
+                    first.Column + first.Width == second.Column &&
+                    first.Row + a.Segment == second.Row + b.Segment)
+                {
+                    boundary = second.Column;
+                    segment = first.Row + a.Segment;
+                    vertical = true;
+                }
+                else if (a.Edge == AnimalPassageEdge.West && b.Edge == AnimalPassageEdge.East &&
+                         first.Column == second.Column + second.Width &&
+                         first.Row + a.Segment == second.Row + b.Segment)
+                {
+                    boundary = first.Column;
+                    segment = first.Row + a.Segment;
+                    vertical = true;
+                }
+                else if (a.Edge == AnimalPassageEdge.South && b.Edge == AnimalPassageEdge.North &&
+                         first.Row + first.Height == second.Row &&
+                         first.Column + a.Segment == second.Column + b.Segment)
+                {
+                    boundary = second.Row;
+                    segment = first.Column + a.Segment;
+                }
+                else if (a.Edge == AnimalPassageEdge.North && b.Edge == AnimalPassageEdge.South &&
+                         first.Row == second.Row + second.Height &&
+                         first.Column + a.Segment == second.Column + b.Segment)
+                {
+                    boundary = first.Row;
+                    segment = first.Column + a.Segment;
+                }
+                else continue;
+
+                var half = RoomLayoutData.GridSize * cellSize * 0.5f;
+                point = vertical
+                    ? new Vector2(-half + boundary * cellSize, half - (segment + 0.5f) * cellSize)
+                    : new Vector2(-half + (segment + 0.5f) * cellSize, half - boundary * cellSize);
+                firstPort = a;
+                secondPort = b;
+                return true;
+            }
+
+            point = default;
+            firstPort = default;
+            secondPort = default;
+            return false;
         }
 
         private readonly struct Node

@@ -26,6 +26,8 @@ namespace UrbanWildlifeRooms.Animals
         private float stateTime;
         private float stateDuration;
         private bool initialized;
+        private GameRuntimeController runtime;
+        private AnimalNavigationCoordinator navigationCoordinator;
         private bool relocating;
         private Vector3 relocationStart;
         private Vector3 relocationTarget;
@@ -39,10 +41,13 @@ namespace UrbanWildlifeRooms.Animals
         private int forageWaypointIndex;
         private Action forageArrival;
         private bool foraging;
+        private bool waitingForCompanion;
         private int forageHazardWaypoint = -1;
         private bool forageHazardFatal;
         private bool forageHazardResolved;
         private float forageTrafficWaitRemaining = -1f;
+
+        public event Action<HedgehogDemoAgent> Clicked;
 
         public Vector3 SpawnPosition => spawnPosition;
         public HedgehogDemoState State => state;
@@ -52,12 +57,36 @@ namespace UrbanWildlifeRooms.Animals
         public WildlifeVitality Vitality => vitality;
         public bool IsPredatorSafe => predatorDefence && predatorDefenceTime >= 0.32f;
         public bool IsForaging => foraging;
+        public bool IsWaitingForCompanion => waitingForCompanion;
+
+        public void BindNavigation(AnimalNavigationCoordinator coordinator) =>
+            navigationCoordinator = coordinator;
+
+        public bool CancelForagingForRouteChange()
+        {
+            if (!foraging)
+            {
+                return false;
+            }
+            CancelForaging();
+            BeginState(HedgehogDemoState.Sniff, 0.5f);
+            return true;
+        }
 
         public void SetActivityEnabled(bool value)
         {
-            activityEnabled = value;
-            if (!value)
+            if (activityEnabled == value)
             {
+                return;
+            }
+            activityEnabled = value;
+            if (value)
+            {
+                BeginState(HedgehogDemoState.Idle, RandomRange(0.35f, 0.75f));
+            }
+            else
+            {
+                waitingForCompanion = false;
                 CancelForaging();
                 BeginState(HedgehogDemoState.Idle, 999f);
             }
@@ -71,6 +100,7 @@ namespace UrbanWildlifeRooms.Animals
             }
 
             initialized = true;
+            runtime = FindFirstObjectByType<GameRuntimeController>();
             random = new System.Random(randomSeed);
             spawnPosition = initialPosition;
             habitatCenter = initialPosition;
@@ -83,10 +113,18 @@ namespace UrbanWildlifeRooms.Animals
 
             var collider = gameObject.AddComponent<BoxCollider>();
             collider.center = new Vector3(0f, 0.11f, 0f);
-            collider.size = new Vector3(0.30f, 0.25f, 0.32f);
+            collider.size = new Vector3(0.48f, 0.33f, 0.50f);
             vitality = gameObject.AddComponent<WildlifeVitality>();
             vitality.Initialize(Species, this, initialPosition, sharedMaterial, hideFlags);
             BeginState(HedgehogDemoState.Idle, 1.4f);
+        }
+
+        private void OnMouseDown()
+        {
+            if (Application.isPlaying && IsAlive)
+            {
+                Clicked?.Invoke(this);
+            }
         }
 
         public void ApplyPreviewPose(
@@ -109,14 +147,36 @@ namespace UrbanWildlifeRooms.Animals
         public void RelocateTo(Vector3 worldPosition, float durationSeconds)
         {
             var delta = worldPosition - transform.position;
-            spawnPosition += delta;
-            habitatCenter += delta;
+            ShiftHomeAnchor(delta);
             targetPosition += delta;
             relocationStart = transform.position;
             relocationTarget = worldPosition;
             relocationDuration = Mathf.Max(0.05f, durationSeconds);
             relocationTime = 0f;
             relocating = true;
+        }
+
+        public void ShiftHomeAnchor(Vector3 delta)
+        {
+            spawnPosition += delta;
+            habitatCenter += delta;
+        }
+
+        public void ResetForNewRun(Vector3 initialPosition)
+        {
+            if (!initialized) return;
+            relocating = false;
+            waitingForCompanion = false;
+            predatorDefence = false;
+            predatorDefenceTime = 0f;
+            CancelForaging();
+            spawnPosition = initialPosition;
+            habitatCenter = initialPosition;
+            targetPosition = initialPosition;
+            vitality?.ResetForNewRun(initialPosition);
+            transform.position = initialPosition;
+            transform.rotation = Quaternion.Euler(0f, 24f, 0f);
+            BeginState(HedgehogDemoState.Idle, 1.4f);
         }
 
         public bool BeginPredatorDefence()
@@ -127,6 +187,7 @@ namespace UrbanWildlifeRooms.Animals
             }
             predatorDefence = true;
             predatorDefenceTime = 0f;
+            waitingForCompanion = false;
             CancelForaging();
             BeginState(HedgehogDemoState.Curl, 2.5f);
             return true;
@@ -139,6 +200,7 @@ namespace UrbanWildlifeRooms.Animals
             bool fatalTrafficCrossing = false)
         {
             if (!IsAlive || !activityEnabled || predatorDefence || foraging ||
+                waitingForCompanion ||
                 waypoints == null || waypoints.Count == 0)
             {
                 return false;
@@ -156,6 +218,27 @@ namespace UrbanWildlifeRooms.Animals
             return true;
         }
 
+        public bool BeginCompanionWait()
+        {
+            if (!IsAlive || !activityEnabled || foraging || predatorDefence)
+            {
+                return false;
+            }
+            waitingForCompanion = true;
+            BeginState(HedgehogDemoState.Sniff, 999f);
+            return true;
+        }
+
+        public void EndCompanionWait()
+        {
+            if (!waitingForCompanion)
+            {
+                return;
+            }
+            waitingForCompanion = false;
+            BeginState(HedgehogDemoState.Sniff, 0.5f);
+        }
+
         private void Update()
         {
             if (!initialized || !Application.isPlaying)
@@ -163,16 +246,23 @@ namespace UrbanWildlifeRooms.Animals
                 return;
             }
 
+            var deltaTime = runtime != null ? runtime.ActorPresentationDeltaTime : Time.deltaTime;
+
+            if (foraging && navigationCoordinator != null)
+            {
+                _ = navigationCoordinator.NavigationRevision;
+            }
+
             if (relocating)
             {
-                UpdateRelocation(Time.deltaTime);
+                UpdateRelocation(deltaTime);
                 return;
             }
 
-            stateTime += Time.deltaTime;
+            stateTime += deltaTime;
             if (predatorDefence)
             {
-                predatorDefenceTime += Time.deltaTime;
+                predatorDefenceTime += deltaTime;
                 visual.ApplyPose(HedgehogDemoState.Curl, stateTime);
                 if (predatorDefenceTime >= 2.5f)
                 {
@@ -183,8 +273,13 @@ namespace UrbanWildlifeRooms.Animals
             }
             if (foraging)
             {
-                UpdateForaging(Time.deltaTime);
+                UpdateForaging(deltaTime);
                 visual.ApplyPose(state, stateTime);
+                return;
+            }
+            if (waitingForCompanion)
+            {
+                visual.ApplyPose(HedgehogDemoState.Sniff, stateTime);
                 return;
             }
             if (!activityEnabled)
@@ -194,7 +289,7 @@ namespace UrbanWildlifeRooms.Animals
             }
             if (state == HedgehogDemoState.Waddle)
             {
-                UpdateWaddle(Time.deltaTime);
+                UpdateWaddle(deltaTime);
             }
 
             visual.ApplyPose(state, stateTime);

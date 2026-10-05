@@ -93,24 +93,31 @@ namespace UrbanWildlifeRooms.Core
 
         public IReadOnlyList<string> Advance(float simulationDeltaSeconds)
         {
+            return AdvanceExpired(simulationDeltaSeconds)
+                .Select(source => source.id)
+                .ToArray();
+        }
+
+        public IReadOnlyList<PlayerFoodSourceState> AdvanceExpired(float simulationDeltaSeconds)
+        {
             if (simulationDeltaSeconds <= 0f)
             {
-                return Array.Empty<string>();
+                return Array.Empty<PlayerFoodSourceState>();
             }
 
-            var expired = new List<string>();
+            var expired = new List<PlayerFoodSourceState>();
             foreach (var source in sources.Values)
             {
                 source.remainingLifetime -= simulationDeltaSeconds;
                 if (source.remainingLifetime <= 0f)
                 {
-                    expired.Add(source.id);
+                    expired.Add(source);
                 }
             }
 
-            foreach (var id in expired)
+            foreach (var source in expired)
             {
-                sources.Remove(id);
+                sources.Remove(source.id);
             }
             return expired;
         }

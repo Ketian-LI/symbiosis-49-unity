@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UrbanWildlifeRooms.Core;
 using UrbanWildlifeRooms.Data;
 
 namespace UrbanWildlifeRooms.Presentation
@@ -11,6 +13,7 @@ namespace UrbanWildlifeRooms.Presentation
         private Renderer floorRenderer;
         private Color baseColor;
         private bool hovered;
+        private bool hoverVisible;
         private Vector3 restingPosition;
         private Quaternion restingRotation;
         private float lastClickTime = -10f;
@@ -19,6 +22,10 @@ namespace UrbanWildlifeRooms.Presentation
         private bool swapPreviewing;
         private bool? dragPreviewLegal;
         private RoomSelectionMarker selectionMarker;
+        private AnimalPassageOverlay animalPassages;
+        private TextMesh facilityCapacityText;
+        private int editingDay = 1;
+        private int placedQuarterTurns;
 
         public event Action<RoomView> Clicked;
         public event Action<RoomView> DoubleClicked;
@@ -48,23 +55,42 @@ namespace UrbanWildlifeRooms.Presentation
             selectionMarker = roomRoot.gameObject.GetComponent<RoomSelectionMarker>() ??
                               roomRoot.gameObject.AddComponent<RoomSelectionMarker>();
             selectionMarker.Initialize(roomWidth, roomDepth, generatedHideFlags);
+            animalPassages = roomRoot.GetComponentInChildren<AnimalPassageOverlay>(true);
+            if (spec.Type is RoomType.Office or RoomType.Canteen)
+            {
+                var office = spec.Type == RoomType.Office;
+                var capacity = office
+                    ? ResidentPopulationModel.OfficeCapacity
+                    : ResidentPopulationModel.FoodShopCapacity;
+                facilityCapacityText = RoomMapBadgeVisual.BuildCapacity(
+                    visualRoot, office, new Vector3(-0.88f, 1.67f, 0f),
+                    0, capacity, floorRenderer.sharedMaterial, generatedHideFlags);
+            }
             ApplyState();
+        }
+
+        public void SetFacilityCapacity(int used)
+        {
+            if (facilityCapacityText == null) return;
+            var capacity = Spec.Type == RoomType.Office
+                ? ResidentPopulationModel.OfficeCapacity
+                : ResidentPopulationModel.FoodShopCapacity;
+            facilityCapacityText.text = $"{Mathf.Clamp(used, 0, capacity)}/{capacity}";
         }
 
         public void SetSelected(bool value)
         {
             selectionMarker?.SetVisible(value);
+            animalPassages?.SetShowUnconnectedPorts(value);
             ApplyState();
         }
 
-        public void SetLayoutEditing(bool value)
+        public void SetLayoutEditing(bool value, int dayNumber = 1)
         {
-            if (hovered)
-            {
-                HoverChanged?.Invoke(this, !value);
-            }
-
             layoutEditing = value;
+            editingDay = dayNumber;
+            animalPassages?.SetPreview(value, placedQuarterTurns, editingDay);
+            RefreshHoverState();
             if (!value)
             {
                 dragging = false;
@@ -76,6 +102,11 @@ namespace UrbanWildlifeRooms.Presentation
             ApplyState();
         }
 
+        public void SetAnimalPassageConnections(IReadOnlyCollection<AnimalPassagePort> ports)
+        {
+            animalPassages?.SetConnectedPorts(ports);
+        }
+
         public void SetDragPreview(bool legal)
         {
             dragPreviewLegal = legal;
@@ -85,6 +116,16 @@ namespace UrbanWildlifeRooms.Presentation
         public void SetDraggedLocalPosition(Vector3 localPosition)
         {
             visualRoot.localPosition = localPosition;
+            Physics.SyncTransforms();
+        }
+
+        public void SetDraggedPlacement(Vector3 localPosition, int quarterTurns)
+        {
+            visualRoot.localPosition = localPosition;
+            visualRoot.localRotation = Quaternion.Euler(0f, quarterTurns * 90f, 0f);
+            if (layoutEditing)
+                animalPassages?.SetPreview(true, quarterTurns, editingDay);
+            Physics.SyncTransforms();
         }
 
         public void SetSwapPreviewLocalPosition(Vector3 localPosition)
@@ -92,6 +133,7 @@ namespace UrbanWildlifeRooms.Presentation
             swapPreviewing = true;
             dragPreviewLegal = true;
             visualRoot.localPosition = localPosition;
+            Physics.SyncTransforms();
             ApplyState();
         }
 
@@ -101,15 +143,21 @@ namespace UrbanWildlifeRooms.Presentation
             dragPreviewLegal = null;
             visualRoot.localPosition = restingPosition;
             visualRoot.localRotation = restingRotation;
+            if (layoutEditing)
+                animalPassages?.SetPreview(true, placedQuarterTurns, editingDay);
+            Physics.SyncTransforms();
             ApplyState();
         }
 
         public void ApplyPlacement(Vector3 localPosition, int quarterTurns)
         {
+            placedQuarterTurns = quarterTurns;
             restingPosition = localPosition;
             restingRotation = Quaternion.Euler(0f, quarterTurns * 90f, 0f);
             visualRoot.localPosition = restingPosition;
             visualRoot.localRotation = restingRotation;
+            if (layoutEditing)
+                animalPassages?.SetPreview(true, placedQuarterTurns, editingDay);
             swapPreviewing = false;
             dragPreviewLegal = null;
             ApplyState();
@@ -128,23 +176,50 @@ namespace UrbanWildlifeRooms.Presentation
         private void OnMouseEnter()
         {
             hovered = true;
-            if (!layoutEditing)
-            {
-                HoverChanged?.Invoke(this, true);
-            }
-            ApplyState();
+            RefreshHoverState();
         }
 
         private void OnMouseExit()
         {
             hovered = false;
-            HoverChanged?.Invoke(this, false);
-            ApplyState();
+            RefreshHoverState();
+        }
+
+        private void Update()
+        {
+            // A room can stay under the pointer while a HUD button moves over it.
+            // OnMouseExit is not raised in that case, so refresh the UI hit test.
+            if (hovered || hoverVisible)
+            {
+                RefreshHoverState();
+            }
+
+            if (!layoutEditing || !dragging)
+            {
+                return;
+            }
+
+            // The room collider moves with the preview and timeScale is zero while
+            // editing. Keep tracking the original press even after leaving it.
+            if (Input.GetMouseButton(0))
+            {
+                Dragged?.Invoke(this, Input.mousePosition);
+            }
+            else
+            {
+                EndDrag(Input.mousePosition);
+            }
+        }
+
+        private void LateUpdate()
+        {
+            if (facilityCapacityText != null)
+                facilityCapacityText.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
         }
 
         private void OnMouseDown()
         {
-            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            if (IsPointerBlockedByUi())
             {
                 return;
             }
@@ -174,23 +249,40 @@ namespace UrbanWildlifeRooms.Presentation
             }
         }
 
-        private void OnMouseDrag()
+        private void OnMouseUp()
         {
-            if (layoutEditing && dragging)
+            if (layoutEditing)
             {
-                Dragged?.Invoke(this, Input.mousePosition);
+                EndDrag(Input.mousePosition);
             }
         }
 
-        private void OnMouseUp()
+        private void EndDrag(Vector2 screenPosition)
         {
-            if (!layoutEditing || !dragging)
+            if (!dragging)
+            {
+                return;
+            }
+            dragging = false;
+            DragEnded?.Invoke(this, screenPosition);
+        }
+
+        private void RefreshHoverState()
+        {
+            var shouldShow = hovered && !layoutEditing && !IsPointerBlockedByUi();
+            if (hoverVisible == shouldShow)
             {
                 return;
             }
 
-            dragging = false;
-            DragEnded?.Invoke(this, Input.mousePosition);
+            hoverVisible = shouldShow;
+            HoverChanged?.Invoke(this, hoverVisible);
+            ApplyState();
+        }
+
+        private static bool IsPointerBlockedByUi()
+        {
+            return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
         }
 
         private void ApplyState()
@@ -202,7 +294,7 @@ namespace UrbanWildlifeRooms.Presentation
 
             var displayColor = dragPreviewLegal.HasValue
                 ? Color.Lerp(baseColor, dragPreviewLegal.Value ? UrbanPalette.Legal : UrbanPalette.Risk, 0.68f)
-                : hovered
+                : hoverVisible
                     ? Color.Lerp(baseColor, UrbanPalette.Legal, 0.22f)
                     : baseColor;
 
