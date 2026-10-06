@@ -410,10 +410,11 @@ namespace UrbanWildlifeRooms.UI
             var research = runtime.Mode == GameMode.Research;
             title.text = research
                 ? (chinese ? "研究记录" : "Research Record")
-                : (chinese ? "运行结束" : "Run Ended");
+                : (chinese ? "运行结束 · " : "Run Ended · ") +
+                  EndlessDifficultyRules.For(runtime.SandboxSettings).Label(chinese);
             reason.text = data.LocalizedEndReason(chinese);
             endReasonIcon.sprite = ResultsVisualCatalog.GetSprite(
-                data.endReason == RunEndReason.AnimalDeathLimit
+                data.endReason is RunEndReason.AnimalDeathLimit or RunEndReason.WildlifePopulationCollapse
                     ? ResultsVisual.EndAnimalDeaths
                     : ResultsVisual.SummaryResidents);
             endReasonIcon.enabled = endReasonIcon.sprite != null;
@@ -635,7 +636,8 @@ namespace UrbanWildlifeRooms.UI
                 return;
             }
 
-            var clip = runtime.CurrentResults.endReason == RunEndReason.AnimalDeathLimit
+            var clip = runtime.CurrentResults.endReason is RunEndReason.AnimalDeathLimit or
+                RunEndReason.WildlifePopulationCollapse
                 ? animalEndClip
                 : resourceEndClip;
             resultAudioSource.PlayOneShot(clip);

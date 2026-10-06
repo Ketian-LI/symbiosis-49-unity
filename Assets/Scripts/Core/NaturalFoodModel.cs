@@ -19,6 +19,8 @@ namespace UrbanWildlifeRooms.Core
         public string roomId;
         public NaturalFoodKind kind;
         public int portions;
+        public int addedToday;
+        public bool dailyAdditionKnown;
     }
 
     public sealed class NaturalFoodModel
@@ -26,6 +28,8 @@ namespace UrbanWildlifeRooms.Core
         private readonly IReadOnlyList<RoomSpec> rooms;
         private readonly Dictionary<string, NaturalFoodState> sources = new();
         private readonly int runSeed;
+        private int productionDayNumber = -1;
+        private bool recordingCurrentDay = true;
 
         public NaturalFoodModel(IEnumerable<RoomSpec> roomSpecs, int seed = 49)
         {
@@ -41,6 +45,7 @@ namespace UrbanWildlifeRooms.Core
             Func<string, OakTreeStage> oakStage,
             RoomNavigationMap navigation = null)
         {
+            BeginProductionDay(dayNumber);
             var connectedGreen = GreenNetworkModel.ConnectedRooms(navigation);
             foreach (var room in rooms)
             {
@@ -69,6 +74,7 @@ namespace UrbanWildlifeRooms.Core
 
         public void ProduceDusk(int dayNumber, int operatingFoodShopCount)
         {
+            BeginProductionDay(dayNumber);
             foreach (var room in rooms
                          .Where(room => room.Type == RoomType.Canteen)
                          .OrderBy(room => room.Id, StringComparer.Ordinal)
@@ -83,6 +89,7 @@ namespace UrbanWildlifeRooms.Core
             IReadOnlyDictionary<string, WasteRoomLoadModel> wasteRooms,
             RoomNavigationMap animalNavigation = null)
         {
+            BeginProductionDay(dayNumber);
             var connectedGreen = GreenNetworkModel.ConnectedRooms(animalNavigation);
             foreach (var room in rooms)
             {
@@ -152,14 +159,19 @@ namespace UrbanWildlifeRooms.Core
                 {
                     roomId = source.roomId,
                     kind = source.kind.ToString(),
-                    portions = source.portions
+                    portions = source.portions,
+                    addedToday = source.addedToday,
+                    dailyAdditionKnown = source.dailyAdditionKnown,
+                    productionDayNumber = productionDayNumber
                 })
                 .ToList();
         }
 
-        public void Restore(IEnumerable<NaturalFoodSaveData> savedSources)
+        public void Restore(IEnumerable<NaturalFoodSaveData> savedSources, int currentDayNumber = 0)
         {
             sources.Clear();
+            productionDayNumber = currentDayNumber > 0 ? currentDayNumber : -1;
+            recordingCurrentDay = true;
             foreach (var item in savedSources ?? Array.Empty<NaturalFoodSaveData>())
             {
                 if (item == null || string.IsNullOrWhiteSpace(item.roomId) ||
@@ -167,13 +179,28 @@ namespace UrbanWildlifeRooms.Core
                 {
                     continue;
                 }
-                Ensure(item.roomId, kind, item.portions);
+                var key = Key(item.roomId, kind);
+                if (sources.TryGetValue(key, out var prior) && prior.portions >= item.portions)
+                    continue;
+                sources[key] = new NaturalFoodState
+                {
+                    roomId = item.roomId,
+                    kind = kind,
+                    portions = item.portions,
+                    addedToday = Math.Max(0, item.addedToday),
+                    dailyAdditionKnown = item.dailyAdditionKnown &&
+                        (currentDayNumber <= 0 || item.productionDayNumber == currentDayNumber)
+                };
+                if (currentDayNumber <= 0 && item.dailyAdditionKnown)
+                    productionDayNumber = item.productionDayNumber;
             }
         }
 
         public void Reset()
         {
             sources.Clear();
+            productionDayNumber = -1;
+            recordingCurrentDay = true;
         }
 
         public static float EdibleWasteProbability(int units)
@@ -193,7 +220,12 @@ namespace UrbanWildlifeRooms.Core
             var key = Key(roomId, kind);
             if (sources.TryGetValue(key, out var source))
             {
-                source.portions = Math.Max(source.portions, maximumPortions);
+                var added = Math.Max(0, maximumPortions - source.portions);
+                source.portions += added;
+                if (recordingCurrentDay)
+                    source.addedToday += added;
+                else
+                    source.dailyAdditionKnown = false;
                 return;
             }
 
@@ -201,8 +233,30 @@ namespace UrbanWildlifeRooms.Core
             {
                 roomId = roomId,
                 kind = kind,
-                portions = Math.Max(1, maximumPortions)
+                portions = maximumPortions,
+                addedToday = recordingCurrentDay ? maximumPortions : 0,
+                dailyAdditionKnown = recordingCurrentDay
             };
+        }
+
+        private void BeginProductionDay(int dayNumber)
+        {
+            // A large skip can process an older dusk/night event after the next
+            // dawn callback. Keep stock correct, but do not attribute that late
+            // event to today's production total.
+            if (dayNumber < productionDayNumber)
+            {
+                recordingCurrentDay = false;
+                return;
+            }
+            recordingCurrentDay = true;
+            if (productionDayNumber == dayNumber) return;
+            productionDayNumber = dayNumber;
+            foreach (var source in sources.Values)
+            {
+                source.addedToday = 0;
+                source.dailyAdditionKnown = true;
+            }
         }
 
         private float Roll(int dayNumber, string roomId, NaturalFoodKind kind)

@@ -120,7 +120,8 @@ namespace UrbanWildlifeRooms.Core
 
             var elapsed = runtime.Clock.TotalSeconds - lastProcessedSimulationSeconds;
             lastProcessedSimulationSeconds = runtime.Clock.TotalSeconds;
-            foreach (var expired in Model.AdvanceExpired((float)Math.Max(0d, elapsed)))
+            var expiredSources = Model.AdvanceExpired((float)Math.Max(0d, elapsed));
+            foreach (var expired in expiredSources)
             {
                 RemoveVisual(expired.id);
                 FoodExpired?.Invoke(expired.id);
@@ -134,6 +135,10 @@ namespace UrbanWildlifeRooms.Core
                     var routed = waste.Model.RouteWaste(roomId, 1);
                     LeftoverFoodDiscarded?.Invoke(roomId, expired.portions, routed);
                 }
+            }
+            if (expiredSources.Count > 0)
+            {
+                StateChanged?.Invoke();
             }
 
             if (retryAnimalDispatch && runtime.HasActiveRun && !runtime.IsPaused)
@@ -540,6 +545,10 @@ namespace UrbanWildlifeRooms.Core
                 : string.Empty;
         }
 
+        // Placed dishes stay at a world position when rooms are swapped. The
+        // original roomId can therefore be stale in the food-location UI.
+        public string CurrentRoomIdAt(Vector3 worldPosition) => FindRoomId(worldPosition);
+
         private void CreateVisual(PlayerFoodSourceState source)
         {
             var root = new GameObject($"Player Food {source.id}")
@@ -549,7 +558,7 @@ namespace UrbanWildlifeRooms.Core
             root.transform.SetParent(foodRoot, true);
             root.transform.position = source.worldPosition;
             var visual = root.AddComponent<PlayerFoodSourceVisual>();
-            visual.Initialize(material, generatedHideFlags);
+            visual.Initialize(material, generatedHideFlags, source.playerPlaced);
             visual.SetPortions(source.portions);
             visuals[source.id] = visual;
         }
@@ -562,6 +571,7 @@ namespace UrbanWildlifeRooms.Core
             }
 
             visuals.Remove(sourceId);
+            visual.gameObject.SetActive(false);
             Destroy(visual.gameObject);
         }
 

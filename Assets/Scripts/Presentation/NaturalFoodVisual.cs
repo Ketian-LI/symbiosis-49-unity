@@ -10,14 +10,19 @@ namespace UrbanWildlifeRooms.Presentation
         private TextMesh mapBadgeText;
 
         public TextMesh MapBadgeText => mapBadgeText;
+        public NaturalFoodKind Kind { get; private set; }
+        public int? AddedToday { get; private set; }
 
         public void Initialize(
             NaturalFoodKind kind,
             int count,
+            int? addedToday,
             Vector3 badgeOffset,
             Material material,
             HideFlags hideFlags)
         {
+            Kind = kind;
+            AddedToday = addedToday;
             var color = kind switch
             {
                 NaturalFoodKind.Seed => new Color(0.82f, 0.67f, 0.34f),

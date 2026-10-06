@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="1" result="Passed" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-06 01:25:04Z" end-time="2026-10-06 01:27:36Z" duration="151.7873025">
+  <test-suite type="TestSuite" id="1085" name="城市共栖房间" fullname="城市共栖房间" runstate="Runnable" testcasecount="61" result="Passed" start-time="2026-10-06 01:25:04Z" end-time="2026-10-06 01:27:36Z" duration="151.787303" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <test-suite type="Assembly" id="1081" name="UrbanWildlifeRooms.Tests.PlayMode.dll" fullname="C:/Users/23902/Desktop/SYMBIOSIS-49-Unity/Library/ScriptAssemblies/UrbanWildlifeRooms.Tests.PlayMode.dll" runstate="Runnable" testcasecount="61" result="Passed" start-time="2026-10-06 01:25:04Z" end-time="2026-10-06 01:27:36Z" duration="151.773298" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="29648" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <test-suite type="TestSuite" id="1082" name="UrbanWildlifeRooms" fullname="UrbanWildlifeRooms" runstate="Runnable" testcasecount="61" result="Passed" start-time="2026-10-06 01:25:04Z" end-time="2026-10-06 01:27:36Z" duration="151.770393" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1083" name="Tests" fullname="UrbanWildlifeRooms.Tests" runstate="Runnable" testcasecount="61" result="Passed" start-time="2026-10-06 01:25:04Z" end-time="2026-10-06 01:27:36Z" duration="151.767252" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestSuite" id="1084" name="PlayMode" fullname="UrbanWildlifeRooms.Tests.PlayMode" runstate="Runnable" testcasecount="61" result="Passed" start-time="2026-10-06 01:25:04Z" end-time="2026-10-06 01:27:36Z" duration="151.765944" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1070" name="SpatialFoodStrategyFlowTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.SpatialFoodStrategyFlowTests" classname="UrbanWildlifeRooms.Tests.PlayMode.SpatialFoodStrategyFlowTests" runstate="Runnable" testcasecount="10" result="Passed" start-time="2026-10-06 01:25:04Z" end-time="2026-10-06 01:27:36Z" duration="151.763923" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1078" name="NeutralRepeatReportsObservedSurvival" fullname="UrbanWildlifeRooms.Tests.PlayMode.SpatialFoodStrategyFlowTests.NeutralRepeatReportsObservedSurvival" methodname="NeutralRepeatReportsObservedSurvival" classname="UrbanWildlifeRooms.Tests.PlayMode.SpatialFoodStrategyFlowTests" runstate="Runnable" seed="1835713788" result="Passed" start-time="2026-10-06 01:25:04Z" end-time="2026-10-06 01:27:36Z" duration="151.750260" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="Timeout" value="420000" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+strategy=neutral-repeat, seed=11, completedDays=30, active=True, endReason=none, residents=7, wildlife=16, community=100
+Saving results to: C:/Users/23902/AppData/LocalLow/Urban Wildlife Rooms/城市共栖房间\TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

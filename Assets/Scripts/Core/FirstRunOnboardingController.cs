@@ -390,7 +390,7 @@ namespace UrbanWildlifeRooms.Core
         {
             if (guidePageIndex >= 0)
             {
-                var page = GameplayGuideCatalog.GetPage(guidePageIndex, IsChinese());
+                var page = GameplayGuideCatalog.GetPage(guidePageIndex, IsChinese(), runtime.Mode);
                 var area = page.RoomType.HasValue
                     ? rooms.FirstOrDefault(room => room.Spec.Type == page.RoomType.Value)
                     : null;

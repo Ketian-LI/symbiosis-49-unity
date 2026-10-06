@@ -1,0 +1,764 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="61" result="Passed" total="61" passed="61" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-06 00:34:57Z" end-time="2026-10-06 00:50:23Z" duration="926.0286874">
+  <test-suite type="TestSuite" id="1085" name="城市共栖房间" fullname="城市共栖房间" runstate="Runnable" testcasecount="61" result="Passed" start-time="2026-10-06 00:34:57Z" end-time="2026-10-06 00:50:23Z" duration="926.028687" total="61" passed="61" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <test-suite type="Assembly" id="1081" name="UrbanWildlifeRooms.Tests.PlayMode.dll" fullname="C:/Users/23902/Desktop/SYMBIOSIS-49-Unity/Library/ScriptAssemblies/UrbanWildlifeRooms.Tests.PlayMode.dll" runstate="Runnable" testcasecount="61" result="Passed" start-time="2026-10-06 00:34:57Z" end-time="2026-10-06 00:50:23Z" duration="926.017306" total="61" passed="61" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="29648" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <test-suite type="TestSuite" id="1082" name="UrbanWildlifeRooms" fullname="UrbanWildlifeRooms" runstate="Runnable" testcasecount="61" result="Passed" start-time="2026-10-06 00:34:57Z" end-time="2026-10-06 00:50:23Z" duration="926.011369" total="61" passed="61" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1083" name="Tests" fullname="UrbanWildlifeRooms.Tests" runstate="Runnable" testcasecount="61" result="Passed" start-time="2026-10-06 00:34:57Z" end-time="2026-10-06 00:50:23Z" duration="926.008632" total="61" passed="61" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestSuite" id="1084" name="PlayMode" fullname="UrbanWildlifeRooms.Tests.PlayMode" runstate="Runnable" testcasecount="61" result="Passed" start-time="2026-10-06 00:34:57Z" end-time="2026-10-06 00:50:23Z" duration="926.007143" total="61" passed="61" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1003" name="ActorActivityFlowTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.ActorActivityFlowTests" classname="UrbanWildlifeRooms.Tests.PlayMode.ActorActivityFlowTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-10-06 00:34:57Z" end-time="2026-10-06 00:35:09Z" duration="11.663364" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1006" name="AnimalsResumeRoamingWhenTheirDailyActivityWindowReturns" fullname="UrbanWildlifeRooms.Tests.PlayMode.ActorActivityFlowTests.AnimalsResumeRoamingWhenTheirDailyActivityWindowReturns" methodname="AnimalsResumeRoamingWhenTheirDailyActivityWindowReturns" classname="UrbanWildlifeRooms.Tests.PlayMode.ActorActivityFlowTests" runstate="Runnable" seed="1657693766" result="Passed" start-time="2026-10-06 00:34:57Z" end-time="2026-10-06 00:35:02Z" duration="4.225280" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1004" name="EveryLivingAnimalCanOpenAndLeaveTheFollowView" fullname="UrbanWildlifeRooms.Tests.PlayMode.ActorActivityFlowTests.EveryLivingAnimalCanOpenAndLeaveTheFollowView" methodname="EveryLivingAnimalCanOpenAndLeaveTheFollowView" classname="UrbanWildlifeRooms.Tests.PlayMode.ActorActivityFlowTests" runstate="Runnable" seed="1864980903" result="Passed" start-time="2026-10-06 00:35:02Z" end-time="2026-10-06 00:35:02Z" duration="0.743851" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1007" name="ResidentsTravelToOfficeFoodShopAndBackHome" fullname="UrbanWildlifeRooms.Tests.PlayMode.ActorActivityFlowTests.ResidentsTravelToOfficeFoodShopAndBackHome" methodname="ResidentsTravelToOfficeFoodShopAndBackHome" classname="UrbanWildlifeRooms.Tests.PlayMode.ActorActivityFlowTests" runstate="Runnable" seed="930236219" result="Passed" start-time="2026-10-06 00:35:02Z" end-time="2026-10-06 00:35:07Z" duration="4.277322" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1005" name="TutorialKeepsPeopleAndDaytimeAnimalsMovingWithoutAdvancingTheClock" fullname="UrbanWildlifeRooms.Tests.PlayMode.ActorActivityFlowTests.TutorialKeepsPeopleAndDaytimeAnimalsMovingWithoutAdvancingTheClock" methodname="TutorialKeepsPeopleAndDaytimeAnimalsMovingWithoutAdvancingTheClock" classname="UrbanWildlifeRooms.Tests.PlayMode.ActorActivityFlowTests" runstate="Runnable" seed="1145165187" result="Passed" start-time="2026-10-06 00:35:07Z" end-time="2026-10-06 00:35:09Z" duration="2.403335" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1008" name="AnimalAmbientMotionFlowTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.AnimalAmbientMotionFlowTests" classname="UrbanWildlifeRooms.Tests.PlayMode.AnimalAmbientMotionFlowTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-10-06 00:35:09Z" end-time="2026-10-06 00:35:27Z" duration="18.316129" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1010" name="ActiveSpeciesCoverVisibleGroundDuringTheirOwnPhase" fullname="UrbanWildlifeRooms.Tests.PlayMode.AnimalAmbientMotionFlowTests.ActiveSpeciesCoverVisibleGroundDuringTheirOwnPhase" methodname="ActiveSpeciesCoverVisibleGroundDuringTheirOwnPhase" classname="UrbanWildlifeRooms.Tests.PlayMode.AnimalAmbientMotionFlowTests" runstate="Runnable" seed="1503572985" result="Passed" start-time="2026-10-06 00:35:09Z" end-time="2026-10-06 00:35:22Z" duration="12.750403" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+Six-second travel (m): pigeon 11.40, squirrel 1.78, hedgehog 2.60, fox 1.96.
+]]></output>
+              </test-case>
+              <test-case id="1011" name="FoxPatrolStaysInTheRoomReachedAfterAChase" fullname="UrbanWildlifeRooms.Tests.PlayMode.AnimalAmbientMotionFlowTests.FoxPatrolStaysInTheRoomReachedAfterAChase" methodname="FoxPatrolStaysInTheRoomReachedAfterAChase" classname="UrbanWildlifeRooms.Tests.PlayMode.AnimalAmbientMotionFlowTests" runstate="Runnable" seed="1068216629" result="Passed" start-time="2026-10-06 00:35:22Z" end-time="2026-10-06 00:35:27Z" duration="5.402732" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1009" name="MiddleDragStopsAnimalTrackingButKeepsCloseView" fullname="UrbanWildlifeRooms.Tests.PlayMode.AnimalAmbientMotionFlowTests.MiddleDragStopsAnimalTrackingButKeepsCloseView" methodname="MiddleDragStopsAnimalTrackingButKeepsCloseView" classname="UrbanWildlifeRooms.Tests.PlayMode.AnimalAmbientMotionFlowTests" runstate="Runnable" seed="253534407" result="Passed" start-time="2026-10-06 00:35:27Z" end-time="2026-10-06 00:35:27Z" duration="0.146077" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1012" name="AnimalDeathPresentationTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.AnimalDeathPresentationTests" classname="UrbanWildlifeRooms.Tests.PlayMode.AnimalDeathPresentationTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-10-06 00:35:27Z" end-time="2026-10-06 00:35:29Z" duration="2.227841" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1013" name="SpeciesTooltipsAndResultsShowTheActualCauses" fullname="UrbanWildlifeRooms.Tests.PlayMode.AnimalDeathPresentationTests.SpeciesTooltipsAndResultsShowTheActualCauses" methodname="SpeciesTooltipsAndResultsShowTheActualCauses" classname="UrbanWildlifeRooms.Tests.PlayMode.AnimalDeathPresentationTests" runstate="Runnable" seed="1593417303" result="Passed" start-time="2026-10-06 00:35:27Z" end-time="2026-10-06 00:35:29Z" duration="2.209967" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1014" name="AnimalHomeMovementFlowTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.AnimalHomeMovementFlowTests" classname="UrbanWildlifeRooms.Tests.PlayMode.AnimalHomeMovementFlowTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-10-06 00:35:29Z" end-time="2026-10-06 00:35:34Z" duration="4.413065" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1016" name="FourSpeciesAndSquirrelCacheFollowMovedHomeRooms" fullname="UrbanWildlifeRooms.Tests.PlayMode.AnimalHomeMovementFlowTests.FourSpeciesAndSquirrelCacheFollowMovedHomeRooms" methodname="FourSpeciesAndSquirrelCacheFollowMovedHomeRooms" classname="UrbanWildlifeRooms.Tests.PlayMode.AnimalHomeMovementFlowTests" runstate="Runnable" seed="48457849" result="Passed" start-time="2026-10-06 00:35:30Z" end-time="2026-10-06 00:35:30Z" duration="0.905582" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1015" name="RestartDuringRoomRelocationRestoresOriginalHomesAndLivingAnimals" fullname="UrbanWildlifeRooms.Tests.PlayMode.AnimalHomeMovementFlowTests.RestartDuringRoomRelocationRestoresOriginalHomesAndLivingAnimals" methodname="RestartDuringRoomRelocationRestoresOriginalHomesAndLivingAnimals" classname="UrbanWildlifeRooms.Tests.PlayMode.AnimalHomeMovementFlowTests" runstate="Runnable" seed="1737260712" result="Passed" start-time="2026-10-06 00:35:30Z" end-time="2026-10-06 00:35:31Z" duration="0.956741" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1018" name="SquirrelAwayFromHomeFollowsTheRoomItOccupies" fullname="UrbanWildlifeRooms.Tests.PlayMode.AnimalHomeMovementFlowTests.SquirrelAwayFromHomeFollowsTheRoomItOccupies" methodname="SquirrelAwayFromHomeFollowsTheRoomItOccupies" classname="UrbanWildlifeRooms.Tests.PlayMode.AnimalHomeMovementFlowTests" runstate="Runnable" seed="1887256613" result="Passed" start-time="2026-10-06 00:35:31Z" end-time="2026-10-06 00:35:33Z" duration="1.268424" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1017" name="SquirrelAwayFromHomeStaysInItsCurrentRoomWhenOnlyHomeMoves" fullname="UrbanWildlifeRooms.Tests.PlayMode.AnimalHomeMovementFlowTests.SquirrelAwayFromHomeStaysInItsCurrentRoomWhenOnlyHomeMoves" methodname="SquirrelAwayFromHomeStaysInItsCurrentRoomWhenOnlyHomeMoves" classname="UrbanWildlifeRooms.Tests.PlayMode.AnimalHomeMovementFlowTests" runstate="Runnable" seed="976467119" result="Passed" start-time="2026-10-06 00:35:33Z" end-time="2026-10-06 00:35:34Z" duration="1.264875" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1019" name="AnimalRouteHudTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.AnimalRouteHudTests" classname="UrbanWildlifeRooms.Tests.PlayMode.AnimalRouteHudTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-10-06 00:35:34Z" end-time="2026-10-06 00:35:40Z" duration="6.146502" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1021" name="FoodRiskUsesCurrentReachablePortionsAndShowsAttentionPanel" fullname="UrbanWildlifeRooms.Tests.PlayMode.AnimalRouteHudTests.FoodRiskUsesCurrentReachablePortionsAndShowsAttentionPanel" methodname="FoodRiskUsesCurrentReachablePortionsAndShowsAttentionPanel" classname="UrbanWildlifeRooms.Tests.PlayMode.AnimalRouteHudTests" runstate="Runnable" seed="1610593155" result="Passed" start-time="2026-10-06 00:35:34Z" end-time="2026-10-06 00:35:39Z" duration="4.815262" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+Risk raycast: screen=1313x299, point=(65.78, 226.05), camera=(x:0.00, y:0.00, width:1313.00, height:298.50), raycasters=1, targetActive=True, contains=True
+]]></output>
+              </test-case>
+              <test-case id="1022" name="NextDayRouteIsAnnouncedAndFloorMarksAppearOnlyWhileEditing" fullname="UrbanWildlifeRooms.Tests.PlayMode.AnimalRouteHudTests.NextDayRouteIsAnnouncedAndFloorMarksAppearOnlyWhileEditing" methodname="NextDayRouteIsAnnouncedAndFloorMarksAppearOnlyWhileEditing" classname="UrbanWildlifeRooms.Tests.PlayMode.AnimalRouteHudTests" runstate="Runnable" seed="2017058559" result="Passed" start-time="2026-10-06 00:35:39Z" end-time="2026-10-06 00:35:39Z" duration="0.672618" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1020" name="ThirdDayHungerOpensBorrowedDoorsAndBothActorTypesShowThreeCells" fullname="UrbanWildlifeRooms.Tests.PlayMode.AnimalRouteHudTests.ThirdDayHungerOpensBorrowedDoorsAndBothActorTypesShowThreeCells" methodname="ThirdDayHungerOpensBorrowedDoorsAndBothActorTypesShowThreeCells" classname="UrbanWildlifeRooms.Tests.PlayMode.AnimalRouteHudTests" runstate="Runnable" seed="856166656" result="Passed" start-time="2026-10-06 00:35:39Z" end-time="2026-10-06 00:35:40Z" duration="0.640114" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+Resident body top 2.024; status bottom 2.083; origin 0.300.
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1023" name="AnimalRouteReplanFlowTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.AnimalRouteReplanFlowTests" classname="UrbanWildlifeRooms.Tests.PlayMode.AnimalRouteReplanFlowTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-10-06 00:35:40Z" end-time="2026-10-06 00:35:44Z" duration="3.807663" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1026" name="EventWithNoClosedConnectionDoesNotInterruptCurrentTrip" fullname="UrbanWildlifeRooms.Tests.PlayMode.AnimalRouteReplanFlowTests.EventWithNoClosedConnectionDoesNotInterruptCurrentTrip" methodname="EventWithNoClosedConnectionDoesNotInterruptCurrentTrip" classname="UrbanWildlifeRooms.Tests.PlayMode.AnimalRouteReplanFlowTests" runstate="Runnable" seed="14587432" result="Passed" start-time="2026-10-06 00:35:40Z" end-time="2026-10-06 00:35:41Z" duration="0.790114" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1024" name="InFlightGroundAnimalStopsAtPortClosedAtDawn" fullname="UrbanWildlifeRooms.Tests.PlayMode.AnimalRouteReplanFlowTests.InFlightGroundAnimalStopsAtPortClosedAtDawn" methodname="InFlightGroundAnimalStopsAtPortClosedAtDawn" classname="UrbanWildlifeRooms.Tests.PlayMode.AnimalRouteReplanFlowTests" runstate="Runnable" seed="331354593" result="Passed" start-time="2026-10-06 00:35:41Z" end-time="2026-10-06 00:35:42Z" duration="1.627977" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1027" name="LayoutChangeInvalidatesAllActiveGroundRoutes" fullname="UrbanWildlifeRooms.Tests.PlayMode.AnimalRouteReplanFlowTests.LayoutChangeInvalidatesAllActiveGroundRoutes" methodname="LayoutChangeInvalidatesAllActiveGroundRoutes" classname="UrbanWildlifeRooms.Tests.PlayMode.AnimalRouteReplanFlowTests" runstate="Runnable" seed="404202863" result="Passed" start-time="2026-10-06 00:35:42Z" end-time="2026-10-06 00:35:43Z" duration="0.727218" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1025" name="RerouteKeepsFoodAlreadyCarriedBySquirrel" fullname="UrbanWildlifeRooms.Tests.PlayMode.AnimalRouteReplanFlowTests.RerouteKeepsFoodAlreadyCarriedBySquirrel" methodname="RerouteKeepsFoodAlreadyCarriedBySquirrel" classname="UrbanWildlifeRooms.Tests.PlayMode.AnimalRouteReplanFlowTests" runstate="Runnable" seed="1223239859" result="Passed" start-time="2026-10-06 00:35:43Z" end-time="2026-10-06 00:35:44Z" duration="0.647129" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1028" name="EndlessBalanceFlowTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.EndlessBalanceFlowTests" classname="UrbanWildlifeRooms.Tests.PlayMode.EndlessBalanceFlowTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-10-06 00:35:44Z" end-time="2026-10-06 00:35:45Z" duration="0.733285" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1029" name="ZeroCommunityEndsSandboxButNotResearch" fullname="UrbanWildlifeRooms.Tests.PlayMode.EndlessBalanceFlowTests.ZeroCommunityEndsSandboxButNotResearch" methodname="ZeroCommunityEndsSandboxButNotResearch" classname="UrbanWildlifeRooms.Tests.PlayMode.EndlessBalanceFlowTests" runstate="Runnable" seed="2055192354" result="Passed" start-time="2026-10-06 00:35:44Z" end-time="2026-10-06 00:35:45Z" duration="0.718513" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1030" name="FoodBalanceFlowTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.FoodBalanceFlowTests" classname="UrbanWildlifeRooms.Tests.PlayMode.FoodBalanceFlowTests" runstate="Runnable" testcasecount="11" result="Passed" start-time="2026-10-06 00:35:45Z" end-time="2026-10-06 00:37:45Z" duration="120.880413" total="11" passed="11" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1041" name="AnnouncedMarketRoutesWasteWithoutCurrencyIncome" fullname="UrbanWildlifeRooms.Tests.PlayMode.FoodBalanceFlowTests.AnnouncedMarketRoutesWasteWithoutCurrencyIncome" methodname="AnnouncedMarketRoutesWasteWithoutCurrencyIncome" classname="UrbanWildlifeRooms.Tests.PlayMode.FoodBalanceFlowTests" runstate="Runnable" seed="623052893" result="Passed" start-time="2026-10-06 00:35:45Z" end-time="2026-10-06 00:36:20Z" duration="35.730589" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1031" name="EndlessDayUsesActualCommutesAndAnimalDeathsDoNotEndAtThree" fullname="UrbanWildlifeRooms.Tests.PlayMode.FoodBalanceFlowTests.EndlessDayUsesActualCommutesAndAnimalDeathsDoNotEndAtThree" methodname="EndlessDayUsesActualCommutesAndAnimalDeathsDoNotEndAtThree" classname="UrbanWildlifeRooms.Tests.PlayMode.FoodBalanceFlowTests" runstate="Runnable" seed="1448932202" result="Passed" start-time="2026-10-06 00:36:20Z" end-time="2026-10-06 00:36:21Z" duration="0.771968" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1034" name="FewerThanThreeWorkersEndsRunAtDayBoundaryWithoutResourceSettlement" fullname="UrbanWildlifeRooms.Tests.PlayMode.FoodBalanceFlowTests.FewerThanThreeWorkersEndsRunAtDayBoundaryWithoutResourceSettlement" methodname="FewerThanThreeWorkersEndsRunAtDayBoundaryWithoutResourceSettlement" classname="UrbanWildlifeRooms.Tests.PlayMode.FoodBalanceFlowTests" runstate="Runnable" seed="205672567" result="Passed" start-time="2026-10-06 00:36:21Z" end-time="2026-10-06 00:36:22Z" duration="0.735699" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1035" name="FirstDaySettlementAppearsAsObservedDailyOutcome" fullname="UrbanWildlifeRooms.Tests.PlayMode.FoodBalanceFlowTests.FirstDaySettlementAppearsAsObservedDailyOutcome" methodname="FirstDaySettlementAppearsAsObservedDailyOutcome" classname="UrbanWildlifeRooms.Tests.PlayMode.FoodBalanceFlowTests" runstate="Runnable" seed="1590163182" result="Passed" start-time="2026-10-06 00:36:22Z" end-time="2026-10-06 00:36:27Z" duration="5.616775" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1038" name="ManualFeedHasThreeDayCooldownAndInvalidPlacementDoesNotConsumeIt" fullname="UrbanWildlifeRooms.Tests.PlayMode.FoodBalanceFlowTests.ManualFeedHasThreeDayCooldownAndInvalidPlacementDoesNotConsumeIt" methodname="ManualFeedHasThreeDayCooldownAndInvalidPlacementDoesNotConsumeIt" classname="UrbanWildlifeRooms.Tests.PlayMode.FoodBalanceFlowTests" runstate="Runnable" seed="1905183739" result="Passed" start-time="2026-10-06 00:36:27Z" end-time="2026-10-06 00:36:28Z" duration="0.800597" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1040" name="PeriodicFeedingAtTheParkCannotReplaceAHabitatNetwork" fullname="UrbanWildlifeRooms.Tests.PlayMode.FoodBalanceFlowTests.PeriodicFeedingAtTheParkCannotReplaceAHabitatNetwork" methodname="PeriodicFeedingAtTheParkCannotReplaceAHabitatNetwork" classname="UrbanWildlifeRooms.Tests.PlayMode.FoodBalanceFlowTests" runstate="Runnable" seed="961026553" result="Passed" start-time="2026-10-06 00:36:28Z" end-time="2026-10-06 00:36:59Z" duration="30.734066" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1037" name="PlayerFoodOnlyCallsSquirrelsFromTheirHomeOrOneConnectedRoom" fullname="UrbanWildlifeRooms.Tests.PlayMode.FoodBalanceFlowTests.PlayerFoodOnlyCallsSquirrelsFromTheirHomeOrOneConnectedRoom" methodname="PlayerFoodOnlyCallsSquirrelsFromTheirHomeOrOneConnectedRoom" classname="UrbanWildlifeRooms.Tests.PlayMode.FoodBalanceFlowTests" runstate="Runnable" seed="1614946800" result="Passed" start-time="2026-10-06 00:36:59Z" end-time="2026-10-06 00:37:00Z" duration="0.760089" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1032" name="RestartClearsPreviousSaveAndReloadsOnlyTheNewRun" fullname="UrbanWildlifeRooms.Tests.PlayMode.FoodBalanceFlowTests.RestartClearsPreviousSaveAndReloadsOnlyTheNewRun" methodname="RestartClearsPreviousSaveAndReloadsOnlyTheNewRun" classname="UrbanWildlifeRooms.Tests.PlayMode.FoodBalanceFlowTests" runstate="Runnable" seed="159951442" result="Passed" start-time="2026-10-06 00:37:00Z" end-time="2026-10-06 00:37:01Z" duration="1.253496" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:37:00.8611636Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1033" name="RestartConfirmationReceivesPointerClickAndResetsDayAndLayout" fullname="UrbanWildlifeRooms.Tests.PlayMode.FoodBalanceFlowTests.RestartConfirmationReceivesPointerClickAndResetsDayAndLayout" methodname="RestartConfirmationReceivesPointerClickAndResetsDayAndLayout" classname="UrbanWildlifeRooms.Tests.PlayMode.FoodBalanceFlowTests" runstate="Runnable" seed="180514350" result="Passed" start-time="2026-10-06 00:37:01Z" end-time="2026-10-06 00:37:04Z" duration="2.904847" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+Restart raycast: screen=1313x299, point=(686.35, 125.41), camera=(x:0.00, y:0.00, width:1313.00, height:298.50), raycasters=1, targetActive=True, contains=True
+]]></output>
+              </test-case>
+              <test-case id="1039" name="StaticLayoutWithPlanningGateBypassedEventuallyLosesAnimals" fullname="UrbanWildlifeRooms.Tests.PlayMode.FoodBalanceFlowTests.StaticLayoutWithPlanningGateBypassedEventuallyLosesAnimals" methodname="StaticLayoutWithPlanningGateBypassedEventuallyLosesAnimals" classname="UrbanWildlifeRooms.Tests.PlayMode.FoodBalanceFlowTests" runstate="Runnable" seed="1234264061" result="Passed" start-time="2026-10-06 00:37:04Z" end-time="2026-10-06 00:37:45Z" duration="40.767549" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+Completed day 1: map food 14, worker meals 0, hungry 3, deaths 0 (starvation 0, traffic 0).
+Completed day 2: map food 25, worker meals 0, hungry 7, deaths 0 (starvation 0, traffic 0).
+Completed day 3: map food 23, worker meals 1, hungry 1, deaths 1 (starvation 1, traffic 0).
+Completed day 4: map food 19, worker meals 1, hungry 5, deaths 1 (starvation 1, traffic 0).
+Completed day 5: map food 27, worker meals 1, hungry 9, deaths 1 (starvation 1, traffic 0).
+Completed day 6: map food 29, worker meals 1, hungry 1, deaths 1 (starvation 1, traffic 0).
+Completed day 7: map food 23, worker meals 1, hungry 1, deaths 1 (starvation 1, traffic 0).
+Completed day 8: map food 28, worker meals 1, hungry 6, deaths 1 (starvation 1, traffic 0).
+]]></output>
+              </test-case>
+              <test-case id="1036" name="UneatenPlayerFoodBecomesLocalWasteButEatenFoodDoesNot" fullname="UrbanWildlifeRooms.Tests.PlayMode.FoodBalanceFlowTests.UneatenPlayerFoodBecomesLocalWasteButEatenFoodDoesNot" methodname="UneatenPlayerFoodBecomesLocalWasteButEatenFoodDoesNot" classname="UrbanWildlifeRooms.Tests.PlayMode.FoodBalanceFlowTests" runstate="Runnable" seed="1301494841" result="Passed" start-time="2026-10-06 00:37:45Z" end-time="2026-10-06 00:37:45Z" duration="0.790908" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1042" name="HedgehogSocialFlowTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.HedgehogSocialFlowTests" classname="UrbanWildlifeRooms.Tests.PlayMode.HedgehogSocialFlowTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-10-06 00:37:45Z" end-time="2026-10-06 00:37:56Z" duration="10.306012" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1043" name="FedHedgehogsMeetThenReturnToTheirOwnHomes" fullname="UrbanWildlifeRooms.Tests.PlayMode.HedgehogSocialFlowTests.FedHedgehogsMeetThenReturnToTheirOwnHomes" methodname="FedHedgehogsMeetThenReturnToTheirOwnHomes" classname="UrbanWildlifeRooms.Tests.PlayMode.HedgehogSocialFlowTests" runstate="Runnable" seed="643003202" result="Passed" start-time="2026-10-06 00:37:45Z" end-time="2026-10-06 00:37:54Z" duration="8.014804" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1044" name="HungryHedgehogsDoNotLeaveForACompanion" fullname="UrbanWildlifeRooms.Tests.PlayMode.HedgehogSocialFlowTests.HungryHedgehogsDoNotLeaveForACompanion" methodname="HungryHedgehogsDoNotLeaveForACompanion" classname="UrbanWildlifeRooms.Tests.PlayMode.HedgehogSocialFlowTests" runstate="Runnable" seed="150842773" result="Passed" start-time="2026-10-06 00:37:54Z" end-time="2026-10-06 00:37:55Z" duration="1.452865" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1045" name="PredatorDefenceInterruptsACompanionTrip" fullname="UrbanWildlifeRooms.Tests.PlayMode.HedgehogSocialFlowTests.PredatorDefenceInterruptsACompanionTrip" methodname="PredatorDefenceInterruptsACompanionTrip" classname="UrbanWildlifeRooms.Tests.PlayMode.HedgehogSocialFlowTests" runstate="Runnable" seed="1529844656" result="Passed" start-time="2026-10-06 00:37:55Z" end-time="2026-10-06 00:37:56Z" duration="0.823261" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1046" name="MainMenuLiveSceneTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.MainMenuLiveSceneTests" classname="UrbanWildlifeRooms.Tests.PlayMode.MainMenuLiveSceneTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-10-06 00:37:56Z" end-time="2026-10-06 00:38:02Z" duration="6.046133" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1047" name="SandboxEntryAndReturnMoveCameraAcrossTheSameVisibleBoard" fullname="UrbanWildlifeRooms.Tests.PlayMode.MainMenuLiveSceneTests.SandboxEntryAndReturnMoveCameraAcrossTheSameVisibleBoard" methodname="SandboxEntryAndReturnMoveCameraAcrossTheSameVisibleBoard" classname="UrbanWildlifeRooms.Tests.PlayMode.MainMenuLiveSceneTests" runstate="Runnable" seed="1617722959" result="Passed" start-time="2026-10-06 00:37:56Z" end-time="2026-10-06 00:38:02Z" duration="6.031226" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1048" name="MapResourceBadgeFlowTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.MapResourceBadgeFlowTests" classname="UrbanWildlifeRooms.Tests.PlayMode.MapResourceBadgeFlowTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-10-06 00:38:02Z" end-time="2026-10-06 00:38:03Z" duration="1.446206" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1049" name="FoodAndFacilityBadgesFollowLiveModelsWithoutBlockingRoomInput" fullname="UrbanWildlifeRooms.Tests.PlayMode.MapResourceBadgeFlowTests.FoodAndFacilityBadgesFollowLiveModelsWithoutBlockingRoomInput" methodname="FoodAndFacilityBadgesFollowLiveModelsWithoutBlockingRoomInput" classname="UrbanWildlifeRooms.Tests.PlayMode.MapResourceBadgeFlowTests" runstate="Runnable" seed="1219603065" result="Passed" start-time="2026-10-06 00:38:02Z" end-time="2026-10-06 00:38:03Z" duration="0.728659" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1050" name="FoodIndicatorListsLiveRoomStockAndLocatesSelectedRoom" fullname="UrbanWildlifeRooms.Tests.PlayMode.MapResourceBadgeFlowTests.FoodIndicatorListsLiveRoomStockAndLocatesSelectedRoom" methodname="FoodIndicatorListsLiveRoomStockAndLocatesSelectedRoom" classname="UrbanWildlifeRooms.Tests.PlayMode.MapResourceBadgeFlowTests" runstate="Runnable" seed="1037545362" result="Passed" start-time="2026-10-06 00:38:03Z" end-time="2026-10-06 00:38:03Z" duration="0.703533" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1051" name="MixedSizeRoomSwapTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.MixedSizeRoomSwapTests" classname="UrbanWildlifeRooms.Tests.PlayMode.MixedSizeRoomSwapTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-10-06 00:38:03Z" end-time="2026-10-06 00:38:10Z" duration="7.074783" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1052" name="DraggingOneCellRoomPreviewsAndCommitsOnlyItsTargetExchange" fullname="UrbanWildlifeRooms.Tests.PlayMode.MixedSizeRoomSwapTests.DraggingOneCellRoomPreviewsAndCommitsOnlyItsTargetExchange" methodname="DraggingOneCellRoomPreviewsAndCommitsOnlyItsTargetExchange" classname="UrbanWildlifeRooms.Tests.PlayMode.MixedSizeRoomSwapTests" runstate="Runnable" seed="1351577572" result="Passed" start-time="2026-10-06 00:38:03Z" end-time="2026-10-06 00:38:04Z" duration="0.713593" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1054" name="FreeRearrangementDoesNotSpendResourcesAndRenewsNextDay" fullname="UrbanWildlifeRooms.Tests.PlayMode.MixedSizeRoomSwapTests.FreeRearrangementDoesNotSpendResourcesAndRenewsNextDay" methodname="FreeRearrangementDoesNotSpendResourcesAndRenewsNextDay" classname="UrbanWildlifeRooms.Tests.PlayMode.MixedSizeRoomSwapTests" runstate="Runnable" seed="1608429946" result="Passed" start-time="2026-10-06 00:38:04Z" end-time="2026-10-06 00:38:10Z" duration="5.644100" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1053" name="PressingRWhileDraggingRotatesOneCellAnimalPassageAndCommitsExchange" fullname="UrbanWildlifeRooms.Tests.PlayMode.MixedSizeRoomSwapTests.PressingRWhileDraggingRotatesOneCellAnimalPassageAndCommitsExchange" methodname="PressingRWhileDraggingRotatesOneCellAnimalPassageAndCommitsExchange" classname="UrbanWildlifeRooms.Tests.PlayMode.MixedSizeRoomSwapTests" runstate="Runnable" seed="1105681661" result="Passed" start-time="2026-10-06 00:38:10Z" end-time="2026-10-06 00:38:10Z" duration="0.698421" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1055" name="OnboardingResidentClickTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.OnboardingResidentClickTests" classname="UrbanWildlifeRooms.Tests.PlayMode.OnboardingResidentClickTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-10-06 00:38:10Z" end-time="2026-10-06 00:38:11Z" duration="0.698306" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1056" name="ClickingResidentSpotlightOpensTheRouteEvenWhenHudOverlapsIt" fullname="UrbanWildlifeRooms.Tests.PlayMode.OnboardingResidentClickTests.ClickingResidentSpotlightOpensTheRouteEvenWhenHudOverlapsIt" methodname="ClickingResidentSpotlightOpensTheRouteEvenWhenHudOverlapsIt" classname="UrbanWildlifeRooms.Tests.PlayMode.OnboardingResidentClickTests" runstate="Runnable" seed="1448307339" result="Passed" start-time="2026-10-06 00:38:10Z" end-time="2026-10-06 00:38:11Z" duration="0.685032" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1057" name="PigeonNaturalForagingFlowTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.PigeonNaturalForagingFlowTests" classname="UrbanWildlifeRooms.Tests.PlayMode.PigeonNaturalForagingFlowTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-10-06 00:38:11Z" end-time="2026-10-06 00:38:29Z" duration="17.959299" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1059" name="GroundAnimalsDoNotReceiveInvisibleNaturalFoodAtSettlement" fullname="UrbanWildlifeRooms.Tests.PlayMode.PigeonNaturalForagingFlowTests.GroundAnimalsDoNotReceiveInvisibleNaturalFoodAtSettlement" methodname="GroundAnimalsDoNotReceiveInvisibleNaturalFoodAtSettlement" classname="UrbanWildlifeRooms.Tests.PlayMode.PigeonNaturalForagingFlowTests" runstate="Runnable" seed="1470211567" result="Passed" start-time="2026-10-06 00:38:11Z" end-time="2026-10-06 00:38:12Z" duration="0.638825" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1061" name="HedgehogReceivesMealOnlyAfterReachingInsects" fullname="UrbanWildlifeRooms.Tests.PlayMode.PigeonNaturalForagingFlowTests.HedgehogReceivesMealOnlyAfterReachingInsects" methodname="HedgehogReceivesMealOnlyAfterReachingInsects" classname="UrbanWildlifeRooms.Tests.PlayMode.PigeonNaturalForagingFlowTests" runstate="Runnable" seed="35890560" result="Passed" start-time="2026-10-06 00:38:12Z" end-time="2026-10-06 00:38:14Z" duration="2.284149" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1062" name="HungryFoxScavengesOnlyAfterWalkingToDiscardedFood" fullname="UrbanWildlifeRooms.Tests.PlayMode.PigeonNaturalForagingFlowTests.HungryFoxScavengesOnlyAfterWalkingToDiscardedFood" methodname="HungryFoxScavengesOnlyAfterWalkingToDiscardedFood" classname="UrbanWildlifeRooms.Tests.PlayMode.PigeonNaturalForagingFlowTests" runstate="Runnable" seed="2145938773" result="Passed" start-time="2026-10-06 00:38:14Z" end-time="2026-10-06 00:38:21Z" duration="6.946936" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1058" name="PigeonNaturalMealRequiresVisibleArrival" fullname="UrbanWildlifeRooms.Tests.PlayMode.PigeonNaturalForagingFlowTests.PigeonNaturalMealRequiresVisibleArrival" methodname="PigeonNaturalMealRequiresVisibleArrival" classname="UrbanWildlifeRooms.Tests.PlayMode.PigeonNaturalForagingFlowTests" runstate="Runnable" seed="140707591" result="Passed" start-time="2026-10-06 00:38:21Z" end-time="2026-10-06 00:38:27Z" duration="5.976492" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1060" name="SquirrelStocksCacheOnlyAfterAVisibleNutTrip" fullname="UrbanWildlifeRooms.Tests.PlayMode.PigeonNaturalForagingFlowTests.SquirrelStocksCacheOnlyAfterAVisibleNutTrip" methodname="SquirrelStocksCacheOnlyAfterAVisibleNutTrip" classname="UrbanWildlifeRooms.Tests.PlayMode.PigeonNaturalForagingFlowTests" runstate="Runnable" seed="1757055257" result="Passed" start-time="2026-10-06 00:38:27Z" end-time="2026-10-06 00:38:29Z" duration="2.097631" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1063" name="ShrubShelterFlowTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.ShrubShelterFlowTests" classname="UrbanWildlifeRooms.Tests.PlayMode.ShrubShelterFlowTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-10-06 00:38:29Z" end-time="2026-10-06 00:38:30Z" duration="0.767533" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1064" name="ConfirmedShrubSwapShowsRecoveryAndHonestForecast" fullname="UrbanWildlifeRooms.Tests.PlayMode.ShrubShelterFlowTests.ConfirmedShrubSwapShowsRecoveryAndHonestForecast" methodname="ConfirmedShrubSwapShowsRecoveryAndHonestForecast" classname="UrbanWildlifeRooms.Tests.PlayMode.ShrubShelterFlowTests" runstate="Runnable" seed="1694495712" result="Passed" start-time="2026-10-06 00:38:29Z" end-time="2026-10-06 00:38:30Z" duration="0.748910" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1065" name="SkipDayFlowTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.SkipDayFlowTests" classname="UrbanWildlifeRooms.Tests.PlayMode.SkipDayFlowTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-10-06 00:38:30Z" end-time="2026-10-06 00:38:38Z" duration="8.277960" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1068" name="ARealLayoutChangeIsRequiredBeforeSkippingOrNaturalDawn" fullname="UrbanWildlifeRooms.Tests.PlayMode.SkipDayFlowTests.ARealLayoutChangeIsRequiredBeforeSkippingOrNaturalDawn" methodname="ARealLayoutChangeIsRequiredBeforeSkippingOrNaturalDawn" classname="UrbanWildlifeRooms.Tests.PlayMode.SkipDayFlowTests" runstate="Runnable" seed="122756985" result="Passed" start-time="2026-10-06 00:38:30Z" end-time="2026-10-06 00:38:31Z" duration="0.962366" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1066" name="FastForwardMovesActorsByTheSameSimulationTimeAsTheClock" fullname="UrbanWildlifeRooms.Tests.PlayMode.SkipDayFlowTests.FastForwardMovesActorsByTheSameSimulationTimeAsTheClock" methodname="FastForwardMovesActorsByTheSameSimulationTimeAsTheClock" classname="UrbanWildlifeRooms.Tests.PlayMode.SkipDayFlowTests" runstate="Runnable" seed="1166100115" result="Passed" start-time="2026-10-06 00:38:31Z" end-time="2026-10-06 00:38:31Z" duration="0.694051" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1069" name="FeedAndRearrangeAreMutuallyExclusiveDailyActions" fullname="UrbanWildlifeRooms.Tests.PlayMode.SkipDayFlowTests.FeedAndRearrangeAreMutuallyExclusiveDailyActions" methodname="FeedAndRearrangeAreMutuallyExclusiveDailyActions" classname="UrbanWildlifeRooms.Tests.PlayMode.SkipDayFlowTests" runstate="Runnable" seed="1010215436" result="Passed" start-time="2026-10-06 00:38:31Z" end-time="2026-10-06 00:38:32Z" duration="0.913157" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1067" name="SkipFromDawnCompletesInAboutFiveRealSeconds" fullname="UrbanWildlifeRooms.Tests.PlayMode.SkipDayFlowTests.SkipFromDawnCompletesInAboutFiveRealSeconds" methodname="SkipFromDawnCompletesInAboutFiveRealSeconds" classname="UrbanWildlifeRooms.Tests.PlayMode.SkipDayFlowTests" runstate="Runnable" seed="1022128066" result="Passed" start-time="2026-10-06 00:38:32Z" end-time="2026-10-06 00:38:38Z" duration="5.693514" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+Skip-to-next-day elapsed real time: 4.91s
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1070" name="SpatialFoodStrategyFlowTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.SpatialFoodStrategyFlowTests" classname="UrbanWildlifeRooms.Tests.PlayMode.SpatialFoodStrategyFlowTests" runstate="Runnable" testcasecount="10" result="Passed" start-time="2026-10-06 00:38:38Z" end-time="2026-10-06 00:50:23Z" duration="705.239440" total="10" passed="10" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1073" name="AlternatingOneCorridorUsesRealDailyMovesAndRealDeathLimit" fullname="UrbanWildlifeRooms.Tests.PlayMode.SpatialFoodStrategyFlowTests.AlternatingOneCorridorUsesRealDailyMovesAndRealDeathLimit" methodname="AlternatingOneCorridorUsesRealDailyMovesAndRealDeathLimit" classname="UrbanWildlifeRooms.Tests.PlayMode.SpatialFoodStrategyFlowTests" runstate="Runnable" seed="1410078299" result="Passed" start-time="2026-10-06 00:38:38Z" end-time="2026-10-06 00:39:19Z" duration="40.902244" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+Alternating corridor day 1: residents 4, meals 16/19, pigeon meals 10/12, seeds left 1, animal deaths 0, starvation 0, active True.
+Alternating corridor day 2: residents 5, meals 11/19, pigeon meals 5/12, seeds left 1, animal deaths 0, starvation 0, active True.
+Alternating corridor day 3: residents 5, meals 18/19, pigeon meals 11/12, seeds left 1, animal deaths 1, starvation 1, active True.
+Alternating corridor day 4: residents 6, meals 13/18, pigeon meals 7/11, seeds left 1, animal deaths 1, starvation 1, active True.
+Alternating corridor day 5: residents 6, meals 10/18, pigeon meals 4/11, seeds left 0, animal deaths 1, starvation 1, active True.
+Alternating corridor day 6: residents 7, meals 14/18, pigeon meals 8/11, seeds left 0, animal deaths 2, starvation 2, active True.
+Alternating corridor day 7: residents 7, meals 17/17, pigeon meals 11/11, seeds left 1, animal deaths 2, starvation 2, active True.
+Alternating corridor day 8: residents 7, meals 12/17, pigeon meals 6/11, seeds left 1, animal deaths 2, starvation 2, active True.
+Alternating corridor survived at least 8 days.
+]]></output>
+              </test-case>
+              <test-case id="1077" name="EveryBirdInASwappedFlockRoomMovesWithThatRoom" fullname="UrbanWildlifeRooms.Tests.PlayMode.SpatialFoodStrategyFlowTests.EveryBirdInASwappedFlockRoomMovesWithThatRoom" methodname="EveryBirdInASwappedFlockRoomMovesWithThatRoom" classname="UrbanWildlifeRooms.Tests.PlayMode.SpatialFoodStrategyFlowTests" runstate="Runnable" seed="161972889" result="Passed" start-time="2026-10-06 00:39:19Z" end-time="2026-10-06 00:39:20Z" duration="0.705491" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1074" name="LinkedGreeneryWithDailyMovesReportsActualMortality" fullname="UrbanWildlifeRooms.Tests.PlayMode.SpatialFoodStrategyFlowTests.LinkedGreeneryWithDailyMovesReportsActualMortality" methodname="LinkedGreeneryWithDailyMovesReportsActualMortality" classname="UrbanWildlifeRooms.Tests.PlayMode.SpatialFoodStrategyFlowTests" runstate="Runnable" seed="1738420761" result="Passed" start-time="2026-10-06 00:39:20Z" end-time="2026-10-06 00:40:00Z" duration="40.728719" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+Green network day 1: connected 4, seeds 11, seed-meal ceiling 7, plazas 2, meals 13/19, pigeon meals 7/12, seeds left 4, residents 4, animal deaths 0, starvation 0 (pigeon 0, squirrel 0, hedgehog 0, fox 0), active True.
+Green network day 2: connected 2, seeds 3, seed-meal ceiling 3, plazas 0, meals 10/19, pigeon meals 5/12, seeds left 0, residents 5, animal deaths 0, starvation 0 (pigeon 0, squirrel 0, hedgehog 0, fox 0), active True.
+Green network day 3: connected 4, seeds 11, seed-meal ceiling 7, plazas 2, meals 15/19, pigeon meals 8/12, seeds left 4, residents 5, animal deaths 4, starvation 4 (pigeon 4, squirrel 0, hedgehog 0, fox 0), active True.
+Green network day 4: connected 4, seeds 11, seed-meal ceiling 7, plazas 2, meals 15/15, pigeon meals 8/8, seeds left 4, residents 6, animal deaths 4, starvation 4 (pigeon 4, squirrel 0, hedgehog 0, fox 0), active True.
+Green network day 5: connected 2, seeds 3, seed-meal ceiling 3, plazas 0, meals 12/15, pigeon meals 6/8, seeds left 0, residents 6, animal deaths 4, starvation 4 (pigeon 4, squirrel 0, hedgehog 0, fox 0), active True.
+Green network day 6: connected 4, seeds 11, seed-meal ceiling 7, plazas 2, meals 15/15, pigeon meals 8/8, seeds left 4, residents 7, animal deaths 4, starvation 4 (pigeon 4, squirrel 0, hedgehog 0, fox 0), active True.
+Green network day 7: connected 4, seeds 11, seed-meal ceiling 7, plazas 2, meals 15/15, pigeon meals 8/8, seeds left 4, residents 7, animal deaths 4, starvation 4 (pigeon 4, squirrel 0, hedgehog 0, fox 0), active True.
+Green network day 8: connected 2, seeds 3, seed-meal ceiling 3, plazas 0, meals 12/15, pigeon meals 6/8, seeds left 0, residents 7, animal deaths 4, starvation 4 (pigeon 4, squirrel 0, hedgehog 0, fox 0), active True.
+Green network survived at least 8 days.
+]]></output>
+              </test-case>
+              <test-case id="1078" name="NeutralRepeatAcrossSeedsReportsObservedSurvival" fullname="UrbanWildlifeRooms.Tests.PlayMode.SpatialFoodStrategyFlowTests.NeutralRepeatAcrossSeedsReportsObservedSurvival" methodname="NeutralRepeatAcrossSeedsReportsObservedSurvival" classname="UrbanWildlifeRooms.Tests.PlayMode.SpatialFoodStrategyFlowTests" runstate="Runnable" seed="562752749" result="Passed" start-time="2026-10-06 00:40:00Z" end-time="2026-10-06 00:42:32Z" duration="151.616922" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="Timeout" value="240000" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+strategy=neutral-repeat, seed=11, completedDays=15, active=True, endReason=none, residents=7, wildlife=14, community=92
+[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+strategy=neutral-repeat, seed=29, completedDays=15, active=True, endReason=none, residents=7, wildlife=14, community=92
+]]></output>
+              </test-case>
+              <test-case id="1075" name="OneOpeningSwapAloneDoesNotSolveTenDaysOfChangingRoutes" fullname="UrbanWildlifeRooms.Tests.PlayMode.SpatialFoodStrategyFlowTests.OneOpeningSwapAloneDoesNotSolveTenDaysOfChangingRoutes" methodname="OneOpeningSwapAloneDoesNotSolveTenDaysOfChangingRoutes" classname="UrbanWildlifeRooms.Tests.PlayMode.SpatialFoodStrategyFlowTests" runstate="Runnable" seed="1106569732" result="Passed" start-time="2026-10-06 00:42:32Z" end-time="2026-10-06 00:43:23Z" duration="50.782261" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+Day 1: workers 4, starvation deaths 0, active True.
+Day 2: workers 4, starvation deaths 0, active True.
+Day 3: workers 5, starvation deaths 1, active True.
+Day 4: workers 5, starvation deaths 2, active True.
+Day 5: workers 6, starvation deaths 2, active True.
+Day 6: workers 6, starvation deaths 2, active True.
+Day 7: workers 6, starvation deaths 2, active True.
+Day 8: workers 6, starvation deaths 2, active True.
+Day 9: workers 6, starvation deaths 2, active True.
+Day 10: workers 6, starvation deaths 2, active True.
+]]></output>
+              </test-case>
+              <test-case id="1079" name="ParkFeedingAcrossSeedsReportsObservedSurvival" fullname="UrbanWildlifeRooms.Tests.PlayMode.SpatialFoodStrategyFlowTests.ParkFeedingAcrossSeedsReportsObservedSurvival" methodname="ParkFeedingAcrossSeedsReportsObservedSurvival" classname="UrbanWildlifeRooms.Tests.PlayMode.SpatialFoodStrategyFlowTests" runstate="Runnable" seed="1916701690" result="Passed" start-time="2026-10-06 00:43:23Z" end-time="2026-10-06 00:45:54Z" duration="151.643632" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="Timeout" value="240000" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+strategy=park-feeding, seed=11, completedDays=15, active=True, endReason=none, residents=7, wildlife=16, community=92
+[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+strategy=park-feeding, seed=29, completedDays=15, active=True, endReason=none, residents=7, wildlife=16, community=92
+]]></output>
+              </test-case>
+              <test-case id="1080" name="RouteRepairAcrossSeedsReportsObservedSurvival" fullname="UrbanWildlifeRooms.Tests.PlayMode.SpatialFoodStrategyFlowTests.RouteRepairAcrossSeedsReportsObservedSurvival" methodname="RouteRepairAcrossSeedsReportsObservedSurvival" classname="UrbanWildlifeRooms.Tests.PlayMode.SpatialFoodStrategyFlowTests" runstate="Runnable" seed="2108723346" result="Passed" start-time="2026-10-06 00:45:54Z" end-time="2026-10-06 00:48:26Z" duration="151.498041" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="Timeout" value="240000" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+strategy=route-repair, seed=11, completedDays=15, active=True, endReason=none, residents=6, wildlife=19, community=80
+[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+strategy=route-repair, seed=29, completedDays=15, active=True, endReason=none, residents=6, wildlife=19, community=80
+]]></output>
+              </test-case>
+              <test-case id="1072" name="StrongOpeningAndAlternatingCorridorReportsObservedDays" fullname="UrbanWildlifeRooms.Tests.PlayMode.SpatialFoodStrategyFlowTests.StrongOpeningAndAlternatingCorridorReportsObservedDays" methodname="StrongOpeningAndAlternatingCorridorReportsObservedDays" classname="UrbanWildlifeRooms.Tests.PlayMode.SpatialFoodStrategyFlowTests" runstate="Runnable" seed="2120908331" result="Passed" start-time="2026-10-06 00:48:26Z" end-time="2026-10-06 00:49:17Z" duration="50.731695" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+Strong opening day 1: pigeon meals 10/12, seeds left 1, workers 3, deaths 0, active True.
+Strong opening day 2: pigeon meals 9/12, seeds left 2, workers 3, deaths 0, active True.
+Strong opening day 3: pigeon meals 11/12, seeds left 1, workers 4, deaths 0, active True.
+Strong opening day 4: pigeon meals 9/12, seeds left 3, workers 4, deaths 0, active True.
+Strong opening day 5: pigeon meals 5/12, seeds left 0, workers 5, deaths 0, active True.
+Strong opening day 6: pigeon meals 9/12, seeds left 7, workers 5, deaths 2, active True.
+Strong opening day 7: pigeon meals 10/10, seeds left 4, workers 5, deaths 2, active True.
+Strong opening day 8: pigeon meals 9/10, seeds left 3, workers 5, deaths 2, active True.
+Strong opening day 9: pigeon meals 8/10, seeds left 1, workers 5, deaths 2, active True.
+Strong opening day 10: pigeon meals 9/10, seeds left 7, workers 5, deaths 2, active True.
+Strong opening survived at least 10 days.
+]]></output>
+              </test-case>
+              <test-case id="1076" name="SwappingAnimalDoorsPreviewsAndCarriesThroughDayTwo" fullname="UrbanWildlifeRooms.Tests.PlayMode.SpatialFoodStrategyFlowTests.SwappingAnimalDoorsPreviewsAndCarriesThroughDayTwo" methodname="SwappingAnimalDoorsPreviewsAndCarriesThroughDayTwo" classname="UrbanWildlifeRooms.Tests.PlayMode.SpatialFoodStrategyFlowTests" runstate="Runnable" seed="1598470047" result="Passed" start-time="2026-10-06 00:49:17Z" end-time="2026-10-06 00:49:23Z" duration="5.885292" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1071" name="TargetedDailyMovesCanSustainTheOpeningTwelveDays" fullname="UrbanWildlifeRooms.Tests.PlayMode.SpatialFoodStrategyFlowTests.TargetedDailyMovesCanSustainTheOpeningTwelveDays" methodname="TargetedDailyMovesCanSustainTheOpeningTwelveDays" classname="UrbanWildlifeRooms.Tests.PlayMode.SpatialFoodStrategyFlowTests" runstate="Runnable" seed="1866067179" result="Passed" start-time="2026-10-06 00:49:23Z" end-time="2026-10-06 00:50:23Z" duration="60.728110" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T00:27:51.6239995Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+Targeted layout day 1: pigeon meals 10/12, seeds left 1, workers 3, deaths 0, active True.
+Targeted layout day 2: pigeon meals 10/11, seeds left 4, workers 3, deaths 1, active True.
+Targeted layout day 3: pigeon meals 11/11, seeds left 10, workers 4, deaths 1, active True.
+Targeted layout day 4: pigeon meals 11/11, seeds left 6, workers 4, deaths 1, active True.
+Targeted layout day 5: pigeon meals 7/11, seeds left 0, workers 5, deaths 1, active True.
+Targeted layout day 6: pigeon meals 8/11, seeds left 5, workers 5, deaths 1, active True.
+Targeted layout day 7: pigeon meals 11/11, seeds left 10, workers 5, deaths 1, active True.
+Targeted layout day 8: pigeon meals 9/11, seeds left 3, workers 5, deaths 1, active True.
+Targeted layout day 9: pigeon meals 11/11, seeds left 10, workers 5, deaths 1, active True.
+Targeted layout day 10: pigeon meals 12/12, seeds left 5, workers 5, deaths 1, active True.
+Targeted layout day 11: pigeon meals 9/12, seeds left 0, workers 5, deaths 1, active True.
+Targeted layout day 12: pigeon meals 9/12, seeds left 4, workers 5, deaths 1, active True.
+Saving results to: C:/Users/23902/AppData/LocalLow/Urban Wildlife Rooms/城市共栖房间\TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

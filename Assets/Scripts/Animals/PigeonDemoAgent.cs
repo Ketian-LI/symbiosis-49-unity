@@ -215,6 +215,25 @@ namespace UrbanWildlifeRooms.Animals
             BeginState(PigeonDemoState.Idle, 1.2f);
         }
 
+        public void RestoreDeadForSession()
+        {
+            if (!initialized) return;
+            relocating = false;
+            foodMission = false;
+            foodMissionFlying = false;
+            escapingPredator = false;
+            foodArrival = null;
+            foodWaypoints.Clear();
+            SetSelected(false);
+            state = PigeonDemoState.Dead;
+            stateTime = RespawnDelaySeconds;
+            respawnRemaining = 0f;
+            visual.SetVisible(false);
+            needIndicator?.SetAlive(false);
+            if (clickCollider != null) clickCollider.enabled = false;
+            if (selectionRing != null) selectionRing.SetActive(false);
+        }
+
         public bool BeginFoodMission(
             IReadOnlyList<Vector3> waypoints,
             float responseDelay,
@@ -509,7 +528,8 @@ namespace UrbanWildlifeRooms.Animals
 
         private void UpdateDeadState()
         {
-            respawnRemaining = Mathf.Max(0f, RespawnDelaySeconds - stateTime);
+            var permanent = runtime != null && runtime.Mode == GameMode.Sandbox;
+            respawnRemaining = permanent ? 0f : Mathf.Max(0f, RespawnDelaySeconds - stateTime);
             if (stateTime <= 0.85f)
             {
                 visual.SetVisible(true);
@@ -520,7 +540,7 @@ namespace UrbanWildlifeRooms.Animals
                 visual.SetVisible(false);
             }
 
-            if (stateTime < RespawnDelaySeconds)
+            if (permanent || stateTime < RespawnDelaySeconds)
             {
                 return;
             }

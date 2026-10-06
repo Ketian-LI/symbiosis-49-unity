@@ -76,7 +76,7 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator ARealLayoutChangeIsRequiredBeforeSkippingOrNaturalDawn()
+        public IEnumerator AQualifiedLayoutDecisionIsRequiredBeforeSkippingOrNaturalDawn()
         {
             yield return SceneManager.LoadSceneAsync("Main", LoadSceneMode.Single);
 
@@ -114,10 +114,19 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
 
             editor.SetGuidedTargetRoom(null);
             editor.EnterEditing();
-            Assert.That(editor.CanConfirm, Is.True);
-            editor.ConfirmEditing(); // Reviewing an unchanged plan is not a spatial decision.
-            Assert.That(editor.LastConfirmedPlanningDay, Is.EqualTo(1));
-            Assert.That(editor.LastConfirmedMovementDay, Is.Zero);
+            var canKeep = editor.CanHoldLayout;
+            Assert.That(editor.CanConfirm, Is.EqualTo(canKeep));
+            if (canKeep)
+            {
+                editor.ConfirmEditing();
+                Assert.That(runtime.TodayAction, Is.EqualTo(DailyActionKind.Hold));
+                runtime.StartNewRun(GameMode.Sandbox);
+                runtime.SetOnboardingOpen(false);
+            }
+            else
+            {
+                editor.CancelEditing();
+            }
             Assert.That(runtime.TrySkipToNextDay(), Is.False);
 
             ConfirmSwap(bootstrap, editor, generated.GetComponentsInChildren<RoomView>(true),

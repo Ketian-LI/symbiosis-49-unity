@@ -171,7 +171,7 @@ namespace UrbanWildlifeRooms.Core
 
         public void RestoreSession(IEnumerable<NaturalFoodSaveData> savedSources)
         {
-            Model.Restore(savedSources);
+            Model.Restore(savedSources, runtime.Clock.DayNumber);
             lastProcessedTime = runtime.Clock.TotalSeconds;
             SyncVisuals();
             StateChanged?.Invoke();
@@ -224,6 +224,9 @@ namespace UrbanWildlifeRooms.Core
             {
                 if (visual != null)
                 {
+                    // Destroy is deferred in Play Mode. Hide the old badge now
+                    // so hover and visual scans cannot read obsolete stock.
+                    visual.SetActive(false);
                     if (Application.isPlaying)
                     {
                         Destroy(visual);
@@ -252,6 +255,7 @@ namespace UrbanWildlifeRooms.Core
                 root.AddComponent<NaturalFoodVisual>().Initialize(
                     source.kind,
                     source.portions,
+                    source.dailyAdditionKnown ? source.addedToday : (int?)null,
                     BadgePositionFor(source.kind) - sourcePosition,
                     material,
                     generatedHideFlags);

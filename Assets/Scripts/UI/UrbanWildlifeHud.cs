@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -27,8 +28,15 @@ namespace UrbanWildlifeRooms.UI
         private GameObject marketForecastPanel;
         private Text marketForecastLabel;
         private GameObject needRiskPanel;
+        private Text needRiskSignal;
+        private Button residentRiskButton;
+        private Button animalRiskButton;
         private Text residentRiskLabel;
         private Text animalRiskLabel;
+        private string residentRiskRoomId;
+        private string animalRiskRoomId;
+        private System.Action<string> riskRoomNavigation;
+        private int riskRowLayout = -1;
         private AnimalNeedsController animalNeeds;
         private readonly Dictionary<WildlifeSpecies, Text> populationCounts = new();
         private readonly Dictionary<WildlifeSpecies, AnimalPopulationBadgeGraphic> populationBadges = new();
@@ -38,6 +46,27 @@ namespace UrbanWildlifeRooms.UI
         private readonly Dictionary<EcologicalMetricKind, Text> ecologicalTooltips = new();
         private readonly Dictionary<EcologicalMetricKind, Text> ecologicalValueBadges = new();
         private readonly Dictionary<EcologicalMetricKind, Color> ecologicalColors = new();
+        private const int FoodLocationsPerPage = 7;
+        private GameObject foodLocationsPanel;
+        private Text foodLocationsTitle;
+        private Text foodLocationsHint;
+        private Text foodLocationsEmpty;
+        private Text foodLocationsPageLabel;
+        private Button foodLocationsPrevious;
+        private Button foodLocationsNext;
+        private readonly Button[] foodLocationButtons = new Button[FoodLocationsPerPage];
+        private readonly Text[] foodLocationNames = new Text[FoodLocationsPerPage];
+        private readonly Text[] foodLocationDetails = new Text[FoodLocationsPerPage];
+        private readonly Text[] foodLocationCounts = new Text[FoodLocationsPerPage];
+        private readonly string[] foodLocationRoomIds = new string[FoodLocationsPerPage];
+        private readonly List<FoodLocationEntry> foodLocationEntries = new();
+        private readonly List<FoodBadgeTarget> foodBadgeTargets = new();
+        private NaturalFoodController naturalFood;
+        private bool foodLocationsOpen;
+        private int foodLocationsPage;
+        private GameObject foodBadgeTooltip;
+        private RectTransform foodBadgeTooltipRect;
+        private Text foodBadgeTooltipText;
 
         private Font font;
         private HideFlags generatedHideFlags;
@@ -126,6 +155,23 @@ namespace UrbanWildlifeRooms.UI
         private Text desktopLanguageLabel;
         private Text desktopExitLabel;
         private Text settingsLanguageLabel;
+        private GameObject sandboxDifficultyOverlay;
+        private Text sandboxDifficultyTitle;
+        private Text sandboxDifficultyHint;
+        private Text sandboxDifficultyBackLabel;
+        private Text sandboxDifficultyContinueLabel;
+        private Text sandboxDifficultyStartLabel;
+        private Text sandboxDifficultySummary;
+        private GameObject sandboxDifficultyContinueButton;
+        private RectTransform sandboxDifficultyBackRect;
+        private RectTransform sandboxDifficultyStartRect;
+        private bool sandboxDifficultyReplacePending;
+        private readonly Text[] sandboxDifficultyOptions = new Text[3];
+        private readonly RoundedPanelGraphic[] sandboxDifficultyOptionBackings = new RoundedPanelGraphic[3];
+        private readonly Text[] sandboxDifficultyRowLabels = new Text[4];
+        private readonly Text[] sandboxDifficultyValues = new Text[4];
+        private EndlessDifficultySettings sandboxDifficultyDraft =
+            EndlessDifficultySettings.Preset(EndlessDifficulty.Standard);
         private Coroutine desktopTransitionCoroutine;
         private bool desktopStateKnown;
         private bool previousDesktopState;
@@ -161,6 +207,7 @@ namespace UrbanWildlifeRooms.UI
         private OakTreeLifecycleController oakTreeLifecycle;
         private AnimalPopulationController animalPopulation;
         private AnimalMortalityController animalMortality;
+        private EndlessBalanceController endlessBalance;
         private EcologicalMetricsController ecologicalMetrics;
         private bool? lastEcologicalLanguageChinese;
         private CircularMeterGraphic mortalityMeter;
@@ -245,12 +292,14 @@ namespace UrbanWildlifeRooms.UI
             gameplayCanvasGroup = gameplayRoot.gameObject.AddComponent<CanvasGroup>();
             BuildClock();
             BuildIndicators();
+            BuildFoodLocationsPanel();
             BuildNeedRiskPanel();
             BuildMarketForecast();
             BuildPopulation();
             BuildHedgehogNightReport();
             BuildDailyOutcomeReport();
             BuildRoomHoverLabel();
+            BuildFoodBadgeTooltip();
             BuildRoomContext();
             BuildLayoutEditingControls();
             BuildPauseMenu();
@@ -294,6 +343,10 @@ namespace UrbanWildlifeRooms.UI
             {
                 animalMortality.StateChanged -= RefreshMortalityIndicator;
             }
+            if (endlessBalance != null)
+            {
+                endlessBalance.StateChanged -= RefreshEndlessBalance;
+            }
             if (ecologicalMetrics != null)
             {
                 ecologicalMetrics.StateChanged -= RefreshEcologicalMetrics;
@@ -310,7 +363,10 @@ namespace UrbanWildlifeRooms.UI
             {
                 playerFeeding.FeedingModeChanged -= RefreshFeedingControls;
                 playerFeeding.LeftoverFoodDiscarded -= HandleLeftoverFoodDiscarded;
+                playerFeeding.StateChanged -= RefreshFoodBadgeTargets;
             }
+            if (naturalFood != null)
+                naturalFood.StateChanged -= RefreshFoodBadgeTargets;
             if (hedgehogForaging != null)
             {
                 hedgehogForaging.NightReportChanged -= RefreshHedgehogNightReport;
@@ -569,6 +625,7 @@ namespace UrbanWildlifeRooms.UI
             {
                 playerFeeding.FeedingModeChanged -= RefreshFeedingControls;
                 playerFeeding.LeftoverFoodDiscarded -= HandleLeftoverFoodDiscarded;
+                playerFeeding.StateChanged -= RefreshFoodBadgeTargets;
             }
 
             playerFeeding = controller;
@@ -583,6 +640,8 @@ namespace UrbanWildlifeRooms.UI
             }
             playerFeeding.FeedingModeChanged += RefreshFeedingControls;
             playerFeeding.LeftoverFoodDiscarded += HandleLeftoverFoodDiscarded;
+            playerFeeding.StateChanged += RefreshFoodBadgeTargets;
+            RefreshFoodBadgeTargets();
             RefreshFeedingControls();
         }
 
@@ -637,6 +696,24 @@ namespace UrbanWildlifeRooms.UI
             RefreshNeedRisk();
         }
 
+        public void BindRiskRoomNavigation(System.Action<string> navigateToRoom)
+        {
+            riskRoomNavigation = navigateToRoom;
+            RefreshNeedRisk();
+            RefreshFoodLocations();
+        }
+
+        public void BindNaturalFood(NaturalFoodController controller)
+        {
+            if (naturalFood != null)
+                naturalFood.StateChanged -= RefreshFoodBadgeTargets;
+            naturalFood = controller;
+            if (naturalFood != null)
+                naturalFood.StateChanged += RefreshFoodBadgeTargets;
+            RefreshFoodBadgeTargets();
+            RefreshFoodLocations();
+        }
+
         public void BindOakTreeLifecycle(OakTreeLifecycleController controller)
         {
             if (oakTreeLifecycle != null)
@@ -678,6 +755,23 @@ namespace UrbanWildlifeRooms.UI
                 animalMortality.StateChanged += RefreshMortalityIndicator;
             }
             RefreshMortalityIndicator();
+        }
+
+        public void BindEndlessBalance(EndlessBalanceController controller)
+        {
+            if (endlessBalance != null)
+                endlessBalance.StateChanged -= RefreshEndlessBalance;
+            endlessBalance = controller;
+            if (endlessBalance != null)
+                endlessBalance.StateChanged += RefreshEndlessBalance;
+            RefreshEndlessBalance();
+        }
+
+        private void RefreshEndlessBalance()
+        {
+            RefreshResidentPopulation();
+            RefreshMortalityIndicator();
+            RefreshAnimalPopulation();
         }
 
         public void BindEcologicalMetrics(EcologicalMetricsController controller)
@@ -874,7 +968,75 @@ namespace UrbanWildlifeRooms.UI
         {
             UpdateRoomContextPosition();
             UpdateRoomHoverLabel();
+            UpdateFoodBadgeHover();
             UpdateCameraRecognitionFeedbackAnimation();
+        }
+
+        private void RefreshFoodBadgeTargets()
+        {
+            foodBadgeTargets.Clear();
+            if (transform.parent == null) return;
+            foreach (var visual in transform.parent.GetComponentsInChildren<NaturalFoodVisual>(true))
+                if (visual != null && visual.gameObject.activeSelf && visual.MapBadgeText != null)
+                    foodBadgeTargets.Add(new FoodBadgeTarget(
+                        visual.MapBadgeText, visual.Kind, visual.AddedToday, false));
+            foreach (var visual in transform.parent.GetComponentsInChildren<PlayerFoodSourceVisual>(true))
+                if (visual != null && visual.gameObject.activeSelf && visual.MapBadgeText != null)
+                    foodBadgeTargets.Add(new FoodBadgeTarget(
+                        visual.MapBadgeText, null, null, visual.PlayerPlaced));
+        }
+
+        private void UpdateFoodBadgeHover()
+        {
+            if (foodBadgeTooltip == null || worldCamera == null || runtime == null ||
+                !gameplayRoot.gameObject.activeInHierarchy || !runtime.HasActiveRun ||
+                runtime.AtDesktop || runtime.PauseMenuOpen || runtime.ResultsOpen ||
+                EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            {
+                if (foodBadgeTooltip != null) foodBadgeTooltip.SetActive(false);
+                return;
+            }
+
+            var pointer = (Vector2)Input.mousePosition;
+            FoodBadgeTarget? hovered = null;
+            var bestDistance = float.PositiveInfinity;
+            foreach (var target in foodBadgeTargets)
+            {
+                if (target.Label == null || !int.TryParse(target.Label.text, out var portions) ||
+                    portions <= 0 ||
+                    !RoomMapBadgeVisual.TryGetFoodScreenRect(target.Label, worldCamera, out var rect))
+                    continue;
+                var hit = Rect.MinMaxRect(rect.xMin - 3f, rect.yMin - 3f,
+                    rect.xMax + 3f, rect.yMax + 3f);
+                if (!hit.Contains(pointer)) continue;
+                var distance = (pointer - rect.center).sqrMagnitude;
+                if (distance >= bestDistance) continue;
+                bestDistance = distance;
+                hovered = target;
+            }
+
+            if (!hovered.HasValue)
+            {
+                foodBadgeTooltip.SetActive(false);
+                return;
+            }
+
+            var chinese = runtime.Language == InterfaceLanguage.Chinese;
+            int.TryParse(hovered.Value.Label.text, out var count);
+            foodBadgeTooltipText.text = RoomMapBadgeVisual.DescribeFood(
+                hovered.Value.Kind, count, chinese,
+                hovered.Value.AddedToday, hovered.Value.PlayerPlaced);
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                gameplayRoot, pointer, worldCamera, out var localPoint);
+            var x = Mathf.Clamp(localPoint.x + 17f,
+                gameplayRoot.rect.xMin + 8f, gameplayRoot.rect.xMax - 308f);
+            var y = Mathf.Clamp(localPoint.y - 16f,
+                gameplayRoot.rect.yMin + 76f, gameplayRoot.rect.yMax - 8f);
+            foodBadgeTooltipRect.anchoredPosition = new Vector2(x, y);
+            if (!foodBadgeTooltip.activeSelf)
+                foodBadgeTooltip.transform.SetAsLastSibling();
+            foodBadgeTooltip.SetActive(true);
+            if (roomHoverCanvasGroup != null) roomHoverCanvasGroup.alpha = 0f;
         }
 
         private void UpdateCameraRecognitionFeedbackAnimation()
@@ -1244,6 +1406,168 @@ namespace UrbanWildlifeRooms.UI
             BuildMortalityIndicator(root);
         }
 
+        private void BuildFoodLocationsPanel()
+        {
+            var panel = CreatePanel("Food Locations", gameplayRoot,
+                new Color(0.10f, 0.13f, 0.16f, 0.97f));
+            RoundSolidPanel(panel, 16f);
+            SetTopRight(panel.RectTransform, 154f, 169f, 390f, 395f);
+            foodLocationsPanel = panel.GameObject;
+
+            foodLocationsTitle = CreateText(panel.Transform, "Food Locations Title",
+                string.Empty, 20, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Bold);
+            SetTopLeft(foodLocationsTitle.rectTransform, 17f, 8f, 300f, 32f);
+            foodLocationsHint = CreateText(panel.Transform, "Food Locations Hint",
+                string.Empty, 12, TextAnchor.MiddleLeft, new Color(0.73f, 0.85f, 0.81f),
+                FontStyle.Normal);
+            SetTopLeft(foodLocationsHint.rectTransform, 17f, 38f, 352f, 20f);
+            foodLocationsEmpty = CreateText(panel.Transform, "No Food Sources", string.Empty,
+                16, TextAnchor.MiddleCenter, WarmPaper, FontStyle.Normal);
+            SetTopLeft(foodLocationsEmpty.rectTransform, 20f, 177f, 350f, 48f);
+            var close = CreateButton(panel.Transform, "Close Food Locations", "×", 22,
+                () => SetFoodLocationsOpen(false));
+            SetTopRight(close.GetComponent<RectTransform>(), 10f, 8f, 32f, 32f);
+
+            for (var index = 0; index < FoodLocationsPerPage; index++)
+            {
+                var slot = index;
+                var row = CreateButton(panel.Transform, $"Food Location {index + 1}",
+                    string.Empty, 1, () => NavigateToFoodLocation(slot));
+                SetTopLeft(row.GetComponent<RectTransform>(), 14f, 65f + index * 39f, 362f, 36f);
+                row.GetComponent<Image>().color = new Color(0.16f, 0.22f, 0.25f, 0.97f);
+                row.GetComponentInChildren<Text>().gameObject.SetActive(false);
+                foodLocationButtons[index] = row;
+                foodLocationNames[index] = CreateText(row.transform, "Room Name", string.Empty,
+                    15, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Bold);
+                SetTopLeft(foodLocationNames[index].rectTransform, 10f, 0f, 262f, 20f);
+                foodLocationDetails[index] = CreateText(row.transform, "Food Kinds", string.Empty,
+                    11, TextAnchor.MiddleLeft, new Color(0.76f, 0.86f, 0.79f),
+                    FontStyle.Normal);
+                SetTopLeft(foodLocationDetails[index].rectTransform, 10f, 18f, 280f, 16f);
+                foodLocationCounts[index] = CreateText(row.transform, "Food Portions", string.Empty,
+                    20, TextAnchor.MiddleRight, WarmPaper, FontStyle.Bold);
+                SetTopRight(foodLocationCounts[index].rectTransform, 12f, 2f, 65f, 31f);
+            }
+
+            foodLocationsPrevious = CreateButton(panel.Transform, "Previous Food Page", "‹", 21,
+                () => ChangeFoodLocationsPage(-1));
+            SetTopLeft(foodLocationsPrevious.GetComponent<RectTransform>(), 94f, 347f, 42f, 34f);
+            foodLocationsPageLabel = CreateText(panel.Transform, "Food Locations Page", string.Empty,
+                14, TextAnchor.MiddleCenter, WarmPaper, FontStyle.Bold);
+            SetTopLeft(foodLocationsPageLabel.rectTransform, 142f, 347f, 106f, 34f);
+            foodLocationsNext = CreateButton(panel.Transform, "Next Food Page", "›", 21,
+                () => ChangeFoodLocationsPage(1));
+            SetTopLeft(foodLocationsNext.GetComponent<RectTransform>(), 254f, 347f, 42f, 34f);
+            foodLocationsPanel.SetActive(false);
+        }
+
+        private void ToggleFoodLocations()
+        {
+            if (runtime == null || !runtime.HasActiveRun || runtime.AtDesktop ||
+                runtime.PauseMenuOpen || runtime.ResultsOpen || runtime.LayoutEditing)
+                return;
+            SetFoodLocationsOpen(!foodLocationsOpen);
+        }
+
+        private void SetFoodLocationsOpen(bool open)
+        {
+            foodLocationsOpen = open;
+            if (open) foodLocationsPanel?.transform.SetAsLastSibling();
+            RefreshFoodLocations();
+        }
+
+        private void ChangeFoodLocationsPage(int delta)
+        {
+            foodLocationsPage += delta;
+            RefreshFoodLocations();
+        }
+
+        private void NavigateToFoodLocation(int slot)
+        {
+            if (slot < 0 || slot >= foodLocationRoomIds.Length ||
+                string.IsNullOrEmpty(foodLocationRoomIds[slot])) return;
+            var roomId = foodLocationRoomIds[slot];
+            RefreshFoodLocations();
+            if (!foodLocationEntries.Exists(entry => entry.RoomId == roomId)) return;
+            SetFoodLocationsOpen(false);
+            riskRoomNavigation?.Invoke(roomId);
+        }
+
+        private void RefreshFoodLocations()
+        {
+            if (foodLocationsPanel == null || runtime == null) return;
+            var available = runtime.HasActiveRun && !runtime.AtDesktop &&
+                            !runtime.PauseMenuOpen && !runtime.ResultsOpen &&
+                            !runtime.LayoutEditing;
+            if (!available) foodLocationsOpen = false;
+            foodLocationsPanel.SetActive(available && foodLocationsOpen);
+            if (!foodLocationsPanel.activeSelf) return;
+
+            foodLocationEntries.Clear();
+            var byRoom = new Dictionary<string, FoodLocationEntry>();
+            if (naturalFood?.Model != null)
+                foreach (var source in naturalFood.Model.Sources.Values)
+                {
+                    if (source.portions <= 0 || string.IsNullOrEmpty(source.roomId)) continue;
+                    if (!byRoom.TryGetValue(source.roomId, out var entry))
+                    {
+                        entry = new FoodLocationEntry(source.roomId);
+                        byRoom.Add(source.roomId, entry);
+                    }
+                    entry.Add(source.kind, source.portions);
+                }
+            if (playerFeeding?.Model != null)
+                foreach (var source in playerFeeding.Model.Sources.Values)
+                {
+                    if (source.portions <= 0) continue;
+                    var roomId = playerFeeding.CurrentRoomIdAt(source.worldPosition);
+                    if (string.IsNullOrEmpty(roomId)) roomId = source.roomId;
+                    if (string.IsNullOrEmpty(roomId)) continue;
+                    if (!byRoom.TryGetValue(roomId, out var entry))
+                    {
+                        entry = new FoodLocationEntry(roomId);
+                        byRoom.Add(roomId, entry);
+                    }
+                    entry.Placed += source.portions;
+                }
+            foodLocationEntries.AddRange(byRoom.Values);
+            foodLocationEntries.Sort((a, b) =>
+            {
+                var count = b.Total.CompareTo(a.Total);
+                return count != 0 ? count : string.CompareOrdinal(a.RoomId, b.RoomId);
+            });
+
+            var chinese = runtime.Language == InterfaceLanguage.Chinese;
+            var total = 0;
+            foreach (var entry in foodLocationEntries) total += entry.Total;
+            foodLocationsTitle.text = chinese ? $"食物位置 · {total} 份" : $"Food locations · {total}";
+            foodLocationsHint.text = chinese
+                ? "按库存排序 · 点击定位；有食物未必能到达"
+                : "Sorted by stock · click room; routes may be blocked";
+            foodLocationsEmpty.text = chinese ? "地图上暂无食物" : "No food on the map";
+            foodLocationsEmpty.gameObject.SetActive(foodLocationEntries.Count == 0);
+            var pageCount = Mathf.Max(1,
+                (foodLocationEntries.Count + FoodLocationsPerPage - 1) / FoodLocationsPerPage);
+            foodLocationsPage = Mathf.Clamp(foodLocationsPage, 0, pageCount - 1);
+            for (var index = 0; index < FoodLocationsPerPage; index++)
+            {
+                var entryIndex = foodLocationsPage * FoodLocationsPerPage + index;
+                var shown = entryIndex < foodLocationEntries.Count;
+                var row = foodLocationButtons[index];
+                row.gameObject.SetActive(shown);
+                foodLocationRoomIds[index] = shown ? foodLocationEntries[entryIndex].RoomId : null;
+                if (!shown) continue;
+                var entry = foodLocationEntries[entryIndex];
+                foodLocationNames[index].text = RiskRoomName(entry.RoomId, chinese);
+                foodLocationDetails[index].text = entry.Detail(chinese);
+                foodLocationCounts[index].text = chinese ? $"{entry.Total}份" : $"{entry.Total}";
+                row.interactable = riskRoomNavigation != null;
+            }
+            foodLocationsPageLabel.text = $"{foodLocationsPage + 1}/{pageCount}";
+            foodLocationsPrevious.interactable = foodLocationsPage > 0;
+            foodLocationsNext.interactable = foodLocationsPage < pageCount - 1;
+        }
+
         private void BuildMarketForecast()
         {
             var panel = CreatePanel("Neighborhood Market Forecast", gameplayRoot,
@@ -1269,26 +1593,64 @@ namespace UrbanWildlifeRooms.UI
             SetTopLeft(panel.RectTransform, 22f, 242f, 400f, 76f);
             needRiskPanel = panel.GameObject;
 
-            var signal = CreateText(panel.Transform, "Risk Signal", "!", 31,
+            needRiskSignal = CreateText(panel.Transform, "Risk Signal", "!", 31,
                 TextAnchor.MiddleCenter, new Color(1f, 0.42f, 0.35f), FontStyle.Bold);
-            signal.raycastTarget = false;
-            SetTopLeft(signal.rectTransform, 8f, 14f, 34f, 47f);
-            residentRiskLabel = CreateText(panel.Transform, "Resident Risk", string.Empty,
+            needRiskSignal.raycastTarget = false;
+            SetTopLeft(needRiskSignal.rectTransform, 8f, 14f, 34f, 47f);
+            residentRiskButton = BuildRiskNavigationButton(panel.Transform, "Resident Risk Target",
+                () => NavigateToRiskRoom(true));
+            animalRiskButton = BuildRiskNavigationButton(panel.Transform, "Animal Risk Target",
+                () => NavigateToRiskRoom(false));
+            residentRiskLabel = CreateText(residentRiskButton.transform, "Resident Risk", string.Empty,
                 16, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Bold);
             residentRiskLabel.raycastTarget = false;
-            SetTopLeft(residentRiskLabel.rectTransform, 46f, 7f, 344f, 29f);
-            animalRiskLabel = CreateText(panel.Transform, "Animal Risk", string.Empty,
+            SetTopLeft(residentRiskLabel.rectTransform, 4f, 0f, 308f, 29f);
+            animalRiskLabel = CreateText(animalRiskButton.transform, "Animal Risk", string.Empty,
                 16, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Bold);
             animalRiskLabel.raycastTarget = false;
-            SetTopLeft(animalRiskLabel.rectTransform, 46f, 39f, 344f, 29f);
+            SetTopLeft(animalRiskLabel.rectTransform, 4f, 0f, 308f, 29f);
             needRiskPanel.SetActive(false);
+        }
+
+        private Button BuildRiskNavigationButton(Transform parent, string name, UnityEngine.Events.UnityAction action)
+        {
+            var row = NewUiObject(name, parent, typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            var image = row.GetComponent<Image>();
+            image.color = new Color(1f, 1f, 1f, 0.001f);
+            image.raycastTarget = true;
+            var button = row.GetComponent<Button>();
+            button.targetGraphic = image;
+            var colors = button.colors;
+            colors.normalColor = new Color(1f, 1f, 1f, 0.001f);
+            colors.highlightedColor = new Color(1f, 1f, 1f, 0.10f);
+            colors.pressedColor = new Color(1f, 1f, 1f, 0.18f);
+            button.colors = colors;
+            button.onClick.AddListener(action);
+            var arrow = CreateText(row.transform, "Go To Risk Room", "›", 25,
+                TextAnchor.MiddleCenter, WarmPaper, FontStyle.Bold);
+            arrow.raycastTarget = false;
+            SetTopLeft(arrow.rectTransform, 318f, 0f, 24f, 29f);
+            return button;
+        }
+
+        private void NavigateToRiskRoom(bool resident)
+        {
+            // A source may have changed since the last UI refresh. Never jump
+            // to a resolved warning or a room that is no longer in the alert.
+            RefreshNeedRisk();
+            var button = resident ? residentRiskButton : animalRiskButton;
+            var roomId = resident ? residentRiskRoomId : animalRiskRoomId;
+            if (button != null && button.gameObject.activeInHierarchy &&
+                !string.IsNullOrEmpty(roomId))
+                riskRoomNavigation?.Invoke(roomId);
         }
 
         private void RefreshNeedRisk()
         {
             if (needRiskPanel == null || runtime == null) return;
             var visible = runtime.Mode == GameMode.Sandbox && runtime.HasActiveRun &&
-                          !runtime.AtDesktop && !runtime.LayoutEditing;
+                          !runtime.AtDesktop && !runtime.LayoutEditing &&
+                          !runtime.PauseMenuOpen && !runtime.ResultsOpen;
             var model = residentPopulation?.Model;
             var residentRiskCount = 0;
             string firstResidentHome = null;
@@ -1300,23 +1662,42 @@ namespace UrbanWildlifeRooms.UI
                     firstResidentHome ??= resident.residenceId;
                 }
             var animalRiskCount = animalNeeds?.AnimalsWithoutFoodAccess ?? 0;
-            needRiskPanel.SetActive(visible && (residentRiskCount > 0 || animalRiskCount > 0));
+            var hasResidentRisk = residentRiskCount > 0;
+            var hasAnimalRisk = animalRiskCount > 0;
+            residentRiskRoomId = hasResidentRisk ? firstResidentHome : null;
+            animalRiskRoomId = hasAnimalRisk ? animalNeeds?.FirstFoodRiskRoomId : null;
+            var nextRowLayout = (hasResidentRisk ? 1 : 0) | (hasAnimalRisk ? 2 : 0);
+            if (riskRowLayout != nextRowLayout)
+            {
+                riskRowLayout = nextRowLayout;
+                residentRiskButton.gameObject.SetActive(hasResidentRisk);
+                animalRiskButton.gameObject.SetActive(hasAnimalRisk);
+                SetTopLeft(residentRiskButton.GetComponent<RectTransform>(), 42f, 7f, 348f, 29f);
+                SetTopLeft(animalRiskButton.GetComponent<RectTransform>(), 42f,
+                    hasResidentRisk ? 39f : 7f, 348f, 29f);
+                SetTopLeft(needRiskPanel.GetComponent<RectTransform>(), 22f, 242f,
+                    400f, hasResidentRisk && hasAnimalRisk ? 76f : 44f);
+                SetTopLeft(needRiskSignal.rectTransform, 8f,
+                    hasResidentRisk && hasAnimalRisk ? 14f : 2f, 34f,
+                    hasResidentRisk && hasAnimalRisk ? 47f : 40f);
+            }
+            needRiskPanel.SetActive(visible && (hasResidentRisk || hasAnimalRisk));
             if (!needRiskPanel.activeSelf) return;
 
             var chinese = runtime.Language == InterfaceLanguage.Chinese;
-            var animalRoom = animalNeeds?.FirstFoodRiskRoomId;
-            residentRiskLabel.text = residentRiskCount > 0
-                ? chinese ? $"通勤预警 {residentRiskCount} 人 · {RiskRoomName(firstResidentHome, true)}"
-                    : $"Commute risk {residentRiskCount} · {RiskRoomName(firstResidentHome, false)}"
-                : chinese ? "居民三段路线可达" : "Resident routes reachable";
-            animalRiskLabel.text = animalRiskCount > 0
-                ? chinese ? $"觅食预警 {animalRiskCount} 只 · {RiskRoomName(animalRoom, true)}"
-                    : $"Food access risk {animalRiskCount} · {RiskRoomName(animalRoom, false)}"
-                : chinese ? "动物目前有可达食物" : "Animal food currently reachable";
-            residentRiskLabel.color = residentRiskCount > 0
-                ? new Color(1f, 0.61f, 0.52f) : new Color(0.48f, 0.85f, 0.69f);
-            animalRiskLabel.color = animalRiskCount > 0
-                ? new Color(1f, 0.61f, 0.52f) : new Color(0.48f, 0.85f, 0.69f);
+            if (hasResidentRisk)
+                residentRiskLabel.text = chinese
+                    ? $"通勤预警 {residentRiskCount} 人 · {RiskRoomName(residentRiskRoomId, true)}"
+                    : $"Commute risk {residentRiskCount} · {RiskRoomName(residentRiskRoomId, false)}";
+            if (hasAnimalRisk)
+                animalRiskLabel.text = chinese
+                    ? $"觅食预警 {animalRiskCount} 只 · {RiskRoomName(animalRiskRoomId, true)}"
+                    : $"Food access risk {animalRiskCount} · {RiskRoomName(animalRiskRoomId, false)}";
+            residentRiskLabel.color = animalRiskLabel.color = new Color(1f, 0.61f, 0.52f);
+            residentRiskButton.interactable = !string.IsNullOrEmpty(residentRiskRoomId) &&
+                                              riskRoomNavigation != null;
+            animalRiskButton.interactable = !string.IsNullOrEmpty(animalRiskRoomId) &&
+                                            riskRoomNavigation != null;
         }
 
         private static string RiskRoomName(string roomId, bool chinese)
@@ -1333,7 +1714,16 @@ namespace UrbanWildlifeRooms.UI
                         RoomType.Residence => $"Home {suffix}",
                         RoomType.OakHabitat => $"Oak {suffix}",
                         RoomType.ShrubHabitat => $"Shrub {suffix}",
-                        RoomType.SharedSpace => roomId == "shared-j" ? "Fox edge" : "Green room",
+                        RoomType.CentralPark => "Central park",
+                        RoomType.Canteen => $"Food shop {suffix}",
+                        RoomType.Trash => $"Waste {suffix}",
+                        RoomType.SharedSpace => room.GreenRole switch
+                        {
+                            ParkGreenRole.SquirrelGrove => "Squirrel grove",
+                            ParkGreenRole.HedgehogGarden => "Hedgehog garden",
+                            ParkGreenRole.FoxEdge => "Fox edge",
+                            _ => "Green room"
+                        },
                         _ => roomId
                     };
                 }
@@ -1348,7 +1738,14 @@ namespace UrbanWildlifeRooms.UI
             holder.anchoredPosition = new Vector2(0f, -index * 112f);
             holder.sizeDelta = new Vector2(100f, 100f);
 
-            AddHoverHitArea(holder);
+            var hitArea = AddHoverHitArea(holder);
+            if (indicator.Kind == EcologicalMetricKind.FoodAccessibility)
+            {
+                var button = hitArea.AddComponent<Button>();
+                button.targetGraphic = hitArea.GetComponent<Image>();
+                button.transition = Selectable.Transition.None;
+                button.onClick.AddListener(ToggleFoodLocations);
+            }
             BuildIndicatorDisc(holder);
             var meterObject = NewUiObject("Value Ring", holder, typeof(CanvasRenderer), typeof(CircularMeterGraphic));
             Stretch(meterObject.GetComponent<RectTransform>());
@@ -1388,6 +1785,8 @@ namespace UrbanWildlifeRooms.UI
             tooltip.RectTransform.anchoredPosition = new Vector2(-12f, 0f);
             tooltip.RectTransform.sizeDelta = indicator.Kind == EcologicalMetricKind.FoodAccessibility
                 ? new Vector2(420f, 120f)
+                : indicator.Kind == EcologicalMetricKind.HumanFunction
+                    ? new Vector2(310f, 84f)
                 : new Vector2(310f, 76f);
             tooltip.Image.raycastTarget = false;
             RoundSolidPanel(tooltip, 14f);
@@ -1472,6 +1871,39 @@ namespace UrbanWildlifeRooms.UI
         {
             if (mortalityMeter == null)
             {
+                return;
+            }
+            if (runtime != null && runtime.Mode == GameMode.Sandbox && endlessBalance?.Model != null)
+            {
+                var model = endlessBalance.Model;
+                var living = animalPopulation == null ? model.LastWildlifeCount :
+                    animalPopulation.LivingCount(WildlifeSpecies.Pigeon) +
+                    animalPopulation.LivingCount(WildlifeSpecies.Squirrel) +
+                    animalPopulation.LivingCount(WildlifeSpecies.Hedgehog) +
+                    animalPopulation.LivingCount(WildlifeSpecies.Fox);
+                var floor = model.CurrentWildlifeFloor;
+                var risk = Mathf.Clamp01((AnimalPopulationDefaults.Total - living) /
+                    (float)Mathf.Max(1, AnimalPopulationDefaults.Total - floor));
+                if (mortalityCountText != null) mortalityCountText.text = $"{living}/{floor}";
+                var riskColor = living < floor
+                    ? new Color(0.94f, 0.28f, 0.23f)
+                    : new Color(0.96f, 0.72f, 0.31f);
+                if (Application.isPlaying && mortalityMeter.isActiveAndEnabled)
+                    mortalityMeter.AnimateTo(risk, riskColor);
+                else
+                    mortalityMeter.SetValue(risk, riskColor);
+                if (mortalityTooltip != null)
+                {
+                    var chineseEndless = runtime.Language == InterfaceLanguage.Chinese;
+                    mortalityTooltip.text = chineseEndless
+                        ? $"现存动物 {living} 只 · 低于 {floor} 连续 {model.WildlifeGraceDays} 天结束\n" +
+                          $"当前危急 {model.CriticalWildlifeDays}/{model.WildlifeGraceDays} 天\n" +
+                          "死亡不会自动复活；食物和通道稳定后可有新个体到来"
+                        : $"Wildlife {living} · below {floor} for {model.WildlifeGraceDays} days ends the run\n" +
+                          $"Critical days {model.CriticalWildlifeDays}/{model.WildlifeGraceDays}\n" +
+                          "Deaths persist; stable food and routes may bring new arrivals";
+                }
+                RefreshPopulationDeathTooltips();
                 return;
             }
             var deaths = animalMortality?.Model?.TotalDeaths ?? 0;
@@ -1565,7 +1997,7 @@ namespace UrbanWildlifeRooms.UI
             // Keep every species detail in one left-column slot above the
             // persistent hedgehog report, not over the board or each other.
             tooltip.RectTransform.anchoredPosition = new Vector2(-index * 92f, 100f);
-            tooltip.RectTransform.sizeDelta = new Vector2(310f, 92f);
+            tooltip.RectTransform.sizeDelta = new Vector2(310f, 112f);
             tooltip.Image.raycastTarget = false;
             RoundSolidPanel(tooltip, 14f);
             var tooltipText = CreateText(tooltip.Transform, "Species Death Causes", string.Empty,
@@ -1584,13 +2016,23 @@ namespace UrbanWildlifeRooms.UI
                 var row = animalMortality?.Model?.BreakdownOf(pair.Key) ??
                           new AnimalDeathBreakdownData { species = pair.Key };
                 var line = row.LocalizedLine(chinese);
-                pair.Value.text = chinese
+                var deaths = chinese
                     ? line.Replace("：", "\n")
                     : line.Replace(": ", "\n");
+                if (runtime != null && runtime.Mode == GameMode.Sandbox &&
+                    endlessBalance != null && animalPopulation != null)
+                {
+                    var capacity = endlessBalance.HabitatCapacityOf(pair.Key);
+                    var living = animalPopulation.LivingCount(pair.Key);
+                    pair.Value.text = chinese
+                        ? $"{deaths}\n现存 {living} · 预计栖地上限 {capacity}"
+                        : $"{deaths}\nLiving {living} · habitat ceiling {capacity}";
+                }
+                else pair.Value.text = deaths;
             }
         }
 
-        private void AddHoverHitArea(RectTransform holder)
+        private GameObject AddHoverHitArea(RectTransform holder)
         {
             var hitArea = NewUiObject("Hover Hit Area", holder, typeof(CanvasRenderer), typeof(Image));
             Stretch(hitArea.GetComponent<RectTransform>());
@@ -1598,6 +2040,7 @@ namespace UrbanWildlifeRooms.UI
             image.color = Color.clear;
             image.raycastTarget = true;
             hitArea.transform.SetAsFirstSibling();
+            return hitArea;
         }
 
         private void RefreshResidentPopulation()
@@ -1616,9 +2059,18 @@ namespace UrbanWildlifeRooms.UI
             var residents = residentPopulation.Model.ResidentCount;
             var chinese = runtime.Language == InterfaceLanguage.Chinese;
             workforceCounterText.text = chinese
-                ? $"通勤 {workers}/{residents}"
-                : $"Commute {workers}/{residents}";
-            workforceCounterText.color = workers >= residents
+                ? $"通勤 {workers}/{residents}" +
+                  (runtime.Mode == GameMode.Sandbox && endlessBalance?.Model != null
+                      ? $"\n社区 {endlessBalance.Model.Community} {endlessBalance.Model.LastCommunityChange:+#;-#;0}"
+                      : "")
+                : $"Commute {workers}/{residents}" +
+                  (runtime.Mode == GameMode.Sandbox && endlessBalance?.Model != null
+                      ? $"\nCommunity {endlessBalance.Model.Community} {endlessBalance.Model.LastCommunityChange:+#;-#;0}"
+                      : "");
+            var communityLow = runtime.Mode == GameMode.Sandbox &&
+                               endlessBalance?.Model != null &&
+                               endlessBalance.Model.Community <= 16;
+            workforceCounterText.color = workers >= residents && !communityLow
                 ? WarmPaper : new Color(1f, 0.63f, 0.46f);
             RefreshNeedRisk();
         }
@@ -1633,11 +2085,13 @@ namespace UrbanWildlifeRooms.UI
             {
                 var living = animalPopulation.LivingCount(pair.Key);
                 var total = animalPopulation.TotalCount(pair.Key);
-                var remaining = living == 0 && total > 0
+                var endless = runtime != null && runtime.Mode == GameMode.Sandbox;
+                var remaining = !endless && living == 0 && total > 0
                     ? animalPopulation.SoonestRespawnRemaining(pair.Key)
                     : 0f;
-                var dead = living == 0 && total > 0 && remaining > WildlifeVitality.RespawnDelaySeconds - 0.85f;
-                var respawning = living == 0 && total > 0 && !dead;
+                var dead = living == 0 && total > 0 && (endless ||
+                    remaining > WildlifeVitality.RespawnDelaySeconds - 0.85f);
+                var respawning = !endless && living == 0 && total > 0 && !dead;
                 // This badge is a living-count display even while a species
                 // is waiting to respawn; seconds here looked like population.
                 pair.Value.text = living.ToString();
@@ -1713,6 +2167,7 @@ namespace UrbanWildlifeRooms.UI
                     tooltip.text = IndicatorTooltip(kind, ecologicalMetrics, chinese);
                 }
             }
+            RefreshFoodLocations();
         }
 
         private void RefreshResearchSession()
@@ -1777,7 +2232,7 @@ namespace UrbanWildlifeRooms.UI
             };
         }
 
-        private static string IndicatorTooltip(EcologicalMetricKind kind,
+        private string IndicatorTooltip(EcologicalMetricKind kind,
             EcologicalMetricsController metrics, bool chinese)
         {
             var food = metrics.NaturalFoodPortions + metrics.PlayerFoodPortions;
@@ -1785,12 +2240,17 @@ namespace UrbanWildlifeRooms.UI
                 metrics.LivingUnfedCount);
             return kind switch
             {
-                EcologicalMetricKind.HumanFunction => chinese
-                    ? $"居民 {metrics.ResidentCount}/{ResidentPopulationModel.MaximumResidents} 人\n房间人形牌=规划人数/接纳上限\n通勤与垃圾功能参考 {Mathf.RoundToInt(metrics.Snapshot.HumanFunction * 100f)}%"
-                    : $"Residents {metrics.ResidentCount}/{ResidentPopulationModel.MaximumResidents}\nRoom person badge = planned / capacity\nCommute/waste index {Mathf.RoundToInt(metrics.Snapshot.HumanFunction * 100f)}%",
+                EcologicalMetricKind.HumanFunction =>
+                    runtime?.Mode == GameMode.Sandbox && endlessBalance?.Model != null
+                        ? chinese
+                            ? $"居民 {metrics.ResidentCount}/{ResidentPopulationModel.MaximumResidents} 人\n社区活力 {endlessBalance.Model.Community}（{endlessBalance.Model.LastCommunityChange:+#;-#;0}）· 降至 0 结束\n人形牌=规划人数/容量"
+                            : $"Residents {metrics.ResidentCount}/{ResidentPopulationModel.MaximumResidents}\nCommunity {endlessBalance.Model.Community} ({endlessBalance.Model.LastCommunityChange:+#;-#;0}) · 0 ends the run\nPerson badge = planned / capacity"
+                        : chinese
+                            ? $"居民 {metrics.ResidentCount}/{ResidentPopulationModel.MaximumResidents} 人\n人形牌=规划人数/容量\n通勤与垃圾参考 {Mathf.RoundToInt(metrics.Snapshot.HumanFunction * 100f)}%"
+                            : $"Residents {metrics.ResidentCount}/{ResidentPopulationModel.MaximumResidents}\nPerson badge = planned / capacity\nCommute/waste index {Mathf.RoundToInt(metrics.Snapshot.HumanFunction * 100f)}%",
                 EcologicalMetricKind.FoodAccessibility => chinese
-                    ? $"今日已进食 {meals.Badge} · 尚需 {meals.UnfedAnimals}\n地图食物小牌=所在房间剩余份数（种子/坚果/昆虫/残食/投放）\n总计 {food} 份；居民路过投喂另计。有食物不代表动物可到达。"
-                    : $"Fed today {meals.Badge} · still need {meals.UnfedAnimals}\nMap food badge = portions left in that room (seeds/nuts/insects/scraps/placed)\nTotal {food}; worker meals separate. Food can still be out of reach.",
+                    ? $"今日已进食 {meals.Badge} · 尚需 {meals.UnfedAnimals}\n地图库存 {food} 份 · 点击查看所在房间\n有食物不代表动物可到达；居民路过投喂另计。"
+                    : $"Fed today {meals.Badge} · still need {meals.UnfedAnimals}\nMap stock {food} · click for room locations\nStock may be unreachable; worker feeding is separate.",
                 EcologicalMetricKind.HabitatProvision => chinese
                     ? $"庇护指数 {Mathf.RoundToInt(metrics.Snapshot.HabitatProvision * 100f)}%\n固定庇护 75% · 成熟橡树 {metrics.MatureOakCount}/4"
                     : $"Shelter index {Mathf.RoundToInt(metrics.Snapshot.HabitatProvision * 100f)}%\nFixed cover 75% · mature oaks {metrics.MatureOakCount}/4",
@@ -1829,6 +2289,24 @@ namespace UrbanWildlifeRooms.UI
             SetRect(roomHoverText.rectTransform, 70f, 42f, 210f, 52f);
             roomHoverLabel = roomHoverRect.gameObject;
             roomHoverLabel.SetActive(false);
+        }
+
+        private void BuildFoodBadgeTooltip()
+        {
+            var panel = CreatePanel("Food Badge Tooltip", gameplayRoot,
+                new Color(0.10f, 0.13f, 0.16f, 0.96f));
+            RoundSolidPanel(panel, 12f);
+            panel.Image.raycastTarget = false;
+            foodBadgeTooltipRect = panel.RectTransform;
+            foodBadgeTooltipRect.anchorMin = foodBadgeTooltipRect.anchorMax =
+                new Vector2(0.5f, 0.5f);
+            foodBadgeTooltipRect.pivot = new Vector2(0f, 1f);
+            foodBadgeTooltipRect.sizeDelta = new Vector2(300f, 68f);
+            foodBadgeTooltipText = CreateText(panel.Transform, "Food Badge Description",
+                string.Empty, 14, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Bold);
+            Stretch(foodBadgeTooltipText.rectTransform, 12f, 7f);
+            foodBadgeTooltip = panel.GameObject;
+            foodBadgeTooltip.SetActive(false);
         }
 
         private void BuildRoomContext()
@@ -2630,6 +3108,198 @@ namespace UrbanWildlifeRooms.UI
                 MainMenuVisual.ExitIcon,
                 170f,
                 runtime.ExitApplication);
+
+            BuildSandboxDifficultyOverlay();
+        }
+
+        private void BuildSandboxDifficultyOverlay()
+        {
+            var shade = CreatePanel("Endless Difficulty Overlay", desktopOverlay.transform,
+                new Color(0.04f, 0.06f, 0.08f, 0.82f));
+            sandboxDifficultyOverlay = shade.GameObject;
+            Stretch(shade.RectTransform);
+
+            var card = CreatePanel("Endless Difficulty Card", shade.Transform,
+                new Color(0.94f, 0.90f, 0.80f, 0.98f));
+            RoundSolidPanel(card, 28f);
+            SetCenter(card.RectTransform, 840f, 720f);
+
+            sandboxDifficultyTitle = CreateText(card.Transform, "Difficulty Title",
+                string.Empty, 32, TextAnchor.MiddleCenter, Graphite, FontStyle.Bold);
+            SetTopCenter(sandboxDifficultyTitle.rectTransform, 0f, 25f, 740f, 48f);
+            sandboxDifficultyHint = CreateText(card.Transform, "Difficulty Hint",
+                string.Empty, 18, TextAnchor.MiddleCenter, Graphite, FontStyle.Normal);
+            SetTopCenter(sandboxDifficultyHint.rectTransform, 0f, 76f, 740f, 48f);
+
+            var choices = new[]
+            {
+                EndlessDifficulty.Gentle,
+                EndlessDifficulty.Standard,
+                EndlessDifficulty.Demanding
+            };
+            for (var index = 0; index < choices.Length; index++)
+            {
+                var choice = choices[index];
+                var button = CreateRoundedRestartButton(card.Transform,
+                    $"{choice} Difficulty", Graphite,
+                    () => SelectSandboxTemplate(choice));
+                SetTopCenter(button.GetComponent<RectTransform>(),
+                    (index - 1) * 251f, 145f, 235f, 64f);
+                var label = button.GetComponentInChildren<Text>();
+                label.fontSize = 20;
+                label.alignment = TextAnchor.MiddleCenter;
+                sandboxDifficultyOptions[index] = label;
+                sandboxDifficultyOptionBackings[index] =
+                    button.GetComponent<RoundedPanelGraphic>();
+            }
+
+            for (var index = 0; index < sandboxDifficultyValues.Length; index++)
+            {
+                var row = index;
+                var top = 237f + index * 78f;
+                sandboxDifficultyRowLabels[index] = CreateText(card.Transform,
+                    $"Difficulty Setting {index} Label", string.Empty, 21,
+                    TextAnchor.MiddleLeft, Graphite, FontStyle.Bold);
+                SetTopCenter(sandboxDifficultyRowLabels[index].rectTransform,
+                    -175f, top, 370f, 56f);
+                var minus = CreateRoundedRestartButton(card.Transform,
+                    $"Difficulty Setting {index} Decrease", Graphite,
+                    () => AdjustSandboxSetting(row, -1));
+                SetTopCenter(minus.GetComponent<RectTransform>(), 105f, top + 3f, 50f, 50f);
+                minus.GetComponentInChildren<Text>().text = "−";
+                sandboxDifficultyValues[index] = CreateText(card.Transform,
+                    $"Difficulty Setting {index} Value", string.Empty, 22,
+                    TextAnchor.MiddleCenter, Graphite, FontStyle.Bold);
+                SetTopCenter(sandboxDifficultyValues[index].rectTransform,
+                    190f, top, 110f, 56f);
+                var plus = CreateRoundedRestartButton(card.Transform,
+                    $"Difficulty Setting {index} Increase", Graphite,
+                    () => AdjustSandboxSetting(row, 1));
+                SetTopCenter(plus.GetComponent<RectTransform>(), 275f, top + 3f, 50f, 50f);
+                plus.GetComponentInChildren<Text>().text = "+";
+            }
+
+            sandboxDifficultySummary = CreateText(card.Transform, "Difficulty Rule Summary",
+                string.Empty, 19, TextAnchor.MiddleCenter, Graphite, FontStyle.Normal);
+            SetTopCenter(sandboxDifficultySummary.rectTransform, 0f, 552f, 740f, 66f);
+
+            var back = CreateButton(card.Transform, "Back From Difficulty",
+                string.Empty, 20, CloseSandboxDifficulty);
+            sandboxDifficultyBackRect = back.GetComponent<RectTransform>();
+            SetTopCenter(sandboxDifficultyBackRect, -145f, 633f, 240f, 56f);
+            sandboxDifficultyBackLabel = back.GetComponentInChildren<Text>();
+            var continueRun = CreateButton(card.Transform, "Continue Existing Endless",
+                string.Empty, 20, ContinueExistingSandbox);
+            sandboxDifficultyContinueButton = continueRun.gameObject;
+            SetTopCenter(continueRun.GetComponent<RectTransform>(), 0f, 633f, 190f, 56f);
+            sandboxDifficultyContinueLabel = continueRun.GetComponentInChildren<Text>();
+            sandboxDifficultyContinueButton.SetActive(false);
+            var start = CreateRoundedRestartButton(card.Transform,
+                "Start Configured Endless", new Color(0.12f, 0.38f, 0.36f, 1f),
+                StartConfiguredSandbox);
+            sandboxDifficultyStartRect = start.GetComponent<RectTransform>();
+            SetTopCenter(sandboxDifficultyStartRect, 145f, 633f, 240f, 56f);
+            sandboxDifficultyStartLabel = start.GetComponentInChildren<Text>();
+            sandboxDifficultyOverlay.SetActive(false);
+        }
+
+        private void SelectSandboxTemplate(EndlessDifficulty difficulty)
+        {
+            sandboxDifficultyReplacePending = false;
+            sandboxDifficultyDraft = EndlessDifficultySettings.Preset(difficulty);
+            UpdateSandboxDifficultyDisplay();
+        }
+
+        private void AdjustSandboxSetting(int row, int direction)
+        {
+            sandboxDifficultyReplacePending = false;
+            switch (row)
+            {
+                case 0: sandboxDifficultyDraft.startingCommunity += direction * 5; break;
+                case 1: sandboxDifficultyDraft.commuteTargetPercent += direction * 5; break;
+                case 2: sandboxDifficultyDraft.wildlifeFloor += direction; break;
+                case 3: sandboxDifficultyDraft.wildlifeGraceDays += direction; break;
+            }
+            sandboxDifficultyDraft = sandboxDifficultyDraft.Normalized();
+            UpdateSandboxDifficultyDisplay();
+        }
+
+        private void StartConfiguredSandbox()
+        {
+            if (runtime.HasResumableRun && !sandboxDifficultyReplacePending)
+            {
+                sandboxDifficultyReplacePending = true;
+                UpdateSandboxDifficultyDisplay();
+                return;
+            }
+            sandboxDifficultyReplacePending = false;
+            sandboxDifficultyOverlay.SetActive(false);
+            SetDesktopMenuControlsVisible(true);
+            runtime.StartNewRun(GameMode.Sandbox, sandboxDifficultyDraft);
+        }
+
+        private void ContinueExistingSandbox()
+        {
+            if (!runtime.HasResumableRun || runtime.Mode != GameMode.Sandbox) return;
+            sandboxDifficultyReplacePending = false;
+            sandboxDifficultyOverlay.SetActive(false);
+            SetDesktopMenuControlsVisible(true);
+            runtime.ResumeFromDesktop();
+        }
+
+        private void UpdateSandboxDifficultyDisplay()
+        {
+            if (sandboxDifficultyTitle == null) return;
+            var chinese = runtime.Language == InterfaceLanguage.Chinese;
+            var values = sandboxDifficultyDraft.Normalized();
+            var resumable = runtime.HasResumableRun && runtime.Mode == GameMode.Sandbox;
+            var hasPreviousRun = runtime.HasResumableRun;
+            var gain = values.commuteTargetPercent;
+            var stable = gain - 15;
+            var minorLoss = gain - 40;
+            sandboxDifficultyOptions[0].text = chinese ? "舒缓" : "Gentle";
+            sandboxDifficultyOptions[1].text = chinese ? "标准" : "Standard";
+            sandboxDifficultyOptions[2].text = chinese ? "挑战" : "Demanding";
+            for (var index = 0; index < sandboxDifficultyOptionBackings.Length; index++)
+                sandboxDifficultyOptionBackings[index].color = index == (int)values.template
+                    ? new Color(0.12f, 0.38f, 0.36f, 1f) : Graphite;
+            var labels = chinese
+                ? new[] { "初始社区活力", "每日通勤达标", "动物数量警戒线", "低于警戒线宽限" }
+                : new[] { "Starting community", "Daily commute target", "Wildlife warning floor", "Days below floor" };
+            for (var index = 0; index < labels.Length; index++)
+                sandboxDifficultyRowLabels[index].text = labels[index];
+            sandboxDifficultyValues[0].text = values.startingCommunity.ToString();
+            sandboxDifficultyValues[1].text = $"{values.commuteTargetPercent}%";
+            sandboxDifficultyValues[2].text = values.wildlifeFloor.ToString();
+            sandboxDifficultyValues[3].text = values.wildlifeGraceDays.ToString();
+            sandboxDifficultyContinueButton.SetActive(resumable);
+            SetTopCenter(sandboxDifficultyBackRect, resumable ? -245f : -145f,
+                633f, resumable ? 190f : 240f, 56f);
+            SetTopCenter(sandboxDifficultyStartRect, resumable ? 245f : 145f,
+                633f, resumable ? 190f : 240f, 56f);
+            sandboxDifficultyContinueLabel.text = chinese ? "继续旧进度" : "Continue";
+            sandboxDifficultyStartLabel.text = sandboxDifficultyReplacePending
+                ? chinese ? "确认新开局" : "Confirm New Run"
+                : hasPreviousRun ? chinese ? "重新开局" : "New Run"
+                : chinese ? "开始" : "Start";
+            sandboxDifficultyHint.text = sandboxDifficultyReplacePending
+                ? chinese ? "重新开局会覆盖当前存档；再点一次确认。"
+                    : "A new run replaces the current save. Confirm once more."
+                : hasPreviousRun && !resumable
+                    ? chinese ? "当前有研究模式进度；新开无尽模式会替换该存档。"
+                        : "An existing Research save will be replaced by a new Endless run."
+                    : chinese ? "通勤指完成上班→吃饭→回家；连续 3 天失败的居民会离开。"
+                        : "Commute means work → eat → home; residents leave after 3 failed days.";
+            sandboxDifficultySummary.text = chinese
+                ? $"{(values.IsCustom ? "自定义 · " : string.Empty)}通勤≥{gain}% 活力+4；≥{stable}% 0；≥{minorLoss}% −4；否则−8。\n动物总数<{values.wildlifeFloor} 持续{values.wildlifeGraceDays}天，或活力为0：结束。"
+                : $"{(values.IsCustom ? "Custom · " : string.Empty)}Commute ≥{gain}%: +4 | ≥{stable}%: 0 | ≥{minorLoss}%: −4 | else: −8.\nWildlife <{values.wildlifeFloor} for {values.wildlifeGraceDays} days, or community = 0: run ends.";
+        }
+
+        private void CloseSandboxDifficulty()
+        {
+            sandboxDifficultyReplacePending = false;
+            sandboxDifficultyOverlay.SetActive(false);
+            SetDesktopMenuControlsVisible(true);
         }
 
         private void BuildResearchSetupOverlay()
@@ -2961,13 +3631,14 @@ namespace UrbanWildlifeRooms.UI
 
         private void HandleSandboxEntry()
         {
-            if (runtime.HasResumableRun && runtime.Mode == GameMode.Sandbox)
-            {
-                runtime.ResumeFromDesktop();
-                return;
-            }
-
-            runtime.StartNewRun(GameMode.Sandbox);
+            sandboxDifficultyReplacePending = false;
+            sandboxDifficultyDraft = runtime.HasResumableRun && runtime.Mode == GameMode.Sandbox
+                ? runtime.SandboxSettings.Normalized()
+                : EndlessDifficultySettings.Preset(EndlessDifficulty.Standard);
+            sandboxDifficultyOverlay.SetActive(true);
+            sandboxDifficultyOverlay.transform.SetAsLastSibling();
+            SetDesktopMenuControlsVisible(false);
+            RefreshLanguage();
         }
 
         private void HandleResearchEntry()
@@ -3010,6 +3681,7 @@ namespace UrbanWildlifeRooms.UI
             RefreshDailyOutcome();
             RefreshMarketForecast();
             RefreshNeedRisk();
+            RefreshFoodLocations();
             RefreshAnimalPopulation();
             foreach (var pair in speedButtons)
             {
@@ -3295,7 +3967,7 @@ namespace UrbanWildlifeRooms.UI
                 : chinese
                     ? $"第 {routeDay} 天 · 米色人行、青色动物专用；两侧同色对齐才可通行。食物存量未预测。"
                     : $"Day {routeDay} · beige pedestrian, teal wildlife-only; matching exits must face. Food stock not forecast.";
-            if (layoutEditor.TryGetImpactPreview(residentPopulation?.Model, out var impact))
+            if (layoutEditor.TryGetImpactPreview(residentPopulation?.Model, out var impact, true))
             {
                 var free = impact.ChangedRoomIds.Count == 0 ||
                            layoutEditor.FreeRearrangementAvailable &&
@@ -3308,7 +3980,20 @@ namespace UrbanWildlifeRooms.UI
                     firstRisk = metric.Label;
                     break;
                 }
-                var priority = firstRisk == null
+                var hasMeasuredChange = DailySpatialDecision.HasMaterialImpact(impact);
+                var blockingRisk = DailySpatialDecision.BlockingRisk(
+                    impact, residentPopulation.Model.ResidentCount);
+                var priority = firstRisk == null && impact.ChangedRoomIds.Count > 0 &&
+                               !hasMeasuredChange
+                    ? chinese ? "预测指标无变化 · 不计作今日行动"
+                        : "No forecast effect · does not count today"
+                    : impact.ChangedRoomIds.Count == 0 && blockingRisk != DailySpatialDecision.Risk.None
+                    ? chinese ? $"维持布局不可用 · 先处理{SpatialRiskName(blockingRisk, true)}"
+                        : $"Cannot keep layout · address {SpatialRiskName(blockingRisk, false)}"
+                    : impact.ChangedRoomIds.Count == 0
+                    ? chinese ? "明日关键指标稳定 · 可选择维持布局"
+                        : "Tomorrow's core forecast is stable · keep layout"
+                    : firstRisk == null
                     ? chinese ? "暂无已知预警 · 仍需观察" : "No known warning · observe outcomes"
                     : chinese ? $"风险：{firstRisk}" : $"Risk: {firstRisk}";
                 layoutImpactText.text = chinese
@@ -3348,10 +4033,25 @@ namespace UrbanWildlifeRooms.UI
             trayRoomIcon.gameObject.SetActive(trayRoomIcon.sprite != null);
             rotateEditButton.interactable = layoutEditor.CanRotateSelected;
             confirmEditButton.interactable = layoutEditor.CanConfirm;
+            confirmEditButton.GetComponentInChildren<Text>().text =
+                layoutEditor.IsGuidedPractice || !layoutEditor.CanHoldLayout
+                    ? "✓"
+                    : layoutEditor.HasMaterialImpact
+                        ? "✓"
+                        : chinese ? "维持" : "Keep";
             confirmEditButton.GetComponent<Image>().color = layoutEditor.CanConfirm
                 ? Cyan
                 : new Color(0.25f, 0.27f, 0.28f, 0.72f);
         }
+
+        private static string SpatialRiskName(DailySpatialDecision.Risk risk, bool chinese) => risk switch
+        {
+            DailySpatialDecision.Risk.Commute => chinese ? "通勤" : "commute",
+            DailySpatialDecision.Risk.Waste => chinese ? "垃圾" : "waste",
+            DailySpatialDecision.Risk.GreenNetwork => chinese ? "绿地连通" : "green links",
+            DailySpatialDecision.Risk.PigeonMeals => chinese ? "鸽群食物" : "pigeon food",
+            _ => chinese ? "风险" : "risk"
+        };
 
         private void RefreshMarketForecast()
         {
@@ -3428,6 +4128,7 @@ namespace UrbanWildlifeRooms.UI
             spatialForecastMovementCount = -1;
             spatialForecastSeedMealCeiling = -1;
             spatialForecastLivingPigeons = -1;
+            RefreshPopulationDeathTooltips();
         }
 
         private static string MarketRoomName(string roomId, bool chinese)
@@ -3450,12 +4151,16 @@ namespace UrbanWildlifeRooms.UI
                                  layoutEditor.LastConfirmedMovementDay == runtime.Clock.DayNumber;
                 var fedToday = runtime.HasActiveRun &&
                                runtime.TodayAction == DailyActionKind.Feed;
+                var heldToday = runtime.HasActiveRun &&
+                                runtime.TodayAction == DailyActionKind.Hold;
                 var reviewedToday = layoutEditor != null && runtime.HasActiveRun &&
                                     layoutEditor.LastConfirmedPlanningDay == runtime.Clock.DayNumber;
                 enterEditLabel.text = movedToday
                     ? chinese ? "已调整" : "Adjusted"
                     : fedToday
                         ? chinese ? "已投喂" : "Fed today"
+                    : heldToday
+                        ? chinese ? "已维持" : "Kept today"
                     : reviewedToday
                         ? chinese ? "继续调整" : "Adjust"
                         : chinese ? "规划" : "Plan";
@@ -3510,9 +4215,15 @@ namespace UrbanWildlifeRooms.UI
             desktopExitLabel.text = chinese ? "退出" : "Exit";
             desktopBestRecordLabel.text = runtime.BestSurvivalDays > 0
                 ? chinese
-                    ? $"最长共栖：{runtime.BestSurvivalDays} 天"
-                    : $"Longest coexistence: {runtime.BestSurvivalDays} days"
+                    ? $"最长共栖（所有设置）：{runtime.BestSurvivalDays} 天"
+                    : $"Longest run (all settings): {runtime.BestSurvivalDays} days"
                 : chinese ? "尚无记录" : "No completed record";
+            if (sandboxDifficultyTitle != null)
+            {
+                sandboxDifficultyTitle.text = chinese ? "设置无尽模式规则" : "Set Endless Rules";
+                sandboxDifficultyBackLabel.text = chinese ? "返回" : "Back";
+                UpdateSandboxDifficultyDisplay();
+            }
             if (researchSetupTitle != null)
             {
                 researchSetupTitle.text = chinese ? "限时模式" : "Timed Mode";
@@ -3901,12 +4612,72 @@ namespace UrbanWildlifeRooms.UI
             rect.sizeDelta = new Vector2(width, height);
         }
 
+        private static void SetTopRight(RectTransform rect, float right, float top, float width, float height)
+        {
+            rect.anchorMin = rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(1f, 1f);
+            rect.anchoredPosition = new Vector2(-right, -top);
+            rect.sizeDelta = new Vector2(width, height);
+        }
+
         private static void SetRect(RectTransform rect, float left, float bottom, float width, float height)
         {
             rect.anchorMin = rect.anchorMax = Vector2.zero;
             rect.pivot = Vector2.zero;
             rect.anchoredPosition = new Vector2(left, bottom);
             rect.sizeDelta = new Vector2(width, height);
+        }
+
+        private readonly struct FoodBadgeTarget
+        {
+            public readonly TextMesh Label;
+            public readonly NaturalFoodKind? Kind;
+            public readonly int? AddedToday;
+            public readonly bool PlayerPlaced;
+
+            public FoodBadgeTarget(TextMesh label, NaturalFoodKind? kind,
+                int? addedToday, bool playerPlaced)
+            {
+                Label = label;
+                Kind = kind;
+                AddedToday = addedToday;
+                PlayerPlaced = playerPlaced;
+            }
+        }
+
+        private sealed class FoodLocationEntry
+        {
+            public readonly string RoomId;
+            public int Seeds;
+            public int Nuts;
+            public int Insects;
+            public int Scraps;
+            public int Placed;
+            public int Total => Seeds + Nuts + Insects + Scraps + Placed;
+
+            public FoodLocationEntry(string roomId) => RoomId = roomId;
+
+            public void Add(NaturalFoodKind kind, int portions)
+            {
+                switch (kind)
+                {
+                    case NaturalFoodKind.Seed: Seeds += portions; break;
+                    case NaturalFoodKind.Nut: Nuts += portions; break;
+                    case NaturalFoodKind.Insect: Insects += portions; break;
+                    case NaturalFoodKind.DiscardedFood: Scraps += portions; break;
+                }
+            }
+
+            public string Detail(bool chinese)
+            {
+                var parts = new List<string>(5);
+                if (Seeds > 0) parts.Add(chinese ? $"种子 {Seeds}" : $"Seed {Seeds}");
+                if (Nuts > 0) parts.Add(chinese ? $"坚果 {Nuts}" : $"Nut {Nuts}");
+                if (Insects > 0) parts.Add(chinese ? $"昆虫 {Insects}" : $"Insect {Insects}");
+                if (Scraps > 0) parts.Add(chinese ? $"残食 {Scraps}" : $"Scrap {Scraps}");
+                if (Placed > 0) parts.Add(chinese ? $"投喂 {Placed}" : $"Placed {Placed}");
+                return string.Join(" · ", parts);
+            }
         }
 
         private sealed class LayoutImpactCard

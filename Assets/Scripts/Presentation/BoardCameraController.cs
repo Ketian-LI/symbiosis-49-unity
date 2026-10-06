@@ -258,6 +258,14 @@ namespace UrbanWildlifeRooms.Presentation
                 return;
             }
 
+            // A risk alert can be clicked while the menu-to-board transition is
+            // still running. Let the explicit room focus take precedence.
+            viewTransitionActive = false;
+            menuView = false;
+            if (controlledCamera != null)
+            {
+                controlledCamera.orthographic = true;
+            }
             followTarget = null;
             focused = true;
             targetSize = Mathf.Clamp(footprintSize * 2.1f, 4.4f, 7.2f);

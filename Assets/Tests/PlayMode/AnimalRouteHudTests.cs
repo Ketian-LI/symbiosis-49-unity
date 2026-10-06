@@ -1,12 +1,16 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
 using UrbanWildlifeRooms.Animals;
 using UrbanWildlifeRooms.Core;
+using UrbanWildlifeRooms.Data;
 using UrbanWildlifeRooms.People;
 using UrbanWildlifeRooms.Presentation;
 using UrbanWildlifeRooms.UI;
@@ -95,6 +99,10 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             var runtime = generated.GetComponentInChildren<GameRuntimeController>(true);
             runtime.StartNewRun(GameMode.Sandbox);
             runtime.SetOnboardingOpen(false);
+            runtime.SetSpeed(0);
+            // The menu-to-gameplay camera/canvas transition must finish before
+            // a pointer hit test represents an actionable player click.
+            yield return new WaitForSecondsRealtime(2.1f);
             var food = generated.GetComponentInChildren<NaturalFoodController>(true);
             var needs = generated.GetComponentInChildren<AnimalNeedsController>(true);
             food.RestoreSession(new[]
@@ -127,6 +135,17 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             var animalLabel = riskPanel.GetComponentsInChildren<Text>(true)
                 .Single(item => item.name == "Animal Risk");
             Assert.That(animalLabel.text, Does.Contain(needs.AnimalsWithoutFoodAccess.ToString()));
+            var animalRiskButton = riskPanel.GetComponentsInChildren<Button>(true)
+                .Single(item => item.name == "Animal Risk Target");
+            var residentRiskButton = riskPanel.GetComponentsInChildren<Button>(true)
+                .Single(item => item.name == "Resident Risk Target");
+            Assert.That(animalRiskButton.gameObject.activeInHierarchy, Is.True);
+            Assert.That(animalRiskButton.GetComponent<Image>().raycastTarget, Is.True);
+            Assert.That(residentRiskButton.gameObject.activeSelf, Is.False,
+                "A resolved category must not keep a green status row inside the alert.");
+            Assert.That(riskPanel.GetComponent<RectTransform>().rect.height,
+                Is.EqualTo(44f).Within(0.1f),
+                "A single warning should not leave an empty second row.");
 
             food.RestoreSession(System.Array.Empty<UrbanWildlifeRooms.Data.NaturalFoodSaveData>());
             yield return null;
@@ -140,6 +159,75 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 var color = colorBlock.GetColor("_BaseColor");
                 return color.r > color.g;
             }), Is.True, "The warning must update when the last reachable food is removed.");
+
+            var riskRoom = generated.GetComponentsInChildren<RoomView>(true)
+                .Single(room => room.Spec.Id == needs.FirstFoodRiskRoomId);
+            var camera = generated.GetComponentInChildren<BoardCameraController>(true);
+            Canvas.ForceUpdateCanvases();
+            var buttonRect = animalRiskButton.GetComponent<RectTransform>();
+            var screenPoint = RectTransformUtility.WorldToScreenPoint(Camera.main,
+                buttonRect.TransformPoint(buttonRect.rect.center));
+            var click = new PointerEventData(EventSystem.current)
+            {
+                position = screenPoint,
+                button = PointerEventData.InputButton.Left
+            };
+            var hits = new List<RaycastResult>();
+            EventSystem.current.RaycastAll(click, hits);
+            TestContext.WriteLine($"Risk raycast: screen={Screen.width}x{Screen.height}, " +
+                                  $"point={screenPoint}, camera={Camera.main?.pixelRect}, " +
+                                  $"raycasters={Object.FindObjectsByType<BaseRaycaster>(FindObjectsSortMode.None).Length}, " +
+                                  $"targetActive={animalRiskButton.gameObject.activeInHierarchy}, " +
+                                  $"contains={RectTransformUtility.RectangleContainsScreenPoint(buttonRect, screenPoint, Camera.main)}");
+            if (SystemInfo.graphicsDeviceType != GraphicsDeviceType.Null)
+            {
+                Assert.That(hits, Is.Not.Empty);
+                Assert.That(hits.First().gameObject, Is.EqualTo(animalRiskButton.gameObject));
+            }
+            ExecuteEvents.Execute(animalRiskButton.gameObject, click,
+                ExecuteEvents.pointerClickHandler);
+            Assert.That(camera.IsFocused, Is.True);
+            Assert.That(camera.TargetPosition.x,
+                Is.EqualTo(riskRoom.transform.parent.position.x).Within(0.01f));
+            Assert.That(camera.TargetPosition.z,
+                Is.EqualTo(riskRoom.transform.parent.position.z).Within(0.01f));
+            yield return new WaitForSecondsRealtime(2f);
+            Assert.That(camera.IsFocused, Is.True,
+                "The alert focus must survive any in-progress menu camera transition.");
+            Assert.That(camera.TargetPosition.x,
+                Is.EqualTo(riskRoom.transform.parent.position.x).Within(0.01f));
+
+            foreach (var animalId in needs.Model.Animals.Keys.ToArray())
+                needs.Model.MarkMeal(animalId);
+            needs.RestoreSession(needs.Model.Export());
+            Assert.That(needs.AnimalsWithoutFoodAccess, Is.Zero);
+            Assert.That(riskPanel.gameObject.activeSelf, Is.False,
+                "A resolved warning must disappear immediately, not at the next day boundary.");
+            camera.ReturnToOverviewIfNeeded();
+            animalRiskButton.onClick.Invoke();
+            Assert.That(camera.IsFocused, Is.False,
+                "A stale alert callback must not navigate after the risk is resolved.");
+
+            var residents = generated.GetComponentInChildren<ResidentPopulationController>(true);
+            var connected = residents.Model.NavigationMap;
+            residents.Model.UpdateNavigation(new RoomNavigationMap(
+                System.Array.Empty<RoomPlacementData>(), RoomLayoutData.All, 3.1f,
+                humanRoadsOnly: true));
+            runtime.SetSpeed(2); // Recompute the HUD after changing the isolated test model.
+            Assert.That(residentRiskButton.gameObject.activeInHierarchy, Is.True);
+            var residentRoomId = residents.Model.Residents
+                .First(person => !residents.Model.PreviewRouteLegs(person.id).Complete).residenceId;
+            var residentRoom = generated.GetComponentsInChildren<RoomView>(true)
+                .Single(room => room.Spec.Id == residentRoomId);
+            residentRiskButton.onClick.Invoke();
+            Assert.That(camera.TargetPosition.x,
+                Is.EqualTo(residentRoom.transform.parent.position.x).Within(0.01f));
+            Assert.That(camera.TargetPosition.z,
+                Is.EqualTo(residentRoom.transform.parent.position.z).Within(0.01f));
+            residents.Model.UpdateNavigation(connected);
+            runtime.SetSpeed(1);
+            Assert.That(residentRiskButton.gameObject.activeSelf, Is.False);
+            Assert.That(riskPanel.gameObject.activeSelf, Is.False);
         }
 
         [UnityTest]

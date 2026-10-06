@@ -39,7 +39,8 @@ namespace UrbanWildlifeRooms.Core
         private const int AreaPageStart = 9;
         public static int PageCount => AreaPageStart + AreaOrder.Length;
 
-        public static GameplayGuidePage GetPage(int index, bool chinese)
+        public static GameplayGuidePage GetPage(int index, bool chinese,
+            GameMode mode = GameMode.Sandbox)
         {
             if (index < 0 || index >= PageCount)
             {
@@ -50,9 +51,13 @@ namespace UrbanWildlifeRooms.Core
             {
                 return chinese
                     ? new GameplayGuidePage("你在经营什么？",
-                        "这是一张 7×7、由 49 间单格房组成的城市生态地图。移动房间，连接动物栖息地与自然食物，同时保住居民的上班、吃饭、回家路线。连续 3 天无法完成循环的居民会离开；总人数低于 3 人，或动物死亡达到上限，本局结束。投喂只能暂时救急。")
+                        mode == GameMode.Research
+                            ? "这是一张 7×7、由 49 间单格房组成的城市生态地图。移动房间，连接动物与食物，同时保住居民三段通勤。居民少于 3 人或累计 3 次动物死亡，本局结束。"
+                            : "这是一张 7×7、由 49 间单格房组成的城市生态地图。移动房间，连接动物与食物，同时保住居民三段通勤。居民少于 3 人、社区活力降至 0，或动物种群持续过低，都会结束本局。")
                     : new GameplayGuidePage("What are you managing?",
-                        "This 7×7 city ecosystem has 49 single-cell rooms. Move rooms so wildlife can reach natural food while residents retain a home–work–meal–home route. A resident leaves after three failed days; the run ends below three residents or at the animal death limit. Placed food is temporary emergency aid.");
+                        mode == GameMode.Research
+                            ? "This 7×7 city ecosystem has 49 single-cell rooms. Connect wildlife to food while preserving residents' work–meal–home routes. The run ends below three residents or after three animal deaths."
+                            : "This 7×7 city ecosystem has 49 single-cell rooms. Connect wildlife to food while preserving residents' work–meal–home routes. The run ends below three residents, at zero community health, or when wildlife stays too low.");
             }
             if (index == 1)
             {
@@ -66,9 +71,9 @@ namespace UrbanWildlifeRooms.Core
             {
                 return chinese
                     ? new GameplayGuidePage("界面从哪里读起？",
-                        "顶部圆盘看天数与速度；左上看可完成通勤的人数。居民头顶三格依次为上班、吃饭、回家：绿表示当前可达（亮绿已走完），红表示路线或名额有缺口。动物三格随饥饿天数减少：有足够且可达的现存食物为绿，否则为红。左侧预警框指出需关注的房间。绿色不保证及时进食，也不排除车祸或捕食。")
+                        "顶部看天数和可通勤人数。居民头顶三格是上班、吃饭、回家：绿为可达，红为受阻。动物三格表示饥饿与可达食物。左侧预警框可定位问题房间。绿色不保证动物及时进食，也不能排除车祸或捕食。")
                     : new GameplayGuidePage("How do you read the screen?",
-                        "The dial shows day and speed; the upper-left count shows viable commutes. Resident cells mean work, meal, home: green is reachable (bright green when completed), red flags a route or capacity gap. Animal cells shrink with hungry days; green means enough current food is within range, red means an access gap. The left warning card names a room to check. Green never guarantees arrival or safety from traffic and predation.");
+                        "The dial shows the day; the upper-left count shows viable commutes. Resident cells mean work, meal, home: green is reachable, red is blocked. Animal cells show hunger and reachable food. The left warning card locates a problem room. Green does not guarantee a meal or safety from traffic and predation.");
             }
             if (index == 3)
             {
@@ -84,10 +89,10 @@ namespace UrbanWildlifeRooms.Core
             {
                 return chinese
                     ? new GameplayGuidePage("今日进食",
-                        "第二个圆环显示今日已进食／存活动物；悬停查看剩余食物份数。布局预览的鸽餐上限不保证进食，次日回顾显示实际结果。米色是人行路，青色是动物通道；极饿时可借人行门，封闭口仍不能走。鸽群房须连到绿地才补种子，4 格连通绿地才有额外增产。投喂只供救急。",
+                        "第二个圆环显示今日已进食／存活动物；点击可查看各房间的剩余食物份数。地图食物小牌的数字是库存，不是每天产出；悬停可看食物种类及今日实际新增。自然食物只补足到目标库存，昨天剩下的不会重复算作产出；人工投喂也不会每日补充。米色是人行路，青色是动物通道；有库存仍不保证动物能到达。",
                         metricKind: EcologicalMetricKind.FoodAccessibility)
                     : new GameplayGuidePage("Meals today",
-                        "Ring two shows animals fed today / living animals; hover for food left. The layout's pigeon meal ceiling is not a guaranteed meal; next-day review shows what happened. Beige is pedestrian, teal wildlife-only. On the third hungry day animals may borrow pedestrian doors, never blocked exits. Pigeon plazas need a green link for seeds; four linked green cells add a bonus. Feeding is emergency aid.",
+                        "Ring two shows animals fed today / living animals; click it for remaining food by room. A map food badge shows stock, not daily output. Hover for its type and portions actually added today. Natural food tops up to a target, so leftovers are not produced again; placed food does not refill daily. Beige routes are for people, teal for wildlife. Stock may still be out of reach.",
                         metricKind: EcologicalMetricKind.FoodAccessibility);
             }
             if (index == 5)
@@ -104,20 +109,24 @@ namespace UrbanWildlifeRooms.Core
             {
                 return chinese
                     ? new GameplayGuidePage("存活动物",
-                        "第四个圆环直接表示当前存活动物数/动物个体总数，左下头像分别显示鸽子、松鼠、刺猬和狐狸的存活数。动物会因饥饿、交通或捕食死亡，也可能在之后重生；累计死亡不会因此减少，另见最下方圆环。",
+                        "第四个圆环显示当前存活动物数／初始动物数，左下头像显示各物种存活数。无尽模式不自动复活；食物与通道恢复稳定后，可能逐渐迎来新动物。研究模式仍按固定时间重生。",
                         metricKind: EcologicalMetricKind.AnimalSafety)
                     : new GameplayGuidePage("Living animals",
-                        "The fourth ring directly shows living animals out of all animal slots. The portraits at bottom left show pigeons, squirrels, hedgehogs and foxes separately. Animals can die from hunger, traffic or predation and later respawn; cumulative deaths do not fall, as shown in the bottom ring.",
+                        "The fourth ring shows living animals out of the starting population; bottom-left portraits show each species. In Endless Mode there is no automatic respawn: stable food and routes can attract replacements. Research Mode retains timed respawns.",
                         metricKind: EcologicalMetricKind.AnimalSafety);
             }
             if (index == 7)
             {
                 return chinese
-                    ? new GameplayGuidePage("动物死亡上限",
-                        "最下方心电图圆环表示本局累计死亡数相对死亡上限。无尽模式累计 3 次死亡就结束，越满越危险。死亡可能来自饥饿、交通或狐狸捕食；动物重生也不会抹去记录。悬停心电图圆环或左下动物头像可查看各类动物的死亡原因。",
+                    ? new GameplayGuidePage(mode == GameMode.Research ? "动物死亡上限" : "动物种群风险",
+                        mode == GameMode.Research
+                            ? "研究模式累计 3 次动物死亡便结束。死亡可能来自饥饿、交通或捕食；重生不抹去记录。悬停心电图或头像可查看原因。"
+                            : "无尽模式的心电图显示存活动物与固定的 10 只危急线；连续 2 天低于危急线会结束。累计 3 次死亡不再直接判负。",
                         deathLimit: true)
-                    : new GameplayGuidePage("Animal death limit",
-                        "The bottom heartbeat ring tracks cumulative deaths. Endless Mode ends at three deaths; a fuller ring means greater danger. Starvation, traffic and fox predation are risks, and respawns do not erase deaths. Hover over the ring or an animal portrait at bottom left to see deaths by species and cause.",
+                    : new GameplayGuidePage(mode == GameMode.Research ? "Animal death limit" : "Wildlife population risk",
+                        mode == GameMode.Research
+                            ? "Research Mode ends after three animal deaths. Starvation, traffic and predation are risks; respawning does not erase deaths. Hover for causes."
+                            : "In Endless Mode, the heartbeat shows living animals against the fixed emergency floor of 10. Two days below it ends the run; three cumulative deaths alone do not.",
                         deathLimit: true);
             }
             if (index == 8)

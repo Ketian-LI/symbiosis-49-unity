@@ -50,6 +50,7 @@ namespace UrbanWildlifeRooms.Core
         public ResidentDayReport(
             int dayNumber,
             int workingResidents,
+            int residentsEvaluated,
             float production,
             int foodServiceCost,
             string arrivalResidenceId,
@@ -58,6 +59,7 @@ namespace UrbanWildlifeRooms.Core
         {
             DayNumber = dayNumber;
             WorkingResidents = workingResidents;
+            ResidentsEvaluated = residentsEvaluated;
             Production = production;
             FoodServiceCost = foodServiceCost;
             ArrivalResidenceId = arrivalResidenceId;
@@ -67,6 +69,7 @@ namespace UrbanWildlifeRooms.Core
 
         public int DayNumber { get; }
         public int WorkingResidents { get; }
+        public int ResidentsEvaluated { get; }
         public float Production { get; }
         public int FoodServiceCost { get; }
         public string ArrivalResidenceId { get; }
@@ -291,6 +294,7 @@ namespace UrbanWildlifeRooms.Core
             int humanFunctionPercent,
             bool bothFoodShopsOperating)
         {
+            var residentsEvaluated = residents.Count;
             var offices = specs.Values
                 .Where(room => room.Type == RoomType.Office)
                 .OrderBy(room => room.Id, StringComparer.Ordinal)
@@ -349,6 +353,7 @@ namespace UrbanWildlifeRooms.Core
             return new ResidentDayReport(
                 dayNumber,
                 workingResidents,
+                residentsEvaluated,
                 production,
                 foodCost,
                 arrivalResidenceId,

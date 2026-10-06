@@ -23,13 +23,23 @@ namespace UrbanWildlifeRooms.Core
         private WorkerPasserbyFeedingController workerFeeding;
         private HedgehogForagingController hedgehogForaging;
         private DailyOutcomeController dailyOutcome;
+        private EndlessBalanceController endlessBalance;
         private float autosaveTimer;
         private bool initialized;
+        private string activeRunId;
+
+        // An isolated directory lets PlayMode persistence tests exercise real
+        // scene reloads without touching the player's active session/profile.
+        public static string SaveDirectoryOverrideForTests { get; set; }
+        private static string SaveDirectory => string.IsNullOrEmpty(SaveDirectoryOverrideForTests)
+            ? Path.Combine(Application.persistentDataPath, "SYMBIOSIS_49")
+            : SaveDirectoryOverrideForTests;
 
         // Keep the incompatible 35-room session-v1 file untouched. A 49-room
         // session starts in a separate slot rather than silently overwriting it.
-        public string SavePath => Path.Combine(Application.persistentDataPath, "SYMBIOSIS_49", "session-v2.json");
-        public string ProfilePath => Path.Combine(Application.persistentDataPath, "SYMBIOSIS_49", "profile-v1.json");
+        public string SavePath => Path.Combine(SaveDirectory, "session-v2.json");
+        public string RunIdPath => Path.Combine(SaveDirectory, "session-v2.run-id");
+        public string ProfilePath => Path.Combine(SaveDirectory, "profile-v1.json");
         public int BestSurvivalDays { get; private set; }
 
         public void Initialize(
@@ -45,7 +55,8 @@ namespace UrbanWildlifeRooms.Core
             AnimalNeedsController needsController,
             WorkerPasserbyFeedingController workerFeedingController,
             HedgehogForagingController hedgehogForagingController,
-            DailyOutcomeController dailyOutcomeController)
+            DailyOutcomeController dailyOutcomeController,
+            EndlessBalanceController endlessBalanceController)
         {
             runtime = runtimeController;
             layoutEditor = editorController;
@@ -60,9 +71,11 @@ namespace UrbanWildlifeRooms.Core
             workerFeeding = workerFeedingController;
             hedgehogForaging = hedgehogForagingController;
             dailyOutcome = dailyOutcomeController;
+            endlessBalance = endlessBalanceController;
             layoutEditor.LayoutConfirmed += SaveNow;
             if (playerFeeding != null) playerFeeding.FoodPlaced += HandlePlayerFoodPlaced;
             runtime.SaveRequested += SaveNow;
+            runtime.RestartStarting += HandleRestartStarting;
             runtime.RunEnded += HandleRunEnded;
             initialized = true;
 
@@ -140,6 +153,7 @@ namespace UrbanWildlifeRooms.Core
             if (runtime != null)
             {
                 runtime.SaveRequested -= SaveNow;
+                runtime.RestartStarting -= HandleRestartStarting;
                 runtime.RunEnded -= HandleRunEnded;
             }
         }
@@ -161,9 +175,44 @@ namespace UrbanWildlifeRooms.Core
             SaveNow();
         }
 
+        private void HandleRestartStarting()
+        {
+            if (!initialized || !Application.isPlaying)
+            {
+                return;
+            }
+
+            try
+            {
+                // Commit the new run identity before resetting any in-memory
+                // state. An older writer may later recreate session-v2.json;
+                // the marker makes that file ineligible for restore.
+                var nextRunId = Guid.NewGuid().ToString("N");
+                WriteJsonAtomically(RunIdPath, nextRunId);
+                activeRunId = nextRunId;
+                autosaveTimer = 0f;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError($"[SYMBIOSIS: 49] Restart was cancelled because its new save identity could not be written: {exception.Message}", this);
+                throw;
+            }
+
+            try
+            {
+                DeleteSessionFiles();
+            }
+            catch (Exception exception)
+            {
+                // The committed marker still prevents the old file from
+                // loading. Continue the reset and let SaveNow replace it.
+                Debug.LogWarning($"[SYMBIOSIS: 49] Old session file could not be removed, but it has been invalidated: {exception.Message}", this);
+            }
+        }
+
         public void SaveNow()
         {
-            if (!initialized || !Application.isPlaying || runtime.LayoutEditing)
+            if (!initialized || !Application.isPlaying || runtime.LayoutEditing || runtime.RestartInProgress)
             {
                 return;
             }
@@ -184,8 +233,12 @@ namespace UrbanWildlifeRooms.Core
             {
                 var save = new SessionSaveData
                 {
+                    runId = activeRunId,
                     savedAtUtc = DateTime.UtcNow.ToString("O"),
                     mode = runtime.Mode.ToString(),
+                    sandboxDifficulty = runtime.SandboxDifficulty.ToString(),
+                    sandboxSettings = runtime.Mode == GameMode.Sandbox
+                        ? runtime.SandboxSettings.Normalized() : null,
                     elapsedSimulationSeconds = runtime.Clock.TotalSeconds,
                     speedMultiplier = runtime.SelectedSpeedMultiplier,
                     rooms = new System.Collections.Generic.List<RoomPlacementData>(layoutEditor.ExportLayout()),
@@ -211,6 +264,7 @@ namespace UrbanWildlifeRooms.Core
                     roomMovements = layoutEditor.TotalRoomsMoved,
                     lastRoomMovementDay = layoutEditor.LastConfirmedMovementDay,
                     lastLayoutPlanningDay = layoutEditor.LastConfirmedPlanningDay,
+                    lastLayoutHoldDay = layoutEditor.LastConfirmedHoldDay,
                     shrubShelters = hedgehogForaging?.Shelter.Export() ?? new System.Collections.Generic.List<ShrubShelterSaveData>(),
                     dailyOutcome = dailyOutcome?.Model.Export(),
                     playerFoodSources = playerFeeding?.Model?.Export() ?? new System.Collections.Generic.List<PlayerFoodSourceSaveData>(),
@@ -231,7 +285,9 @@ namespace UrbanWildlifeRooms.Core
                         ? new System.Collections.Generic.List<string>(workerFeeding.Quota.FedResidents)
                         : new System.Collections.Generic.List<string>(),
                     wasteRooms = wasteManagement?.Model?.ExportWasteRooms() ?? new System.Collections.Generic.List<WasteRoomSaveData>(),
-                    blockedWaste = wasteManagement?.Model?.ExportBlockedWaste() ?? new System.Collections.Generic.List<BlockedWasteSaveData>()
+                    blockedWaste = wasteManagement?.Model?.ExportBlockedWaste() ?? new System.Collections.Generic.List<BlockedWasteSaveData>(),
+                    endlessBalance = endlessBalance?.Model?.Export(),
+                    endlessDeadAnimalIds = endlessBalance?.ExportDeadIds() ?? new System.Collections.Generic.List<string>()
                 };
                 WriteJsonAtomically(SavePath, JsonUtility.ToJson(save, true));
                 autosaveTimer = 0f;
@@ -244,6 +300,24 @@ namespace UrbanWildlifeRooms.Core
 
         private void LoadExistingSession()
         {
+            if (File.Exists(RunIdPath))
+            {
+                try
+                {
+                    activeRunId = File.ReadAllText(RunIdPath).Trim();
+                    if (string.IsNullOrEmpty(activeRunId))
+                    {
+                        Debug.LogWarning("[SYMBIOSIS: 49] Empty run identity marker; saved session was not resumed.", this);
+                        return;
+                    }
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogWarning($"[SYMBIOSIS: 49] Run identity could not be read, so the saved session was not resumed: {exception.Message}", this);
+                    return;
+                }
+            }
+
             if (!File.Exists(SavePath))
             {
                 return;
@@ -251,7 +325,13 @@ namespace UrbanWildlifeRooms.Core
 
             try
             {
-                var save = JsonUtility.FromJson<SessionSaveData>(File.ReadAllText(SavePath));
+                var json = File.ReadAllText(SavePath);
+                var save = JsonUtility.FromJson<SessionSaveData>(json);
+                if (activeRunId != null && !string.Equals(save?.runId, activeRunId, StringComparison.Ordinal))
+                {
+                    Debug.LogWarning("[SYMBIOSIS: 49] A stale session from before the latest restart was ignored.", this);
+                    return;
+                }
                 if (save == null || save.schemaVersion != 2 || save.rooms == null || !layoutEditor.RestoreLayout(save.rooms))
                 {
                     Debug.LogWarning("[SYMBIOSIS: 49] Existing session was ignored because its layout is incomplete or incompatible.", this);
@@ -261,7 +341,13 @@ namespace UrbanWildlifeRooms.Core
                 var mode = Enum.TryParse<GameMode>(save.mode, out var parsedMode)
                     ? parsedMode
                     : GameMode.Sandbox;
-                runtime.RestoreSession(save.elapsedSimulationSeconds, save.speedMultiplier, mode);
+                var difficulty = Enum.TryParse<EndlessDifficulty>(save.sandboxDifficulty,
+                    out var parsedDifficulty)
+                    ? EndlessDifficultyRules.Normalize(parsedDifficulty)
+                    : EndlessDifficulty.Standard;
+                runtime.RestoreSession(save.elapsedSimulationSeconds, save.speedMultiplier,
+                    mode, difficulty,
+                    json.Contains("\"sandboxSettings\"") ? save.sandboxSettings : null);
                 wasteManagement?.RestoreSession(
                     save.wasteRooms,
                     save.blockedWaste,
@@ -295,6 +381,7 @@ namespace UrbanWildlifeRooms.Core
                 layoutEditor.RestoreMovementCount(save.roomMovements);
                 layoutEditor.RestoreLastMovementDay(save.lastRoomMovementDay);
                 layoutEditor.RestoreLastPlanningDay(save.lastLayoutPlanningDay);
+                layoutEditor.RestoreLastHoldDay(save.lastLayoutHoldDay);
                 hedgehogForaging?.RestoreSession(save.shrubShelters);
                 animalMortality?.RestoreSession(
                     save.pigeonDeaths,
@@ -306,6 +393,7 @@ namespace UrbanWildlifeRooms.Core
                     save.animalDeathBreakdown);
                 naturalFood?.RestoreSession(save.naturalFoodSources);
                 animalNeeds?.RestoreSession(save.animalNeeds);
+                endlessBalance?.RestoreSession(save.endlessBalance, save.endlessDeadAnimalIds);
                 workerFeeding?.Quota.Restore(save.workerFeedDayNumber, save.workerFedResidentIds);
                 dailyOutcome?.RestoreSession(save.dailyOutcome);
                 Debug.Log($"[SYMBIOSIS: 49] Continued saved session from {save.savedAtUtc}.", this);
@@ -342,21 +430,19 @@ namespace UrbanWildlifeRooms.Core
         {
             try
             {
-                if (File.Exists(SavePath))
-                {
-                    File.Delete(SavePath);
-                }
-
-                var temporaryPath = SavePath + ".tmp";
-                if (File.Exists(temporaryPath))
-                {
-                    File.Delete(temporaryPath);
-                }
+                DeleteSessionFiles();
             }
             catch (Exception exception)
             {
                 Debug.LogWarning($"[SYMBIOSIS: 49] Completed session could not be cleared: {exception.Message}", this);
             }
+        }
+
+        private void DeleteSessionFiles()
+        {
+            if (File.Exists(SavePath)) File.Delete(SavePath);
+            var temporaryPath = SavePath + ".tmp";
+            if (File.Exists(temporaryPath)) File.Delete(temporaryPath);
         }
 
         private static void WriteJsonAtomically(string path, string json)

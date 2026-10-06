@@ -121,6 +121,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
                     {
                         "Animal Death Limit" => new Vector2(410f, 184f),
                         "Animals Fed Today" => new Vector2(420f, 120f),
+                        "Resident Count" => new Vector2(310f, 84f),
                         _ => new Vector2(310f, 76f)
                     };
                     Assert.That(tooltip.sizeDelta, Is.EqualTo(expectedSize));
@@ -129,7 +130,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
                 }
                 var speciesTooltips = rects.Where(rect => rect.name == "Death Causes").ToArray();
                 Assert.That(speciesTooltips.Length, Is.EqualTo(4));
-                Assert.That(speciesTooltips.All(rect => rect.sizeDelta == new Vector2(310f, 92f)), Is.True);
+                Assert.That(speciesTooltips.All(rect => rect.sizeDelta == new Vector2(310f, 112f)), Is.True);
                 var population = rects.Single(rect => rect.name == "Animal Population");
                 var nightReport = rects.Single(rect => rect.name == "Hedgehog Night Report");
                 var nightReportTop = nightReport.anchoredPosition.y + nightReport.rect.height;
@@ -184,8 +185,8 @@ namespace UrbanWildlifeRooms.Tests.Editor
                     };
                     AssertHoverTooltip(holder, kind.ToString(), chineseName, englishName);
                 }
-                AssertHoverTooltip(hud.AnimalDeathIndicatorRect, "Animal death limit",
-                    "累计死亡", "Cumulative deaths");
+                AssertHoverTooltip(hud.AnimalDeathIndicatorRect, "Wildlife population risk",
+                    "现存动物", "Wildlife");
             }
             finally
             {
@@ -239,7 +240,8 @@ namespace UrbanWildlifeRooms.Tests.Editor
                 Assert.That(animals.Find("Value Badge").GetComponentInChildren<Text>().text,
                     Is.EqualTo($"{AnimalPopulationDefaults.Total}/{AnimalPopulationDefaults.Total}"));
                 Assert.That(hud.AnimalDeathIndicatorRect.Find("Death Count Badge")
-                    .GetComponentInChildren<Text>().text, Is.EqualTo("0/3"));
+                    .GetComponentInChildren<Text>().text,
+                    Is.EqualTo($"{AnimalPopulationDefaults.Total}/{EndlessBalanceModel.WildlifeEmergencyFloor}"));
 
                 Canvas.ForceUpdateCanvases();
                 foreach (EcologicalMetricKind kind in System.Enum.GetValues(typeof(EcologicalMetricKind)))
@@ -356,7 +358,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
             Assert.That(pages.Length, Is.EqualTo(23));
             Assert.That(pages[0].Body, Does.Contain("7×7"));
             Assert.That(pages[1].Body, Does.Contain("上班"));
-            Assert.That(pages[2].Body, Does.Contain("右侧五个圆环"));
+            Assert.That(pages[2].Body, Does.Contain("左侧预警框"));
             Assert.That(pages[8].Body, Does.Contain("投喂"));
             foreach (var kind in System.Enum.GetValues(typeof(EcologicalMetricKind)).Cast<EcologicalMetricKind>())
             {
@@ -365,9 +367,18 @@ namespace UrbanWildlifeRooms.Tests.Editor
             Assert.That(pages.Count(page => page.DeathLimit), Is.EqualTo(1));
             Assert.That(pages[3].Body, Does.Contain("4/8"));
             Assert.That(pages[4].Body, Does.Contain("食物份数"));
+            Assert.That(pages[4].Body, Does.Contain("库存，不是每天产出"));
+            Assert.That(pages[4].Body, Does.Contain("今日实际新增"));
+            var englishOpening = GameplayGuideCatalog.GetPage(0, false);
+            var englishFood = GameplayGuideCatalog.GetPage(4, false);
+            Assert.That(englishOpening.Title, Is.EqualTo("What are you managing?"));
+            Assert.That(englishFood.Body, Does.Contain("stock, not daily output"));
+            Assert.That(englishFood.Body, Does.Contain("actually added today"));
             Assert.That(pages[5].Body, Does.Contain("成熟橡树"));
             Assert.That(pages[6].Body, Does.Contain("存活动物"));
-            Assert.That(pages[7].Body, Does.Contain("累计 3 次死亡"));
+            Assert.That(pages[7].Body, Does.Contain("连续 2 天低于危急线"));
+            Assert.That(GameplayGuideCatalog.GetPage(7, true, GameMode.Research).Body,
+                Does.Contain("累计 3 次动物死亡"));
             foreach (var type in System.Enum.GetValues(typeof(RoomType)).Cast<RoomType>())
             {
                 var page = pages.Single(candidate => candidate.RoomType == type);

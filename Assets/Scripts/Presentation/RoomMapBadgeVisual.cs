@@ -12,6 +12,56 @@ namespace UrbanWildlifeRooms.Presentation
         private static readonly Color Backing = new(0.12f, 0.17f, 0.21f);
         private static readonly Color TextColor = new(0.98f, 0.95f, 0.84f);
 
+        // Food cards have no colliders. Project their actual floor-plan outline
+        // for mouse hover, leaving the underlying room click/drag untouched.
+        public static bool TryGetFoodScreenRect(TextMesh badgeText, Camera camera, out Rect rect)
+        {
+            rect = default;
+            if (badgeText == null || camera == null ||
+                !badgeText.gameObject.activeInHierarchy || badgeText.transform.parent == null)
+                return false;
+
+            var card = badgeText.transform.parent;
+            var a = camera.WorldToScreenPoint(card.TransformPoint(new Vector3(-0.48f, 0.07f, -0.225f)));
+            var b = camera.WorldToScreenPoint(card.TransformPoint(new Vector3(-0.48f, 0.07f, 0.225f)));
+            var c = camera.WorldToScreenPoint(card.TransformPoint(new Vector3(0.48f, 0.07f, -0.225f)));
+            var d = camera.WorldToScreenPoint(card.TransformPoint(new Vector3(0.48f, 0.07f, 0.225f)));
+            if (a.z <= 0f || b.z <= 0f || c.z <= 0f || d.z <= 0f) return false;
+            rect = Rect.MinMaxRect(
+                Mathf.Min(Mathf.Min(a.x, b.x), Mathf.Min(c.x, d.x)),
+                Mathf.Min(Mathf.Min(a.y, b.y), Mathf.Min(c.y, d.y)),
+                Mathf.Max(Mathf.Max(a.x, b.x), Mathf.Max(c.x, d.x)),
+                Mathf.Max(Mathf.Max(a.y, b.y), Mathf.Max(c.y, d.y)));
+            return true;
+        }
+
+        public static string DescribeFood(NaturalFoodKind? kind, int count, bool chinese,
+            int? addedToday = null, bool playerPlaced = true)
+        {
+            var name = kind switch
+            {
+                NaturalFoodKind.Seed => chinese ? "种子" : "Seeds",
+                NaturalFoodKind.Nut => chinese ? "坚果" : "Nuts",
+                NaturalFoodKind.Insect => chinese ? "昆虫" : "Insects",
+                NaturalFoodKind.DiscardedFood => chinese ? "残余食物" : "Food scraps",
+                _ => playerPlaced
+                    ? chinese ? "人工投喂" : "Placed food"
+                    : chinese ? "外露藏食" : "Exposed cache"
+            };
+            var detail = kind.HasValue
+                ? addedToday.HasValue
+                    ? chinese ? $"今日实际新增 +{addedToday.Value} 份（库存补足）"
+                        : $"Added today +{addedToday.Value} (stock top-up)"
+                    : chinese ? "今日产出未记录（旧存档）" : "Today's output unavailable (older save)"
+                : playerPlaced
+                    ? chinese ? $"本次投放 {PlayerFoodSourceModel.PortionsPerSource} 份（不每日补充）"
+                        : $"Placed {PlayerFoodSourceModel.PortionsPerSource}; no daily refill"
+                    : chinese ? "偶发藏食，无固定日常产出" : "Occasional cache; no daily output";
+            return chinese
+                ? $"{name} · 剩余 {count} 份\n{detail}"
+                : $"{name} · {count} {(count == 1 ? "portion" : "portions")} left\n{detail}";
+        }
+
         public static TextMesh BuildFood(Transform parent, NaturalFoodKind kind,
             Vector3 localPosition, int portions, Material material, HideFlags hideFlags)
         {

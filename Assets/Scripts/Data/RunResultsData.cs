@@ -10,7 +10,9 @@ namespace UrbanWildlifeRooms.Data
         NegativeResourceBalance,
         ResearchTimeExpired,
         InsufficientWorkers,
-        InsufficientResidents
+        InsufficientResidents,
+        WildlifePopulationCollapse,
+        CommunityCollapse
     }
 
     [Serializable]
@@ -50,6 +52,10 @@ namespace UrbanWildlifeRooms.Data
         public List<AnimalDeathBreakdownData> animalDeathBreakdown = new();
         public float averageHabitatProvision;
         public int configuredDeathLimit = 3;
+        public int finalWildlifeCount;
+        public int requiredWildlifeCount;
+        public int finalCommunity;
+        public string sandboxDifficulty = "Standard";
         public string researchParticipantCode;
         public float researchDurationSeconds;
         public float researchElapsedSeconds;
@@ -105,6 +111,11 @@ namespace UrbanWildlifeRooms.Data
                 RunEndReason.InsufficientResidents => chinese
                     ? $"居民人数不足：{finalResidents}/{Math.Max(1, requiredResidents)}"
                     : $"Too few residents: {finalResidents}/{Math.Max(1, requiredResidents)}",
+                RunEndReason.WildlifePopulationCollapse => chinese
+                    ? $"野生动物种群持续过低：{finalWildlifeCount}/{Math.Max(1, requiredWildlifeCount)}"
+                    : $"Wildlife population remained too low: {finalWildlifeCount}/{Math.Max(1, requiredWildlifeCount)}",
+                RunEndReason.CommunityCollapse => chinese
+                    ? "社区活力耗尽" : "Community health depleted",
                 _ => chinese ? "资源点结算为负数" : "Negative resource balance"
             };
         }

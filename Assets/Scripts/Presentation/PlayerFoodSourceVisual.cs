@@ -9,9 +9,11 @@ namespace UrbanWildlifeRooms.Presentation
         private TextMesh mapBadgeText;
 
         public TextMesh MapBadgeText => mapBadgeText;
+        public bool PlayerPlaced { get; private set; }
 
-        public void Initialize(Material material, HideFlags hideFlags)
+        public void Initialize(Material material, HideFlags hideFlags, bool playerPlaced)
         {
+            PlayerPlaced = playerPlaced;
             UrbanVisualFactory.CreatePrimitive(
                 PrimitiveType.Cylinder,
                 "Feeding Dish",

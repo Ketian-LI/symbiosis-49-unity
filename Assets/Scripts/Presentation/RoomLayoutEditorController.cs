@@ -129,6 +129,13 @@ namespace UrbanWildlifeRooms.Presentation
         private bool guidedTrayVisited;
         private int lastConfirmedMovementDay;
         private int lastConfirmedPlanningDay;
+        private int lastConfirmedHoldDay;
+        private ResidentPopulationModel residentPopulation;
+        private int decisionRevision;
+        private int assessedRevision = -1;
+        private int assessedDay = -1;
+        private bool assessedMaterialImpact;
+        private bool assessedCanHold;
         private ShrubShelterModel shrubShelter;
         private OakTreeGrowthModel oakTrees;
         private AnimalPopulationController animalPopulation;
@@ -143,7 +150,9 @@ namespace UrbanWildlifeRooms.Presentation
         public bool IsEditing { get; private set; }
         public bool CanConfirm => IsEditing && model != null && model.IsCompleteAndLegal() &&
                                   CanConfirmFreeRearrangement &&
-                                  (guidedTargetRoomId == null || GuidedPracticeReadyToConfirm);
+                                  (guidedTargetRoomId == null || GuidedPracticeReadyToConfirm) &&
+                                  (runtime == null || runtime.Mode != GameMode.Sandbox ||
+                                   guidedTargetRoomId != null || DailyDecisionEligible);
         public bool GuidedPracticeReadyToConfirm =>
             guidedTargetRoomId != null && guidedTrayVisited && !TrayOccupied &&
             model != null && model.IsCompleteAndLegal() && GetChangedRoomIds().Count == 0;
@@ -152,6 +161,12 @@ namespace UrbanWildlifeRooms.Presentation
         public int TotalRoomsMoved { get; private set; }
         public int LastConfirmedMovementDay => lastConfirmedMovementDay;
         public int LastConfirmedPlanningDay => lastConfirmedPlanningDay;
+        public int LastConfirmedHoldDay => lastConfirmedHoldDay;
+        public bool HasMaterialImpact => AssessDailyDecision().material;
+        public bool CanHoldLayout => AssessDailyDecision().canHold;
+        private bool DailyDecisionEligible => GetChangedRoomIds().Count == 0
+            ? CanHoldLayout && runtime.CanTakeDailyAction
+            : HasMaterialImpact;
         public bool FreeRearrangementAvailable => runtime == null ||
                                                   lastConfirmedMovementDay != runtime.Clock.DayNumber &&
                                                   runtime.CanTakeDailyAction;
@@ -221,9 +236,20 @@ namespace UrbanWildlifeRooms.Presentation
                     ? runtime != null && runtime.TodayAction == DailyActionKind.Feed
                         ? "Fed today · rearrange tomorrow"
                         : "Already adjusted today"
+                : runtime != null && runtime.Mode == GameMode.Sandbox &&
+                  GetChangedRoomIds().Count > 0 && !HasMaterialImpact
+                    ? "No forecast effect · choose a consequential change"
+                : runtime != null && runtime.Mode == GameMode.Sandbox &&
+                  GetChangedRoomIds().Count == 0 && !runtime.CanTakeDailyAction
+                    ? "Today's action complete"
+                : runtime != null && runtime.Mode == GameMode.Sandbox &&
+                  GetChangedRoomIds().Count == 0 && !CanHoldLayout
+                    ? "Resolve a forecast risk or feed today"
                 : CanConfirm
                     ? GetChangedRoomIds().Count > 0
-                        ? "Ready · free today"
+                        ? "Forecast changed · free today"
+                        : runtime != null && runtime.Mode == GameMode.Sandbox
+                            ? "Stable forecast · keep layout"
                         : runtime != null && runtime.HasDailyAction
                             ? "Today's action complete"
                             : "Move a room or feed to advance"
@@ -256,9 +282,20 @@ namespace UrbanWildlifeRooms.Presentation
                     ? runtime != null && runtime.TodayAction == DailyActionKind.Feed
                         ? "今日已投喂 · 明天才能交换房间"
                         : "今日已完成调整 · 明天可再次挪动"
+                : runtime != null && runtime.Mode == GameMode.Sandbox &&
+                  GetChangedRoomIds().Count > 0 && !HasMaterialImpact
+                    ? "预测结果未改变 · 请选择有实际影响的调整"
+                : runtime != null && runtime.Mode == GameMode.Sandbox &&
+                  GetChangedRoomIds().Count == 0 && !runtime.CanTakeDailyAction
+                    ? "今日行动已完成"
+                : runtime != null && runtime.Mode == GameMode.Sandbox &&
+                  GetChangedRoomIds().Count == 0 && !CanHoldLayout
+                    ? "仍有明显风险 · 请调整布局或投喂"
                     : CanConfirm
                         ? GetChangedRoomIds().Count > 0
-                            ? "可以确认 · 今日调整免费"
+                            ? "预测已改变 · 今日调整免费"
+                            : runtime != null && runtime.Mode == GameMode.Sandbox
+                                ? "预测稳定 · 可选择维持布局"
                             : runtime != null && runtime.HasDailyAction
                                 ? "今日行动已完成 · 可确认检查"
                                 : "可确认检查 · 今日仍需交换或投喂"
@@ -284,6 +321,33 @@ namespace UrbanWildlifeRooms.Presentation
             animalPopulation = population;
         }
 
+        public void BindResidentPopulation(ResidentPopulationModel population)
+        {
+            residentPopulation = population;
+            assessedRevision = -1;
+        }
+
+        private (bool material, bool canHold) AssessDailyDecision()
+        {
+            if (residentPopulation == null || runtime == null || model == null ||
+                !IsEditing || dragging)
+                return (false, false);
+            if (assessedRevision != decisionRevision || assessedDay != runtime.Clock.DayNumber)
+            {
+                assessedRevision = decisionRevision;
+                assessedDay = runtime.Clock.DayNumber;
+                assessedMaterialImpact = false;
+                assessedCanHold = false;
+                if (TryGetImpactPreview(residentPopulation, out var impact, true))
+                {
+                    assessedMaterialImpact = DailySpatialDecision.HasMaterialImpact(impact);
+                    assessedCanHold = DailySpatialDecision.CanKeepLayout(
+                        impact, residentPopulation.ResidentCount);
+                }
+            }
+            return (assessedMaterialImpact, assessedCanHold);
+        }
+
         public void BindPigeonHomes(IReadOnlyDictionary<PigeonDemoAgent, string> homes)
         {
             pigeonHomes = homes;
@@ -303,7 +367,7 @@ namespace UrbanWildlifeRooms.Presentation
         // Project the actual drop operation on a copy. No live room, resident,
         // resource balance, or saved layout is changed by this preview.
         public bool TryGetImpactPreview(ResidentPopulationModel population,
-            out RoomLayoutImpactPreview impact)
+            out RoomLayoutImpactPreview impact, bool includeUnchanged = false)
         {
             impact = default;
             if (!IsEditing || IsGuidedPractice || model == null || snapshot == null || population == null ||
@@ -349,7 +413,7 @@ namespace UrbanWildlifeRooms.Presentation
                     changedRoomIds.Add(pair.Key);
                 }
             }
-            if (changedRoomIds.Count == 0)
+            if (changedRoomIds.Count == 0 && !includeUnchanged)
             {
                 return false;
             }
@@ -501,6 +565,7 @@ namespace UrbanWildlifeRooms.Presentation
             TotalRoomsMoved = 0;
             lastConfirmedMovementDay = 0;
             lastConfirmedPlanningDay = 0;
+            lastConfirmedHoldDay = 0;
             snapshot = model.CaptureSnapshot();
             ApplyAllPlacements();
             LayoutConfirmed?.Invoke();
@@ -607,6 +672,10 @@ namespace UrbanWildlifeRooms.Presentation
                 TotalRoomsMoved += movedRoomIds.Count;
                 RoomsMoved?.Invoke(movedRoomIds);
             }
+            else if (!wasGuidedPractice && runtime.Mode == GameMode.Sandbox)
+            {
+                lastConfirmedHoldDay = runtime.Clock.DayNumber;
+            }
             LayoutConfirmed?.Invoke();
         }
 
@@ -624,6 +693,12 @@ namespace UrbanWildlifeRooms.Presentation
         public void RestoreLastPlanningDay(int dayNumber)
         {
             lastConfirmedPlanningDay = Mathf.Max(0, dayNumber);
+            NotifyStateChanged();
+        }
+
+        public void RestoreLastHoldDay(int dayNumber)
+        {
+            lastConfirmedHoldDay = Mathf.Max(0, dayNumber);
             NotifyStateChanged();
         }
 
@@ -1129,6 +1204,7 @@ namespace UrbanWildlifeRooms.Presentation
 
         private void NotifyStateChanged()
         {
+            decisionRevision++;
             if (IsEditing)
             {
                 RefreshAnimalPassageConnections();

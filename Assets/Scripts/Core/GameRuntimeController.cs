@@ -22,7 +22,8 @@ namespace UrbanWildlifeRooms.Core
         None,
         Rearrange,
         Feed,
-        Transform
+        Transform,
+        Hold
     }
 
     [DefaultExecutionOrder(-100)]
@@ -48,6 +49,7 @@ namespace UrbanWildlifeRooms.Core
         private bool resultsOpen;
         private bool cameraCalibrationOpen;
         private bool onboardingOpen;
+        private bool restartInProgress;
         private int recognisedPhysicalModuleCount;
         private CameraRecognitionFeedbackState cameraRecognitionState;
         private float cameraRecognitionProgress;
@@ -61,12 +63,16 @@ namespace UrbanWildlifeRooms.Core
 
         public event Action StateChanged;
         public event Action SaveRequested;
+        public event Action RestartStarting;
         public event Action RestartRequested;
         public event Action CameraRecalibrationRequested;
         public event Action<RunResultsData> RunEnded;
 
         public SimulationClockModel Clock => clock;
         public GameMode Mode { get; private set; } = GameMode.Sandbox;
+        public EndlessDifficulty SandboxDifficulty { get; private set; } = EndlessDifficulty.Standard;
+        public EndlessDifficultySettings SandboxSettings { get; private set; } =
+            EndlessDifficultySettings.Preset(EndlessDifficulty.Standard);
         public InterfaceLanguage Language { get; private set; } = InterfaceLanguage.English;
         public bool PauseMenuOpen => pauseMenuOpen;
         public bool SettingsOpen => settingsOpen;
@@ -77,6 +83,7 @@ namespace UrbanWildlifeRooms.Core
         public bool HasEndedRun => CurrentResults != null;
         public bool HasActiveRun => activeRun;
         public bool HasResumableRun => activeRun && CurrentResults == null;
+        public bool RestartInProgress => restartInProgress;
         public bool IsPaused => pauseMenuOpen || atDesktop || layoutEditing || resultsOpen ||
                                 cameraCalibrationOpen || onboardingOpen || CameraRecognitionBlocksSimulation ||
                                 SpeedMultiplier == 0;
@@ -90,7 +97,9 @@ namespace UrbanWildlifeRooms.Core
                 ? DailyActionKind.Rearrange
                 : playerFeeding != null && playerFeeding.LastManualFeedingDay == clock.DayNumber
                     ? DailyActionKind.Feed
-                    : DailyActionKind.None;
+                    : layoutEditor != null && layoutEditor.LastConfirmedHoldDay == clock.DayNumber
+                        ? DailyActionKind.Hold
+                        : DailyActionKind.None;
         public bool CanTakeDailyAction => TodayAction == DailyActionKind.None;
         public bool HasDailyAction => layoutEditor == null || !CanTakeDailyAction;
         // Keep the old API for existing integrations; it now means any daily action.
@@ -231,11 +240,20 @@ namespace UrbanWildlifeRooms.Core
             StateChanged?.Invoke();
         }
 
-        public void RestoreSession(double elapsedSeconds, int multiplier, GameMode mode)
+        public void RestoreSession(double elapsedSeconds, int multiplier, GameMode mode,
+            EndlessDifficulty difficulty = EndlessDifficulty.Standard,
+            EndlessDifficultySettings settings = null)
         {
             daySkipActive = false;
             clock.Restore(elapsedSeconds);
             Mode = NormalizeModeForBuild(mode);
+            SandboxDifficulty = Mode == GameMode.Sandbox
+                ? EndlessDifficultyRules.Normalize(difficulty)
+                : EndlessDifficulty.Standard;
+            SandboxSettings = Mode == GameMode.Sandbox
+                ? (settings ?? EndlessDifficultySettings.Preset(SandboxDifficulty)).Normalized()
+                : EndlessDifficultySettings.Preset(EndlessDifficulty.Standard);
+            SandboxDifficulty = SandboxSettings.template;
             activeRun = true;
             speedMultiplier = Mode == GameMode.Research
                 ? 1
@@ -350,6 +368,8 @@ namespace UrbanWildlifeRooms.Core
                 throw new ArgumentNullException(nameof(results));
             }
 
+            results.sandboxDifficulty = Mode == GameMode.Sandbox
+                ? EndlessDifficultyRules.For(SandboxSettings).Label(false) : null;
             CurrentResults = results;
             daySkipActive = false;
             activeRun = false;
@@ -368,6 +388,10 @@ namespace UrbanWildlifeRooms.Core
 
         public void RestartRun()
         {
+            // Invalidate the previous run on disk before changing in-memory state.
+            // A failed reset must never make the old save appear resumable again.
+            RestartStarting?.Invoke();
+            restartInProgress = true;
             daySkipActive = false;
             lastSimulationDeltaTime = 0f;
             clock.Reset();
@@ -387,8 +411,9 @@ namespace UrbanWildlifeRooms.Core
             boardCamera?.ReturnToOverviewIfNeeded();
             ApplyTimeScale();
             RestartRequested?.Invoke();
-            StateChanged?.Invoke();
+            restartInProgress = false;
             SaveRequested?.Invoke();
+            StateChanged?.Invoke();
         }
 
         public void ReturnToMainMenuFromResults()
@@ -408,7 +433,7 @@ namespace UrbanWildlifeRooms.Core
         {
             if (HasEndedRun || !activeRun)
             {
-                StartNewRun(Mode);
+                StartNewRun(Mode, SandboxSettings);
                 return;
             }
 
@@ -419,9 +444,19 @@ namespace UrbanWildlifeRooms.Core
             StateChanged?.Invoke();
         }
 
-        public void StartNewRun(GameMode mode)
+        public void StartNewRun(GameMode mode) =>
+            StartNewRun(mode, EndlessDifficulty.Standard);
+
+        public void StartNewRun(GameMode mode, EndlessDifficulty difficulty)
+            => StartNewRun(mode, EndlessDifficultySettings.Preset(difficulty));
+
+        public void StartNewRun(GameMode mode, EndlessDifficultySettings settings)
         {
             Mode = NormalizeModeForBuild(mode);
+            SandboxSettings = Mode == GameMode.Sandbox
+                ? (settings ?? EndlessDifficultySettings.Preset(EndlessDifficulty.Standard)).Normalized()
+                : EndlessDifficultySettings.Preset(EndlessDifficulty.Standard);
+            SandboxDifficulty = SandboxSettings.template;
             RestartRun();
             if (BuildVariantSettings.UsesCameraRecognition)
             {

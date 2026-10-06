@@ -60,6 +60,7 @@ namespace UrbanWildlifeRooms.Core
         private SquirrelNaturalForagingController squirrelNaturalForagingController;
         private PigeonNaturalForagingController pigeonNaturalForagingController;
         private EcologicalMetricsController ecologicalMetricsController;
+        private EndlessBalanceController endlessBalanceController;
         private ResearchSessionController researchSessionController;
         private FirstRunOnboardingController onboardingController;
         private Transform mapRoot;
@@ -182,6 +183,7 @@ namespace UrbanWildlifeRooms.Core
             BuildSquirrelNaturalForaging();
             BuildPigeonNaturalForaging();
             BuildEcologicalMetrics();
+            BuildEndlessBalance();
             BuildDailyOutcome();
             BuildResearchSession();
             BuildFirstRunOnboarding();
@@ -1431,6 +1433,7 @@ namespace UrbanWildlifeRooms.Core
                 generatedHideFlags,
                 runtimeController,
                 boardCameraController);
+            hud.BindRiskRoomNavigation(FocusRiskRoom);
             resultsOverlay = hudObject.AddComponent<EndRunResultsOverlay>();
             resultsOverlay.Build(UrbanFontResolver.GetFont(), generatedHideFlags, runtimeController, LayoutCamera);
         }
@@ -1486,7 +1489,8 @@ namespace UrbanWildlifeRooms.Core
                 animalNeedsController,
                 workerFeedingController,
                 hedgehogForagingController,
-                dailyOutcomeController);
+                dailyOutcomeController,
+                endlessBalanceController);
         }
 
         private void BuildWasteManagement()
@@ -1523,6 +1527,7 @@ namespace UrbanWildlifeRooms.Core
                 resourceEconomyController,
                 cellSize,
                 roomViews);
+            layoutEditorController.BindResidentPopulation(residentPopulationController.Model);
             hud.BindResidentPopulation(
                 residentPopulationController,
                 roomId => roomViews.Find(view => view.Spec.Id == roomId)?.VisualRoot);
@@ -1556,6 +1561,7 @@ namespace UrbanWildlifeRooms.Core
                 roomViews,
                 surfaceMaterial,
                 generatedHideFlags);
+            hud.BindNaturalFood(naturalFoodController);
         }
 
         private void BuildPigeonAnimationDemo()
@@ -1964,6 +1970,17 @@ namespace UrbanWildlifeRooms.Core
             hud.BindEcologicalMetrics(ecologicalMetricsController);
         }
 
+        private void BuildEndlessBalance()
+        {
+            var progressObject = NewObject("Endless Community And Wildlife", generatedRoot);
+            endlessBalanceController = progressObject.AddComponent<EndlessBalanceController>();
+            endlessBalanceController.Initialize(runtimeController, resourceEconomyController,
+                residentPopulationController, animalPopulationController,
+                animalNeedsController, animalMortalityController,
+                animalNavigationCoordinator, oakTreeLifecycleController);
+            hud.BindEndlessBalance(endlessBalanceController);
+        }
+
         private void BuildDailyOutcome()
         {
             var outcomeObject = NewObject("Daily Outcome", generatedRoot);
@@ -2059,6 +2076,18 @@ namespace UrbanWildlifeRooms.Core
 
             var footprint = Mathf.Max(room.Spec.Width, room.Spec.Height) * cellSize;
             boardCameraController.FocusRoom(room.transform.parent, footprint);
+        }
+
+        private void FocusRiskRoom(string roomId)
+        {
+            if (string.IsNullOrEmpty(roomId) || runtimeController == null ||
+                runtimeController.AtDesktop || runtimeController.LayoutEditing)
+                return;
+
+            var room = roomViews.Find(view => view != null && view.Spec.Id == roomId);
+            if (room == null) return;
+            SelectRoom(room);
+            FocusRoom(room);
         }
 
         private Vector3 GridToWorld(RoomSpec room)

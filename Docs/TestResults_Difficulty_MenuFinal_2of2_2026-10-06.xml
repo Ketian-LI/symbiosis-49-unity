@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="2" result="Passed" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-06 09:46:31Z" end-time="2026-10-06 09:46:38Z" duration="7.7363177">
+  <test-suite type="TestSuite" id="1087" name="城市共栖房间" fullname="城市共栖房间" runstate="Runnable" testcasecount="63" result="Passed" start-time="2026-10-06 09:46:31Z" end-time="2026-10-06 09:46:38Z" duration="7.736318" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <test-suite type="Assembly" id="1083" name="UrbanWildlifeRooms.Tests.PlayMode.dll" fullname="C:/Users/23902/Desktop/SYMBIOSIS-49-Unity/Library/ScriptAssemblies/UrbanWildlifeRooms.Tests.PlayMode.dll" runstate="Runnable" testcasecount="63" result="Passed" start-time="2026-10-06 09:46:31Z" end-time="2026-10-06 09:46:38Z" duration="7.715787" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="29648" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <test-suite type="TestSuite" id="1084" name="UrbanWildlifeRooms" fullname="UrbanWildlifeRooms" runstate="Runnable" testcasecount="63" result="Passed" start-time="2026-10-06 09:46:31Z" end-time="2026-10-06 09:46:38Z" duration="7.713975" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1085" name="Tests" fullname="UrbanWildlifeRooms.Tests" runstate="Runnable" testcasecount="63" result="Passed" start-time="2026-10-06 09:46:31Z" end-time="2026-10-06 09:46:38Z" duration="7.712705" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestSuite" id="1086" name="PlayMode" fullname="UrbanWildlifeRooms.Tests.PlayMode" runstate="Runnable" testcasecount="63" result="Passed" start-time="2026-10-06 09:46:31Z" end-time="2026-10-06 09:46:38Z" duration="7.711394" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1047" name="MainMenuLiveSceneTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.MainMenuLiveSceneTests" classname="UrbanWildlifeRooms.Tests.PlayMode.MainMenuLiveSceneTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-10-06 09:46:31Z" end-time="2026-10-06 09:46:38Z" duration="7.709110" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1049" name="ExistingEndlessRunCanContinueOrConfirmNewSettings" fullname="UrbanWildlifeRooms.Tests.PlayMode.MainMenuLiveSceneTests.ExistingEndlessRunCanContinueOrConfirmNewSettings" methodname="ExistingEndlessRunCanContinueOrConfirmNewSettings" classname="UrbanWildlifeRooms.Tests.PlayMode.MainMenuLiveSceneTests" runstate="Runnable" seed="1636424748" result="Passed" start-time="2026-10-06 09:46:31Z" end-time="2026-10-06 09:46:32Z" duration="1.671616" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T07:41:04.6333908Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+              <test-case id="1048" name="SandboxEntryAndReturnMoveCameraAcrossTheSameVisibleBoard" fullname="UrbanWildlifeRooms.Tests.PlayMode.MainMenuLiveSceneTests.SandboxEntryAndReturnMoveCameraAcrossTheSameVisibleBoard" methodname="SandboxEntryAndReturnMoveCameraAcrossTheSameVisibleBoard" classname="UrbanWildlifeRooms.Tests.PlayMode.MainMenuLiveSceneTests" runstate="Runnable" seed="2111105197" result="Passed" start-time="2026-10-06 09:46:32Z" end-time="2026-10-06 09:46:38Z" duration="6.020350" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[SYMBIOSIS: 49] Continued saved session from 2026-10-06T07:41:04.6333908Z.
+[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+Saving results to: C:/Users/23902/AppData/LocalLow/Urban Wildlife Rooms/城市共栖房间\TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

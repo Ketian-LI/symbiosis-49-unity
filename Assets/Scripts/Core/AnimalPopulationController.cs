@@ -80,6 +80,72 @@ namespace UrbanWildlifeRooms.Core
             };
         }
 
+        public IWildlifeLayoutAgent FirstDormantAgent(WildlifeSpecies species)
+        {
+            return species switch
+            {
+                WildlifeSpecies.Pigeon => pigeons.FirstOrDefault(item => item != null && !item.IsAlive),
+                WildlifeSpecies.Squirrel => squirrels.FirstOrDefault(item => item != null && !item.IsAlive),
+                WildlifeSpecies.Hedgehog => hedgehogs.FirstOrDefault(item => item != null && !item.IsAlive),
+                WildlifeSpecies.Fox => foxes.FirstOrDefault(item => item != null && !item.IsAlive),
+                _ => null
+            };
+        }
+
+        public IWildlifeLayoutAgent TryReintroduce(WildlifeSpecies species)
+        {
+            var dormant = FirstDormantAgent(species);
+            switch (dormant)
+            {
+                case PigeonDemoAgent pigeon:
+                    pigeon.ResetForNewRun(pigeon.SpawnPosition);
+                    break;
+                case SquirrelDemoAgent squirrel:
+                    squirrel.ResetForNewRun(squirrel.SpawnPosition, squirrel.CachePosition);
+                    break;
+                case HedgehogDemoAgent hedgehog:
+                    hedgehog.ResetForNewRun(hedgehog.SpawnPosition);
+                    break;
+                case FoxDemoAgent fox:
+                    fox.ResetForNewRun(fox.SpawnPosition);
+                    break;
+            }
+            if (dormant != null) StateChanged?.Invoke();
+            return dormant;
+        }
+
+        public List<string> ExportDeadIds()
+        {
+            var result = new List<string>();
+            for (var index = 0; index < pigeons.Count; index++)
+                if (pigeons[index] != null && !pigeons[index].IsAlive)
+                    result.Add($"pigeon-{index + 1:00}");
+            for (var index = 0; index < squirrels.Count; index++)
+                if (squirrels[index] != null && !squirrels[index].IsAlive)
+                    result.Add($"squirrel-{index + 1:00}");
+            for (var index = 0; index < hedgehogs.Count; index++)
+                if (hedgehogs[index] != null && !hedgehogs[index].IsAlive)
+                    result.Add($"hedgehog-{index + 1:00}");
+            for (var index = 0; index < foxes.Count; index++)
+                if (foxes[index] != null && !foxes[index].IsAlive)
+                    result.Add($"fox-{index + 1:00}");
+            return result;
+        }
+
+        public void RestoreDeadIds(IEnumerable<string> ids)
+        {
+            var dead = new HashSet<string>(ids ?? Array.Empty<string>(), StringComparer.Ordinal);
+            for (var index = 0; index < pigeons.Count; index++)
+                if (dead.Contains($"pigeon-{index + 1:00}")) pigeons[index]?.RestoreDeadForSession();
+            for (var index = 0; index < squirrels.Count; index++)
+                if (dead.Contains($"squirrel-{index + 1:00}")) squirrels[index]?.Vitality?.RestoreDeadForSession();
+            for (var index = 0; index < hedgehogs.Count; index++)
+                if (dead.Contains($"hedgehog-{index + 1:00}")) hedgehogs[index]?.Vitality?.RestoreDeadForSession();
+            for (var index = 0; index < foxes.Count; index++)
+                if (dead.Contains($"fox-{index + 1:00}")) foxes[index]?.Vitality?.RestoreDeadForSession();
+            StateChanged?.Invoke();
+        }
+
         public float SoonestRespawnRemaining(WildlifeSpecies species)
         {
             return species switch

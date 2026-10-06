@@ -10,7 +10,9 @@ namespace UrbanWildlifeRooms.Core
     public readonly struct AnimalMealDaySummary
     {
         public AnimalMealDaySummary(int day, int fed, int living, int pigeonsFed,
-            int pigeonsLiving, int seedPortionsLeft)
+            int pigeonsLiving, int seedPortionsLeft, int squirrelsFed = 0,
+            int squirrelsLiving = 0, int hedgehogsFed = 0, int hedgehogsLiving = 0,
+            int foxesFed = 0, int foxesLiving = 0)
         {
             Day = day;
             Fed = fed;
@@ -18,6 +20,12 @@ namespace UrbanWildlifeRooms.Core
             PigeonsFed = pigeonsFed;
             PigeonsLiving = pigeonsLiving;
             SeedPortionsLeft = seedPortionsLeft;
+            SquirrelsFed = squirrelsFed;
+            SquirrelsLiving = squirrelsLiving;
+            HedgehogsFed = hedgehogsFed;
+            HedgehogsLiving = hedgehogsLiving;
+            FoxesFed = foxesFed;
+            FoxesLiving = foxesLiving;
         }
 
         public int Day { get; }
@@ -26,6 +34,30 @@ namespace UrbanWildlifeRooms.Core
         public int PigeonsFed { get; }
         public int PigeonsLiving { get; }
         public int SeedPortionsLeft { get; }
+        public int SquirrelsFed { get; }
+        public int SquirrelsLiving { get; }
+        public int HedgehogsFed { get; }
+        public int HedgehogsLiving { get; }
+        public int FoxesFed { get; }
+        public int FoxesLiving { get; }
+
+        public int FedOf(WildlifeSpecies species) => species switch
+        {
+            WildlifeSpecies.Pigeon => PigeonsFed,
+            WildlifeSpecies.Squirrel => SquirrelsFed,
+            WildlifeSpecies.Hedgehog => HedgehogsFed,
+            WildlifeSpecies.Fox => FoxesFed,
+            _ => 0
+        };
+
+        public int LivingOf(WildlifeSpecies species) => species switch
+        {
+            WildlifeSpecies.Pigeon => PigeonsLiving,
+            WildlifeSpecies.Squirrel => SquirrelsLiving,
+            WildlifeSpecies.Hedgehog => HedgehogsLiving,
+            WildlifeSpecies.Fox => FoxesLiving,
+            _ => 0
+        };
     }
 
     public sealed class AnimalNeedsController : MonoBehaviour
@@ -162,6 +194,31 @@ namespace UrbanWildlifeRooms.Core
             StateChanged?.Invoke();
         }
 
+        public bool CanReintroduce(IWildlifeLayoutAgent animal)
+        {
+            if (animal == null || navigation?.NavigationMap == null ||
+                naturalFood?.Model == null || !homeRooms.TryGetValue(animal, out var homeRoom))
+                return false;
+            foreach (var source in naturalFood.Model.Sources.Values)
+            {
+                if (source == null || source.portions <= 0 ||
+                    !CanEat(animal.Species, new FoodAccessSlot(source.roomId, source.kind, false)))
+                    continue;
+                if (HabitatFoodNetworkModel.CanReachSource(navigation.NavigationMap,
+                        homeRoom, animal.Species, source.roomId, out _))
+                    return true;
+            }
+            return false;
+        }
+
+        public void RegisterArrival(IWildlifeLayoutAgent animal)
+        {
+            if (animal == null || !idsByAgent.TryGetValue(animal, out var id)) return;
+            Model?.ResetIndividual(id);
+            RefreshWarnings();
+            StateChanged?.Invoke();
+        }
+
         public int HungerDaysOf(IWildlifeLayoutAgent agent)
         {
             if (agent == null || !idsByAgent.TryGetValue(agent, out var id) ||
@@ -235,8 +292,15 @@ namespace UrbanWildlifeRooms.Core
                 .Sum(source => source.portions);
             // Capture meals before CompleteDay clears ateToday and before
             // tomorrow's dawn replenishment changes the food stock.
+            int CountLiving(WildlifeSpecies species) => livingIds.Count(id =>
+                Model.Animals[id].species == species);
+            int CountFed(WildlifeSpecies species) => livingIds.Count(id =>
+                Model.Animals[id].species == species && Model.Animals[id].ateToday);
             LastCompletedDayMeals = new AnimalMealDaySummary(completedDay, fed,
-                livingIds.Length, fedPigeons, livingPigeons, seedPortionsLeft);
+                livingIds.Length, fedPigeons, livingPigeons, seedPortionsLeft,
+                CountFed(WildlifeSpecies.Squirrel), CountLiving(WildlifeSpecies.Squirrel),
+                CountFed(WildlifeSpecies.Hedgehog), CountLiving(WildlifeSpecies.Hedgehog),
+                CountFed(WildlifeSpecies.Fox), CountLiving(WildlifeSpecies.Fox));
             foreach (var id in Model.CompleteDay(livingIds))
             {
                 if (!runtime.HasActiveRun || !agentsById.TryGetValue(id, out var agent))

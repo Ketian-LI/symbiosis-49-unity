@@ -21,6 +21,7 @@ namespace UrbanWildlifeRooms.Animals
         private float glowTime;
         private bool initialized;
         private bool respawnGlow;
+        private GameRuntimeController runtime;
 
         public event Action<WildlifeVitality, AnimalDeathCause> Died;
         public event Action<WildlifeVitality> Respawned;
@@ -29,6 +30,8 @@ namespace UrbanWildlifeRooms.Animals
         public WildlifeSpecies Species => species;
         public bool IsAlive { get; private set; } = true;
         public float RespawnRemainingSeconds => IsAlive ? 0f : Mathf.Max(0f, RespawnDelaySeconds - deathTime);
+
+        public void BindRuntime(GameRuntimeController controller) => runtime = controller;
 
         public void Initialize(
             WildlifeSpecies animalSpecies,
@@ -98,6 +101,21 @@ namespace UrbanWildlifeRooms.Animals
             StateChanged?.Invoke();
         }
 
+        // Loading an Endless session must not report a second death or briefly
+        // present a dead animal as alive before the next frame.
+        public void RestoreDeadForSession()
+        {
+            if (!initialized) return;
+            IsAlive = false;
+            deathTime = RespawnDelaySeconds;
+            respawnGlow = false;
+            SetRenderersVisible(false);
+            foreach (var collider in colliders)
+                if (collider != null) collider.enabled = false;
+            if (movementBehaviour != null) movementBehaviour.enabled = false;
+            StateChanged?.Invoke();
+        }
+
         private void Update()
         {
             if (!initialized || !Application.isPlaying)
@@ -111,7 +129,8 @@ namespace UrbanWildlifeRooms.Animals
                 {
                     SetRenderersVisible(false);
                 }
-                if (deathTime >= RespawnDelaySeconds)
+                if (deathTime >= RespawnDelaySeconds &&
+                    (runtime == null || runtime.Mode == GameMode.Research))
                 {
                     Respawn();
                 }

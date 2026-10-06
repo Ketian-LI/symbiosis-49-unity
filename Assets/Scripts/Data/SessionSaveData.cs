@@ -7,8 +7,14 @@ namespace UrbanWildlifeRooms.Data
     public sealed class SessionSaveData
     {
         public int schemaVersion = 2;
+        // Paired with the on-disk run marker so a stale writer cannot resurrect
+        // a session after the player starts over.
+        public string runId;
         public string savedAtUtc;
         public string mode = "Sandbox";
+        // Missing in older v2 saves: Standard preserves the original rules.
+        public string sandboxDifficulty = "Standard";
+        public UrbanWildlifeRooms.Core.EndlessDifficultySettings sandboxSettings;
         public double elapsedSimulationSeconds;
         public int speedMultiplier = 1;
         public List<RoomPlacementData> rooms = new();
@@ -34,6 +40,7 @@ namespace UrbanWildlifeRooms.Data
         public int roomMovements;
         public int lastRoomMovementDay;
         public int lastLayoutPlanningDay;
+        public int lastLayoutHoldDay;
         public List<ShrubShelterSaveData> shrubShelters = new();
         public DailyOutcomeSaveData dailyOutcome;
         public List<PlayerFoodSourceSaveData> playerFoodSources = new();
@@ -53,6 +60,24 @@ namespace UrbanWildlifeRooms.Data
         public List<string> workerFedResidentIds = new();
         public List<WasteRoomSaveData> wasteRooms = new();
         public List<BlockedWasteSaveData> blockedWaste = new();
+        // Optional in older v2 sessions. Unity may materialize a default
+        // instance for a missing JSON field; both null and defaults are baseline.
+        public EndlessBalanceSaveData endlessBalance;
+        public List<string> endlessDeadAnimalIds = new();
+    }
+
+    [Serializable]
+    public sealed class EndlessBalanceSaveData
+    {
+        public int lastSettledDay;
+        public int community = 60;
+        public int lastCommunityChange;
+        public int criticalWildlifeDays;
+        public int lastWildlifeCount = 19;
+        public int pigeonRecoveryDays;
+        public int squirrelRecoveryDays;
+        public int hedgehogRecoveryDays;
+        public int foxRecoveryDays;
     }
 
     [Serializable]
@@ -145,6 +170,9 @@ namespace UrbanWildlifeRooms.Data
         public string roomId;
         public string kind;
         public int portions = 1;
+        public int addedToday;
+        public bool dailyAdditionKnown;
+        public int productionDayNumber;
     }
 
     [Serializable]

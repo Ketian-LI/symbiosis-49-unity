@@ -49,7 +49,11 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                     $"workers {residents.LastReport.WorkingResidents}, " +
                     $"deaths {mortality.Model.TotalDeaths}, active {runtime.HasActiveRun}.");
                 Assert.That(residents.LastReport.WorkingResidents, Is.GreaterThanOrEqualTo(3));
-                Assert.That(mortality.Model.TotalDeaths, Is.Zero);
+                // The population-based endless rules permit occasional losses;
+                // this strategy test protects continuity, not zero mortality.
+                Assert.That(runtime.HasActiveRun, Is.True,
+                    $"The targeted layout ended on day {day} after " +
+                    $"{mortality.Model.TotalDeaths} cumulative animal deaths.");
             }
             Assert.That(runtime.HasActiveRun, Is.True);
         }
@@ -362,6 +366,111 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             for (var index = 0; index < flock.Length; index++)
                 Assert.That(Vector3.Distance(flock[index].SpawnPosition - before[index], delta),
                     Is.LessThan(0.001f), flock[index].name);
+        }
+
+        [UnityTest]
+        public IEnumerator NeutralSwapCannotUnlockTheNextDay()
+        {
+            yield return SceneManager.LoadSceneAsync("Main", LoadSceneMode.Single);
+            var bootstrap = Object.FindFirstObjectByType<UrbanWildlifeBootstrap>();
+            var generated = bootstrap.transform.Find(UrbanWildlifeBootstrap.GeneratedRootName);
+            Object.Destroy(generated.GetComponentInChildren<SessionPersistenceController>(true));
+            yield return null;
+            var runtime = generated.GetComponentInChildren<GameRuntimeController>(true);
+            var editor = generated.GetComponentInChildren<RoomLayoutEditorController>(true);
+            var residents = generated.GetComponentInChildren<ResidentPopulationController>(true);
+            var rooms = generated.GetComponentsInChildren<RoomView>(true);
+            runtime.StartNewRun(GameMode.Sandbox);
+            runtime.SetOnboardingOpen(false);
+            editor.SetGuidedTargetRoom(null);
+            editor.EnterEditing();
+            var moving = rooms.Single(item => item.Spec.Id == "shared-m");
+            var target = rooms.Single(item => item.Spec.Id == "shared-n");
+            var from = bootstrap.LayoutCamera.WorldToScreenPoint(moving.VisualRoot.position);
+            var to = bootstrap.LayoutCamera.WorldToScreenPoint(target.VisualRoot.position);
+            InvokeDrag(editor, "HandleDragStarted", moving, new Vector2(from.x, from.y));
+            InvokeDrag(editor, "HandleDragging", moving, new Vector2(to.x, to.y));
+            InvokeDrag(editor, "HandleDragEnded", moving, new Vector2(to.x, to.y));
+            Assert.That(editor.TryGetImpactPreview(residents.Model, out var preview), Is.True);
+            Assert.That(DailySpatialDecision.HasMaterialImpact(preview), Is.False);
+            Assert.That(editor.CanConfirm, Is.False);
+            editor.ConfirmEditing();
+            Assert.That(runtime.HasDailyAction, Is.False);
+            Assert.That(runtime.TrySkipToNextDay(), Is.False);
+        }
+
+        [UnityTest, Timeout(240000)]
+        public IEnumerator ParkFeedingReportsObservedSurvival() =>
+            RunScriptedStrategy("park-feeding");
+
+        [UnityTest, Timeout(240000)]
+        public IEnumerator RouteRepairReportsObservedSurvival() =>
+            RunScriptedStrategy("route-repair");
+
+        private static IEnumerator RunScriptedStrategy(string strategy)
+        {
+            // Exploratory deterministic script, not an assertion that one strategy
+            // is optimal or a substitute for observed player decisions. Agent
+            // movement uses its own fixed System.Random seeds in the bootstrap.
+            foreach (var seed in new[] { 11 })
+            {
+                // This only seeds UnityEngine.Random. It does not vary the fixed
+                // System.Random streams used by animal agents.
+                Random.InitState(seed);
+                yield return SceneManager.LoadSceneAsync("Main", LoadSceneMode.Single);
+                var bootstrap = Object.FindFirstObjectByType<UrbanWildlifeBootstrap>();
+                var generated = bootstrap.transform.Find(UrbanWildlifeBootstrap.GeneratedRootName);
+                Object.Destroy(generated.GetComponentInChildren<SessionPersistenceController>(true));
+                yield return null;
+
+                Random.InitState(seed);
+                var runtime = generated.GetComponentInChildren<GameRuntimeController>(true);
+                var editor = generated.GetComponentInChildren<RoomLayoutEditorController>(true);
+                var feeding = generated.GetComponentInChildren<PlayerFeedingController>(true);
+                var residents = generated.GetComponentInChildren<ResidentPopulationController>(true);
+                var population = generated.GetComponentInChildren<AnimalPopulationController>(true);
+                var balance = generated.GetComponentInChildren<EndlessBalanceController>(true);
+                var rooms = generated.GetComponentsInChildren<RoomView>(true);
+                var park = rooms.Single(item => item.Spec.Id == "central-park");
+                runtime.StartNewRun(GameMode.Sandbox);
+                runtime.SetOnboardingOpen(false);
+                editor.SetGuidedTargetRoom(null);
+
+                var completedDays = 0;
+                var observationDays = 15;
+                for (var day = 1; day <= observationDays && runtime.HasActiveRun; day++)
+                {
+                    if (strategy == "route-repair")
+                    {
+                        if (day == 1) Swap(bootstrap, editor, rooms, "residence-d", "pigeon-d");
+                        else if (day == 2) Swap(bootstrap, editor, rooms, "pigeon-a", "shared-j");
+                        else Swap(bootstrap, editor, rooms, "pigeon-b", "shared-h");
+                    }
+                    else if (strategy == "park-feeding" && day % 3 == 1 &&
+                             feeding.CanActivateFeedingMode)
+                    {
+                        var position = park.VisualRoot.TransformPoint(new Vector3(0.55f, 0.16f, 0.55f));
+                        Assert.That(feeding.TryPlaceFood("central-park", position), Is.True);
+                    }
+                    else
+                    {
+                        Swap(bootstrap, editor, rooms, "pigeon-b", "shared-h");
+                    }
+
+                    yield return SkipDay(runtime, day);
+                    completedDays++;
+                }
+
+                var living = population.LivingCount(WildlifeSpecies.Pigeon) +
+                             population.LivingCount(WildlifeSpecies.Squirrel) +
+                             population.LivingCount(WildlifeSpecies.Hedgehog) +
+                             population.LivingCount(WildlifeSpecies.Fox);
+                TestContext.WriteLine($"strategy={strategy}, seed={seed}, " +
+                    $"completedDays={completedDays}, active={runtime.HasActiveRun}, " +
+                    $"endReason={(runtime.HasActiveRun ? "none" : runtime.CurrentResults.endReason.ToString())}, " +
+                    $"residents={residents.Model.ResidentCount}, wildlife={living}, " +
+                    $"community={balance.Model.Community}");
+            }
         }
 
         private static void Swap(UrbanWildlifeBootstrap bootstrap, RoomLayoutEditorController editor,

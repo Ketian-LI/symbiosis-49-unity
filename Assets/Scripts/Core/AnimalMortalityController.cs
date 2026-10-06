@@ -52,6 +52,7 @@ namespace UrbanWildlifeRooms.Core
             }
             foreach (var vitality in vitalities)
             {
+                vitality.BindRuntime(runtime);
                 vitality.Died += HandleVitalityDied;
             }
             resourceEconomy.BindRunSummaryProvider(PopulateResults);
@@ -91,7 +92,7 @@ namespace UrbanWildlifeRooms.Core
             var ended = Model.RecordDeath(species, cause);
             AnimalDied?.Invoke(species, cause, Model.TotalDeaths);
             StateChanged?.Invoke();
-            if (ended && runtime.HasActiveRun)
+            if (ended && runtime.Mode == GameMode.Research && runtime.HasActiveRun)
             {
                 var results = new RunResultsData
                 {

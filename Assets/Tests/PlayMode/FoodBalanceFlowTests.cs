@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
@@ -14,11 +16,164 @@ using UrbanWildlifeRooms.Core;
 using UrbanWildlifeRooms.Data;
 using UrbanWildlifeRooms.Presentation;
 using UrbanWildlifeRooms.UI;
+using Object = UnityEngine.Object;
 
 namespace UrbanWildlifeRooms.Tests.PlayMode
 {
     public sealed class FoodBalanceFlowTests
     {
+        [UnityTest]
+        public IEnumerator EndlessDayUsesActualCommutesAndAnimalDeathsDoNotEndAtThree()
+        {
+            yield return SceneManager.LoadSceneAsync("Main", LoadSceneMode.Single);
+            var generated = Object.FindFirstObjectByType<UrbanWildlifeBootstrap>()
+                .transform.Find(UrbanWildlifeBootstrap.GeneratedRootName);
+            Object.Destroy(generated.GetComponentInChildren<SessionPersistenceController>(true));
+            yield return null;
+
+            var runtime = generated.GetComponentInChildren<GameRuntimeController>(true);
+            var residents = generated.GetComponentInChildren<ResidentPopulationController>(true);
+            var economy = generated.GetComponentInChildren<ResourceEconomyController>(true);
+            var balance = generated.GetComponentInChildren<EndlessBalanceController>(true);
+            var population = generated.GetComponentInChildren<AnimalPopulationController>(true);
+            var mortality = generated.GetComponentInChildren<AnimalMortalityController>(true);
+            runtime.StartNewRun(GameMode.Sandbox);
+            runtime.SetOnboardingOpen(false);
+            foreach (var pigeon in generated.GetComponentsInChildren<PigeonDemoAgent>(true)
+                         .Where(item => item.IsAlive).Take(3))
+                pigeon.Kill();
+            Assert.That(mortality.Model.TotalDeaths, Is.EqualTo(3));
+            Assert.That(population.LivingCount(WildlifeSpecies.Pigeon), Is.EqualTo(9));
+            Assert.That(runtime.HasActiveRun, Is.True,
+                "Endless Mode must not reuse the Research three-death loss rule.");
+
+            generated.GetComponentInChildren<RoomLayoutEditorController>(true)
+                .RestoreLastMovementDay(runtime.Clock.DayNumber);
+            runtime.AdvanceSimulation(SimulationClockModel.CycleSeconds);
+            economy.ProcessUntil(runtime.Clock.TotalSeconds);
+            Assert.That(balance.Model.LastSettledDay, Is.EqualTo(1));
+            Assert.That(balance.Model.Community,
+                Is.EqualTo(EndlessBalanceModel.StartingCommunity +
+                           EndlessBalanceModel.CommunityChangeFor(
+                               residents.LastReport.WorkingResidents,
+                               residents.LastReport.ResidentsEvaluated)));
+            Assert.That(balance.Model.LastWildlifeCount,
+                Is.EqualTo(AnimalPopulationDefaults.Total - 3));
+        }
+
+        [UnityTest]
+        public IEnumerator RestartClearsPreviousSaveAndReloadsOnlyTheNewRun()
+        {
+            var previousDirectory = SessionPersistenceController.SaveDirectoryOverrideForTests;
+            var isolatedDirectory = Path.Combine(Application.temporaryCachePath,
+                "symbiosis-restart-" + Guid.NewGuid().ToString("N"));
+            SessionPersistenceController.SaveDirectoryOverrideForTests = isolatedDirectory;
+            try
+            {
+                Directory.CreateDirectory(isolatedDirectory);
+                var profilePath = Path.Combine(isolatedDirectory, "profile-v1.json");
+                File.WriteAllText(profilePath, JsonUtility.ToJson(new ProfileSaveData
+                {
+                    bestSurvivalDays = 12
+                }));
+                yield return SceneManager.LoadSceneAsync("Main", LoadSceneMode.Single);
+                var generated = Object.FindFirstObjectByType<UrbanWildlifeBootstrap>()
+                    .transform.Find(UrbanWildlifeBootstrap.GeneratedRootName);
+                var runtime = generated.GetComponentInChildren<GameRuntimeController>(true);
+                var editor = generated.GetComponentInChildren<RoomLayoutEditorController>(true);
+                var persistence = generated.GetComponentInChildren<SessionPersistenceController>(true);
+                runtime.StartNewRun(GameMode.Sandbox);
+                runtime.SetOnboardingOpen(false);
+
+                var moved = new RoomLayoutModel(RoomLayoutData.All);
+                Assert.That(moved.TrySwap("pigeon-c", "shared-f"), Is.True);
+                Assert.That(editor.RestoreLayout(moved.ExportData()), Is.True);
+                runtime.RestoreSession(SimulationClockModel.CycleSeconds + 1d, 1, GameMode.Sandbox);
+                persistence.SaveNow();
+                var savePath = persistence.SavePath;
+                var oldSaveJson = File.ReadAllText(savePath);
+                var oldSave = JsonUtility.FromJson<SessionSaveData>(oldSaveJson);
+                Assert.That(oldSave.elapsedSimulationSeconds,
+                    Is.GreaterThan(SimulationClockModel.CycleSeconds));
+                Assert.That(oldSave.runId, Is.Not.Empty);
+
+                var oldSaveAbsentDuringReset = false;
+                void CheckSaveDuringReset() => oldSaveAbsentDuringReset = !File.Exists(savePath);
+                runtime.RestartRequested += CheckSaveDuringReset;
+                try
+                {
+                    runtime.TogglePauseMenu();
+                    var buttons = generated.GetComponentsInChildren<Button>(true);
+                    var restart = buttons.Single(item => item.name == "Restart Endless Mode");
+                    var confirm = buttons.Single(item => item.name == "Confirm Restart");
+                    restart.onClick.Invoke();
+                    Assert.That(confirm.gameObject.activeInHierarchy, Is.True);
+                    confirm.onClick.Invoke();
+                }
+                finally
+                {
+                    runtime.RestartRequested -= CheckSaveDuringReset;
+                }
+
+                Assert.That(oldSaveAbsentDuringReset, Is.True,
+                    "The prior run must be invalidated before reset callbacks execute.");
+                var freshSave = JsonUtility.FromJson<SessionSaveData>(File.ReadAllText(savePath));
+                Assert.That(freshSave.elapsedSimulationSeconds, Is.EqualTo(0d));
+                Assert.That(freshSave.runId, Is.Not.EqualTo(oldSave.runId));
+                Assert.That(File.ReadAllText(persistence.RunIdPath).Trim(), Is.EqualTo(freshSave.runId));
+                Assert.That(freshSave.residentCount,
+                    Is.EqualTo(WasteManagementController.StartingResidentCount));
+                Assert.That(freshSave.lastRoomMovementDay, Is.EqualTo(0));
+                Assert.That(File.Exists(profilePath), Is.True,
+                    "Restart must preserve the player's best-day record.");
+                var original = RoomLayoutData.All.ToDictionary(room => room.Id);
+                var savedRooms = freshSave.rooms.ToDictionary(room => room.id);
+                Assert.That(savedRooms["pigeon-c"].column, Is.EqualTo(original["pigeon-c"].Column));
+                Assert.That(savedRooms["pigeon-c"].row, Is.EqualTo(original["pigeon-c"].Row));
+
+                yield return SceneManager.LoadSceneAsync("Main", LoadSceneMode.Single);
+                generated = Object.FindFirstObjectByType<UrbanWildlifeBootstrap>()
+                    .transform.Find(UrbanWildlifeBootstrap.GeneratedRootName);
+                runtime = generated.GetComponentInChildren<GameRuntimeController>(true);
+                editor = generated.GetComponentInChildren<RoomLayoutEditorController>(true);
+                Assert.That(runtime.HasResumableRun, Is.True);
+                Assert.That(runtime.Clock.TotalSeconds, Is.EqualTo(0d));
+                var reloadedRooms = editor.ExportLayout().ToDictionary(room => room.id);
+                Assert.That(reloadedRooms["pigeon-c"].column,
+                    Is.EqualTo(original["pigeon-c"].Column));
+                Assert.That(reloadedRooms["pigeon-c"].row,
+                    Is.EqualTo(original["pigeon-c"].Row));
+
+                // Simulate a stale persistence writer putting the previous
+                // JSON back after restart. The run marker must reject it.
+                File.WriteAllText(savePath, oldSaveJson);
+                yield return SceneManager.LoadSceneAsync("Main", LoadSceneMode.Single);
+                generated = Object.FindFirstObjectByType<UrbanWildlifeBootstrap>()
+                    .transform.Find(UrbanWildlifeBootstrap.GeneratedRootName);
+                runtime = generated.GetComponentInChildren<GameRuntimeController>(true);
+                Assert.That(runtime.HasResumableRun, Is.False,
+                    "An old session must not reappear after the player restarts.");
+            }
+            finally
+            {
+                var livePersistence = Object.FindFirstObjectByType<SessionPersistenceController>(
+                    FindObjectsInactive.Include);
+                if (livePersistence != null)
+                {
+                    livePersistence.gameObject.SetActive(false);
+                }
+                SessionPersistenceController.SaveDirectoryOverrideForTests = previousDirectory;
+                foreach (var name in new[] { "session-v2.json", "session-v2.json.tmp",
+                             "session-v2.run-id", "session-v2.run-id.tmp",
+                             "profile-v1.json", "profile-v1.json.tmp" })
+                {
+                    var path = Path.Combine(isolatedDirectory, name);
+                    if (File.Exists(path)) File.Delete(path);
+                }
+                if (Directory.Exists(isolatedDirectory)) Directory.Delete(isolatedDirectory);
+            }
+        }
+
         [UnityTest]
         public IEnumerator RestartConfirmationReceivesPointerClickAndResetsDayAndLayout()
         {
@@ -32,6 +187,9 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             var editor = generated.GetComponentInChildren<RoomLayoutEditorController>(true);
             runtime.StartNewRun(GameMode.Sandbox);
             runtime.SetOnboardingOpen(false);
+            // Check the confirmation through the visible gameplay canvas,
+            // after the desktop exit transition has completed.
+            yield return new WaitForSecondsRealtime(2.1f);
             var moved = new RoomLayoutModel(RoomLayoutData.All);
             Assert.That(moved.TrySwap("pigeon-c", "shared-f"), Is.True);
             Assert.That(editor.RestoreLayout(moved.ExportData()), Is.True);
@@ -57,6 +215,11 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             };
             var hits = new List<RaycastResult>();
             EventSystem.current.RaycastAll(click, hits);
+            TestContext.WriteLine($"Restart raycast: screen={Screen.width}x{Screen.height}, " +
+                                  $"point={screen}, camera={bootstrap.LayoutCamera.pixelRect}, " +
+                                  $"raycasters={Object.FindObjectsByType<BaseRaycaster>(FindObjectsSortMode.None).Length}, " +
+                                  $"targetActive={confirm.gameObject.activeInHierarchy}, " +
+                                  $"contains={RectTransformUtility.RectangleContainsScreenPoint(rect, screen, bootstrap.LayoutCamera)}");
             if (SystemInfo.graphicsDeviceType != GraphicsDeviceType.Null)
             {
                 Assert.That(hits, Is.Not.Empty);
@@ -389,9 +552,12 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                     $"(starvation {mortality.Model.StarvationDeaths}, traffic {mortality.Model.TrafficDeaths}).");
             }
 
-            Assert.That(runtime.HasActiveRun, Is.False,
-                "A static food network must not be stable when the planning gate is bypassed for this diagnostic.");
-            Assert.That(runtime.CurrentResults.daysSurvived, Is.InRange(2, 8));
+            // Endless mode now grants a two-day population grace period and no
+            // longer ends after the old cumulative three-death threshold.
+            // This diagnostic checks the underlying food failure, not an
+            // obsolete fixed game-over day.
+            Assert.That(mortality.Model.TotalDeaths, Is.GreaterThan(0),
+                "An unattended static food network should lose animals.");
             Assert.That(mortality.Model.StarvationDeaths, Is.GreaterThan(0),
                 "Food scarcity, not only traffic or predation, must contribute to the unattended loss.");
         }
@@ -431,9 +597,8 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 Assert.That(runtime.IsDaySkipping, Is.False, $"Day {day} skip timed out.");
             }
 
-            Assert.That(runtime.HasActiveRun, Is.False,
+            Assert.That(mortality.Model.TotalDeaths, Is.GreaterThan(0),
                 "Repeated feeding at one site should not solve a dispersed habitat shortage.");
-            Assert.That(runtime.CurrentResults.daysSurvived, Is.LessThanOrEqualTo(6));
             Assert.That(mortality.Model.StarvationDeaths, Is.GreaterThan(0));
         }
 
