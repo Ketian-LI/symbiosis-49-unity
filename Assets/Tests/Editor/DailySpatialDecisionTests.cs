@@ -33,6 +33,21 @@ namespace UrbanWildlifeRooms.Tests.Editor
         }
 
         [Test]
+        public void MovingShrubQualifiesBecauseShelterMustRecover()
+        {
+            var impact = new RoomLayoutImpactPreview(0,
+                new ResidentCommutePreview(4, 0),
+                new ResidentCommutePreview(4, 0),
+                4, 4, 12, 12, 0, 0, 0, null, 0, 0, null,
+                beforeShelterPairs: 0, afterShelterPairs: 0,
+                recoveredShelterPairs: 2, movedShrubs: 1,
+                beforeAnimalConnections: 4, afterAnimalConnections: 4,
+                beforeGreenCells: 4, afterGreenCells: 4,
+                beforePigeonSeedMealCeiling: 12, afterPigeonSeedMealCeiling: 12);
+            Assert.That(DailySpatialDecision.HasMaterialImpact(impact), Is.True);
+        }
+
+        [Test]
         public void KeepingLayoutRequiresCoreForecastToBeStable()
         {
             Assert.That(DailySpatialDecision.CanKeepLayout(Preview(), 4), Is.True);

@@ -647,6 +647,15 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             var impactPanel = generated.GetComponentInChildren<UrbanWildlifeRooms.UI.UrbanWildlifeHud>(true)
                 .transform.Find("Minimal Gameplay HUD/Layout Impact Preview");
             Assert.That(impactPanel, Is.Not.Null);
+            var impactRect = impactPanel.GetComponent<RectTransform>();
+            Assert.That(impactRect.anchorMin, Is.EqualTo(Vector2.zero));
+            Assert.That(impactRect.anchoredPosition.x + impactRect.rect.width, Is.LessThan(480f),
+                "Planning forecasts should stay beside the board, not cover its last row.");
+            var firstCard = impactPanel.Find("Impact Metric 1").GetComponent<RectTransform>();
+            var secondCard = impactPanel.Find("Impact Metric 2").GetComponent<RectTransform>();
+            Assert.That(firstCard.anchoredPosition.y,
+                Is.GreaterThan(secondCard.anchoredPosition.y + secondCard.rect.height),
+                "Stacked forecast cards must not overlap.");
             var nextPage = impactPanel.Find("Next Impact Page")?.GetComponent<Button>();
             Assert.That(nextPage, Is.Not.Null);
             var foundMarket = false;

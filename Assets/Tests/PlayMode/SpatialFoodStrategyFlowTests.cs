@@ -166,10 +166,9 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             var completedDays = 0;
             for (var day = 1; day <= 8 && runtime.HasActiveRun; day++)
             {
-                if (day == 1)
-                    Swap(bootstrap, editor, rooms, "pigeon-b", "shared-h", 2);
-                else
-                    Swap(bootstrap, editor, rooms, "residence-e", "residence-f");
+                // The pigeon/garden exchange changes the green network in either
+                // direction; swapping two unrelated residences can be a no-op.
+                Swap(bootstrap, editor, rooms, "pigeon-b", "shared-h");
                 Assert.That(editor.LastConfirmedMovementDay, Is.EqualTo(day));
                 var network = new RoomNavigationMap(editor.ExportLayout(),
                     RoomLayoutData.All, 3.1f, true, day);
@@ -291,16 +290,10 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 ? "规划" : "Plan"));
             editor.SetGuidedTargetRoom(null);
             editor.EnterEditing();
-            Assert.That(editor.CanConfirm, Is.True);
-            editor.ConfirmEditing();
-            yield return null;
-            Assert.That(editor.LastConfirmedPlanningDay, Is.EqualTo(1));
-            Assert.That(editor.LastConfirmedMovementDay, Is.Zero);
+            Assert.That(editor.CanConfirm, Is.False,
+                "The opening risks should prevent confirming an unchanged layout.");
             Assert.That(editor.FreeRearrangementAvailable, Is.True,
-                "Reviewing an unchanged layout must not consume the free rearrangement.");
-            Assert.That(planLabel.text, Is.EqualTo(runtime.Language == InterfaceLanguage.Chinese
-                ? "继续调整" : "Adjust"));
-            editor.EnterEditing();
+                "Opening the preview must not consume the free rearrangement.");
 
             var rooms = generated.GetComponentsInChildren<RoomView>(true);
             var plaza = rooms.Single(item => item.Spec.Id == "pigeon-a");
@@ -360,7 +353,7 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             Assert.That(flock.Length, Is.EqualTo(3));
             var before = flock.Select(item => item.SpawnPosition).ToArray();
 
-            Swap(bootstrap, editor, rooms, "pigeon-a", "shared-e");
+            Swap(bootstrap, editor, rooms, "pigeon-a", "shared-j");
             var delta = pigeonRoom.VisualRoot.position - firstCenter;
             Assert.That(delta.sqrMagnitude, Is.GreaterThan(1f));
             for (var index = 0; index < flock.Length; index++)
@@ -369,7 +362,7 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator NeutralSwapCannotUnlockTheNextDay()
+        public IEnumerator NetZeroRoundTripCannotUnlockTheNextDay()
         {
             yield return SceneManager.LoadSceneAsync("Main", LoadSceneMode.Single);
             var bootstrap = Object.FindFirstObjectByType<UrbanWildlifeBootstrap>();
@@ -391,8 +384,13 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             InvokeDrag(editor, "HandleDragStarted", moving, new Vector2(from.x, from.y));
             InvokeDrag(editor, "HandleDragging", moving, new Vector2(to.x, to.y));
             InvokeDrag(editor, "HandleDragEnded", moving, new Vector2(to.x, to.y));
-            Assert.That(editor.TryGetImpactPreview(residents.Model, out var preview), Is.True);
-            Assert.That(DailySpatialDecision.HasMaterialImpact(preview), Is.False);
+            Assert.That(editor.TryGetImpactPreview(residents.Model, out var changed), Is.True);
+            Assert.That(DailySpatialDecision.HasMaterialImpact(changed), Is.True,
+                "These two plazas have different road profiles, so their exchange is not neutral.");
+            InvokeDrag(editor, "HandleDragStarted", moving, new Vector2(to.x, to.y));
+            InvokeDrag(editor, "HandleDragging", moving, new Vector2(from.x, from.y));
+            InvokeDrag(editor, "HandleDragEnded", moving, new Vector2(from.x, from.y));
+            Assert.That(editor.TryGetImpactPreview(residents.Model, out _), Is.False);
             Assert.That(editor.CanConfirm, Is.False);
             editor.ConfirmEditing();
             Assert.That(runtime.HasDailyAction, Is.False);

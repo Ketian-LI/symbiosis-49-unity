@@ -2478,16 +2478,19 @@ namespace UrbanWildlifeRooms.UI
             impact.Image.raycastTarget = false;
             RoundSolidPanel(impact, 16f);
             layoutImpactPanel = impact.GameObject;
-            impact.RectTransform.anchorMin = impact.RectTransform.anchorMax = new Vector2(0.5f, 0f);
-            impact.RectTransform.pivot = new Vector2(0.5f, 0f);
-            impact.RectTransform.anchoredPosition = new Vector2(0f, 108f);
-            impact.RectTransform.sizeDelta = new Vector2(760f, 118f);
+            // Keep the forecast beside the board: the former bottom-centred
+            // strip covered the last row of rooms during planning.
+            impact.RectTransform.anchorMin = impact.RectTransform.anchorMax = Vector2.zero;
+            impact.RectTransform.pivot = Vector2.zero;
+            impact.RectTransform.anchoredPosition = new Vector2(22f, 180f);
+            impact.RectTransform.sizeDelta = new Vector2(420f, 255f);
             layoutImpactText = CreateText(impact.Transform, "Projected Layout Consequences",
                 string.Empty, 15, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Bold);
-            SetRect(layoutImpactText.rectTransform, 17f, 87f, 600f, 24f);
+            layoutImpactText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            SetRect(layoutImpactText.rectTransform, 17f, 199f, 353f, 49f);
             var scope = CreatePanel("Forecast Scope", impact.Transform,
                 new Color(0.25f, 0.29f, 0.29f, 0.94f));
-            SetRect(scope.RectTransform, 623f, 89f, 24f, 24f);
+            SetRect(scope.RectTransform, 382f, 215f, 24f, 24f);
             RoundSolidPanel(scope, 12f);
             var question = CreateText(scope.Transform, "Scope Symbol", "?", 15,
                 TextAnchor.MiddleCenter, WarmPaper, FontStyle.Bold);
@@ -2499,7 +2502,7 @@ namespace UrbanWildlifeRooms.UI
             scopeTip.RectTransform.anchorMin = scopeTip.RectTransform.anchorMax = new Vector2(1f, 1f);
             scopeTip.RectTransform.pivot = new Vector2(1f, 0f);
             scopeTip.RectTransform.anchoredPosition = new Vector2(0f, 8f);
-            scopeTip.RectTransform.sizeDelta = new Vector2(356f, 62f);
+            scopeTip.RectTransform.sizeDelta = new Vector2(390f, 72f);
             layoutImpactScopeText = CreateText(scopeTip.Transform, "Scope Text",
                 "仅预测布局指标；不预测动物实际路线、存量或车库风险。",
                 13, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Normal);
@@ -2513,14 +2516,14 @@ namespace UrbanWildlifeRooms.UI
             layoutImpactPreviousButton = CreateButton(impact.Transform,
                 "Previous Impact Page", "‹", 23, () => ChangeLayoutImpactPage(-1));
             StyleCompactPaperButton(layoutImpactPreviousButton);
-            SetRect(layoutImpactPreviousButton.GetComponent<RectTransform>(), 663f, 48f, 36f, 35f);
+            SetRect(layoutImpactPreviousButton.GetComponent<RectTransform>(), 145f, 5f, 36f, 27f);
             layoutImpactNextButton = CreateButton(impact.Transform,
                 "Next Impact Page", "›", 23, () => ChangeLayoutImpactPage(1));
             StyleCompactPaperButton(layoutImpactNextButton);
-            SetRect(layoutImpactNextButton.GetComponent<RectTransform>(), 709f, 48f, 36f, 35f);
+            SetRect(layoutImpactNextButton.GetComponent<RectTransform>(), 239f, 5f, 36f, 27f);
             layoutImpactPageLabel = CreateText(impact.Transform, "Impact Page Count",
                 string.Empty, 12, TextAnchor.MiddleCenter, WarmPaper, FontStyle.Normal);
-            SetRect(layoutImpactPageLabel.rectTransform, 664f, 14f, 80f, 24f);
+            SetRect(layoutImpactPageLabel.rectTransform, 185f, 5f, 50f, 27f);
             layoutImpactPanel.SetActive(false);
             editToolbar.SetActive(false);
         }
@@ -2529,7 +2532,7 @@ namespace UrbanWildlifeRooms.UI
         {
             var panel = CreatePanel($"Impact Metric {index + 1}", parent,
                 new Color(0.17f, 0.20f, 0.21f, 0.92f));
-            SetRect(panel.RectTransform, 14f + index * 320f, 9f, 309f, 75f);
+            SetRect(panel.RectTransform, 14f, 119f - index * 83f, 392f, 75f);
             RoundSolidPanel(panel, 12f);
             panel.Image.raycastTarget = true;
             var signal = CreateImage(panel.Transform, "Impact Signal", null);
@@ -2542,13 +2545,13 @@ namespace UrbanWildlifeRooms.UI
             SetRect(icon.rectTransform, 10f, 14f, 46f, 46f);
             var label = CreateText(panel.Transform, "Metric Label", string.Empty,
                 15, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Bold);
-            SetRect(label.rectTransform, 65f, 43f, 232f, 25f);
+            SetRect(label.rectTransform, 65f, 43f, 310f, 25f);
             var before = CreateText(panel.Transform, "Baseline Value", string.Empty,
                 16, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Normal);
             SetRect(before.rectTransform, 65f, 9f, 87f, 31f);
             var delta = CreateText(panel.Transform, "Delta Value", string.Empty,
                 19, TextAnchor.MiddleLeft, Cyan, FontStyle.Bold);
-            SetRect(delta.rectTransform, 159f, 9f, 135f, 31f);
+            SetRect(delta.rectTransform, 171f, 9f, 204f, 31f);
             var tooltip = CreatePanel("Metric Explanation", panel.Transform,
                 new Color(0.10f, 0.12f, 0.14f, 0.97f));
             tooltip.Image.raycastTarget = false;
@@ -2556,7 +2559,7 @@ namespace UrbanWildlifeRooms.UI
             tooltip.RectTransform.anchorMin = tooltip.RectTransform.anchorMax = new Vector2(0f, 1f);
             tooltip.RectTransform.pivot = Vector2.zero;
             tooltip.RectTransform.anchoredPosition = new Vector2(0f, 8f);
-            tooltip.RectTransform.sizeDelta = new Vector2(344f, 68f);
+            tooltip.RectTransform.sizeDelta = new Vector2(392f, 68f);
             var explanation = CreateText(tooltip.Transform, "Explanation Text", string.Empty,
                 13, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Normal);
             explanation.horizontalOverflow = HorizontalWrapMode.Wrap;

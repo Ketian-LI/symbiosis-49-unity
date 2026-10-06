@@ -24,6 +24,8 @@ namespace UrbanWildlifeRooms.Presentation
             impact.BeforeFullPopulationWasteOverflow != impact.AfterFullPopulationWasteOverflow ||
             impact.BeforeMarketOverflow != impact.AfterMarketOverflow ||
             impact.BeforeShelterPairs != impact.AfterShelterPairs ||
+            // Moving a shrub suspends shelter even when today's pair count is unchanged.
+            impact.MovedShrubs > 0 ||
             impact.BeforeAnimalConnections != impact.AfterAnimalConnections ||
             impact.BeforeBufferedGarages != impact.AfterBufferedGarages ||
             impact.BeforeGreenCells != impact.AfterGreenCells ||

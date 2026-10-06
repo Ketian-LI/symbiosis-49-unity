@@ -79,10 +79,11 @@ namespace UrbanWildlifeRooms.People
             importedVisual.transform.localScale = Vector3.one;
 
             var animator = importedVisual.GetComponent<Animator>();
-            if (animator != null)
-            {
-                animator.enabled = false;
-            }
+            if (animator == null) animator = importedVisual.AddComponent<Animator>();
+            // Non-legacy clips require an active Animator in a standalone player.
+            // Sampling below owns the pose, so no controller should override it.
+            animator.runtimeAnimatorController = null;
+            animator.enabled = true;
 
             return true;
         }

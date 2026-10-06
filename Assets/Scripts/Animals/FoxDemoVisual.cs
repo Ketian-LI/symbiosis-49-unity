@@ -86,10 +86,9 @@ namespace UrbanWildlifeRooms.Animals
             importedVisual.name = "Quaternius Fox CC0";
             importedVisual.hideFlags = hideFlags;
             var animator = importedVisual.GetComponent<Animator>();
-            if (animator != null)
-            {
-                animator.enabled = false;
-            }
+            if (animator == null) animator = importedVisual.AddComponent<Animator>();
+            animator.runtimeAnimatorController = null;
+            animator.enabled = true;
             var renderer = importedVisual.GetComponentInChildren<SkinnedMeshRenderer>();
             if (renderer == null ||
                 Mathf.Max(renderer.bounds.size.x, renderer.bounds.size.z) < 0.001f)
@@ -135,10 +134,9 @@ namespace UrbanWildlifeRooms.Animals
             importedVisual.name = "Fox Blender Model v01";
             importedVisual.hideFlags = hideFlags;
             var animator = importedVisual.GetComponent<Animator>();
-            if (animator != null)
-            {
-                animator.enabled = false;
-            }
+            if (animator == null) animator = importedVisual.AddComponent<Animator>();
+            animator.runtimeAnimatorController = null;
+            animator.enabled = true;
             return true;
         }
 

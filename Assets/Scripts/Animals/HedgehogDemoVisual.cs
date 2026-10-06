@@ -80,10 +80,9 @@ namespace UrbanWildlifeRooms.Animals
             importedVisual.transform.localScale = Vector3.one;
 
             var animator = importedVisual.GetComponent<Animator>();
-            if (animator != null)
-            {
-                animator.enabled = false;
-            }
+            if (animator == null) animator = importedVisual.AddComponent<Animator>();
+            animator.runtimeAnimatorController = null;
+            animator.enabled = true;
 
             return true;
         }
