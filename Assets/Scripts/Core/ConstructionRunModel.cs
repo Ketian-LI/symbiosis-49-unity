@@ -89,6 +89,21 @@ namespace UrbanWildlifeRooms.Core
             return ConstructionHumanModel.SettleDay(CurrentDay, board,
                 availability.BlockedHomes, availability.BlockedFoodServices);
         }
+        public ConstructionWasteAvailability PreviewWasteAvailability() =>
+            waste.PreviewAfterCleanup(board);
+        public ConstructionEcologyDayResult PreviewEcologyDay() =>
+            food.PreviewDay(CurrentDay, board, PigeonTileId);
+        public IReadOnlyList<ConstructionTileData> PreviewSquirrelFoodRoute()
+        {
+            var target = PreviewEcologyDay().squirrelFoodTileId;
+            return board.GreenRouteBetween(ConstructionBoardModel.StarterOakId,
+                target);
+        }
+        public IReadOnlyList<ConstructionTileData> PreviewPigeonFoodRoute()
+        {
+            var target = PreviewEcologyDay().pigeonFoodTileId;
+            return board.GreenRouteBetween(PigeonTileId, target);
+        }
         public IReadOnlyList<ConstructionTileData> ResidenceRouteTo(
             string residenceId, string serviceTileId) =>
             board.ResidenceServiceRouteTo(residenceId, serviceTileId);

@@ -83,6 +83,17 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             Assert.That(resident.gameObject.activeSelf, Is.True);
             Assert.That(resident.anchoredPosition.x, Is.EqualTo(23f).Within(0.1f));
             Assert.That(resident.anchoredPosition.y, Is.EqualTo(-22f).Within(0.1f));
+            Assert.That(controller.TryPlace(3, 2), Is.False,
+                "Selecting an occupied residence inspects rather than rebuilds it.");
+            var routeStatus = root.transform.Find(
+                "Construction UI/Route inspection/Route status").GetComponent<Text>();
+            Assert.That(routeStatus.text, Does.Contain("no work route"));
+            var overlay = root.transform.Find(
+                "Construction UI/7 by 7 construction board/Selected route overlay");
+            Assert.That(overlay.GetComponentsInChildren<Image>()
+                .Count(image => image.name == "Route segment"), Is.GreaterThan(0));
+            Assert.That(controller.TryPlace(3, 3), Is.False);
+            Assert.That(routeStatus.text, Does.Contain("SQUIRREL"));
             Object.Destroy(root);
             yield return null;
         }

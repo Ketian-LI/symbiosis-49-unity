@@ -257,6 +257,42 @@ namespace UrbanWildlifeRooms.Data
             return tiles.Where(tile => seen.Contains(tile.id)).Select(Clone).ToArray();
         }
 
+        // The animal overlay must follow the same four-neighbour green
+        // connectivity that permits foraging; it never crosses human streets.
+        public IReadOnlyList<ConstructionTileData> GreenRouteBetween(
+            string originId, string destinationId)
+        {
+            var origin = tiles.FirstOrDefault(tile => tile.id == originId &&
+                tile.category == ConstructionCategory.Green);
+            var destination = tiles.FirstOrDefault(tile =>
+                tile.id == destinationId &&
+                tile.category == ConstructionCategory.Green);
+            if (origin == null || destination == null)
+                return Array.Empty<ConstructionTileData>();
+            var previous = new Dictionary<string, string> { [origin.id] = null };
+            var pending = new Queue<ConstructionTileData>();
+            pending.Enqueue(origin);
+            while (pending.Count > 0 && !previous.ContainsKey(destination.id))
+            {
+                var current = pending.Dequeue();
+                foreach (var neighbour in Neighbours(current.column, current.row))
+                {
+                    if (neighbour.category != ConstructionCategory.Green ||
+                        previous.ContainsKey(neighbour.id)) continue;
+                    previous[neighbour.id] = current.id;
+                    pending.Enqueue(neighbour);
+                }
+            }
+            if (!previous.ContainsKey(destination.id))
+                return Array.Empty<ConstructionTileData>();
+            var byId = tiles.ToDictionary(tile => tile.id);
+            var route = new List<ConstructionTileData>();
+            for (var id = destination.id; id != null; id = previous[id])
+                route.Add(Clone(byId[id]));
+            route.Reverse();
+            return route;
+        }
+
         public ConstructionBoardSaveData Export() => new()
         {
             tiles = tiles.Select(Clone).ToList()

@@ -65,6 +65,28 @@ namespace UrbanWildlifeRooms.Tests.Editor
         }
 
         [Test]
+        public void AnimalRouteTurnsOnlyThroughConnectedGreenTiles()
+        {
+            var board = new ConstructionBoardModel();
+            var first = Build(board, 4, 3, ConstructionCategory.Green,
+                GreenPlanting.Meadow);
+            var turn = Build(board, 4, 2, ConstructionCategory.Green,
+                GreenPlanting.Meadow);
+            var target = Build(board, 5, 2, ConstructionCategory.Green,
+                GreenPlanting.Meadow);
+            Assert.That(board.GreenRouteBetween(ConstructionBoardModel.StarterOakId,
+                target.id).Select(tile => tile.id), Is.EqualTo(new[]
+                { ConstructionBoardModel.StarterOakId, first.id, turn.id, target.id }));
+
+            Build(board, 6, 2, ConstructionCategory.Residence);
+            var isolated = Build(board, 6, 3, ConstructionCategory.Green,
+                GreenPlanting.Meadow);
+            Assert.That(board.GreenRouteBetween(ConstructionBoardModel.StarterOakId,
+                isolated.id), Is.Empty,
+                "A resident room must not bridge an animal route.");
+        }
+
+        [Test]
         public void FirstResidentNeedsOwnRestaurantAccessNotAnotherHomesRestaurant()
         {
             var board = new ConstructionBoardModel();

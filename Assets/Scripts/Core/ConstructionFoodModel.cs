@@ -89,6 +89,18 @@ namespace UrbanWildlifeRooms.Core
         public int Stock(string tileId) => tileId != null &&
             stock.TryGetValue(tileId, out var amount) ? amount : 0;
 
+        // Preview the same yield, target selection and portion allocation as
+        // settlement on a copy. Inspecting a route must never eat food.
+        public ConstructionEcologyDayResult PreviewDay(int day,
+            ConstructionBoardModel board, string pigeonTileId)
+        {
+            var copy = new ConstructionFoodModel();
+            copy.stock.Clear();
+            foreach (var pair in stock) copy.stock[pair.Key] = pair.Value;
+            copy.LastSettledDay = LastSettledDay;
+            return copy.SettleDay(day, board, pigeonTileId);
+        }
+
         // Used solely by the old externally-scored test/API path. It must not
         // silently produce food or award meals.
         public void MarkDayWithoutSimulation(int day)

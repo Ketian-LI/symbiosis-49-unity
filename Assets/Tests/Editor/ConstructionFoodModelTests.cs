@@ -29,6 +29,22 @@ namespace UrbanWildlifeRooms.Tests.Editor
         }
 
         [Test]
+        public void AnimalPreviewPredictsSettlementWithoutSpendingFood()
+        {
+            var board = new ConstructionBoardModel();
+            var food = new ConstructionFoodModel();
+            var preview = food.PreviewDay(1, board, null);
+            Assert.That(preview.squirrelAte, Is.True);
+            Assert.That(food.Stock(ConstructionBoardModel.StarterOakId),
+                Is.EqualTo(1));
+            Assert.That(food.LastSettledDay, Is.Zero);
+            var actual = food.SettleDay(1, board, null);
+            Assert.That(actual.squirrelFoodTileId,
+                Is.EqualTo(preview.squirrelFoodTileId));
+            Assert.That(actual.AnimalMeals, Is.EqualTo(preview.AnimalMeals));
+        }
+
+        [Test]
         public void ConnectedMeadowGrowsThenFlockActuallyEatsTwoPortions()
         {
             var run = new ConstructionRunModel();
@@ -97,6 +113,29 @@ namespace UrbanWildlifeRooms.Tests.Editor
             Assert.That(ConstructionRunModel.TryRestore(run.Export(),
                 out var restored), Is.True);
             Assert.That(restored.PigeonTileId, Is.EqualTo(secondMeadow.id));
+        }
+
+        [Test]
+        public void FlockRoutePreviewMatchesActualTargetWithoutChangingStock()
+        {
+            var run = new ConstructionRunModel();
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            Assert.That(run.TryBuild(4, 3, ConstructionCategory.Green,
+                GreenPlanting.Meadow, out var first, out _, out _), Is.True);
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            Assert.That(run.TryBuild(5, 3, ConstructionCategory.Green,
+                GreenPlanting.Meadow, out var second, out _, out _), Is.True);
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            var stockBefore = run.FoodStock(second.id);
+            var preview = run.PreviewEcologyDay();
+            Assert.That(preview.pigeonFoodTileId, Is.EqualTo(second.id));
+            Assert.That(run.PreviewPigeonFoodRoute().Select(tile => tile.id),
+                Is.EqualTo(new[] { first.id, second.id }));
+            Assert.That(run.FoodStock(second.id), Is.EqualTo(stockBefore));
+            Assert.That(run.TrySimulateDay(out var actual), Is.True);
+            Assert.That(actual.pigeonFoodTileId,
+                Is.EqualTo(preview.pigeonFoodTileId));
+            Assert.That(actual.pigeonsFed, Is.EqualTo(preview.pigeonsFed));
         }
 
         [Test]

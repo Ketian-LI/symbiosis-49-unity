@@ -16,6 +16,8 @@ namespace UrbanWildlifeRooms.Presentation
     // daily home/work/food capacity now settles in the independent prototype.
     public sealed class ConstructionPrototypeController : MonoBehaviour
     {
+        private enum RouteSubject { None, Resident, Squirrel, Pigeons }
+
         private static readonly Color Ink = new(0.13f, 0.19f, 0.24f);
         private static readonly Color Paper = new(0.93f, 0.89f, 0.79f);
         private static readonly Color Green = new(0.39f, 0.57f, 0.34f);
@@ -48,6 +50,10 @@ namespace UrbanWildlifeRooms.Presentation
         private Text feedbackText;
         private Text progressText;
         private Text resetLabel;
+        private Text routeText;
+        private RectTransform routeOverlay;
+        private RouteSubject routeSubject;
+        private string selectedHomeId;
         private GameObject plantingPanel;
         private GameObject visitorMarker;
         private GameObject movingResidentMarker;
@@ -99,6 +105,13 @@ namespace UrbanWildlifeRooms.Presentation
             var existing = run.At(column, row);
             if (existing != null)
             {
+                routeSubject = existing.category == ConstructionCategory.Residence
+                    ? RouteSubject.Resident
+                    : existing.id == run.PigeonTileId ? RouteSubject.Pigeons
+                    : existing.id == ConstructionBoardModel.StarterOakId
+                        ? RouteSubject.Squirrel : RouteSubject.None;
+                selectedHomeId = routeSubject == RouteSubject.Resident
+                    ? existing.id : null;
                 feedbackText.text = existing.category == ConstructionCategory.Green
                     ? $"{existing.planting} · growth {run.GreenGrowthStage(existing.id)}/2 · " +
                       $"food {run.FoodStock(existing.id)}/{run.FoodCapacity(existing.planting)} " +
@@ -138,6 +151,7 @@ namespace UrbanWildlifeRooms.Presentation
                     feedbackText.text +=
                         $" · next day ~{expected}/{capacity} capacity used";
                 }
+                Refresh();
                 return false;
             }
             var planting = selectedCategory == ConstructionCategory.Green
@@ -341,9 +355,16 @@ namespace UrbanWildlifeRooms.Presentation
             Panel("Board inset", boardPanel.transform, Vector2.zero,
                 new Vector2(574, 574), new Color(0.79f, 0.75f, 0.66f));
             BuildCells(boardPanel.transform);
+            routeOverlay = NewRect("Selected route overlay", boardPanel.transform,
+                Vector2.zero, new Vector2(595, 595));
             movingResidentMarker = CreateHumanMarker(boardPanel.transform,
                 Vector2.zero, 0.8f, "Resident walking");
             movingResidentMarker.SetActive(false);
+            var routePanel = Panel("Route inspection", canvas.transform,
+                new Vector2(-285, -357), new Vector2(595, 68), Ink);
+            routeText = TextAt("Route status", routePanel.transform,
+                Vector2.zero, new Vector2(565, 62), "", 16, false,
+                Color.white, TextAnchor.MiddleLeft);
 
             var side = Panel("Building choices", canvas.transform,
                 new Vector2(455, -23), new Vector2(555, 650),
@@ -583,7 +604,141 @@ namespace UrbanWildlifeRooms.Presentation
                     ? 29f + run.GreenGrowthStage(tile.id) * 9f : 47f;
                 cellIconRects[column, row].sizeDelta = new Vector2(size, size);
             }
+            RefreshRouteInspection(humanPreview);
         }
+
+        private void RefreshRouteInspection(ConstructionHumanDayResult humanPreview)
+        {
+            foreach (Transform child in routeOverlay)
+            {
+                child.gameObject.SetActive(false);
+                Destroy(child.gameObject);
+            }
+            if (routeSubject == RouteSubject.None)
+            {
+                routeText.text = "Click a resident, squirrel or pigeon flock to inspect its next-day route.";
+                return;
+            }
+            if (run.IsFinished)
+            {
+                routeText.text = "The board is complete. There is no next-day route to preview.";
+                return;
+            }
+            var built = run.BuiltTiles.ToDictionary(tile => tile.id);
+            IReadOnlyList<ConstructionTileData> route;
+            ConstructionTileData origin;
+            var colour = routeSubject == RouteSubject.Resident ? Teal :
+                new Color(0.94f, 0.68f, 0.23f);
+            if (routeSubject == RouteSubject.Resident)
+            {
+                var resident = humanPreview.residents.FirstOrDefault(person =>
+                    person.homeTileId == selectedHomeId);
+                if (resident == null || !built.TryGetValue(selectedHomeId,
+                        out origin))
+                {
+                    routeSubject = RouteSubject.None;
+                    routeText.text = "Select a resident to inspect its next-day route.";
+                    return;
+                }
+                route = resident.routeTileIds.Where(built.ContainsKey)
+                    .Select(id => built[id]).ToArray();
+                var availability = run.PreviewWasteAvailability();
+                if (availability.BlockedHomes.Contains(selectedHomeId))
+                    routeText.text = "NEXT DAY · RESIDENT\nWaste at home blocks the outing. Build cleanup nearby.";
+                else
+                {
+                    var work = resident.worked
+                        ? $"work {TileCoordinate(built, resident.workTileId)}" :
+                        run.ResidenceCanReachWork(selectedHomeId)
+                            ? "work full" : "no work route";
+                    var meal = resident.ate
+                        ? $"meal {TileCoordinate(built, resident.mealTileId)}" :
+                        !run.ResidenceCanReachFood(selectedHomeId)
+                            ? "no meal route"
+                            : ReachableFoodClosedByWaste(selectedHomeId,
+                                availability.BlockedFoodServices)
+                                ? "meal closed by waste" : "meal full";
+                    routeText.text = $"NEXT DAY · RESIDENT\n{work} · {meal} · returns home";
+                }
+            }
+            else
+            {
+                var ecology = run.PreviewEcologyDay();
+                var squirrel = routeSubject == RouteSubject.Squirrel;
+                var originId = squirrel ? ConstructionBoardModel.StarterOakId :
+                    run.PigeonTileId;
+                if (originId == null || !built.TryGetValue(originId, out origin))
+                {
+                    routeSubject = RouteSubject.None;
+                    routeText.text = "No animal is currently here.";
+                    return;
+                }
+                route = squirrel ? run.PreviewSquirrelFoodRoute() :
+                    run.PreviewPigeonFoodRoute();
+                var target = route.Count > 0 ? route[route.Count - 1] : null;
+                routeText.text = squirrel
+                    ? target == null
+                        ? "NEXT DAY · SQUIRREL\nNo oak food within one cell after growth."
+                        : $"NEXT DAY · SQUIRREL\n1 portion expected at oak {target.column + 1},{target.row + 1}."
+                    : target == null
+                        ? "NEXT DAY · PIGEON FLOCK\nNo reachable seeded meadow after growth."
+                        : $"NEXT DAY · PIGEON FLOCK\n{ecology.pigeonsFed}/" +
+                          $"{ConstructionFoodModel.PigeonFlockSize} portions expected " +
+                          $"at meadow {target.column + 1},{target.row + 1}.";
+            }
+            DrawRoute(route, origin, colour);
+        }
+
+        private bool ReachableFoodClosedByWaste(string homeId,
+            IReadOnlyCollection<string> blockedServices)
+        {
+            var reachable = run.BuiltTiles.Where(tile => tile.category is
+                    ConstructionCategory.Restaurant or ConstructionCategory.Supermarket &&
+                run.ResidenceRouteTo(homeId, tile.id).Count > 0).ToArray();
+            return reachable.Length > 0 && reachable.All(tile =>
+                blockedServices.Contains(tile.id));
+        }
+
+        private void DrawRoute(IReadOnlyList<ConstructionTileData> route,
+            ConstructionTileData origin, Color colour)
+        {
+            var seen = new HashSet<string>();
+            for (var index = 1; index < route.Count; index++)
+            {
+                var first = route[index - 1];
+                var second = route[index];
+                if (Math.Abs(first.column - second.column) +
+                    Math.Abs(first.row - second.row) != 1) continue;
+                var edge = string.CompareOrdinal(first.id, second.id) < 0
+                    ? first.id + ":" + second.id : second.id + ":" + first.id;
+                if (!seen.Add(edge)) continue;
+                var from = BoardPoint(first);
+                var to = BoardPoint(second);
+                var segment = Panel("Route segment", routeOverlay,
+                    (from + to) / 2f,
+                    new Vector2(Vector2.Distance(from, to), 5f), colour);
+                segment.raycastTarget = false;
+                segment.rectTransform.localRotation = Quaternion.Euler(0f, 0f,
+                    Mathf.Atan2(to.y - from.y, to.x - from.x) * Mathf.Rad2Deg);
+            }
+            var marker = Panel("Route origin", routeOverlay,
+                BoardPoint(origin), new Vector2(14, 14), colour);
+            marker.raycastTarget = false;
+            if (route.Count > 0 && route[route.Count - 1].id != origin.id)
+            {
+                var target = Panel("Food destination", routeOverlay,
+                    BoardPoint(route[route.Count - 1]), new Vector2(20, 20), colour);
+                target.raycastTarget = false;
+            }
+        }
+
+        private static Vector2 BoardPoint(ConstructionTileData tile) =>
+            new((tile.column - 3) * 79f, (3 - tile.row) * 79f);
+
+        private static string TileCoordinate(
+            IReadOnlyDictionary<string, ConstructionTileData> built, string tileId) =>
+            tileId != null && built.TryGetValue(tileId, out var tile)
+                ? $"{tile.column + 1},{tile.row + 1}" : "?";
 
         private void OnResetPressed()
         {
@@ -613,6 +768,8 @@ namespace UrbanWildlifeRooms.Presentation
             }
             movingResidentMarker.SetActive(false);
             run = new ConstructionRunModel();
+            routeSubject = RouteSubject.None;
+            selectedHomeId = null;
             selectedCategory = ConstructionCategory.Green;
             selectedPlanting = GreenPlanting.Oak;
             feedbackText.text = "New run: one oak and one squirrel.";
