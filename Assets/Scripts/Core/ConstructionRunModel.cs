@@ -20,8 +20,10 @@ namespace UrbanWildlifeRooms.Core
         public ConstructionStorySaveData story;
         public ConstructionScoreSaveData score;
         public ConstructionFoodSaveData food;
+        public ConstructionWasteSaveData waste;
         public ConstructionEcologyDayResult lastEcologyDay;
         public ConstructionHumanDayResult lastHumanDay;
+        public ConstructionWasteDayResult lastWasteDay;
         public int currentDay;
         public bool finished;
         public string pigeonTileId;
@@ -37,6 +39,7 @@ namespace UrbanWildlifeRooms.Core
         private ConstructionStoryModel story;
         private ConstructionScoreLedger score;
         private ConstructionFoodModel food;
+        private ConstructionWasteModel waste;
 
         public int BuiltCount => board.BuiltCount;
         public bool IsFull => board.IsFull;
@@ -51,6 +54,7 @@ namespace UrbanWildlifeRooms.Core
         public int FirstResidentMealDay { get; private set; }
         public ConstructionEcologyDayResult LastEcologyDay { get; private set; }
         public ConstructionHumanDayResult LastHumanDay { get; private set; }
+        public ConstructionWasteDayResult LastWasteDay { get; private set; }
         public bool FirstResidentAte => story.ResidentAte;
         public bool HasConnectedMeadow => ConnectedMeadows().Any();
         public string FirstResidentHomeTileId => board.FirstResidence?.id;
@@ -70,6 +74,7 @@ namespace UrbanWildlifeRooms.Core
         public int ConnectedGreenCount(string greenId) =>
             board.ConnectedGreenCount(greenId);
         public int FoodStock(string tileId) => food.Stock(tileId);
+        public int WasteBacklog(string tileId) => waste.Backlog(tileId);
         public bool ResidenceCanReachFood(string residenceId) =>
             board.ResidenceServiceRoute(residenceId,
                 ConstructionCategory.Restaurant).Count > 0 ||
@@ -78,8 +83,12 @@ namespace UrbanWildlifeRooms.Core
         public bool ResidenceCanReachWork(string residenceId) =>
             board.ResidenceServiceRoute(residenceId,
                 ConstructionCategory.Workshop).Count > 0;
-        public ConstructionHumanDayResult PreviewHumanDay() =>
-            ConstructionHumanModel.SettleDay(CurrentDay, board);
+        public ConstructionHumanDayResult PreviewHumanDay()
+        {
+            var availability = waste.PreviewAfterCleanup(board);
+            return ConstructionHumanModel.SettleDay(CurrentDay, board,
+                availability.BlockedHomes, availability.BlockedFoodServices);
+        }
         public IReadOnlyList<ConstructionTileData> ResidenceRouteTo(
             string residenceId, string serviceTileId) =>
             board.ResidenceServiceRouteTo(residenceId, serviceTileId);
@@ -102,6 +111,7 @@ namespace UrbanWildlifeRooms.Core
             story = new ConstructionStoryModel();
             score = new ConstructionScoreLedger();
             food = new ConstructionFoodModel();
+            waste = new ConstructionWasteModel();
             CurrentDay = 1;
             story.Observe(board);
         }
@@ -171,7 +181,10 @@ namespace UrbanWildlifeRooms.Core
             if (IsFinished || score.Days.Count != CurrentDay - 1 ||
                 food.LastSettledDay >= CurrentDay) return false;
             ecology = food.SettleDay(CurrentDay, board, PigeonTileId);
-            var human = ConstructionHumanModel.SettleDay(CurrentDay, board);
+            var availability = waste.PreviewAfterCleanup(board);
+            var human = ConstructionHumanModel.SettleDay(CurrentDay, board,
+                availability.BlockedHomes, availability.BlockedFoodServices);
+            var wasteDay = waste.SettleDay(CurrentDay, board, human, availability);
             if (ecology.squirrelAte && story.Stage ==
                 ConstructionStoryStage.WatchSquirrelEat)
             {
@@ -184,6 +197,7 @@ namespace UrbanWildlifeRooms.Core
                 PigeonTileId = ecology.pigeonFoodTileId;
             LastEcologyDay = ecology;
             LastHumanDay = human;
+            LastWasteDay = wasteDay;
             return true;
         }
 
@@ -198,8 +212,10 @@ namespace UrbanWildlifeRooms.Core
             if (IsFinished || !score.TryRecordDay(CurrentDay, animalMeals,
                     completedWorkCycles)) return false;
             food.MarkDayWithoutSimulation(CurrentDay);
+            waste.MarkDayWithoutSimulation(CurrentDay);
             LastEcologyDay = null;
             LastHumanDay = null;
+            LastWasteDay = null;
             var nextDay = CurrentDay + 1;
             if (PigeonTileId == null && story.Stage == ConstructionStoryStage.GrowGreen)
             {
@@ -245,8 +261,10 @@ namespace UrbanWildlifeRooms.Core
             story = story.Export(),
             score = score.Export(),
             food = food.Export(),
+            waste = waste.Export(),
             lastEcologyDay = LastEcologyDay,
             lastHumanDay = LastHumanDay,
+            lastWasteDay = LastWasteDay,
             currentDay = CurrentDay,
             finished = IsFinished,
             pigeonTileId = PigeonTileId,
@@ -295,6 +313,14 @@ namespace UrbanWildlifeRooms.Core
             else if (!ConstructionFoodModel.TryRestore(saved.food, board,
                          saved.currentDay, saved.finished, out food))
                 return false;
+            ConstructionWasteModel waste;
+            if (saved.waste == null ||
+                saved.waste.lastSettledDay == 0 && saved.waste.tiles?.Count == 0)
+                waste = ConstructionWasteModel.FromLegacySave(saved.currentDay,
+                    saved.finished);
+            else if (!ConstructionWasteModel.TryRestore(saved.waste, board,
+                         saved.currentDay, saved.finished, out waste))
+                return false;
             // Unity JsonUtility materializes a null nested serializable class
             // as an all-default object; day zero represents "no result yet".
             var lastEcologyDay = saved.lastEcologyDay?.day > 0
@@ -316,6 +342,9 @@ namespace UrbanWildlifeRooms.Core
                  lastHumanDay.restaurantRejectedForCapacity < 0 ||
                  lastHumanDay.restaurantRejectedForCapacity >
                      lastHumanDay.restaurantDemand - lastHumanDay.restaurantServed ||
+                 lastHumanDay.restaurantRejectedForWaste < 0 ||
+                 lastHumanDay.restaurantRejectedForWaste >
+                     lastHumanDay.restaurantDemand - lastHumanDay.restaurantServed ||
                  lastHumanDay.residents == null ||
                  lastHumanDay.ResidentCount != board.BuiltTiles.Count(tile =>
                      tile.category == ConstructionCategory.Residence &&
@@ -327,6 +356,21 @@ namespace UrbanWildlifeRooms.Core
                  lastHumanDay.residents.Select(person => person.homeTileId)
                      .Distinct().Count() != lastHumanDay.ResidentCount))
                 return false;
+            var lastWasteDay = saved.lastWasteDay?.day > 0
+                ? saved.lastWasteDay : null;
+            if (lastWasteDay != null &&
+                (score.Days.Count == 0 ||
+                 lastWasteDay.day != score.Days.Last().day ||
+                 lastWasteDay.changes == null ||
+                 lastWasteDay.changes.Any(change => change == null ||
+                     change.cleared < 0 || change.produced < 0 ||
+                     change.remaining < 0 ||
+                     !board.BuiltTiles.Any(tile => tile.id == change.tileId &&
+                         tile.builtDay <= lastWasteDay.day &&
+                         tile.category is ConstructionCategory.Residence or
+                             ConstructionCategory.Restaurant or
+                             ConstructionCategory.Supermarket))))
+                return false;
 
             run = new ConstructionRunModel
             {
@@ -334,13 +378,15 @@ namespace UrbanWildlifeRooms.Core
                 story = story,
                 score = score,
                 food = food,
+                waste = waste,
                 CurrentDay = saved.currentDay,
                 IsFinished = saved.finished,
                 PigeonTileId = saved.pigeonTileId,
                 PigeonArrivalDay = saved.pigeonArrivalDay,
                 FirstResidentMealDay = saved.firstResidentMealDay,
                 LastEcologyDay = lastEcologyDay,
-                LastHumanDay = lastHumanDay
+                LastHumanDay = lastHumanDay,
+                LastWasteDay = lastWasteDay
             };
             return true;
         }

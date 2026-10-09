@@ -60,6 +60,12 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             Assert.That(controller.AdvanceDay(), Is.True);
             Assert.That(controller.Stage, Is.EqualTo(
                 ConstructionStoryStage.BuildWorkshop));
+            Assert.That(home.transform.Find("Waste backlog").gameObject.activeSelf,
+                Is.True);
+            Assert.That(home.transform.Find("Waste backlog/Waste count")
+                .GetComponent<Text>().text, Is.EqualTo("1"));
+            Assert.That(restaurant.transform.Find("Waste backlog/Waste count")
+                .GetComponent<Text>().text, Is.EqualTo("1"));
             var walking = root.transform.Find(
                 "Construction UI/7 by 7 construction board/Resident walking");
             Assert.That(walking, Is.Not.Null);

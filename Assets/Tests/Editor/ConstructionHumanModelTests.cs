@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Collections.Generic;
 using NUnit.Framework;
 using UrbanWildlifeRooms.Core;
 using UrbanWildlifeRooms.Data;
@@ -7,6 +8,28 @@ namespace UrbanWildlifeRooms.Tests.Editor
 {
     public sealed class ConstructionHumanModelTests
     {
+        [Test]
+        public void SanitationClosureIsNotMistakenForRestaurantCrowding()
+        {
+            var board = new ConstructionBoardModel();
+            var home = Build(board, 3, 2, ConstructionCategory.Residence);
+            var restaurant = Build(board, 3, 1, ConstructionCategory.Restaurant);
+            Build(board, 2, 2, ConstructionCategory.Workshop);
+            var closedService = ConstructionHumanModel.SettleDay(1, board,
+                null, new HashSet<string> { restaurant.id });
+            Assert.That(closedService.restaurantDemand, Is.EqualTo(1));
+            Assert.That(closedService.restaurantRejectedForWaste, Is.EqualTo(1));
+            Assert.That(closedService.restaurantRejectedForCapacity, Is.Zero);
+            Assert.That(closedService.residents.Single().worked, Is.True);
+            Assert.That(closedService.residents.Single().ate, Is.False);
+
+            var blockedHome = ConstructionHumanModel.SettleDay(1, board,
+                new HashSet<string> { home.id });
+            Assert.That(blockedHome.residents.Single().routeTileIds,
+                Is.EqualTo(new[] { home.id }));
+            Assert.That(blockedHome.CompletedWorkCycles, Is.Zero);
+        }
+
         [Test]
         public void OneResidentCompletesOnlyWhenWorkAndMealAreBothReachable()
         {

@@ -31,6 +31,7 @@ namespace UrbanWildlifeRooms.Presentation
         private readonly Image[,] pigeonIcons = new Image[7, 7];
         private readonly Text[,] foodBadges = new Text[7, 7];
         private readonly Text[,] capacityBadges = new Text[7, 7];
+        private readonly Text[,] wasteBadges = new Text[7, 7];
         private readonly GameObject[,] residentMarkers = new GameObject[7, 7];
         private readonly GameObject[,] foodNeedMarkers = new GameObject[7, 7];
         private readonly GameObject[,] workNeedMarkers = new GameObject[7, 7];
@@ -124,6 +125,10 @@ namespace UrbanWildlifeRooms.Presentation
                           $"meal {(person.ate ? 1 : 0)}/1, " +
                           $"complete {(person.completedCycle ? 1 : 0)}/1";
                 }
+                if (existing.category is ConstructionCategory.Residence or
+                    ConstructionCategory.Restaurant or ConstructionCategory.Supermarket)
+                    feedbackText.text += $" · waste {run.WasteBacklog(existing.id)}/" +
+                        $"{ConstructionWasteModel.DisruptionThreshold} (cleanup before next route)";
                 var capacity = ConstructionHumanModel.DailyCapacity(existing.category);
                 if (capacity > 0 && existing.category != ConstructionCategory.Residence)
                 {
@@ -193,6 +198,10 @@ namespace UrbanWildlifeRooms.Presentation
                     ? $"Restaurant full: {human.ResidentCount - human.MealsEaten} " +
                       $"resident(s) missed food. Workdays " +
                       $"{human.CompletedWorkCycles}/{human.ResidentCount}."
+                : human?.restaurantRejectedForWaste > 0
+                    ? $"Waste blocked {human.restaurantRejectedForWaste} restaurant " +
+                      $"meal(s). Cleanup {run.LastWasteDay?.Cleared ?? 0}; " +
+                      $"backlog {run.LastWasteDay?.Remaining ?? 0}."
                 : $"Animal meals {ecology.AnimalMeals}; residents " +
                   $"worked {human?.WorkedCount ?? 0}, ate {human?.MealsEaten ?? 0}, " +
                   $"finished {human?.CompletedWorkCycles ?? 0}.";
@@ -412,6 +421,15 @@ namespace UrbanWildlifeRooms.Presentation
                     Color.white, TextAnchor.MiddleCenter);
                 capacityLabel.raycastTarget = false;
                 capacityBadges[column, row] = capacityLabel;
+                var wasteBadge = Panel("Waste backlog", button.transform,
+                    new Vector2(-23, -25), new Vector2(31, 19),
+                    new Color(0.68f, 0.35f, 0.25f));
+                wasteBadge.raycastTarget = false;
+                var wasteLabel = TextAt("Waste count", wasteBadge.transform,
+                    Vector2.zero, new Vector2(30, 18), "0", 11, true,
+                    Color.white, TextAnchor.MiddleCenter);
+                wasteLabel.raycastTarget = false;
+                wasteBadges[column, row] = wasteLabel;
                 residentMarkers[column, row] = CreateHumanMarker(button.transform,
                     new Vector2(23, -22), 0.8f, "First resident");
                 var foodNeed = Panel("Food access needed", button.transform,
@@ -531,6 +549,12 @@ namespace UrbanWildlifeRooms.Presentation
                         person.workTileId == tile.id || person.mealTileId == tile.id);
                     capacityBadges[column, row].text = $"~{used}/{capacity}";
                 }
+                var wasteSource = tile?.category is ConstructionCategory.Residence or
+                    ConstructionCategory.Restaurant or ConstructionCategory.Supermarket;
+                var backlog = wasteSource ? run.WasteBacklog(tile.id) : 0;
+                wasteBadges[column, row].transform.parent.gameObject.SetActive(
+                    backlog > 0);
+                if (backlog > 0) wasteBadges[column, row].text = backlog.ToString();
                 squirrelIcons[column, row].gameObject.SetActive(tile?.id ==
                     ConstructionBoardModel.StarterOakId);
                 pigeonIcons[column, row].gameObject.SetActive(tile != null &&
@@ -624,7 +648,8 @@ namespace UrbanWildlifeRooms.Presentation
                 "The restaurant is reachable. Advance one day to watch the resident eat.",
             ConstructionStoryStage.BuildWorkshop =>
                 "The resident ate once. Food needs work to sustain it; build a workshop.",
-            ConstructionStoryStage.BuildWasteRoom => "Daily life creates waste. Build a waste room.",
+            ConstructionStoryStage.BuildWasteRoom =>
+                "Homes and meals make waste. Build a waste room to clear two nearby portions each day.",
             ConstructionStoryStage.AwaitAccessProblem =>
                 "Add another home beyond direct work or food access. A street can reconnect it.",
             ConstructionStoryStage.BuildStreet => "A street extends the human connection from a home.",

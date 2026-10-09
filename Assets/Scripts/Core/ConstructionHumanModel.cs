@@ -24,6 +24,7 @@ namespace UrbanWildlifeRooms.Core
         public int restaurantDemand;
         public int restaurantServed;
         public int restaurantRejectedForCapacity;
+        public int restaurantRejectedForWaste;
         public List<ConstructionResidentDayResult> residents = new();
         public int ResidentCount => residents?.Count ?? 0;
         public int WorkedCount => residents?.Count(person => person.worked) ?? 0;
@@ -47,7 +48,9 @@ namespace UrbanWildlifeRooms.Core
             };
 
         public static ConstructionHumanDayResult SettleDay(int day,
-            ConstructionBoardModel board)
+            ConstructionBoardModel board,
+            IReadOnlyCollection<string> blockedHomes = null,
+            IReadOnlyCollection<string> blockedFoodServices = null)
         {
             if (day < 1) throw new ArgumentOutOfRangeException(nameof(day));
             if (board == null) throw new ArgumentNullException(nameof(board));
@@ -71,9 +74,15 @@ namespace UrbanWildlifeRooms.Core
                 {
                     homeTileId = home.id
                 };
+                if (blockedHomes?.Contains(home.id) == true)
+                {
+                    resident.routeTileIds.Add(home.id);
+                    result.residents.Add(resident);
+                    continue;
+                }
                 var work = ChooseAvailable(home.id, services.Where(tile =>
                     tile.category == ConstructionCategory.Workshop), remaining,
-                    board, day);
+                    board, day, blockedFoodServices);
                 if (work.tile != null)
                 {
                     remaining[work.tile.id]--;
@@ -83,19 +92,24 @@ namespace UrbanWildlifeRooms.Core
 
                 var restaurants = services.Where(tile =>
                     tile.category == ConstructionCategory.Restaurant).ToArray();
-                if (restaurants.Any(tile => board.ResidenceServiceRouteTo(home.id,
-                        tile.id, day).Count > 0))
+                var reachableRestaurants = restaurants.Where(tile =>
+                    board.ResidenceServiceRouteTo(home.id, tile.id, day).Count > 0)
+                    .ToArray();
+                if (reachableRestaurants.Length > 0)
                     result.restaurantDemand++;
                 var meal = ChooseAvailable(home.id, restaurants, remaining,
-                    board, day);
-                if (meal.tile == null && result.restaurantDemand > 0 &&
-                    restaurants.Any(tile => board.ResidenceServiceRouteTo(home.id,
-                        tile.id, day).Count > 0))
-                    result.restaurantRejectedForCapacity++;
+                    board, day, blockedFoodServices);
+                if (meal.tile == null && reachableRestaurants.Length > 0)
+                {
+                    if (reachableRestaurants.Any(tile =>
+                            blockedFoodServices?.Contains(tile.id) != true))
+                        result.restaurantRejectedForCapacity++;
+                    else result.restaurantRejectedForWaste++;
+                }
                 if (meal.tile == null)
                     meal = ChooseAvailable(home.id, services.Where(tile =>
                         tile.category == ConstructionCategory.Supermarket),
-                        remaining, board, day);
+                        remaining, board, day, blockedFoodServices);
                 if (meal.tile != null)
                 {
                     remaining[meal.tile.id]--;
@@ -116,9 +130,11 @@ namespace UrbanWildlifeRooms.Core
             IReadOnlyList<ConstructionTileData> route) ChooseAvailable(
             string homeId, IEnumerable<ConstructionTileData> services,
             IReadOnlyDictionary<string, int> remaining,
-            ConstructionBoardModel board, int day)
+            ConstructionBoardModel board, int day,
+            IReadOnlyCollection<string> blockedServices)
         {
-            var options = services.Where(tile => remaining[tile.id] > 0)
+            var options = services.Where(tile => remaining[tile.id] > 0 &&
+                    blockedServices?.Contains(tile.id) != true)
                 .Select(tile => (tile, route: board.ResidenceServiceRouteTo(
                     homeId, tile.id, day)))
                 .Where(option => option.route.Count > 0)
