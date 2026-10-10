@@ -41,6 +41,8 @@ namespace UrbanWildlifeRooms.Tests.Editor
                 food.SettleDay(day, board, null);
             var preview = food.PreviewDay(4, board, null);
             Assert.That(preview.squirrelsPresent, Is.EqualTo(2));
+            Assert.That(ConstructionFoodModel.MatureNearbyOakCount(board, 4),
+                Is.EqualTo(3));
             Assert.That(preview.squirrelsFed, Is.EqualTo(2));
             Assert.That(preview.squirrelFoodTileIds.Count, Is.EqualTo(2));
             var actual = food.SettleDay(4, board, null);
@@ -64,6 +66,8 @@ namespace UrbanWildlifeRooms.Tests.Editor
                 food.SettleDay(day, board, day >= 2 ? first.id : null);
             var preview = food.PreviewDay(5, board, first.id);
             Assert.That(preview.pigeonsPresent, Is.EqualTo(3));
+            Assert.That(ConstructionFoodModel.MatureConnectedMeadowCount(
+                board, 5, first.id), Is.EqualTo(3));
             Assert.That(preview.pigeonsFed, Is.EqualTo(3));
             Assert.That(preview.pigeonFoodTileIds.Count, Is.GreaterThan(1));
             var actual = food.SettleDay(5, board, first.id);

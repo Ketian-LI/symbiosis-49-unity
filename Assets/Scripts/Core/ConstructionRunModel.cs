@@ -80,6 +80,11 @@ namespace UrbanWildlifeRooms.Core
             ConstructionFoodModel.SquirrelPopulation(board, CurrentDay);
         public int PigeonPopulation =>
             ConstructionFoodModel.PigeonPopulation(board, CurrentDay, PigeonTileId);
+        public int MatureNearbyOakCount =>
+            ConstructionFoodModel.MatureNearbyOakCount(board, CurrentDay);
+        public int MatureConnectedMeadowCount =>
+            ConstructionFoodModel.MatureConnectedMeadowCount(board,
+                CurrentDay, PigeonTileId);
         public string FirstResidentHomeTileId => board.FirstResidence?.id;
         public bool FirstResidentHasRestaurantAccess =>
             board.FirstResidenceCanReachService(ConstructionCategory.Restaurant);

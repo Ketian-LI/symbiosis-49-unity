@@ -205,6 +205,8 @@ namespace UrbanWildlifeRooms.Presentation
                 sizesBefore[column, row] = cellIconRects[column, row].sizeDelta;
             var openingMeal = run.StoryStage == ConstructionStoryStage.WatchSquirrelEat;
             var pigeonsBefore = run.PigeonTileId;
+            var squirrelsBefore = run.SquirrelPopulation;
+            var pigeonCountBefore = run.PigeonPopulation;
             var residentAteBefore = run.FirstResidentAte;
             var residentMealRoute = run.StoryStage ==
                 ConstructionStoryStage.WatchResidentEat
@@ -216,6 +218,10 @@ namespace UrbanWildlifeRooms.Presentation
                 ? "The squirrel ate one oak nut. Green space is now available."
                 : pigeonsBefore == null && run.PigeonTileId != null
                     ? "A flock arrived. It will forage from the next day."
+                : run.SquirrelPopulation > squirrelsBefore
+                    ? "Mature nearby oaks attracted another squirrel. Check tomorrow's food."
+                : run.PigeonPopulation > pigeonCountBefore
+                    ? "Connected mature meadows enlarged the flock. Check tomorrow's food."
                 : !residentAteBefore && run.FirstResidentAte
                     ? "The resident reached the restaurant. Workshop unlocked."
                 : human?.restaurantRejectedForCapacity > 0 &&
@@ -577,9 +583,21 @@ namespace UrbanWildlifeRooms.Presentation
             if (run == null || dayText == null) return;
             var humanPreview = run.PreviewHumanDay();
             dayText.text = $"DAY {run.CurrentDay}";
-            scoreText.text = $"Animal meals {run.AnimalScore} · Workdays {run.HumanScore}\n" +
-                $"Residents {run.BuiltTiles.Count(tile => tile.category == ConstructionCategory.Residence)}" +
-                " · ~ means next-day forecast";
+            if (run.IsFinished)
+                scoreText.text = $"Animal meals {run.AnimalScore} · Workdays {run.HumanScore}\n" +
+                    "Board complete · final scores below";
+            else
+            {
+                var ecologyPreview = run.PreviewEcologyDay();
+                var pigeonForecast = ecologyPreview.pigeonsPresent == 0
+                    ? "Pigeons —"
+                    : $"Pigeons {ecologyPreview.pigeonsFed}/" +
+                      $"{ecologyPreview.pigeonsPresent}";
+                scoreText.text = $"Animal meals {run.AnimalScore} · Workdays {run.HumanScore}\n" +
+                    $"Next ~ Squirrels {ecologyPreview.squirrelsFed}/" +
+                    $"{ecologyPreview.squirrelsPresent} · {pigeonForecast} · " +
+                    $"Work {humanPreview.CompletedWorkCycles}/{humanPreview.ResidentCount}";
+            }
             RefreshDayReview();
             storyText.text = StoryInstruction(run);
             visitorMarker.SetActive(run.StoryStage ==
@@ -806,17 +824,29 @@ namespace UrbanWildlifeRooms.Presentation
                 route = squirrel ? run.PreviewSquirrelFoodRoute() :
                     run.PreviewPigeonFoodRoute();
                 var target = route.Count > 0 ? route[route.Count - 1] : null;
+                var oakCount = run.MatureNearbyOakCount;
+                var oakProgress = oakCount >= 5
+                    ? "Local oak area full"
+                    : $"Next squirrel: {oakCount}/" +
+                      $"{ConstructionFoodModel.OaksForNextSquirrel(ecology.squirrelsPresent)} " +
+                      "mature nearby oaks";
+                var meadowCount = run.MatureConnectedMeadowCount;
+                var meadowProgress = $"Next pigeon: {meadowCount}/" +
+                    $"{ConstructionFoodModel.MeadowsForNextPigeon(ecology.pigeonsPresent)} " +
+                    "connected mature meadows";
                 routeText.text = squirrel
                     ? target == null
-                        ? "NEXT DAY · SQUIRREL\nNo oak food within one cell after growth."
-                        : $"NEXT DAY · SQUIRRELS\n{ecology.squirrelsFed}/" +
-                          $"{ecology.squirrelsPresent} expected to eat across " +
-                          $"{ecology.squirrelFoodTileIds.Count} oak(s)."
+                        ? $"NEXT DAY · SQUIRRELS · can eat {ecology.squirrelsFed}/" +
+                          $"{ecology.squirrelsPresent} · no oak food\n{oakProgress}"
+                        : $"NEXT DAY · SQUIRRELS · can eat {ecology.squirrelsFed}/" +
+                          $"{ecology.squirrelsPresent} from " +
+                          $"{ecology.squirrelFoodTileIds.Count} oak(s)\n{oakProgress}"
                     : target == null
-                        ? "NEXT DAY · PIGEON FLOCK\nNo reachable seeded meadow after growth."
-                        : $"NEXT DAY · PIGEON FLOCK\n{ecology.pigeonsFed}/" +
-                          $"{ecology.pigeonsPresent} expected to eat across " +
-                          $"{ecology.pigeonFoodTileIds.Count} meadow(s).";
+                        ? $"NEXT DAY · PIGEONS · can eat {ecology.pigeonsFed}/" +
+                          $"{ecology.pigeonsPresent} · no meadow food\n{meadowProgress}"
+                        : $"NEXT DAY · PIGEONS · can eat {ecology.pigeonsFed}/" +
+                          $"{ecology.pigeonsPresent} from " +
+                          $"{ecology.pigeonFoodTileIds.Count} meadow(s)\n{meadowProgress}";
                 var routes = squirrel ? run.PreviewSquirrelFoodRoutes() :
                     run.PreviewPigeonFoodRoutes();
                 if (routes.Count > 0)

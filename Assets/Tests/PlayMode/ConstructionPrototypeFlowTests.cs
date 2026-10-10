@@ -38,6 +38,11 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             var routeStatus = root.transform.Find(
                 "Construction UI/Route inspection/Route status").GetComponent<Text>();
             Assert.That(routeStatus.text, Does.Contain("2/2"));
+            Assert.That(routeStatus.text, Does.Contain("3/5 mature nearby oaks"));
+            var outcomes = root.transform.Find(
+                "Construction UI/Building choices/Observed outcomes")
+                .GetComponent<Text>();
+            Assert.That(outcomes.text, Does.Contain("Next ~ Squirrels 2/2"));
             Object.Destroy(root);
             yield return null;
         }
@@ -241,6 +246,11 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             Assert.That(pigeonFlock.localScale.x, Is.EqualTo(1f).Within(0.01f));
             Assert.That(pigeonFlock.GetComponent<Image>().sprite,
                 Is.Not.Null);
+            Assert.That(controller.TryPlace(4, 3), Is.False);
+            Assert.That(root.transform.Find(
+                "Construction UI/Route inspection/Route status")
+                .GetComponent<Text>().text,
+                Does.Contain("0/3 connected mature meadows"));
             Assert.That(controller.ObservedAnimalMeals, Is.EqualTo(2),
                 "Each of the first two days includes one actual oak meal; the " +
                 "new flock has not eaten until its first full day.");

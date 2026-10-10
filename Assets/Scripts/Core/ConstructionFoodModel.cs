@@ -54,26 +54,39 @@ namespace UrbanWildlifeRooms.Core
 
         // Temporary balance rule: two additional mature habitat tiles attract
         // one more animal. Squirrels remain within one cell of the starter oak.
-        public static int SquirrelPopulation(ConstructionBoardModel board, int day)
+        public static int MatureNearbyOakCount(ConstructionBoardModel board, int day)
         {
-            var matureOaks = board.ConnectedGreenTiles(
+            return board.ConnectedGreenTiles(
                     ConstructionBoardModel.StarterOakId)
                 .Count(tile => tile.planting == GreenPlanting.Oak &&
                     tile.builtDay <= day && MaturityStage(tile, day) == 2 &&
                     Math.Abs(tile.column - ConstructionBoardModel.StarterColumn) +
                     Math.Abs(tile.row - ConstructionBoardModel.StarterRow) <= 1);
-            return 1 + Math.Max(0, matureOaks - 1) / 2;
         }
 
-        public static int PigeonPopulation(ConstructionBoardModel board,
+        public static int MatureConnectedMeadowCount(ConstructionBoardModel board,
             int day, string pigeonTileId)
         {
             if (string.IsNullOrEmpty(pigeonTileId)) return 0;
-            var matureMeadows = board.ConnectedGreenTiles(pigeonTileId)
+            return board.ConnectedGreenTiles(pigeonTileId)
                 .Count(tile => tile.planting == GreenPlanting.Meadow &&
                     tile.builtDay <= day && MaturityStage(tile, day) == 2);
-            return PigeonFlockSize + Math.Max(0, matureMeadows - 1) / 2;
         }
+
+        public static int SquirrelPopulation(ConstructionBoardModel board, int day)
+            => 1 + Math.Max(0, MatureNearbyOakCount(board, day) - 1) / 2;
+
+        public static int OaksForNextSquirrel(int currentPopulation)
+            => 1 + currentPopulation * 2;
+
+        public static int PigeonPopulation(ConstructionBoardModel board,
+            int day, string pigeonTileId)
+            => string.IsNullOrEmpty(pigeonTileId) ? 0 : PigeonFlockSize +
+                Math.Max(0, MatureConnectedMeadowCount(board, day,
+                    pigeonTileId) - 1) / 2;
+
+        public static int MeadowsForNextPigeon(int currentPopulation)
+            => 3 + (currentPopulation - PigeonFlockSize) * 2;
 
         private readonly Dictionary<string, int> stock = new();
         public int LastSettledDay { get; private set; }
