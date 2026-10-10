@@ -126,6 +126,87 @@ namespace UrbanWildlifeRooms.Tests.Editor
         }
 
         [Test]
+        public void MixedFortyNineCellStrategiesExposeDailyRateTradeoffs()
+        {
+            var greenFirst = FinishMixedRun(false, 0);
+            var servicesFirst = FinishMixedRun(true, 0);
+            var greenAfterWait = FinishMixedRun(false, 20);
+            foreach (var run in new[] { greenFirst, servicesFirst, greenAfterWait })
+            {
+                Assert.That(run.IsFinished, Is.True);
+                Assert.That(run.BuiltCount, Is.EqualTo(49));
+                Assert.That(run.FinalResult.DaysPlayed,
+                    Is.EqualTo(run.CurrentDay));
+                Assert.That(run.BuiltTiles.Skip(1).Select(tile => tile.builtDay)
+                    .Distinct().Count(), Is.EqualTo(48));
+            }
+            Assert.That(greenFirst.FinalResult.DaysPlayed, Is.EqualTo(49));
+            Assert.That(servicesFirst.FinalResult.DaysPlayed, Is.EqualTo(49));
+            Assert.That(greenAfterWait.FinalResult.DaysPlayed, Is.EqualTo(69));
+            Assert.That(greenFirst.FinalResult.AnimalMealsPerDay,
+                Is.GreaterThan(servicesFirst.FinalResult.AnimalMealsPerDay));
+            Assert.That(servicesFirst.FinalResult.HumanWorkdaysPerDay,
+                Is.GreaterThan(greenFirst.FinalResult.HumanWorkdaysPerDay));
+            Assert.That(greenAfterWait.FinalResult.AnimalMealsTotal,
+                Is.GreaterThan(greenFirst.FinalResult.AnimalMealsTotal));
+            Assert.That(greenAfterWait.FinalResult.AnimalMealsPerDay,
+                Is.LessThan(greenFirst.FinalResult.AnimalMealsPerDay));
+            TestContext.WriteLine($"green first: animal {greenFirst.FinalResult.AnimalMealsPerDay:F3} " +
+                $"({greenFirst.FinalResult.AnimalMealsTotal}), human " +
+                $"{greenFirst.FinalResult.HumanWorkdaysPerDay:F3} " +
+                $"({greenFirst.FinalResult.HumanWorkdaysTotal})");
+            TestContext.WriteLine($"services first: animal {servicesFirst.FinalResult.AnimalMealsPerDay:F3} " +
+                $"({servicesFirst.FinalResult.AnimalMealsTotal}), human " +
+                $"{servicesFirst.FinalResult.HumanWorkdaysPerDay:F3} " +
+                $"({servicesFirst.FinalResult.HumanWorkdaysTotal})");
+            TestContext.WriteLine($"green after 20 idle days: animal " +
+                $"{greenAfterWait.FinalResult.AnimalMealsPerDay:F3} " +
+                $"({greenAfterWait.FinalResult.AnimalMealsTotal}), human " +
+                $"{greenAfterWait.FinalResult.HumanWorkdaysPerDay:F3} " +
+                $"({greenAfterWait.FinalResult.HumanWorkdaysTotal})");
+        }
+
+        private static ConstructionRunModel FinishMixedRun(bool addHumanServices,
+            int idleDays)
+        {
+            var run = new ConstructionRunModel();
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            PlaceAndSimulate(run, 4, 3, ConstructionCategory.Green,
+                GreenPlanting.Meadow);
+            PlaceAndSimulate(run, 3, 2, ConstructionCategory.Residence);
+            PlaceAndSimulate(run, 3, 1, ConstructionCategory.Restaurant);
+            PlaceAndSimulate(run, 2, 2, ConstructionCategory.Workshop);
+            PlaceAndSimulate(run, 2, 1, ConstructionCategory.Waste);
+            PlaceAndSimulate(run, 5, 3, ConstructionCategory.Residence);
+            PlaceAndSimulate(run, 6, 3, ConstructionCategory.Waste);
+            PlaceAndSimulate(run, 4, 2, ConstructionCategory.Street);
+            PlaceAndSimulate(run, 5, 2, ConstructionCategory.Street);
+            PlaceAndSimulate(run, 4, 1, ConstructionCategory.Street);
+            PlaceAndSimulate(run, 5, 1, ConstructionCategory.Supermarket);
+            Assert.That(run.StoryStage, Is.EqualTo(
+                ConstructionStoryStage.FreeBuild));
+            for (var day = 0; day < idleDays; day++)
+                Assert.That(run.TrySimulateDay(out _), Is.True);
+            if (addHumanServices)
+            {
+                PlaceAndSimulate(run, 6, 2, ConstructionCategory.Restaurant);
+                PlaceAndSimulate(run, 6, 1, ConstructionCategory.Waste);
+                PlaceAndSimulate(run, 4, 0, ConstructionCategory.Street);
+                PlaceAndSimulate(run, 5, 0, ConstructionCategory.Workshop);
+            }
+            var positions = Enumerable.Range(0, 7)
+                .SelectMany(column => Enumerable.Range(0, 7)
+                    .Select(row => (column, row)))
+                .OrderBy(position => System.Math.Abs(position.column - 3) +
+                    System.Math.Abs(position.row - 3));
+            foreach (var position in positions)
+                if (run.At(position.column, position.row) == null)
+                    PlaceAndSimulate(run, position.column, position.row,
+                        ConstructionCategory.Green, GreenPlanting.Meadow);
+            return run;
+        }
+
+        [Test]
         public void CrowdingUnlocksSupermarketOnlyAfterAnObservedRejectedMeal()
         {
             var run = new ConstructionRunModel();
