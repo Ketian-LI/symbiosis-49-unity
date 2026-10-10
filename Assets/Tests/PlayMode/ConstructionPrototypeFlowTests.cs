@@ -1,4 +1,6 @@
+using System;
 using System.Collections;
+using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
@@ -7,6 +9,7 @@ using UnityEngine.UI;
 using UrbanWildlifeRooms.Core;
 using UrbanWildlifeRooms.Data;
 using UrbanWildlifeRooms.Presentation;
+using Object = UnityEngine.Object;
 
 namespace UrbanWildlifeRooms.Tests.PlayMode
 {
@@ -86,6 +89,120 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             Assert.That(result.gameObject.activeSelf, Is.False);
             Object.Destroy(root);
             yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator MixedStoryReachesFinalResultAndNewRunSurvivesReload()
+        {
+            var savePath = Path.Combine(Application.temporaryCachePath,
+                "construction-flow-" + Guid.NewGuid().ToString("N") + ".json");
+            var store = new ConstructionRunStore(savePath);
+            var root = new GameObject("Mixed construction flow test");
+            var controller = root.AddComponent<ConstructionPrototypeController>();
+            controller.UseRunForTesting(new ConstructionRunModel(), store);
+            yield return null;
+
+            Assert.That(controller.AdvanceDay(), Is.True);
+            PlaceAndAdvance(controller, 4, 3, ConstructionCategory.Green,
+                GreenPlanting.Meadow);
+            PlaceAndAdvance(controller, 3, 2, ConstructionCategory.Residence);
+            PlaceAndAdvance(controller, 3, 1, ConstructionCategory.Restaurant);
+            Assert.That(store.TryLoad(out var saved), Is.True);
+            Assert.That(saved.BuiltCount, Is.EqualTo(4));
+            Assert.That(saved.CurrentDay, Is.EqualTo(5));
+
+            // A newly opened screen must continue the saved run, not its starter state.
+            Object.Destroy(root);
+            yield return null;
+            root = new GameObject("Reopened mixed construction flow test");
+            controller = root.AddComponent<ConstructionPrototypeController>();
+            controller.UseRunForTesting(saved, store);
+            yield return null;
+            Assert.That(controller.BuiltCount, Is.EqualTo(4));
+            Assert.That(controller.Stage, Is.EqualTo(
+                ConstructionStoryStage.BuildWorkshop));
+
+            PlaceAndAdvance(controller, 2, 2, ConstructionCategory.Workshop);
+            PlaceAndAdvance(controller, 2, 1, ConstructionCategory.Waste);
+            PlaceAndAdvance(controller, 5, 3, ConstructionCategory.Residence);
+            PlaceAndAdvance(controller, 6, 3, ConstructionCategory.Waste);
+            PlaceAndAdvance(controller, 4, 2, ConstructionCategory.Street);
+            PlaceAndAdvance(controller, 5, 2, ConstructionCategory.Street);
+            PlaceAndAdvance(controller, 4, 1, ConstructionCategory.Street);
+            PlaceAndAdvance(controller, 5, 1, ConstructionCategory.Supermarket);
+            Assert.That(controller.Stage, Is.EqualTo(
+                ConstructionStoryStage.FreeBuild));
+
+            var positions = Enumerable.Range(0, 7)
+                .SelectMany(column => Enumerable.Range(0, 7)
+                    .Select(row => (column, row)))
+                .OrderBy(position => Mathf.Abs(position.column - 3) +
+                    Mathf.Abs(position.row - 3));
+            var occupied = new[]
+            {
+                (3, 3), (4, 3), (3, 2), (3, 1), (2, 2), (2, 1),
+                (5, 3), (6, 3), (4, 2), (5, 2), (4, 1), (5, 1)
+            };
+            foreach (var position in positions)
+            {
+                if (controller.BuiltCount == 49) break;
+                if (occupied.Contains((position.column, position.row))) continue;
+                PlaceAndAdvance(controller, position.column, position.row,
+                    ConstructionCategory.Green, GreenPlanting.Meadow);
+            }
+            Assert.That(controller.BuiltCount, Is.EqualTo(49));
+            Assert.That(controller.CurrentDay, Is.EqualTo(49));
+            Assert.That(controller.ObservedAnimalMeals, Is.GreaterThan(0));
+            Assert.That(controller.ObservedHumanWorkCycles, Is.GreaterThan(0));
+            var result = root.transform.Find(
+                "Construction UI/Construction final result");
+            Assert.That(result.gameObject.activeSelf, Is.True);
+            var numbers = result.Find("Result card/Result numbers")
+                .GetComponent<Text>().text;
+            Assert.That(numbers, Does.Contain("Animal score"));
+            Assert.That(numbers, Does.Contain("Human score"));
+            Assert.That(numbers, Does.Contain("Completed in 49 days"));
+            Assert.That(store.TryLoad(out var finished), Is.True);
+            Assert.That(finished.IsFinished, Is.True);
+            Assert.That(finished.BuiltCount, Is.EqualTo(49));
+
+            var reset = result.GetComponentInChildren<Button>();
+            reset.onClick.Invoke();
+            Assert.That(controller.BuiltCount, Is.EqualTo(49));
+            reset.onClick.Invoke();
+            Assert.That(controller.BuiltCount, Is.EqualTo(1));
+            Assert.That(controller.CurrentDay, Is.EqualTo(1));
+            Assert.That(result.gameObject.activeSelf, Is.False);
+            Assert.That(store.TryLoad(out var fresh), Is.True);
+            Assert.That(fresh.BuiltCount, Is.EqualTo(1));
+            Assert.That(fresh.CurrentDay, Is.EqualTo(1));
+            Assert.That(fresh.IsFinished, Is.False);
+
+            Object.Destroy(root);
+            yield return null;
+            root = new GameObject("Reopened after reset test");
+            controller = root.AddComponent<ConstructionPrototypeController>();
+            controller.UseRunForTesting(fresh, store);
+            yield return null;
+            Assert.That(controller.BuiltCount, Is.EqualTo(1));
+            Assert.That(controller.CurrentDay, Is.EqualTo(1));
+            Assert.That(controller.Stage, Is.EqualTo(
+                ConstructionStoryStage.WatchSquirrelEat));
+            Object.Destroy(root);
+            Assert.That(store.TryDelete(), Is.True);
+            yield return null;
+        }
+
+        private static void PlaceAndAdvance(ConstructionPrototypeController controller,
+            int column, int row, ConstructionCategory category,
+            GreenPlanting planting = GreenPlanting.None)
+        {
+            Assert.That(controller.TrySelect(category, planting), Is.True,
+                $"{category} is locked before placing {column + 1},{row + 1}.");
+            Assert.That(controller.TryPlace(column, row), Is.True,
+                $"Could not place {category} at {column + 1},{row + 1}.");
+            Assert.That(controller.AdvanceDay(), Is.True,
+                $"Could not settle day after {column + 1},{row + 1}.");
         }
 
         [UnityTest]

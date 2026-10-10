@@ -93,7 +93,12 @@ namespace UrbanWildlifeRooms.Presentation
 
         // Allows PlayMode tests to exercise the screen without touching the
         // user's persistent save file.
-        public void UseRunForTesting(ConstructionRunModel testRun) => run = testRun;
+        public void UseRunForTesting(ConstructionRunModel testRun,
+            ConstructionRunStore testStore = null)
+        {
+            run = testRun;
+            store = testStore;
+        }
 
         private void Start()
         {
@@ -946,11 +951,12 @@ namespace UrbanWildlifeRooms.Presentation
             resetLabel.text = "New run";
             if (resultResetLabel != null) resultResetLabel.text = "New run";
             if (resultNoticeText != null) resultNoticeText.text = "";
-            if (store != null && !store.TryDelete())
+            var newRun = new ConstructionRunModel();
+            if (store != null && !store.TrySave(newRun))
             {
-                feedbackText.text = "Could not clear the save; run was not reset.";
+                feedbackText.text = "Could not save the new run; current run was not reset.";
                 if (resultNoticeText != null)
-                    resultNoticeText.text = "Save could not be cleared. Run not reset.";
+                    resultNoticeText.text = "New run could not be saved. Run not reset.";
                 return;
             }
             if (growthAnimation != null)
@@ -964,7 +970,7 @@ namespace UrbanWildlifeRooms.Presentation
                 residentMealAnimation = null;
             }
             movingResidentMarker.SetActive(false);
-            run = new ConstructionRunModel();
+            run = newRun;
             routeSubject = RouteSubject.None;
             selectedHomeId = null;
             selectedCategory = ConstructionCategory.Green;
