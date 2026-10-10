@@ -231,8 +231,14 @@ namespace UrbanWildlifeRooms.Tests.Editor
                 "A new household without work or food access reveals the street need.");
             Assert.That(run.TryEndDay(0, 0), Is.True);
             Place(run, 4, 2, ConstructionCategory.Street);
+            Assert.That(run.StoryStage, Is.EqualTo(
+                ConstructionStoryStage.BuildStreet),
+                "One street does not yet give the second home a meal route.");
             Assert.That(run.TryEndDay(0, 0), Is.True);
             Place(run, 5, 2, ConstructionCategory.Street);
+            Assert.That(run.StoryStage, Is.EqualTo(
+                ConstructionStoryStage.BuildStreet),
+                "The street chain still does not reach the restaurant.");
             Assert.That(run.TryEndDay(0, 0), Is.True);
             Place(run, 4, 1, ConstructionCategory.Street);
             Assert.That(run.StoryStage, Is.EqualTo(

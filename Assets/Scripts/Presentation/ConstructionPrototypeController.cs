@@ -28,6 +28,7 @@ namespace UrbanWildlifeRooms.Presentation
         private readonly Dictionary<ConstructionCategory, Button> categoryButtons = new();
         private readonly Dictionary<GreenPlanting, Button> plantingButtons = new();
         private readonly Image[,] cellBackgrounds = new Image[7, 7];
+        private readonly Text[,] buildableHints = new Text[7, 7];
         private readonly Image[,] cellIcons = new Image[7, 7];
         private readonly RectTransform[,] cellIconRects = new RectTransform[7, 7];
         private readonly Image[,] squirrelIcons = new Image[7, 7];
@@ -53,6 +54,7 @@ namespace UrbanWildlifeRooms.Presentation
         private Text storyText;
         private Text feedbackText;
         private Text progressText;
+        private Text placementGuideText;
         private Text resetLabel;
         private Text resultResetLabel;
         private Text resultNoticeText;
@@ -435,10 +437,9 @@ namespace UrbanWildlifeRooms.Presentation
                 new Vector2(150, -269), new Vector2(194, 50), "Next day  →", 20,
                 Teal, Color.white, () => AdvanceDay());
 
-            TextAt("Prototype notice", canvas.transform,
+            placementGuideText = TextAt("Placement guide", canvas.transform,
                 new Vector2(-180, -415), new Vector2(1130, 30),
-                "Construction vertical slice · existing full-board game remains separate",
-                15, false, Locked, TextAnchor.MiddleCenter);
+                "", 18, false, Ink, TextAnchor.MiddleCenter);
 
             finalResultPanel = Panel("Construction final result", canvas.transform,
                 Vector2.zero, new Vector2(1600, 900),
@@ -474,6 +475,11 @@ namespace UrbanWildlifeRooms.Presentation
                     new Vector2(72, 72), "", 1, Paper, Ink,
                     () => TryPlace(x, y));
                 cellBackgrounds[column, row] = button.GetComponent<Image>();
+                var buildable = TextAt("Buildable hint", button.transform,
+                    Vector2.zero, new Vector2(70, 70), "+", 31, true,
+                    new Color(0.20f, 0.52f, 0.47f), TextAnchor.MiddleCenter);
+                buildable.raycastTarget = false;
+                buildableHints[column, row] = buildable;
                 var icon = Panel("Room icon", button.transform,
                     new Vector2(0, 4), new Vector2(47, 47), Color.white);
                 icon.raycastTarget = false;
@@ -628,6 +634,11 @@ namespace UrbanWildlifeRooms.Presentation
                 ConstructionStoryStage.WelcomeResident);
             progressText.text = $"{run.BuiltCount}/49 · " +
                 (run.BuiltToday ? "built today" : "1 build available");
+            placementGuideText.text = run.IsFinished
+                ? "Board complete · review the observed results."
+                : run.BuiltToday
+                    ? "Today's plot is built · advance to choose another."
+                    : "+ marks plots that accept the selected building · one build per day.";
             plantingPanel.SetActive(selectedCategory == ConstructionCategory.Green &&
                 run.IsUnlocked(ConstructionCategory.Green));
 
@@ -642,10 +653,18 @@ namespace UrbanWildlifeRooms.Presentation
                 pair.Value.GetComponent<Image>().color = pair.Key == selectedPlanting
                     ? Teal : Ink;
 
+            var mayBuild = !run.IsFinished && !run.BuiltToday &&
+                run.IsUnlocked(selectedCategory);
+            var plantingToPlace = selectedCategory == ConstructionCategory.Green
+                ? selectedPlanting : GreenPlanting.None;
             for (var row = 0; row < 7; row++)
             for (var column = 0; column < 7; column++)
             {
                 var tile = run.At(column, row);
+                var canPlaceHere = tile == null && mayBuild &&
+                    run.CheckPlacement(column, row, selectedCategory,
+                        plantingToPlace) == ConstructionPlacementFailure.None;
+                buildableHints[column, row].gameObject.SetActive(canPlaceHere);
                 var icon = cellIcons[column, row];
                 icon.gameObject.SetActive(tile != null);
                 foodBadges[column, row].transform.parent.gameObject.SetActive(
@@ -692,7 +711,9 @@ namespace UrbanWildlifeRooms.Presentation
                     (forecastResident == null || !forecastResident.worked));
                 pigeonIcons[column, row].rectTransform.localScale = Vector3.one;
                 cellBackgrounds[column, row].color = tile == null
-                    ? new Color(0.92f, 0.90f, 0.83f) : TileColor(tile.category);
+                    ? canPlaceHere ? new Color(0.83f, 0.92f, 0.84f)
+                        : new Color(0.92f, 0.90f, 0.83f)
+                    : TileColor(tile.category);
                 if (tile == null) continue;
                 icon.sprite = RoomIconCatalog.GetSprite(RoomTypeFor(tile.category,
                     tile.planting));
@@ -1014,11 +1035,16 @@ namespace UrbanWildlifeRooms.Presentation
                 "Homes and meals make waste. Build a waste room to clear two nearby portions each day.",
             ConstructionStoryStage.AwaitAccessProblem =>
                 "Add another home beyond direct work or food access. A street can reconnect it.",
-            ConstructionStoryStage.BuildStreet => "A street extends the human connection from a home.",
+            ConstructionStoryStage.BuildStreet =>
+                "Connect the new home to the restaurant with a continuous street. + marks legal next plots.",
             ConstructionStoryStage.AwaitRestaurantCrowding =>
-                "Add another residence, then advance a day. Can the restaurant feed everyone?",
+                run.PreviewWasteAvailability().BlockedHomes.Count > 0
+                    ? "Waste blocks a home. Build a waste room nearby, then test the restaurant."
+                    : run.PreviewWasteAvailability().BlockedFoodServices.Count > 0
+                        ? "Waste closed the restaurant. Build a waste room nearby before testing seats."
+                        : "Both homes reach the restaurant. Advance a day to test its one seat.",
             ConstructionStoryStage.BuildSupermarket =>
-                "Build a supermarket for people and an additional animal food source.",
+                "Build a supermarket to add two daily meals for residents.",
             ConstructionStoryStage.FreeBuild => "Choose how to use the remaining land.",
             _ => "All 49 cells are built. The final day has been counted."
         };

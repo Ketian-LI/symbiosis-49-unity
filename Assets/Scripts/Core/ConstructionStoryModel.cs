@@ -58,6 +58,10 @@ namespace UrbanWildlifeRooms.Core
             var placed = board.BuiltTiles;
             bool Has(ConstructionCategory category) =>
                 placed.Any(tile => tile.category == category);
+            var residentsWithRestaurantAccess = placed
+                .Where(tile => tile.category == ConstructionCategory.Residence)
+                .Count(home => board.ResidenceServiceRoute(home.id,
+                    ConstructionCategory.Restaurant).Count > 0);
             if (!directAccessBlocked && Has(ConstructionCategory.Waste) &&
                 placed.Count(tile => tile.category == ConstructionCategory.Residence) > 1 &&
                 placed.Where(tile => tile.category == ConstructionCategory.Residence)
@@ -82,7 +86,8 @@ namespace UrbanWildlifeRooms.Core
                     ? ConstructionStoryStage.BuildWasteRoom :
                 !directAccessBlocked
                     ? ConstructionStoryStage.AwaitAccessProblem :
-                !Has(ConstructionCategory.Street)
+                !Has(ConstructionCategory.Street) ||
+                residentsWithRestaurantAccess < 2
                     ? ConstructionStoryStage.BuildStreet :
                 !restaurantCrowded
                     ? ConstructionStoryStage.AwaitRestaurantCrowding :

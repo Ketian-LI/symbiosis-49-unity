@@ -251,6 +251,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
                 ConstructionStoryStage.AwaitAccessProblem));
             Assert.That(story.IsUnlocked(ConstructionCategory.Street), Is.False);
 
+            Build(board, 6, 2, ConstructionCategory.Residence);
             story.RecordDirectAccessBlocked();
             Assert.That(story.Observe(board), Is.EqualTo(
                 ConstructionStoryStage.BuildStreet));

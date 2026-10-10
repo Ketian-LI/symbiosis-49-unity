@@ -125,10 +125,20 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             PlaceAndAdvance(controller, 2, 2, ConstructionCategory.Workshop);
             PlaceAndAdvance(controller, 2, 1, ConstructionCategory.Waste);
             PlaceAndAdvance(controller, 5, 3, ConstructionCategory.Residence);
-            PlaceAndAdvance(controller, 6, 3, ConstructionCategory.Waste);
             PlaceAndAdvance(controller, 4, 2, ConstructionCategory.Street);
             PlaceAndAdvance(controller, 5, 2, ConstructionCategory.Street);
             PlaceAndAdvance(controller, 4, 1, ConstructionCategory.Street);
+            var story = root.transform.Find(
+                "Construction UI/Building choices/Story instruction")
+                .GetComponent<Text>();
+            Assert.That(controller.Stage, Is.EqualTo(
+                ConstructionStoryStage.AwaitRestaurantCrowding));
+            Assert.That(story.text, Does.Contain("Waste blocks a home"),
+                "A connected route alone cannot reveal crowding while waste blocks a home.");
+            PlaceAndAdvance(controller, 6, 3, ConstructionCategory.Waste);
+            Assert.That(controller.Stage, Is.EqualTo(
+                ConstructionStoryStage.BuildSupermarket));
+            Assert.That(story.text, Does.Contain("two daily meals"));
             PlaceAndAdvance(controller, 5, 1, ConstructionCategory.Supermarket);
             Assert.That(controller.Stage, Is.EqualTo(
                 ConstructionStoryStage.FreeBuild));
@@ -203,7 +213,54 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 $"Could not place {category} at {column + 1},{row + 1}.");
             Assert.That(controller.AdvanceDay(), Is.True,
                 $"Could not settle day after {column + 1},{row + 1}.");
+            var story = controller.transform.Find(
+                "Construction UI/Building choices/Story instruction")
+                .GetComponent<Text>();
+            Assert.That(story.preferredHeight,
+                Is.LessThanOrEqualTo(story.rectTransform.rect.height + 1f),
+                $"Story text is clipped: {story.text}");
         }
+
+        [UnityTest]
+        public IEnumerator BuildableMarkersFollowSelectedRulesAndDailyLimit()
+        {
+            var root = new GameObject("Buildable markers test");
+            var controller = root.AddComponent<ConstructionPrototypeController>();
+            controller.UseRunForTesting(new ConstructionRunModel());
+            yield return null;
+
+            Assert.That(controller.AdvanceDay(), Is.True);
+            Assert.That(BuildableAt(root, 4, 3), Is.True,
+                "An orthogonal green cell should be suggested.");
+            Assert.That(BuildableAt(root, 4, 2), Is.False,
+                "A diagonal cell should not be suggested.");
+            Assert.That(controller.TrySelect(ConstructionCategory.Green,
+                GreenPlanting.Meadow), Is.True);
+            Assert.That(controller.TryPlace(4, 3), Is.True);
+            Assert.That(BuildableAt(root, 3, 3), Is.False,
+                "No second build may be suggested on the same day.");
+
+            Assert.That(controller.AdvanceDay(), Is.True);
+            Assert.That(controller.TrySelect(ConstructionCategory.Residence), Is.True);
+            Assert.That(BuildableAt(root, 3, 2), Is.True);
+            Assert.That(BuildableAt(root, 6, 6), Is.False);
+            Assert.That(controller.TryPlace(3, 2), Is.True);
+            Assert.That(controller.AdvanceDay(), Is.True);
+            Assert.That(controller.TrySelect(ConstructionCategory.Restaurant), Is.True);
+            Assert.That(BuildableAt(root, 3, 1), Is.True,
+                "A restaurant may touch the residence.");
+            Assert.That(BuildableAt(root, 5, 3), Is.False,
+                "A restaurant may not attach only to meadow.");
+            Assert.That(root.transform.Find("Construction UI/Placement guide")
+                .GetComponent<Text>().text, Does.Contain("+ marks plots"));
+            Object.Destroy(root);
+            yield return null;
+        }
+
+        private static bool BuildableAt(GameObject root, int column, int row) =>
+            root.GetComponentsInChildren<Button>(true)
+                .Single(button => button.name == $"Cell {column + 1},{row + 1}")
+                .transform.Find("Buildable hint").gameObject.activeSelf;
 
         [UnityTest]
         public IEnumerator PigeonArrivalIntroducesOneResidentWithVisibleFoodNeed()
