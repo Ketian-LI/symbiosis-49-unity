@@ -12,6 +12,8 @@ namespace UrbanWildlifeRooms.Editor
     {
         private const string CameraDefine = "SYMBIOSIS_CAMERA_BUILD";
         private const string MainScene = "Assets/Scenes/Main.unity";
+        private const string ConstructionScene =
+            "Assets/Scenes/ConstructionPrototype.unity";
 
         [MenuItem("Urban Wildlife/Build Windows No-Camera")]
         public static void BuildWindowsNoCamera()
@@ -43,11 +45,17 @@ namespace UrbanWildlifeRooms.Editor
 
                 var variant = cameraBuild ? "Camera" : "NoCamera";
                 var projectRoot = Directory.GetParent(Application.dataPath)?.FullName ?? Application.dataPath;
-                var output = Path.Combine(projectRoot, "Builds", $"Windows-{variant}", $"SYMBIOSIS49-{variant}.exe");
+                var requestedRoot = Environment.GetEnvironmentVariable(
+                    "SYMBIOSIS49_BUILD_OUTPUT_ROOT");
+                var buildRoot = string.IsNullOrWhiteSpace(requestedRoot)
+                    ? Path.Combine(projectRoot, "Builds")
+                    : Path.GetFullPath(requestedRoot);
+                var output = Path.Combine(buildRoot, $"Windows-{variant}",
+                    $"SYMBIOSIS49-{variant}.exe");
                 Directory.CreateDirectory(Path.GetDirectoryName(output) ?? projectRoot);
                 var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
                 {
-                    scenes = new[] { MainScene },
+                    scenes = new[] { MainScene, ConstructionScene },
                     locationPathName = output,
                     target = BuildTarget.StandaloneWindows64,
                     options = BuildOptions.None

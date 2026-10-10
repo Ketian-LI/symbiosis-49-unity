@@ -1,6 +1,6 @@
 # SYMBIOSIS 49 逐步建造版功能清单与缺口核查
 
-截至 2026 年 10 月 10 日，逐步建造版已形成一个可打开的独立纵切片：从中央橡树与松鼠开始，建相连草地迎来鸽群，再逐步引入住宅、餐厅、工作坊、街道与超市。动物实际进食扣减绿地食物；居民按可达路线和每日容量完成工作及用餐。每天最多新建一格；填满 49 格并结算最后一天后，界面显示动物与人类的日均分及实际累计量。它**还不是可从默认主菜单进入、已完成正式构建验证的游戏**。本清单以这条新玩法为准；旧版满盘挪房、投喂和无尽模式的代码不能自动算作建造版功能。
+截至 2026 年 10 月 10 日，逐步建造版已形成一个可从默认主菜单进入的独立纵切片：从中央橡树与松鼠开始，建相连草地迎来鸽群，再逐步引入住宅、餐厅、工作坊、街道与超市。动物实际进食扣减绿地食物；居民按可达路线和每日容量完成工作及用餐。每天最多新建一格；填满 49 格并结算最后一天后，界面显示动物与人类的日均分及实际累计量。无摄像头 Windows 构建已成功，但尚未完成人工画面与完整通关验收。本清单以这条新玩法为准；旧版满盘挪房、投喂和无尽模式的代码不能自动算作建造版功能。
 
 “已实现”仅指建造原型的对应规则与界面已接通；“部分实现”表示有数据或画面，但缺少可持续的玩法结果；“未实现”表示运行流程中没有相应结算；“待确认”表示规则尚不能从已定方案中唯一推出。P0 是完成一局所必需，P1 是使空间取舍成立，P2 是扩展或润色。
 
@@ -49,12 +49,12 @@
 | 每日有意义的建造抉择 | 部分实现。每天最多新建一格，玩家可等待；界面提示当日名额是否已用。 | 限制消除了同日铺满，但尚无足够可见的地点事件或建造前方案对比；静态布局与长期等待的取舍仍需策略和玩家测试。 | P0 |
 | 建造前预览与地点风险 | 部分实现。服务点显示次日预计使用量，住宅显示缺工作/缺餐记号；侧栏并列显示次日预计进食/动物总数及完整工作循环/居民总数。点击动物可看预计取食路线、成熟栖息地数量与下次增长门槛。动物预览用食物副本计算，不消耗库存。 | 仍缺建造前两方案并列比较、所有地点风险汇总和逐地点预计—实际对照。路线是预测，不应当作已发生的进食或通勤。 | P1 |
 | 次日日结解释 | 部分实现。跨天前保存预计动物进食、完整工作循环和清运数；跨天后在紧凑面板显示实际/预计，并突出一项已发生的缺食、拥挤或垃圾阻断原因。重新载入仍保留这组对照；旧存档缺预测时明确显示“未保存”。 | 仍未逐地点解释所有产出与失败，也没有把当天建造选择与次日变化并列回顾；需要检查不同分辨率下的文字截断和玩家理解度。 | P1 |
-| 存档、继续与重开 | 部分实现。建造版独立 JSON 存档、原子写入、读取校验和二次确认清档已有模型/界面。 | 需在真正的场景退出、重新打开、异常中断和正式构建中验收；与旧版存档不能混写。 | P0 |
-| 默认入口与旧版整合 | 未实现。构建设置仍以 `Main.unity` 为第一场景，建造版是第二个独立场景；未发现主菜单通往建造版的代码入口。 | 选定正式入口及旧版保留方式后，把开始、继续、重开、结算连为一条完整路径。 | P0 |
+| 存档、继续与重开 | 部分实现。建造版独立 JSON 存档、原子写入、读取校验和二次确认清档已有模型/界面。返回主菜单前会再保存一次；若保存失败则停留在建造场景。 | 需在实际构建中验收退出、重进、异常中断及重新开始；与旧版存档不能混写。 | P0 |
+| 默认入口与旧版整合 | 部分实现。构建仍先进入 `Main.unity`，新增主菜单按钮可进入独立的 `ConstructionPrototype.unity`；建造场景有返回主菜单按钮，旧版 Sandbox 入口保留。 | 需要在独立窗口人工检查菜单排版，并走通开始、跨天、返回、继续、终局与重开；两种玩法的设置和存档仍分开。 | P0 |
 | 建造版视觉与说明 | 部分实现。新场景使用二维格子、旧图标和英文提示；绿地显示食物余量，服务建筑显示次日预计使用量/容量，垃圾积压显示在来源房间；住宅标出预计缺餐或缺工作，点击角色可画次日路线。街道仍使用旧车库图标。 | 制作与实际功能一致的道路、产出、容量和风险图像；检查路线叠层及 UI 在目标分辨率下的可读性。 | P1 |
 | 角色点击与路径说明 | 部分实现。点击住宅可看该居民次日预计工作—用餐—回家路线和缺失环节；点击中央橡树或鸽群所在绿地可看预计食物目标、份数和绿地路线。无食物时显示原因提示，点选不会消耗库存。 | 路线仍是次日预测，日结只比较总量，尚无逐个角色的实际移动回放或预测偏差解释，也未经过人工画面和理解度验证。 | P1 |
-| 基础操作与设置 | 未接入建造场景。旧版有暂停、音量、语言和镜头操作，新场景目前只有固定比例的棋盘、日期与重开按钮。 | 决定新模式是否复用旧版设置及缩放/平移；至少让玩家能返回菜单、看操作说明并安全继续存档。 | P1 |
-| 自动化及人工验收 | 部分实现。2026-10-10 定向 EditMode 43/43、PlayMode 4/4 通过，覆盖逐日一格、读取存档后限制、动物群体增长、预览与结算、多来源觅食、扩大种群存档、真实逐日故事和三条混合用途的 49 格结算；PlayMode 在测试对象上核对增长信息、首批鸽群动画和终局界面。 | 未验证实际场景的视觉布局、正式构建、更多布局策略或真人理解；旧版全套测试不能代替新玩法验收。 | P0 |
+| 基础操作与设置 | 部分实现。建造场景有日期、重开和返回主菜单按钮；旧版有暂停、音量、语言和镜头操作，尚未共用。 | 决定新模式是否复用旧版设置及缩放/平移；补充可重看的操作说明。 | P1 |
+| 自动化及人工验收 | 部分实现。2026-10-10 定向 EditMode 43/43、PlayMode 5/5 通过，覆盖逐日一格、读取存档后限制、动物群体增长、预览与结算、多来源觅食、扩大种群存档、真实逐日故事、三条混合用途的 49 格结算，以及从旧主菜单进入建造场景并返回。无摄像头 Windows 构建成功，包含两个场景。 | 尚未验证独立窗口的视觉布局、完整通关、更多布局策略或真人理解；自动测试和构建成功不能代替实际试玩。 | P0 |
 | GDD、教程和论文依据同步 | 未完成新方向同步。现有 README 和 10 月 5/6 日 GDD 主要描述旧版满盘挪房/无尽模式。 | 完成规则后另写建造版 GDD；论文与问卷只陈述已实现且经过观察的内容，拟议规则明确标“待验证”。 | P1 |
 | 实体棋盘/摄像头识别 | 范围待定；独立于当前建造纵切片。 | 不应把识别算法或 49 块激光切割件算作新玩法完成条件；只有明确要做实体交互研究时才另立验证路线。 | P2 |
 
@@ -96,11 +96,11 @@
 | 2 | 绿地成长、食物库存、鸽群实际觅食及每日动物分 | 目前已打通库存、实际扣食与分数，并用定向测试验证。尚需逐格路径表现、缺食原因提示、长期策略及数值平衡验证。 |
 | 3 | 多居民、住宅/餐厅/工作坊容量及每日三段循环 | 已接通逐户容量分配和完成循环计分，并通过定向模型测试；仍需全天路线动画、离开规则及真人理解验证。 |
 | 4 | 垃圾、街道受阻事件、餐厅拥挤和超市 | 第二户不可达与拒餐已能自然触发街道、超市；垃圾积压与清运影响通勤和服务。仍需验证长期平衡及超市为动物提供剩余食物的规则。 |
-| 5 | 双项结算、49 格终局、继续/重开及主菜单入口 | 模型与独立界面已有日均分、累计量和结算层；仍须从正式入口走到填满、看结果、退出再进、重新开始，状态与得分均正确。 |
+| 5 | 双项结算、49 格终局、继续/重开及主菜单入口 | 主菜单进入和返回已通过定向 PlayMode 测试；模型与独立界面已有日均分、累计量和结算层。仍须在正式构建中从入口走到填满、看结果、退出再进、重新开始，核对状态与得分。 |
 | 6 | 其他物种、邻接差异、广场与平衡 | 每个新增功能至少提供一种不同于现有选择的空间取舍；多日策略与玩家测试记录可复核。 |
 
 ## 核查依据与边界
 
-建造版的棋盘与放置规则见 [ConstructionBoardModel](../Assets/Scripts/Data/ConstructionBoardModel.cs)，故事阶段见 [ConstructionStoryModel](../Assets/Scripts/Core/ConstructionStoryModel.cs)，食物与生长见 [ConstructionFoodModel](../Assets/Scripts/Core/ConstructionFoodModel.cs)，居民容量见 [ConstructionHumanModel](../Assets/Scripts/Core/ConstructionHumanModel.cs)，垃圾规则见 [ConstructionWasteModel](../Assets/Scripts/Core/ConstructionWasteModel.cs)，跨天与存档校验见 [ConstructionRunModel](../Assets/Scripts/Core/ConstructionRunModel.cs) 和 [ConstructionRunStore](../Assets/Scripts/Core/ConstructionRunStore.cs)，界面行为见 [ConstructionPrototypeController](../Assets/Scripts/Presentation/ConstructionPrototypeController.cs)，分数记录见 [ConstructionScoreLedger](../Assets/Scripts/Core/ConstructionScoreLedger.cs)。定向验证来自 [建造模型测试](../Assets/Tests/Editor/ConstructionBoardModelTests.cs)、[食物测试](../Assets/Tests/Editor/ConstructionFoodModelTests.cs)、[居民测试](../Assets/Tests/Editor/ConstructionHumanModelTests.cs)、[垃圾测试](../Assets/Tests/Editor/ConstructionWasteModelTests.cs)与 [PlayMode 测试](../Assets/Tests/PlayMode/ConstructionPrototypeFlowTests.cs)。[构建场景设置](../ProjectSettings/EditorBuildSettings.asset)仍把旧版 Main 放在首位。
+建造版的棋盘与放置规则见 [ConstructionBoardModel](../Assets/Scripts/Data/ConstructionBoardModel.cs)，故事阶段见 [ConstructionStoryModel](../Assets/Scripts/Core/ConstructionStoryModel.cs)，食物与生长见 [ConstructionFoodModel](../Assets/Scripts/Core/ConstructionFoodModel.cs)，居民容量见 [ConstructionHumanModel](../Assets/Scripts/Core/ConstructionHumanModel.cs)，垃圾规则见 [ConstructionWasteModel](../Assets/Scripts/Core/ConstructionWasteModel.cs)，跨天与存档校验见 [ConstructionRunModel](../Assets/Scripts/Core/ConstructionRunModel.cs) 和 [ConstructionRunStore](../Assets/Scripts/Core/ConstructionRunStore.cs)，界面行为见 [ConstructionPrototypeController](../Assets/Scripts/Presentation/ConstructionPrototypeController.cs)，分数记录见 [ConstructionScoreLedger](../Assets/Scripts/Core/ConstructionScoreLedger.cs)。默认入口见 [ConstructionMenuEntry](../Assets/Scripts/Presentation/ConstructionMenuEntry.cs)，打包场景见 [UrbanWildlifeBuildPipeline](../Assets/Scripts/Editor/UrbanWildlifeBuildPipeline.cs)。定向验证来自 [建造模型测试](../Assets/Tests/Editor/ConstructionBoardModelTests.cs)、[食物测试](../Assets/Tests/Editor/ConstructionFoodModelTests.cs)、[居民测试](../Assets/Tests/Editor/ConstructionHumanModelTests.cs)、[垃圾测试](../Assets/Tests/Editor/ConstructionWasteModelTests.cs)、[建造流程测试](../Assets/Tests/PlayMode/ConstructionPrototypeFlowTests.cs)与 [场景导航测试](../Assets/Tests/PlayMode/ConstructionSceneNavigationTests.cs)。[构建场景设置](../ProjectSettings/EditorBuildSettings.asset)仍把旧版 Main 放在首位。
 
-定向测试是本地 Unity 测试结果，不是完整回归、独立构建、人工画面检查、长期平衡或参与者研究结果。建造纵切片已放在独立 Git 分支，尚未合并到 `main`。
+定向测试是本地 Unity 测试结果；构建成功仅证明当前代码可打包，不是完整回归、独立窗口的人工画面检查、长期平衡或参与者研究结果。建造纵切片已放在独立 Git 分支，尚未合并到 `main`。

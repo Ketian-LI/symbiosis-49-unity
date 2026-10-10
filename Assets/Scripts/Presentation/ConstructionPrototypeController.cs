@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UrbanWildlifeRooms.Core;
 using UrbanWildlifeRooms.Data;
@@ -74,6 +75,21 @@ namespace UrbanWildlifeRooms.Presentation
         public int ObservedHumanWorkCycles => run?.HumanScore ?? 0;
         public ConstructionStoryStage Stage => run?.StoryStage ??
             ConstructionStoryStage.WatchSquirrelEat;
+
+        public bool ReturnToMainMenu()
+        {
+            ClearResetConfirmation();
+            if (run == null || !Application.CanStreamedLevelBeLoaded("Main"))
+                return false;
+            if (store != null && !store.TrySave(run))
+            {
+                if (feedbackText != null)
+                    feedbackText.text = "Save failed. Stay here and try again.";
+                return false;
+            }
+            SceneManager.LoadScene("Main", LoadSceneMode.Single);
+            return true;
+        }
 
         // Allows PlayMode tests to exercise the screen without touching the
         // user's persistent save file.
@@ -362,6 +378,9 @@ namespace UrbanWildlifeRooms.Presentation
                 TextAnchor.MiddleLeft);
             dayText = TextAt("Day", canvas.transform, new Vector2(205, 413),
                 new Vector2(240, 44), "", 25, true, Ink, TextAnchor.MiddleRight);
+            ButtonAt("Return to main menu", canvas.transform,
+                new Vector2(420, 412), new Vector2(170, 45), "←  Menu", 19,
+                Ink, Paper, () => { ReturnToMainMenu(); });
             var reset = ButtonAt("Start a new construction run", canvas.transform,
                 new Vector2(635, 412), new Vector2(215, 45), "New run", 19,
                 Ink, Paper, () => OnResetPressed());
