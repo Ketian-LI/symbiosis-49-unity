@@ -111,6 +111,9 @@ namespace UrbanWildlifeRooms.Tests.Editor
             Assert.That(restored.LastHumanDay.CompletedWorkCycles,
                 Is.EqualTo(expected.CompletedWorkCycles));
             Assert.That(restored.LastWasteDay.Cleared, Is.EqualTo(4));
+            Assert.That(restored.LastForecast.completedWorkCycles,
+                Is.EqualTo(expected.CompletedWorkCycles));
+            Assert.That(restored.LastForecast.wasteCleared, Is.EqualTo(4));
             Assert.That(ConstructionRunModel.TryRestore(restored.Export(),
                 out var again), Is.True);
             Assert.That(again.LastWasteDay.Remaining, Is.EqualTo(4));

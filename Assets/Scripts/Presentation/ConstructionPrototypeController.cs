@@ -46,6 +46,7 @@ namespace UrbanWildlifeRooms.Presentation
         private Font boldFont;
         private Text dayText;
         private Text scoreText;
+        private Text dayReviewText;
         private Text storyText;
         private Text feedbackText;
         private Text progressText;
@@ -378,6 +379,11 @@ namespace UrbanWildlifeRooms.Presentation
                 new Vector2(0, 208), new Vector2(505, 46), "", 17, false,
                 Ink, TextAnchor.MiddleLeft);
             BuildCategoryButtons(side.transform);
+            var review = Panel("Last day review", side.transform,
+                new Vector2(0, -127), new Vector2(505, 35), Ink);
+            dayReviewText = TextAt("Day review text", review.transform,
+                Vector2.zero, new Vector2(487, 33), "", 14, false,
+                Color.white, TextAnchor.MiddleLeft);
             BuildPlantingButtons(side.transform);
             feedbackText = TextAt("Feedback", side.transform,
                 new Vector2(0, -205), new Vector2(505, 70), "", 17, false,
@@ -530,6 +536,7 @@ namespace UrbanWildlifeRooms.Presentation
             scoreText.text = $"Animal meals {run.AnimalScore} · Workdays {run.HumanScore}\n" +
                 $"Residents {run.BuiltTiles.Count(tile => tile.category == ConstructionCategory.Residence)}" +
                 " · ~ means next-day forecast";
+            RefreshDayReview();
             storyText.text = StoryInstruction(run);
             visitorMarker.SetActive(run.StoryStage ==
                 ConstructionStoryStage.WelcomeResident);
@@ -605,6 +612,67 @@ namespace UrbanWildlifeRooms.Presentation
                 cellIconRects[column, row].sizeDelta = new Vector2(size, size);
             }
             RefreshRouteInspection(humanPreview);
+        }
+
+        private void RefreshDayReview()
+        {
+            var ecology = run.LastEcologyDay;
+            var human = run.LastHumanDay;
+            var waste = run.LastWasteDay;
+            var forecast = run.LastForecast;
+            if (ecology == null || human == null || waste == null)
+            {
+                dayReviewText.text = "LAST DAY · No simulated result yet.";
+                dayReviewText.color = Color.white;
+                return;
+            }
+            if (forecast == null)
+            {
+                dayReviewText.text = $"DAY {ecology.day} · Animal {ecology.AnimalMeals} " +
+                    $"· Work {human.CompletedWorkCycles}\nForecast not saved in this older run.";
+                dayReviewText.color = Color.white;
+                return;
+            }
+            var matches = ecology.AnimalMeals == forecast.animalMeals &&
+                human.CompletedWorkCycles == forecast.completedWorkCycles &&
+                waste.Cleared == forecast.wasteCleared;
+            var issue = DayIssue(ecology, human, forecast);
+            dayReviewText.text = $"D{ecology.day}  Animal {ecology.AnimalMeals}/" +
+                $"{forecast.animalMeals}  Work {human.CompletedWorkCycles}/" +
+                $"{forecast.completedWorkCycles}  Clean {waste.Cleared}/" +
+                $"{forecast.wasteCleared}\nActual/forecast · " +
+                (matches ? issue : "Forecast differed from actual; inspect result.");
+            dayReviewText.color = matches && issue == "No unmet need observed."
+                ? Color.white : new Color(1f, 0.79f, 0.57f);
+        }
+
+        private string DayIssue(ConstructionEcologyDayResult ecology,
+            ConstructionHumanDayResult human, ConstructionDayForecast forecast)
+        {
+            var built = run.BuiltTiles.ToDictionary(tile => tile.id);
+            if (forecast.blockedHomeTileIds.Count > 0)
+            {
+                var location = TileCoordinate(built, forecast.blockedHomeTileIds[0]);
+                return $"Waste blocked home {location}.";
+            }
+            if (forecast.blockedFoodTileIds.Count > 0 &&
+                human.MealsEaten < human.ResidentCount)
+            {
+                var location = TileCoordinate(built, forecast.blockedFoodTileIds[0]);
+                return $"Waste closed food at {location}.";
+            }
+            if (human.restaurantRejectedForCapacity > 0)
+                return $"Restaurant full for {human.restaurantRejectedForCapacity}.";
+            if (human.CompletedWorkCycles < human.ResidentCount)
+                return $"{human.ResidentCount - human.CompletedWorkCycles} " +
+                    "resident(s) missed work or food.";
+            if (!ecology.squirrelAte)
+                return "Squirrel found no oak food.";
+            if (run.PigeonArrivalDay > 0 && run.PigeonArrivalDay <= ecology.day &&
+                ecology.pigeonsFed < ConstructionFoodModel.PigeonFlockSize)
+                return $"Pigeons ate {ecology.pigeonsFed}/" +
+                    $"{ConstructionFoodModel.PigeonFlockSize}; meadow food short.";
+            return "No unmet need observed.";
         }
 
         private void RefreshRouteInspection(ConstructionHumanDayResult humanPreview)

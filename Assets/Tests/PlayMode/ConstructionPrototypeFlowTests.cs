@@ -121,6 +121,10 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             var initialOakSize = oakIcon.rectTransform.sizeDelta.x;
 
             Assert.That(controller.AdvanceDay(), Is.True);
+            var review = root.transform.Find(
+                "Construction UI/Building choices/Last day review/Day review text")
+                .GetComponent<Text>();
+            Assert.That(review.text, Does.Contain("D1  Animal 1/1"));
             Assert.That(oakIcon.rectTransform.sizeDelta.x, Is.EqualTo(initialOakSize),
                 "The established starter oak should already be mature.");
             Assert.That(controller.CurrentDay, Is.EqualTo(2));
@@ -168,6 +172,7 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             reset.onClick.Invoke();
             Assert.That(controller.BuiltCount, Is.EqualTo(1));
             Assert.That(controller.CurrentDay, Is.EqualTo(1));
+            Assert.That(review.text, Does.Contain("No simulated result yet"));
             Object.Destroy(root);
             yield return null;
         }

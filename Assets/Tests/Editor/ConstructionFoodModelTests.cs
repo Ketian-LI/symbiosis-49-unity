@@ -45,6 +45,35 @@ namespace UrbanWildlifeRooms.Tests.Editor
         }
 
         [Test]
+        public void DailyForecastAndObservedOutcomeSurviveReloadSeparately()
+        {
+            var run = new ConstructionRunModel();
+            Assert.That(run.TrySimulateDay(out var actual), Is.True);
+            Assert.That(run.LastForecast.day, Is.EqualTo(1));
+            Assert.That(run.LastForecast.animalMeals,
+                Is.EqualTo(actual.AnimalMeals));
+            Assert.That(run.LastForecast.completedWorkCycles,
+                Is.EqualTo(run.LastHumanDay.CompletedWorkCycles));
+            Assert.That(run.LastForecast.wasteCleared,
+                Is.EqualTo(run.LastWasteDay.Cleared));
+            var json = JsonUtility.ToJson(run.Export());
+            var saved = JsonUtility.FromJson<ConstructionRunSaveData>(json);
+            Assert.That(ConstructionRunModel.TryRestore(saved,
+                out var restored), Is.True);
+            Assert.That(restored.LastForecast.animalMeals, Is.EqualTo(1));
+            Assert.That(restored.LastEcologyDay.AnimalMeals, Is.EqualTo(1));
+
+            saved.lastForecast = null;
+            Assert.That(ConstructionRunModel.TryRestore(saved,
+                out var olderSave), Is.True);
+            Assert.That(olderSave.LastForecast, Is.Null);
+
+            var tampered = run.Export();
+            tampered.lastForecast.animalMeals = -1;
+            Assert.That(ConstructionRunModel.TryRestore(tampered, out _), Is.False);
+        }
+
+        [Test]
         public void ConnectedMeadowGrowsThenFlockActuallyEatsTwoPortions()
         {
             var run = new ConstructionRunModel();
