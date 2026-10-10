@@ -31,8 +31,16 @@ namespace UrbanWildlifeRooms.Editor
         {
             var target = NamedBuildTarget.Standalone;
             var originalDefines = PlayerSettings.GetScriptingDefineSymbols(target);
+            var originalCompany = PlayerSettings.companyName;
+            var originalProduct = PlayerSettings.productName;
             try
             {
+                // A smoke-test build must not read or update a player's save.
+                if (Environment.GetEnvironmentVariable("SYMBIOSIS49_BUILD_ISOLATED_QA") == "1")
+                {
+                    PlayerSettings.companyName = "Codex QA Local";
+                    PlayerSettings.productName = "SYMBIOSIS49 Construction Smoke";
+                }
                 var defines = originalDefines.Split(';')
                     .Where(item => !string.IsNullOrWhiteSpace(item) && item != CameraDefine)
                     .ToList();
@@ -69,6 +77,8 @@ namespace UrbanWildlifeRooms.Editor
             }
             finally
             {
+                PlayerSettings.companyName = originalCompany;
+                PlayerSettings.productName = originalProduct;
                 PlayerSettings.SetScriptingDefineSymbols(target, originalDefines);
                 AssetDatabase.Refresh();
             }

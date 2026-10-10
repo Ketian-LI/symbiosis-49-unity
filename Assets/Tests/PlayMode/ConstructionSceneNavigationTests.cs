@@ -1,6 +1,8 @@
 using System.Collections;
+using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
@@ -33,6 +35,28 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             }
             Assert.That(entrance, Is.Not.Null);
             Assert.That(entrance.gameObject.activeInHierarchy, Is.True);
+            yield return new WaitForSecondsRealtime(2f);
+            Assert.That(entrance.gameObject.activeInHierarchy, Is.True);
+            var rect = entrance.GetComponent<RectTransform>();
+            var canvas = menu.GetComponentInParent<Canvas>();
+            var entranceBounds = ScreenBounds(rect, canvas);
+            Assert.That(entranceBounds.Overlaps(ScreenBounds(
+                menu.Find("Sandbox Mode Entrance").GetComponent<RectTransform>(), canvas)),
+                Is.False, "The construction button must not cover the legacy mode card.");
+            Assert.That(entranceBounds.Overlaps(ScreenBounds(
+                menu.Find("Best Survival Record").GetComponent<RectTransform>(), canvas)),
+                Is.False, "The construction button must not cover the record when it appears.");
+            var pointer = new PointerEventData(EventSystem.current)
+            {
+                position = RectTransformUtility.WorldToScreenPoint(
+                    canvas.worldCamera, rect.TransformPoint(rect.rect.center))
+            };
+            var hits = new List<RaycastResult>();
+            canvas.GetComponent<GraphicRaycaster>().Raycast(pointer, hits);
+            Assert.That(hits, Has.Some.Matches<RaycastResult>(hit =>
+                hit.gameObject == entrance.gameObject),
+                "The construction button must be visible to a real UI click. Hits: " +
+                string.Join(", ", hits.ConvertAll(hit => hit.gameObject.name)));
             Assert.That(menu.Find("Sandbox Mode Entrance"), Is.Not.Null,
                 "The old mode must remain available.");
             entrance.GetComponent<Button>().onClick.Invoke();
@@ -57,6 +81,15 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             back.onClick.Invoke();
             yield return null;
             Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo("Main"));
+        }
+
+        private static Rect ScreenBounds(RectTransform rect, Canvas canvas)
+        {
+            var corners = new Vector3[4];
+            rect.GetWorldCorners(corners);
+            var a = RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, corners[0]);
+            var b = RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, corners[2]);
+            return Rect.MinMaxRect(a.x, a.y, b.x, b.y);
         }
     }
 }

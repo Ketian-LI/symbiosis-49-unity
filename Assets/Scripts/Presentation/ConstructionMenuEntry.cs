@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -18,28 +17,23 @@ namespace UrbanWildlifeRooms.Presentation
         private Text caption;
         private InterfaceLanguage shownLanguage;
 
-        private IEnumerator Start()
-        {
-            // The legacy bootstrap creates its HUD at runtime. Wait for that
-            // hierarchy instead of depending on component Awake order.
-            for (var frame = 0; frame < 120; frame++)
-            {
-                runtime = GetComponentInChildren<GameRuntimeController>(true);
-                var hud = GetComponentInChildren<UrbanWildlifeHud>(true);
-                menu = hud?.transform.Find("Main Menu");
-                if (runtime != null && menu != null)
-                {
-                    CreateEntrance();
-                    yield break;
-                }
-                yield return null;
-            }
-            Debug.LogError("Construction entrance could not find the main menu.", this);
-        }
-
         private void LateUpdate()
         {
-            if (entrance == null || runtime == null || menu == null) return;
+            // A player build can contain a stale editor preview, which the
+            // bootstrap destroys before creating its live HUD. Bind only to
+            // an active desktop menu, and rebind if that hierarchy is replaced.
+            if (entrance == null || runtime == null || menu == null)
+            {
+                var liveRuntime = GetComponentInChildren<GameRuntimeController>(true);
+                var hud = GetComponentInChildren<UrbanWildlifeHud>(true);
+                var liveMenu = hud?.transform.Find("Main Menu");
+                if (liveRuntime == null || liveMenu == null ||
+                    !liveRuntime.AtDesktop || !liveMenu.gameObject.activeInHierarchy)
+                    return;
+                runtime = liveRuntime;
+                menu = liveMenu;
+                CreateEntrance();
+            }
             if (shownLanguage != runtime.Language) UpdateCaption();
             var endlessSetup = menu.Find("Endless Difficulty Overlay");
             var researchSetup = menu.Find("Research Setup Overlay");
@@ -58,7 +52,7 @@ namespace UrbanWildlifeRooms.Presentation
                 typeof(RoundedPanelGraphic), typeof(Button));
             root.transform.SetParent(menu, false);
             var rect = root.GetComponent<RectTransform>();
-            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.345f);
+            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.63f);
             rect.pivot = new Vector2(0.5f, 0.5f);
             rect.sizeDelta = new Vector2(440f, 66f);
 
