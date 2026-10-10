@@ -82,6 +82,50 @@ namespace UrbanWildlifeRooms.Tests.Editor
         }
 
         [Test]
+        public void OneBuildPerSimulatedDayCanStillReachSupermarketStory()
+        {
+            var run = new ConstructionRunModel();
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            PlaceAndSimulate(run, 4, 3, ConstructionCategory.Green,
+                GreenPlanting.Meadow);
+            Assert.That(run.StoryStage, Is.EqualTo(
+                ConstructionStoryStage.WelcomeResident));
+            PlaceAndSimulate(run, 3, 2, ConstructionCategory.Residence);
+            PlaceAndSimulate(run, 3, 1, ConstructionCategory.Restaurant);
+            Assert.That(run.StoryStage, Is.EqualTo(
+                ConstructionStoryStage.BuildWorkshop));
+            PlaceAndSimulate(run, 2, 2, ConstructionCategory.Workshop);
+            PlaceAndSimulate(run, 2, 1, ConstructionCategory.Waste);
+            Assert.That(run.StoryStage, Is.EqualTo(
+                ConstructionStoryStage.AwaitAccessProblem));
+            PlaceAndSimulate(run, 5, 3, ConstructionCategory.Residence);
+            Assert.That(run.StoryStage, Is.EqualTo(
+                ConstructionStoryStage.BuildStreet));
+            PlaceAndSimulate(run, 6, 3, ConstructionCategory.Waste);
+            PlaceAndSimulate(run, 4, 2, ConstructionCategory.Street);
+            PlaceAndSimulate(run, 5, 2, ConstructionCategory.Street);
+            PlaceAndSimulate(run, 4, 1, ConstructionCategory.Street);
+            Assert.That(run.LastHumanDay.restaurantRejectedForCapacity,
+                Is.EqualTo(1));
+            Assert.That(run.StoryStage, Is.EqualTo(
+                ConstructionStoryStage.BuildSupermarket));
+            PlaceAndSimulate(run, 5, 1, ConstructionCategory.Supermarket);
+            Assert.That(run.StoryStage, Is.EqualTo(
+                ConstructionStoryStage.FreeBuild));
+            Assert.That(run.LastHumanDay.MealsEaten, Is.EqualTo(2));
+            Assert.That(run.BuiltTiles.Skip(1).Select(tile => tile.builtDay)
+                .Distinct().Count(), Is.EqualTo(run.BuiltCount - 1));
+        }
+
+        private static void PlaceAndSimulate(ConstructionRunModel run, int column,
+            int row, ConstructionCategory category,
+            GreenPlanting planting = GreenPlanting.None)
+        {
+            Place(run, column, row, category, planting);
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+        }
+
+        [Test]
         public void CrowdingUnlocksSupermarketOnlyAfterAnObservedRejectedMeal()
         {
             var run = new ConstructionRunModel();
@@ -89,19 +133,26 @@ namespace UrbanWildlifeRooms.Tests.Editor
             Place(run, 4, 3, ConstructionCategory.Green, GreenPlanting.Meadow);
             Assert.That(run.TrySimulateDay(out _), Is.True);
             Place(run, 3, 2, ConstructionCategory.Residence);
+            Assert.That(run.TryEndDay(0, 0), Is.True,
+                "Advance the setup day without adding simulated waste.");
             Place(run, 3, 1, ConstructionCategory.Restaurant);
             Assert.That(run.TrySimulateDay(out _), Is.True);
             Assert.That(run.FirstResidentAte, Is.True);
             Place(run, 2, 2, ConstructionCategory.Workshop);
+            Assert.That(run.TryEndDay(0, 0), Is.True);
             Place(run, 2, 1, ConstructionCategory.Waste);
             Assert.That(run.StoryStage, Is.EqualTo(
                 ConstructionStoryStage.AwaitAccessProblem));
+            Assert.That(run.TryEndDay(0, 0), Is.True);
             Place(run, 5, 3, ConstructionCategory.Residence);
             Assert.That(run.StoryStage, Is.EqualTo(
                 ConstructionStoryStage.BuildStreet),
                 "A new household without work or food access reveals the street need.");
+            Assert.That(run.TryEndDay(0, 0), Is.True);
             Place(run, 4, 2, ConstructionCategory.Street);
+            Assert.That(run.TryEndDay(0, 0), Is.True);
             Place(run, 5, 2, ConstructionCategory.Street);
+            Assert.That(run.TryEndDay(0, 0), Is.True);
             Place(run, 4, 1, ConstructionCategory.Street);
             Assert.That(run.StoryStage, Is.EqualTo(
                 ConstructionStoryStage.AwaitRestaurantCrowding));

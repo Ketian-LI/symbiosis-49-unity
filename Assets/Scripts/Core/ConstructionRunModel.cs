@@ -10,6 +10,7 @@ namespace UrbanWildlifeRooms.Core
         None,
         LockedByStory,
         InvalidPlacement,
+        DailyLimitReached,
         RunFinished
     }
 
@@ -54,11 +55,16 @@ namespace UrbanWildlifeRooms.Core
         private ConstructionWasteModel waste;
 
         public int BuiltCount => board.BuiltCount;
+        public bool BuiltToday => board.BuiltTiles.Any(tile =>
+            tile.id != ConstructionBoardModel.StarterOakId &&
+            Math.Max(1, tile.builtDay) == CurrentDay);
         public bool IsFull => board.IsFull;
         public IReadOnlyList<ConstructionTileData> BuiltTiles => board.BuiltTiles;
         public ConstructionStoryStage StoryStage => story.Stage;
         public int AnimalScore => score.AnimalScore;
         public int HumanScore => score.HumanScore;
+        public ConstructionFinalResult FinalResult => IsFinished
+            ? score.FinalResult() : null;
         public int CurrentDay { get; private set; }
         public bool IsFinished { get; private set; }
         public string PigeonTileId { get; private set; }
@@ -181,6 +187,14 @@ namespace UrbanWildlifeRooms.Core
             if (!story.IsUnlocked(category))
             {
                 failure = ConstructionBuildFailure.LockedByStory;
+                return false;
+            }
+            // An invalid attempt can still reveal an access problem in the
+            // story, even if this day's one construction slot is already used.
+            var check = board.CheckPlacement(column, row, category, planting);
+            if (check == ConstructionPlacementFailure.None && BuiltToday)
+            {
+                failure = ConstructionBuildFailure.DailyLimitReached;
                 return false;
             }
             if (!board.TryBuild(column, row, category, planting,

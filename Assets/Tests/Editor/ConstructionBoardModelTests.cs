@@ -200,10 +200,16 @@ namespace UrbanWildlifeRooms.Tests.Editor
             Assert.That(ledger.TryRecordDay(4, 1, 1), Is.False);
             Assert.That(ledger.AnimalScore, Is.EqualTo(4));
             Assert.That(ledger.HumanScore, Is.EqualTo(2));
+            Assert.That(ledger.FinalResult().AnimalMealsPerDay, Is.EqualTo(2f));
+            Assert.That(ledger.FinalResult().HumanWorkdaysPerDay, Is.EqualTo(1f));
+            Assert.That(ledger.TryRecordDay(3, 2, 1), Is.True);
+            Assert.That(ledger.FinalResult().AnimalMealsPerDay, Is.EqualTo(2f),
+                "Repeating a stable day raises totals, not the daily-rate score.");
+            Assert.That(ledger.FinalResult().HumanWorkdaysPerDay, Is.EqualTo(1f));
 
             var saved = ledger.Export();
             Assert.That(ConstructionScoreLedger.TryRestore(saved, out var restored), Is.True);
-            Assert.That(restored.AnimalScore, Is.EqualTo(4));
+            Assert.That(restored.AnimalScore, Is.EqualTo(6));
             saved.days[0].animalMeals = -1;
             Assert.That(ConstructionScoreLedger.TryRestore(saved, out _), Is.False);
         }
@@ -308,6 +314,30 @@ namespace UrbanWildlifeRooms.Tests.Editor
         }
 
         [Test]
+        public void OneNewCellPerDaySurvivesSaveButWaitingIsAllowed()
+        {
+            var run = new ConstructionRunModel();
+            Assert.That(run.BuiltToday, Is.False,
+                "The starter oak is not the player's daily construction.");
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            Assert.That(run.BuiltCount, Is.EqualTo(1));
+            Build(run, 4, 3, ConstructionCategory.Green, GreenPlanting.Meadow);
+            Assert.That(run.BuiltToday, Is.True);
+            Assert.That(run.TryBuild(2, 3, ConstructionCategory.Green,
+                GreenPlanting.Oak, out _, out var failure, out _), Is.False);
+            Assert.That(failure, Is.EqualTo(ConstructionBuildFailure.DailyLimitReached));
+            Assert.That(ConstructionRunModel.TryRestore(run.Export(),
+                out var restored), Is.True);
+            Assert.That(restored.BuiltToday, Is.True);
+            Assert.That(restored.TryBuild(2, 3, ConstructionCategory.Green,
+                GreenPlanting.Oak, out _, out failure, out _), Is.False);
+            Assert.That(failure, Is.EqualTo(ConstructionBuildFailure.DailyLimitReached));
+            Assert.That(restored.TrySimulateDay(out _), Is.True);
+            Assert.That(restored.BuiltToday, Is.False);
+            Build(restored, 2, 3, ConstructionCategory.Green, GreenPlanting.Oak);
+        }
+
+        [Test]
         public void FailedRemoteWorkshopPlacementExplainsAndUnlocksStreet()
         {
             var run = new ConstructionRunModel();
@@ -315,12 +345,14 @@ namespace UrbanWildlifeRooms.Tests.Editor
             Build(run, 4, 3, ConstructionCategory.Green, GreenPlanting.Meadow);
             Assert.That(run.TryEndDay(1, 0), Is.True);
             Build(run, 4, 2, ConstructionCategory.Residence);
+            Assert.That(run.TryEndDay(0, 0), Is.True);
             Build(run, 5, 2, ConstructionCategory.Restaurant);
             Assert.That(run.StoryStage, Is.EqualTo(
                 ConstructionStoryStage.WatchResidentEat));
             Assert.That(run.TryEndDay(0, 0), Is.True);
-            Assert.That(run.FirstResidentMealDay, Is.EqualTo(2));
+            Assert.That(run.FirstResidentMealDay, Is.EqualTo(3));
             Build(run, 3, 2, ConstructionCategory.Workshop);
+            Assert.That(run.TryEndDay(0, 0), Is.True);
             Build(run, 5, 1, ConstructionCategory.Waste);
             Assert.That(run.StoryStage, Is.EqualTo(
                 ConstructionStoryStage.AwaitAccessProblem));
@@ -332,6 +364,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
                 ConstructionPlacementFailure.NeedsHomeOrConnectedStreet));
             Assert.That(run.StoryStage, Is.EqualTo(ConstructionStoryStage.BuildStreet));
             Assert.That(run.IsUnlocked(ConstructionCategory.Street), Is.True);
+            Assert.That(run.TryEndDay(0, 0), Is.True);
             Build(run, 4, 1, ConstructionCategory.Street);
         }
 
@@ -343,7 +376,9 @@ namespace UrbanWildlifeRooms.Tests.Editor
             Build(run, 4, 3, ConstructionCategory.Green, GreenPlanting.Meadow);
             Assert.That(run.TryEndDay(1, 0), Is.True);
             var firstHome = Build(run, 3, 2, ConstructionCategory.Residence);
+            Assert.That(run.TryEndDay(0, 0), Is.True);
             Build(run, 4, 2, ConstructionCategory.Residence);
+            Assert.That(run.TryEndDay(0, 0), Is.True);
             Build(run, 5, 2, ConstructionCategory.Restaurant);
             Assert.That(run.FirstResidentHomeTileId, Is.EqualTo(firstHome.id));
             Assert.That(run.FirstResidentHasRestaurantAccess, Is.False);
@@ -351,6 +386,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
                 ConstructionStoryStage.BuildRestaurant));
             Assert.That(run.IsUnlocked(ConstructionCategory.Workshop), Is.False);
 
+            Assert.That(run.TryEndDay(0, 0), Is.True);
             Build(run, 3, 1, ConstructionCategory.Restaurant);
             Assert.That(run.FirstResidentHasRestaurantAccess, Is.True);
             Assert.That(run.StoryStage, Is.EqualTo(
@@ -362,18 +398,52 @@ namespace UrbanWildlifeRooms.Tests.Editor
                 { firstHome.id, run.At(3, 1).id }));
             Assert.That(run.TryEndDay(0, 0), Is.True);
             Assert.That(run.FirstResidentAte, Is.True);
-            Assert.That(run.FirstResidentMealDay, Is.EqualTo(2));
+            Assert.That(run.FirstResidentMealDay, Is.EqualTo(5));
             Assert.That(run.HumanScore, Is.Zero,
                 "Eating is not a completed work cycle.");
             Assert.That(run.StoryStage, Is.EqualTo(
                 ConstructionStoryStage.BuildWorkshop));
             Assert.That(ConstructionRunModel.TryRestore(run.Export(), out var restored),
                 Is.True);
-            Assert.That(restored.FirstResidentMealDay, Is.EqualTo(2));
+            Assert.That(restored.FirstResidentMealDay, Is.EqualTo(5));
             var corrupt = run.Export();
             corrupt.firstResidentMealDay = 1;
             Assert.That(ConstructionRunModel.TryRestore(corrupt, out _), Is.False,
                 "The restaurant did not exist on day 1.");
+        }
+
+        [Test]
+        public void SimulatedFortyNineCellRunEndsWithObservedRateScores()
+        {
+            var run = new ConstructionRunModel();
+            Assert.That(run.TrySimulateDay(out var opening), Is.True);
+            var observedMeals = opening.AnimalMeals;
+            var positions = Enumerable.Range(0, 7)
+                .SelectMany(column => Enumerable.Range(0, 7)
+                    .Select(row => (column, row)))
+                .Where(position => position.column != 3 || position.row != 3)
+                .OrderBy(position => Math.Abs(position.column - 3) +
+                    Math.Abs(position.row - 3));
+            foreach (var position in positions)
+            {
+                Build(run, position.column, position.row,
+                    ConstructionCategory.Green, GreenPlanting.Meadow);
+                Assert.That(run.TrySimulateDay(out var ecology), Is.True);
+                observedMeals += ecology.AnimalMeals;
+            }
+            Assert.That(run.BuiltCount, Is.EqualTo(49));
+            Assert.That(run.IsFinished, Is.True);
+            Assert.That(run.FinalResult.DaysPlayed, Is.EqualTo(49));
+            Assert.That(run.FinalResult.AnimalMealsTotal, Is.EqualTo(observedMeals));
+            Assert.That(run.FinalResult.HumanWorkdaysTotal, Is.Zero);
+            Assert.That(run.FinalResult.AnimalMealsPerDay,
+                Is.EqualTo((float)observedMeals / 49).Within(0.0001f));
+            Assert.That(run.FinalResult.AnimalMealsPerDay,
+                Is.LessThanOrEqualTo(1 + ConstructionFoodModel.PigeonFlockSize));
+            Assert.That(ConstructionRunModel.TryRestore(run.Export(),
+                out var restored), Is.True);
+            Assert.That(restored.FinalResult.AnimalMealsTotal,
+                Is.EqualTo(observedMeals));
         }
 
         [Test]
@@ -388,15 +458,21 @@ namespace UrbanWildlifeRooms.Tests.Editor
                 .OrderBy(position => Math.Abs(position.column - 3) +
                     Math.Abs(position.row - 3));
             foreach (var position in positions)
+            {
                 Assert.That(run.TryBuild(position.column, position.row,
                     ConstructionCategory.Green, GreenPlanting.Meadow,
                     out _, out var failure, out _), Is.True, failure.ToString());
+                if (!run.IsFull) Assert.That(run.TryEndDay(0, 0), Is.True);
+            }
 
             Assert.That(run.IsFull, Is.True);
             Assert.That(run.IsFinished, Is.False);
             Assert.That(run.TryEndDay(3, 0), Is.True);
             Assert.That(run.IsFinished, Is.True);
             Assert.That(run.AnimalScore, Is.EqualTo(3));
+            Assert.That(run.FinalResult.DaysPlayed, Is.EqualTo(48));
+            Assert.That(run.FinalResult.AnimalMealsPerDay,
+                Is.EqualTo(3f / 48f).Within(0.0001f));
             Assert.That(run.TryEndDay(3, 0), Is.False);
             Assert.That(ConstructionRunModel.TryRestore(run.Export(), out var restored), Is.True);
             Assert.That(restored.IsFinished, Is.True);
@@ -463,14 +539,15 @@ namespace UrbanWildlifeRooms.Tests.Editor
                 Assert.That(loaded.PigeonArrivalDay, Is.EqualTo(2));
 
                 Build(loaded, 3, 2, ConstructionCategory.Residence);
+                Assert.That(loaded.TryEndDay(0, 0), Is.True);
                 Build(loaded, 3, 1, ConstructionCategory.Restaurant);
                 Assert.That(loaded.StoryStage, Is.EqualTo(
                     ConstructionStoryStage.WatchResidentEat));
                 Assert.That(loaded.TryEndDay(0, 0), Is.True);
                 Assert.That(store.TrySave(loaded), Is.True);
                 Assert.That(store.TryLoad(out var reloaded), Is.True);
-                Assert.That(reloaded.CurrentDay, Is.EqualTo(3));
-                Assert.That(reloaded.FirstResidentMealDay, Is.EqualTo(2));
+                Assert.That(reloaded.CurrentDay, Is.EqualTo(4));
+                Assert.That(reloaded.FirstResidentMealDay, Is.EqualTo(3));
                 Assert.That(reloaded.FirstResidentAte, Is.True);
                 Assert.That(reloaded.HumanScore, Is.Zero);
                 Assert.That(store.TryDelete(), Is.True);

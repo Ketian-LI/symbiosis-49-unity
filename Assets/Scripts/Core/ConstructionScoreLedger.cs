@@ -18,6 +18,19 @@ namespace UrbanWildlifeRooms.Core
         public List<ConstructionDayResult> days = new();
     }
 
+    // Rates, rather than ever-growing totals, are the two comparable end
+    // scores. Totals remain visible as a record of what actually happened.
+    public sealed class ConstructionFinalResult
+    {
+        public int DaysPlayed { get; internal set; }
+        public int AnimalMealsTotal { get; internal set; }
+        public int HumanWorkdaysTotal { get; internal set; }
+        public float AnimalMealsPerDay => DaysPlayed == 0 ? 0f :
+            (float)AnimalMealsTotal / DaysPlayed;
+        public float HumanWorkdaysPerDay => DaysPlayed == 0 ? 0f :
+            (float)HumanWorkdaysTotal / DaysPlayed;
+    }
+
     // Counts observed outcomes, never expected route availability. This keeps
     // the new end score separate from a preview or a green-adjacency bonus.
     public sealed class ConstructionScoreLedger
@@ -27,6 +40,13 @@ namespace UrbanWildlifeRooms.Core
         public int AnimalScore => days.Sum(result => result.animalMeals);
         public int HumanScore => days.Sum(result => result.completedWorkCycles);
         public IReadOnlyList<ConstructionDayResult> Days => days.Select(Clone).ToArray();
+
+        public ConstructionFinalResult FinalResult() => new()
+        {
+            DaysPlayed = days.Count,
+            AnimalMealsTotal = AnimalScore,
+            HumanWorkdaysTotal = HumanScore
+        };
 
         public bool TryRecordDay(int day, int animalMeals, int completedWorkCycles)
         {

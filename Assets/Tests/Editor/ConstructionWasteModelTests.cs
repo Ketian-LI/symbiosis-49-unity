@@ -90,16 +90,17 @@ namespace UrbanWildlifeRooms.Tests.Editor
             Place(run, 4, 3, ConstructionCategory.Green, GreenPlanting.Meadow);
             Assert.That(run.TrySimulateDay(out _), Is.True);
             var home = Place(run, 3, 2, ConstructionCategory.Residence);
+            Assert.That(run.TrySimulateDay(out _), Is.True);
             var restaurant = Place(run, 3, 1, ConstructionCategory.Restaurant);
             Assert.That(run.TrySimulateDay(out _), Is.True);
             Place(run, 2, 2, ConstructionCategory.Workshop);
             Assert.That(run.TrySimulateDay(out _), Is.True);
-            Assert.That(run.TrySimulateDay(out _), Is.True);
             Assert.That(run.WasteBacklog(home.id), Is.EqualTo(3));
-            Assert.That(run.WasteBacklog(restaurant.id), Is.EqualTo(3));
+            Assert.That(run.WasteBacklog(restaurant.id), Is.EqualTo(2));
             Assert.That(run.PreviewHumanDay().CompletedWorkCycles, Is.Zero);
 
             Place(run, 2, 1, ConstructionCategory.Waste);
+            Assert.That(run.TrySimulateDay(out _), Is.True);
             Place(run, 4, 2, ConstructionCategory.Waste);
             var expected = run.PreviewHumanDay();
             Assert.That(expected.CompletedWorkCycles, Is.EqualTo(1));
@@ -116,7 +117,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
             Assert.That(restored.LastForecast.wasteCleared, Is.EqualTo(4));
             Assert.That(ConstructionRunModel.TryRestore(restored.Export(),
                 out var again), Is.True);
-            Assert.That(again.LastWasteDay.Remaining, Is.EqualTo(4));
+            Assert.That(again.LastWasteDay.Remaining, Is.EqualTo(3));
         }
 
         private static ConstructionBoardModel BasicBoard(

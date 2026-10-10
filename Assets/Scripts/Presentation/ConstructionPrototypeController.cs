@@ -51,6 +51,10 @@ namespace UrbanWildlifeRooms.Presentation
         private Text feedbackText;
         private Text progressText;
         private Text resetLabel;
+        private Text resultResetLabel;
+        private Text resultNoticeText;
+        private Text finalResultText;
+        private GameObject finalResultPanel;
         private Text routeText;
         private RectTransform routeOverlay;
         private RouteSubject routeSubject;
@@ -162,6 +166,10 @@ namespace UrbanWildlifeRooms.Presentation
             {
                 feedbackText.text = failure == ConstructionBuildFailure.LockedByStory
                     ? "Follow the story to unlock this building."
+                    : failure == ConstructionBuildFailure.DailyLimitReached
+                        ? "One new cell per day. Check tomorrow's needs, then advance."
+                    : failure == ConstructionBuildFailure.RunFinished
+                        ? "All 49 cells are complete. Review the final result."
                     : PlacementMessage(placement);
                 Refresh();
                 return false;
@@ -399,6 +407,26 @@ namespace UrbanWildlifeRooms.Presentation
                 new Vector2(-180, -415), new Vector2(1130, 30),
                 "Construction vertical slice · existing full-board game remains separate",
                 15, false, Locked, TextAnchor.MiddleCenter);
+
+            finalResultPanel = Panel("Construction final result", canvas.transform,
+                Vector2.zero, new Vector2(1600, 900),
+                new Color(0.05f, 0.09f, 0.11f, 0.78f)).gameObject;
+            var resultCard = Panel("Result card", finalResultPanel.transform,
+                Vector2.zero, new Vector2(640, 470), Paper);
+            TextAt("Result title", resultCard.transform,
+                new Vector2(0, 175), new Vector2(580, 55),
+                "49 CELLS COMPLETE", 31, true, Ink, TextAnchor.MiddleCenter);
+            finalResultText = TextAt("Result numbers", resultCard.transform,
+                new Vector2(0, 12), new Vector2(560, 245), "", 22, false,
+                Ink, TextAnchor.MiddleCenter);
+            resultNoticeText = TextAt("Result notice", resultCard.transform,
+                new Vector2(0, -125), new Vector2(560, 36), "", 16, false,
+                Ink, TextAnchor.MiddleCenter);
+            var resultReset = ButtonAt("New run after result", resultCard.transform,
+                new Vector2(0, -177), new Vector2(270, 54), "New run", 22,
+                Teal, Color.white, OnResetPressed);
+            resultResetLabel = resultReset.GetComponentInChildren<Text>();
+            finalResultPanel.SetActive(false);
         }
 
         private void BuildCells(Transform parent)
@@ -540,7 +568,8 @@ namespace UrbanWildlifeRooms.Presentation
             storyText.text = StoryInstruction(run);
             visitorMarker.SetActive(run.StoryStage ==
                 ConstructionStoryStage.WelcomeResident);
-            progressText.text = $"{run.BuiltCount} / 49 cells";
+            progressText.text = $"{run.BuiltCount}/49 · " +
+                (run.BuiltToday ? "built today" : "1 build available");
             plantingPanel.SetActive(selectedCategory == ConstructionCategory.Green &&
                 run.IsUnlocked(ConstructionCategory.Green));
 
@@ -612,6 +641,16 @@ namespace UrbanWildlifeRooms.Presentation
                 cellIconRects[column, row].sizeDelta = new Vector2(size, size);
             }
             RefreshRouteInspection(humanPreview);
+            var result = run.FinalResult;
+            finalResultPanel.SetActive(result != null);
+            if (result != null)
+                finalResultText.text =
+                    $"Animal score  {result.AnimalMealsPerDay:F2} meals/day\n" +
+                    $"Human score  {result.HumanWorkdaysPerDay:F2} workdays/day\n\n" +
+                    $"Observed totals: {result.AnimalMealsTotal} meals · " +
+                    $"{result.HumanWorkdaysTotal} workdays\n" +
+                    $"Completed in {result.DaysPlayed} days.\n\n" +
+                    "Scores are per-day averages; waiting cannot increase them without limit.";
         }
 
         private void RefreshDayReview()
@@ -814,14 +853,22 @@ namespace UrbanWildlifeRooms.Presentation
             {
                 confirmReset = true;
                 resetLabel.text = "Confirm new run";
+                if (resultResetLabel != null)
+                    resultResetLabel.text = "Confirm new run";
                 feedbackText.text = "Press again to erase this construction save.";
+                if (resultNoticeText != null)
+                    resultNoticeText.text = "Press again to erase this construction save.";
                 return;
             }
             confirmReset = false;
             resetLabel.text = "New run";
+            if (resultResetLabel != null) resultResetLabel.text = "New run";
+            if (resultNoticeText != null) resultNoticeText.text = "";
             if (store != null && !store.TryDelete())
             {
                 feedbackText.text = "Could not clear the save; run was not reset.";
+                if (resultNoticeText != null)
+                    resultNoticeText.text = "Save could not be cleared. Run not reset.";
                 return;
             }
             if (growthAnimation != null)
@@ -849,6 +896,8 @@ namespace UrbanWildlifeRooms.Presentation
             if (!confirmReset) return;
             confirmReset = false;
             if (resetLabel != null) resetLabel.text = "New run";
+            if (resultResetLabel != null) resultResetLabel.text = "New run";
+            if (resultNoticeText != null) resultNoticeText.text = "";
         }
 
         private void Save()

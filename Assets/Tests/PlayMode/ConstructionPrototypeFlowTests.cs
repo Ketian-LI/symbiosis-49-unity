@@ -13,6 +13,47 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
     public sealed class ConstructionPrototypeFlowTests
     {
         [UnityTest]
+        public IEnumerator FullBoardShowsResultAndCanStartNewRun()
+        {
+            var run = new ConstructionRunModel();
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            var positions = Enumerable.Range(0, 7)
+                .SelectMany(column => Enumerable.Range(0, 7)
+                    .Select(row => (column, row)))
+                .Where(position => position.column != 3 || position.row != 3)
+                .OrderBy(position => Mathf.Abs(position.column - 3) +
+                    Mathf.Abs(position.row - 3));
+            foreach (var position in positions)
+            {
+                Assert.That(run.TryBuild(position.column, position.row,
+                    ConstructionCategory.Green, GreenPlanting.Meadow,
+                    out _, out var failure, out _), Is.True, failure.ToString());
+                Assert.That(run.TrySimulateDay(out _), Is.True);
+            }
+            var root = new GameObject("Construction result test");
+            var controller = root.AddComponent<ConstructionPrototypeController>();
+            controller.UseRunForTesting(run);
+            yield return null;
+
+            var result = root.transform.Find(
+                "Construction UI/Construction final result");
+            Assert.That(result.gameObject.activeSelf, Is.True);
+            var numbers = result.Find("Result card/Result numbers")
+                .GetComponent<Text>().text;
+            Assert.That(numbers, Does.Contain("Animal score"));
+            Assert.That(numbers, Does.Contain("Human score"));
+            Assert.That(numbers, Does.Contain("Completed in 49 days"));
+            var reset = result.GetComponentInChildren<Button>();
+            reset.onClick.Invoke();
+            Assert.That(controller.BuiltCount, Is.EqualTo(49));
+            reset.onClick.Invoke();
+            Assert.That(controller.BuiltCount, Is.EqualTo(1));
+            Assert.That(result.gameObject.activeSelf, Is.False);
+            Object.Destroy(root);
+            yield return null;
+        }
+
+        [UnityTest]
         public IEnumerator PigeonArrivalIntroducesOneResidentWithVisibleFoodNeed()
         {
             var root = new GameObject("Construction resident test");
@@ -45,6 +86,8 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 Is.True);
             Assert.That(controller.TrySelect(ConstructionCategory.Workshop), Is.False);
 
+            Assert.That(controller.AdvanceDay(), Is.True,
+                "A residence uses today's one construction slot.");
             Assert.That(controller.TrySelect(ConstructionCategory.Restaurant), Is.True);
             Assert.That(controller.TryPlace(3, 1), Is.True);
             var restaurant = root.GetComponentsInChildren<Button>(true)
@@ -63,7 +106,8 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             Assert.That(home.transform.Find("Waste backlog").gameObject.activeSelf,
                 Is.True);
             Assert.That(home.transform.Find("Waste backlog/Waste count")
-                .GetComponent<Text>().text, Is.EqualTo("1"));
+                .GetComponent<Text>().text, Is.EqualTo("2"),
+                "The residence produced waste on its own construction day too.");
             Assert.That(restaurant.transform.Find("Waste backlog/Waste count")
                 .GetComponent<Text>().text, Is.EqualTo("1"));
             var walking = root.transform.Find(
@@ -133,6 +177,11 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 GreenPlanting.Meadow), Is.True);
             Assert.That(controller.TryPlace(4, 3), Is.True);
             Assert.That(controller.BuiltCount, Is.EqualTo(2));
+            Assert.That(controller.TryPlace(2, 3), Is.False,
+                "A second valid cell cannot be built on the same day.");
+            Assert.That(root.transform.Find(
+                "Construction UI/Building choices/Feedback").GetComponent<Text>().text,
+                Does.Contain("One new cell per day"));
             Assert.That(controller.TryPlace(6, 6), Is.False);
 
             var newGreen = root.GetComponentsInChildren<Button>(true)
