@@ -31,6 +31,8 @@ namespace UrbanWildlifeRooms.Presentation
         private readonly RectTransform[,] cellIconRects = new RectTransform[7, 7];
         private readonly Image[,] squirrelIcons = new Image[7, 7];
         private readonly Image[,] pigeonIcons = new Image[7, 7];
+        private readonly Text[,] squirrelCounts = new Text[7, 7];
+        private readonly Text[,] pigeonCounts = new Text[7, 7];
         private readonly Text[,] foodBadges = new Text[7, 7];
         private readonly Text[,] capacityBadges = new Text[7, 7];
         private readonly Text[,] wasteBadges = new Text[7, 7];
@@ -454,12 +456,14 @@ namespace UrbanWildlifeRooms.Presentation
                 squirrel.raycastTarget = false;
                 squirrel.preserveAspect = true;
                 squirrelIcons[column, row] = squirrel;
+                squirrelCounts[column, row] = AnimalCountBadge(squirrel.transform);
                 var pigeon = Panel("Pigeon flock", button.transform,
                     new Vector2(-23, -22), new Vector2(31, 31), Color.white);
                 pigeon.sprite = LoadSprite("UI/GameplayHud/population-pigeon-v02");
                 pigeon.raycastTarget = false;
                 pigeon.preserveAspect = true;
                 pigeonIcons[column, row] = pigeon;
+                pigeonCounts[column, row] = AnimalCountBadge(pigeon.transform);
                 var foodBadge = Panel("Food stock", button.transform,
                     new Vector2(23, 24), new Vector2(35, 19), Ink);
                 foodBadge.raycastTarget = false;
@@ -504,6 +508,18 @@ namespace UrbanWildlifeRooms.Presentation
                     TextAnchor.MiddleCenter).raycastTarget = false;
                 workNeedMarkers[column, row] = workNeed.gameObject;
             }
+        }
+
+        private Text AnimalCountBadge(Transform animalIcon)
+        {
+            var badge = Panel("Animal group count", animalIcon,
+                new Vector2(12, -12), new Vector2(22, 19), Ink);
+            badge.raycastTarget = false;
+            var label = TextAt("Count", badge.transform, Vector2.zero,
+                new Vector2(21, 18), "1", 12, true, Color.white,
+                TextAnchor.MiddleCenter);
+            label.raycastTarget = false;
+            return label;
         }
 
         private void BuildCategoryButtons(Transform parent)
@@ -614,8 +630,12 @@ namespace UrbanWildlifeRooms.Presentation
                 if (backlog > 0) wasteBadges[column, row].text = backlog.ToString();
                 squirrelIcons[column, row].gameObject.SetActive(tile?.id ==
                     ConstructionBoardModel.StarterOakId);
+                squirrelCounts[column, row].text =
+                    run.SquirrelPopulation.ToString();
                 pigeonIcons[column, row].gameObject.SetActive(tile != null &&
                     tile.id == run.PigeonTileId);
+                pigeonCounts[column, row].text =
+                    run.PigeonPopulation.ToString();
                 var isHome = tile?.category == ConstructionCategory.Residence;
                 residentMarkers[column, row].SetActive(isHome &&
                     (movingResidentMarker == null || !movingResidentMarker.activeSelf));
@@ -705,12 +725,15 @@ namespace UrbanWildlifeRooms.Presentation
             if (human.CompletedWorkCycles < human.ResidentCount)
                 return $"{human.ResidentCount - human.CompletedWorkCycles} " +
                     "resident(s) missed work or food.";
+            if (ecology.squirrelsFed < ecology.squirrelsPresent)
+                return $"Squirrels ate {ecology.squirrelsFed}/" +
+                    $"{ecology.squirrelsPresent}; oak food short.";
             if (!ecology.squirrelAte)
                 return "Squirrel found no oak food.";
             if (run.PigeonArrivalDay > 0 && run.PigeonArrivalDay <= ecology.day &&
-                ecology.pigeonsFed < ConstructionFoodModel.PigeonFlockSize)
+                ecology.pigeonsFed < ecology.pigeonsPresent)
                 return $"Pigeons ate {ecology.pigeonsFed}/" +
-                    $"{ConstructionFoodModel.PigeonFlockSize}; meadow food short.";
+                    $"{ecology.pigeonsPresent}; meadow food short.";
             return "No unmet need observed.";
         }
 
@@ -786,12 +809,22 @@ namespace UrbanWildlifeRooms.Presentation
                 routeText.text = squirrel
                     ? target == null
                         ? "NEXT DAY · SQUIRREL\nNo oak food within one cell after growth."
-                        : $"NEXT DAY · SQUIRREL\n1 portion expected at oak {target.column + 1},{target.row + 1}."
+                        : $"NEXT DAY · SQUIRRELS\n{ecology.squirrelsFed}/" +
+                          $"{ecology.squirrelsPresent} expected to eat across " +
+                          $"{ecology.squirrelFoodTileIds.Count} oak(s)."
                     : target == null
                         ? "NEXT DAY · PIGEON FLOCK\nNo reachable seeded meadow after growth."
                         : $"NEXT DAY · PIGEON FLOCK\n{ecology.pigeonsFed}/" +
-                          $"{ConstructionFoodModel.PigeonFlockSize} portions expected " +
-                          $"at meadow {target.column + 1},{target.row + 1}.";
+                          $"{ecology.pigeonsPresent} expected to eat across " +
+                          $"{ecology.pigeonFoodTileIds.Count} meadow(s).";
+                var routes = squirrel ? run.PreviewSquirrelFoodRoutes() :
+                    run.PreviewPigeonFoodRoutes();
+                if (routes.Count > 0)
+                {
+                    foreach (var foodRoute in routes)
+                        DrawRoute(foodRoute, origin, colour);
+                    return;
+                }
             }
             DrawRoute(route, origin, colour);
         }

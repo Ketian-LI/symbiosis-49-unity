@@ -29,6 +29,100 @@ namespace UrbanWildlifeRooms.Tests.Editor
         }
 
         [Test]
+        public void TwoNearbyMatureOaksAttractSecondSquirrelOnlyWhenFoodIsEaten()
+        {
+            var board = new ConstructionBoardModel();
+            Assert.That(board.TryBuild(4, 3, ConstructionCategory.Green,
+                GreenPlanting.Oak, out _, out _, 1), Is.True);
+            Assert.That(board.TryBuild(3, 2, ConstructionCategory.Green,
+                GreenPlanting.Oak, out _, out _, 2), Is.True);
+            var food = new ConstructionFoodModel();
+            for (var day = 1; day < 4; day++)
+                food.SettleDay(day, board, null);
+            var preview = food.PreviewDay(4, board, null);
+            Assert.That(preview.squirrelsPresent, Is.EqualTo(2));
+            Assert.That(preview.squirrelsFed, Is.EqualTo(2));
+            Assert.That(preview.squirrelFoodTileIds.Count, Is.EqualTo(2));
+            var actual = food.SettleDay(4, board, null);
+            Assert.That(actual.AnimalMeals, Is.EqualTo(2));
+            Assert.That(actual.squirrelFoodTileIds,
+                Is.EqualTo(preview.squirrelFoodTileIds));
+        }
+
+        [Test]
+        public void ThreeMatureMeadowsGrowOneFlockAndUseMoreThanOneFoodTile()
+        {
+            var board = new ConstructionBoardModel();
+            Assert.That(board.TryBuild(4, 3, ConstructionCategory.Green,
+                GreenPlanting.Meadow, out var first, out _, 1), Is.True);
+            Assert.That(board.TryBuild(5, 3, ConstructionCategory.Green,
+                GreenPlanting.Meadow, out _, out _, 2), Is.True);
+            Assert.That(board.TryBuild(4, 2, ConstructionCategory.Green,
+                GreenPlanting.Meadow, out _, out _, 3), Is.True);
+            var food = new ConstructionFoodModel();
+            for (var day = 1; day < 5; day++)
+                food.SettleDay(day, board, day >= 2 ? first.id : null);
+            var preview = food.PreviewDay(5, board, first.id);
+            Assert.That(preview.pigeonsPresent, Is.EqualTo(3));
+            Assert.That(preview.pigeonsFed, Is.EqualTo(3));
+            Assert.That(preview.pigeonFoodTileIds.Count, Is.GreaterThan(1));
+            var actual = food.SettleDay(5, board, first.id);
+            Assert.That(actual.pigeonFoodTileIds,
+                Is.EqualTo(preview.pigeonFoodTileIds));
+            Assert.That(actual.foodChanges.Sum(change => change.eaten),
+                Is.EqualTo(actual.AnimalMeals));
+        }
+
+        [Test]
+        public void GrowingAnimalPopulationSurvivesRunSaveAndForecast()
+        {
+            var run = new ConstructionRunModel();
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            Assert.That(run.TryBuild(4, 3, ConstructionCategory.Green,
+                GreenPlanting.Oak, out _, out _, out _), Is.True);
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            Assert.That(run.TryBuild(3, 2, ConstructionCategory.Green,
+                GreenPlanting.Oak, out _, out _, out _), Is.True);
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            Assert.That(run.SquirrelPopulation, Is.EqualTo(2));
+            var preview = run.PreviewEcologyDay();
+            Assert.That(preview.squirrelsFed, Is.EqualTo(2));
+            Assert.That(run.TrySimulateDay(out var actual), Is.True);
+            Assert.That(actual.AnimalMeals, Is.EqualTo(preview.AnimalMeals));
+            Assert.That(ConstructionRunModel.TryRestore(run.Export(),
+                out var restored), Is.True);
+            Assert.That(restored.LastEcologyDay.squirrelsPresent, Is.EqualTo(2));
+            Assert.That(restored.LastForecast.animalMeals, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void ExpandedPigeonFlockSurvivesRunSaveAndForecast()
+        {
+            var run = new ConstructionRunModel();
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            foreach (var position in new[] { (4, 3), (5, 3), (4, 2) })
+            {
+                Assert.That(run.TryBuild(position.Item1, position.Item2,
+                    ConstructionCategory.Green, GreenPlanting.Meadow,
+                    out _, out _, out _), Is.True);
+                Assert.That(run.TrySimulateDay(out _), Is.True);
+            }
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            Assert.That(run.PigeonPopulation, Is.EqualTo(3));
+            var preview = run.PreviewEcologyDay();
+            Assert.That(preview.pigeonsFed, Is.EqualTo(3));
+            Assert.That(run.TrySimulateDay(out var actual), Is.True);
+            Assert.That(actual.pigeonsPresent, Is.EqualTo(3));
+            Assert.That(actual.pigeonsFed, Is.EqualTo(3));
+            Assert.That(ConstructionRunModel.TryRestore(run.Export(),
+                out var restored), Is.True);
+            Assert.That(restored.LastEcologyDay.pigeonsFed, Is.EqualTo(3));
+            Assert.That(restored.LastForecast.animalMeals,
+                Is.EqualTo(actual.AnimalMeals));
+        }
+
+        [Test]
         public void AnimalPreviewPredictsSettlementWithoutSpendingFood()
         {
             var board = new ConstructionBoardModel();

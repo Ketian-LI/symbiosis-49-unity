@@ -34,10 +34,16 @@ namespace UrbanWildlifeRooms.Core
         public int day;
         public bool squirrelAte;
         public string squirrelFoodTileId;
+        public int squirrelsPresent;
+        public int squirrelsFed;
+        public List<string> squirrelFoodTileIds = new();
         public int pigeonsFed;
         public string pigeonFoodTileId;
+        public int pigeonsPresent;
+        public List<string> pigeonFoodTileIds = new();
         public List<ConstructionFoodChange> foodChanges = new();
-        public int AnimalMeals => (squirrelAte ? 1 : 0) + pigeonsFed;
+        // Older saves have only the single-squirrel boolean.
+        public int AnimalMeals => Math.Max(squirrelsFed, squirrelAte ? 1 : 0) + pigeonsFed;
     }
 
     // Small deterministic ecology for the new board only. One portion feeds
@@ -45,6 +51,29 @@ namespace UrbanWildlifeRooms.Core
     public sealed class ConstructionFoodModel
     {
         public const int PigeonFlockSize = 2;
+
+        // Temporary balance rule: two additional mature habitat tiles attract
+        // one more animal. Squirrels remain within one cell of the starter oak.
+        public static int SquirrelPopulation(ConstructionBoardModel board, int day)
+        {
+            var matureOaks = board.ConnectedGreenTiles(
+                    ConstructionBoardModel.StarterOakId)
+                .Count(tile => tile.planting == GreenPlanting.Oak &&
+                    tile.builtDay <= day && MaturityStage(tile, day) == 2 &&
+                    Math.Abs(tile.column - ConstructionBoardModel.StarterColumn) +
+                    Math.Abs(tile.row - ConstructionBoardModel.StarterRow) <= 1);
+            return 1 + Math.Max(0, matureOaks - 1) / 2;
+        }
+
+        public static int PigeonPopulation(ConstructionBoardModel board,
+            int day, string pigeonTileId)
+        {
+            if (string.IsNullOrEmpty(pigeonTileId)) return 0;
+            var matureMeadows = board.ConnectedGreenTiles(pigeonTileId)
+                .Count(tile => tile.planting == GreenPlanting.Meadow &&
+                    tile.builtDay <= day && MaturityStage(tile, day) == 2);
+            return PigeonFlockSize + Math.Max(0, matureMeadows - 1) / 2;
+        }
 
         private readonly Dictionary<string, int> stock = new();
         public int LastSettledDay { get; private set; }
@@ -116,6 +145,8 @@ namespace UrbanWildlifeRooms.Core
                 "Food was already settled for this day.");
 
             var result = new ConstructionEcologyDayResult { day = day };
+            result.squirrelsPresent = SquirrelPopulation(board, day);
+            result.pigeonsPresent = PigeonPopulation(board, day, pigeonTileId);
             var greens = board.BuiltTiles.Where(tile =>
                 tile.category == ConstructionCategory.Green && tile.builtDay <= day)
                 .OrderBy(tile => tile.buildIndex).ToArray();
@@ -135,15 +166,20 @@ namespace UrbanWildlifeRooms.Core
 
             // The squirrel is faithful to the central oak and can reach an
             // adjacent connected oak; it cannot teleport across the park.
-            var squirrelSource = greens.FirstOrDefault(tile =>
+            var squirrelSources = greens.Where(tile =>
                 tile.planting == GreenPlanting.Oak && Stock(tile.id) > 0 &&
                 Math.Abs(tile.column - ConstructionBoardModel.StarterColumn) +
-                Math.Abs(tile.row - ConstructionBoardModel.StarterRow) <= 1);
-            if (squirrelSource != null)
+                Math.Abs(tile.row - ConstructionBoardModel.StarterRow) <= 1 &&
+                board.GreenRouteBetween(ConstructionBoardModel.StarterOakId,
+                    tile.id).Count > 0);
+            foreach (var squirrelSource in squirrelSources)
             {
+                if (result.squirrelsFed >= result.squirrelsPresent) break;
                 Eat(result, squirrelSource.id, 1);
                 result.squirrelAte = true;
-                result.squirrelFoodTileId = squirrelSource.id;
+                result.squirrelsFed++;
+                result.squirrelFoodTileIds.Add(squirrelSource.id);
+                result.squirrelFoodTileId ??= squirrelSource.id;
             }
 
             if (!string.IsNullOrEmpty(pigeonTileId))
@@ -159,13 +195,16 @@ namespace UrbanWildlifeRooms.Core
                         .OrderBy(tile => tile.id == pigeonTileId ? 0 : 1)
                         .ThenBy(tile => Math.Abs(tile.column - origin.column) +
                             Math.Abs(tile.row - origin.row))
-                        .ThenBy(tile => tile.buildIndex)
-                        .FirstOrDefault();
-                    if (reachable != null)
+                        .ThenBy(tile => tile.buildIndex);
+                    foreach (var source in reachable)
                     {
-                        result.pigeonFoodTileId = reachable.id;
-                        result.pigeonsFed = Math.Min(PigeonFlockSize, Stock(reachable.id));
-                        Eat(result, reachable.id, result.pigeonsFed);
+                        var needed = result.pigeonsPresent - result.pigeonsFed;
+                        if (needed <= 0) break;
+                        var portions = Math.Min(needed, Stock(source.id));
+                        Eat(result, source.id, portions);
+                        result.pigeonsFed += portions;
+                        result.pigeonFoodTileIds.Add(source.id);
+                        result.pigeonFoodTileId ??= source.id;
                     }
                 }
             }

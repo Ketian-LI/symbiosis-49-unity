@@ -76,6 +76,10 @@ namespace UrbanWildlifeRooms.Core
         public ConstructionDayForecast LastForecast { get; private set; }
         public bool FirstResidentAte => story.ResidentAte;
         public bool HasConnectedMeadow => ConnectedMeadows().Any();
+        public int SquirrelPopulation =>
+            ConstructionFoodModel.SquirrelPopulation(board, CurrentDay);
+        public int PigeonPopulation =>
+            ConstructionFoodModel.PigeonPopulation(board, CurrentDay, PigeonTileId);
         public string FirstResidentHomeTileId => board.FirstResidence?.id;
         public bool FirstResidentHasRestaurantAccess =>
             board.FirstResidenceCanReachService(ConstructionCategory.Restaurant);
@@ -118,11 +122,18 @@ namespace UrbanWildlifeRooms.Core
             return board.GreenRouteBetween(ConstructionBoardModel.StarterOakId,
                 target);
         }
+        public IReadOnlyList<IReadOnlyList<ConstructionTileData>> PreviewSquirrelFoodRoutes()
+            => PreviewEcologyDay().squirrelFoodTileIds.Select(target =>
+                board.GreenRouteBetween(ConstructionBoardModel.StarterOakId, target))
+                .ToArray();
         public IReadOnlyList<ConstructionTileData> PreviewPigeonFoodRoute()
         {
             var target = PreviewEcologyDay().pigeonFoodTileId;
             return board.GreenRouteBetween(PigeonTileId, target);
         }
+        public IReadOnlyList<IReadOnlyList<ConstructionTileData>> PreviewPigeonFoodRoutes()
+            => PreviewEcologyDay().pigeonFoodTileIds.Select(target =>
+                board.GreenRouteBetween(PigeonTileId, target)).ToArray();
         public IReadOnlyList<ConstructionTileData> ResidenceRouteTo(
             string residenceId, string serviceTileId) =>
             board.ResidenceServiceRouteTo(residenceId, serviceTileId);
@@ -385,8 +396,21 @@ namespace UrbanWildlifeRooms.Core
             if (lastEcologyDay != null &&
                 (lastEcologyDay.day != score.Days.Last().day ||
                  lastEcologyDay.AnimalMeals != score.Days.Last().animalMeals ||
+                 lastEcologyDay.squirrelsFed < 0 ||
+                 lastEcologyDay.squirrelsFed > ConstructionFoodModel.SquirrelPopulation(
+                     board, lastEcologyDay.day) ||
                  lastEcologyDay.pigeonsFed < 0 ||
-                 lastEcologyDay.pigeonsFed > ConstructionFoodModel.PigeonFlockSize))
+                 lastEcologyDay.pigeonsFed >
+                     ConstructionFoodModel.PigeonPopulation(board,
+                         lastEcologyDay.day, saved.pigeonTileId) ||
+                 lastEcologyDay.squirrelsPresent < 0 ||
+                 lastEcologyDay.squirrelsPresent >
+                     ConstructionFoodModel.SquirrelPopulation(board,
+                         lastEcologyDay.day) ||
+                 lastEcologyDay.pigeonsPresent < 0 ||
+                 lastEcologyDay.pigeonsPresent >
+                     ConstructionFoodModel.PigeonPopulation(board,
+                         lastEcologyDay.day, saved.pigeonTileId)))
                 return false;
             var lastHumanDay = saved.lastHumanDay?.day > 0
                 ? saved.lastHumanDay : null;
@@ -435,7 +459,11 @@ namespace UrbanWildlifeRooms.Core
                  lastHumanDay == null || lastWasteDay == null ||
                  lastForecast.day != score.Days.Last().day ||
                  lastForecast.animalMeals < 0 ||
-                 lastForecast.animalMeals > 1 + ConstructionFoodModel.PigeonFlockSize ||
+                 lastForecast.animalMeals >
+                     ConstructionFoodModel.SquirrelPopulation(board,
+                         lastForecast.day) +
+                     ConstructionFoodModel.PigeonPopulation(board,
+                         lastForecast.day, saved.pigeonTileId) ||
                  lastForecast.completedWorkCycles < 0 ||
                  lastForecast.completedWorkCycles >
                      board.BuiltTiles.Count(tile =>

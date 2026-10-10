@@ -439,7 +439,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
             Assert.That(run.FinalResult.AnimalMealsPerDay,
                 Is.EqualTo((float)observedMeals / 49).Within(0.0001f));
             Assert.That(run.FinalResult.AnimalMealsPerDay,
-                Is.LessThanOrEqualTo(1 + ConstructionFoodModel.PigeonFlockSize));
+                Is.LessThanOrEqualTo(run.SquirrelPopulation + run.PigeonPopulation));
             Assert.That(ConstructionRunModel.TryRestore(run.Export(),
                 out var restored), Is.True);
             Assert.That(restored.FinalResult.AnimalMealsTotal,

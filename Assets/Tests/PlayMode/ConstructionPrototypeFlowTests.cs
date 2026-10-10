@@ -13,6 +13,36 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
     public sealed class ConstructionPrototypeFlowTests
     {
         [UnityTest]
+        public IEnumerator MatureNeighbourOaksShowGrowingSquirrelCountAndMeals()
+        {
+            var run = new ConstructionRunModel();
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            Assert.That(run.TryBuild(4, 3, ConstructionCategory.Green,
+                GreenPlanting.Oak, out _, out _, out _), Is.True);
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            Assert.That(run.TryBuild(3, 2, ConstructionCategory.Green,
+                GreenPlanting.Oak, out _, out _, out _), Is.True);
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            var root = new GameObject("Squirrel growth UI test");
+            var controller = root.AddComponent<ConstructionPrototypeController>();
+            controller.UseRunForTesting(run);
+            yield return null;
+
+            var starter = root.GetComponentsInChildren<Button>(true)
+                .Single(button => button.name == "Cell 4,4");
+            Assert.That(starter.transform.Find(
+                "Resident squirrel/Animal group count/Count")
+                .GetComponent<Text>().text, Is.EqualTo("2"));
+            Assert.That(controller.TryPlace(3, 3), Is.False);
+            var routeStatus = root.transform.Find(
+                "Construction UI/Route inspection/Route status").GetComponent<Text>();
+            Assert.That(routeStatus.text, Does.Contain("2/2"));
+            Object.Destroy(root);
+            yield return null;
+        }
+
+        [UnityTest]
         public IEnumerator FullBoardShowsResultAndCanStartNewRun()
         {
             var run = new ConstructionRunModel();
@@ -160,6 +190,9 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 .All(label => label.font != null), Is.True);
             var starter = root.GetComponentsInChildren<Button>(true)
                 .Single(button => button.name == "Cell 4,4");
+            Assert.That(starter.transform.Find(
+                "Resident squirrel/Animal group count/Count")
+                .GetComponent<Text>().text, Is.EqualTo("1"));
             var oakIcon = starter.transform.Find("Room icon").GetComponent<Image>();
             Assert.That(oakIcon.sprite, Is.Not.Null);
             var initialOakSize = oakIcon.rectTransform.sizeDelta.x;
@@ -194,6 +227,8 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             Assert.That(controller.AdvanceDay(), Is.True);
             var pigeonFlock = newGreen.transform.Find("Pigeon flock");
             Assert.That(pigeonFlock.gameObject.activeSelf, Is.True);
+            Assert.That(pigeonFlock.Find("Animal group count/Count")
+                .GetComponent<Text>().text, Is.EqualTo("2"));
             Assert.That(pigeonFlock.localScale.x, Is.LessThan(1f),
                 "The arriving flock should pop into view instead of appearing abruptly.");
             yield return new WaitForSecondsRealtime(0.55f);
