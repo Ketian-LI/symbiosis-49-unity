@@ -15,6 +15,53 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
     public sealed class MainMenuLiveSceneTests
     {
         [UnityTest]
+        public IEnumerator DesktopLanguageOpensExplicitChoicesWithoutChangingPreference()
+        {
+            const string preferenceKey = "symbiosis49.language";
+            var originalPreference = PlayerPrefs.GetInt(preferenceKey, -1);
+            yield return SceneManager.LoadSceneAsync("Main", LoadSceneMode.Single);
+            var bootstrap = Object.FindFirstObjectByType<UrbanWildlifeBootstrap>();
+            var generated = bootstrap.transform.Find(UrbanWildlifeBootstrap.GeneratedRootName);
+            var persistence = generated.GetComponentInChildren<SessionPersistenceController>(true);
+            Object.Destroy(persistence);
+            yield return null;
+
+            var runtime = generated.GetComponentInChildren<GameRuntimeController>(true);
+            var hud = generated.GetComponentInChildren<UrbanWildlifeHud>(true);
+            runtime.UseLanguageForTesting(InterfaceLanguage.Chinese);
+            var desktopLanguage = hud.transform.Find(
+                "Main Menu/Desktop Language/Paper Button Backing").GetComponent<Button>();
+            desktopLanguage.onClick.Invoke();
+            Assert.That(runtime.SettingsOpen, Is.True);
+            Assert.That(runtime.Language, Is.EqualTo(InterfaceLanguage.Chinese),
+                "Opening language settings must not silently toggle the language.");
+
+            var options = hud.transform.Find(
+                "Esc Overlay/Settings Paper Panel/Settings Language Options");
+            var english = options.Find("English Option").GetComponent<Button>();
+            var chinese = options.Find("Chinese Option").GetComponent<Button>();
+            Assert.That(english.transform.Find("Label").GetComponent<Text>().text,
+                Is.EqualTo("EN"));
+            Assert.That(chinese.transform.Find("Label").GetComponent<Text>().text,
+                Is.EqualTo("中文"));
+            Assert.That(chinese.GetComponent<Image>().color.a,
+                Is.GreaterThan(english.GetComponent<Image>().color.a));
+
+            english.onClick.Invoke();
+            Assert.That(runtime.Language, Is.EqualTo(InterfaceLanguage.English));
+            Assert.That(english.GetComponent<Image>().color.a,
+                Is.GreaterThan(chinese.GetComponent<Image>().color.a));
+            english.onClick.Invoke();
+            Assert.That(runtime.Language, Is.EqualTo(InterfaceLanguage.English),
+                "Selecting the active language must not reverse it.");
+            chinese.onClick.Invoke();
+            Assert.That(runtime.Language, Is.EqualTo(InterfaceLanguage.Chinese));
+            Assert.That(PlayerPrefs.GetInt(preferenceKey, -1),
+                Is.EqualTo(originalPreference),
+                "A UI test must not replace the player's language preference.");
+        }
+
+        [UnityTest]
         public IEnumerator DesktopShowsOnlyCentralOakAndSquirrelOnOriginalBoard()
         {
             yield return SceneManager.LoadSceneAsync("Main", LoadSceneMode.Single);

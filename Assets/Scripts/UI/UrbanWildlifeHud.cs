@@ -160,6 +160,10 @@ namespace UrbanWildlifeRooms.UI
         private Text desktopLanguageLabel;
         private Text desktopExitLabel;
         private Text settingsLanguageLabel;
+        private Image settingsEnglishBackground;
+        private Image settingsChineseBackground;
+        private Text settingsEnglishLabel;
+        private Text settingsChineseLabel;
         private GameObject sandboxDifficultyOverlay;
         private Text sandboxDifficultyTitle;
         private Text sandboxDifficultyHint;
@@ -2910,7 +2914,7 @@ namespace UrbanWildlifeRooms.UI
                 "Language",
                 PauseMenuVisual.LanguageIcon,
                 312f,
-                runtime.ToggleLanguage);
+                runtime.OpenSettings);
             helpLabel = BuildPauseAction(
                 pause.Transform,
                 "Replay Onboarding",
@@ -2996,13 +3000,7 @@ namespace UrbanWildlifeRooms.UI
                 202f,
                 runtime.ToggleMute,
                 out muteIcon);
-            settingsLanguageLabel = BuildSettingsAction(
-                settings.Transform,
-                "Settings Language",
-                PauseMenuVisual.LanguageIcon,
-                278f,
-                runtime.ToggleLanguage,
-                out _);
+            BuildSettingsLanguageSelector(settings.Transform);
             if (cameraSettings)
             {
                 cameraCalibrationLabel = BuildSettingsAction(
@@ -3261,7 +3259,7 @@ namespace UrbanWildlifeRooms.UI
                 "Desktop Language",
                 MainMenuVisual.LanguageIcon,
                 0f,
-                runtime.ToggleLanguage);
+                runtime.OpenSettings);
             desktopExitLabel = BuildDesktopControl(
                 overlay.Transform,
                 "Desktop Exit",
@@ -4381,7 +4379,7 @@ namespace UrbanWildlifeRooms.UI
             pauseTitle.text = chinese ? "暂停" : "Paused";
             continueLabel.text = chinese ? "继续" : "Continue";
             settingsLabel.text = chinese ? "设置" : "Settings";
-            languageLabel.text = chinese ? "语言 · 中文" : "Language · English";
+            languageLabel.text = chinese ? "语言设置" : "Language";
             helpLabel.text = chinese ? "玩法与区域导览" : "Play & Area Guide";
             restartLabel.text = chinese ? "重新开始" : "Restart";
             desktopLabel.text = chinese ? "回到桌面" : "Return to Desktop";
@@ -4399,7 +4397,8 @@ namespace UrbanWildlifeRooms.UI
                 : (chinese ? "静音" : "Mute");
             muteIcon.sprite = PauseMenuVisualCatalog.GetSprite(
                 runtime.Muted ? PauseMenuVisual.RestoreSoundIcon : PauseMenuVisual.MuteIcon);
-            settingsLanguageLabel.text = chinese ? "语言 · 中文" : "Language · English";
+            settingsLanguageLabel.text = chinese ? "语言" : "Language";
+            RefreshSettingsLanguageSelector(chinese);
             if (cameraCalibrationLabel != null)
             {
                 cameraCalibrationLabel.text = chinese ? "重新校准摄像头" : "Recalibrate Camera";
@@ -4578,6 +4577,58 @@ namespace UrbanWildlifeRooms.UI
                 FontStyle.Bold);
             SetRect(label.rectTransform, 80f, 11f, 312f, 54f);
             return label;
+        }
+
+        private void BuildSettingsLanguageSelector(Transform parent)
+        {
+            var panel = CreatePanel("Settings Language Options", parent, Color.white);
+            panel.Image.sprite = PauseMenuVisualCatalog.GetSprite(PauseMenuVisual.ButtonBase);
+            panel.Image.preserveAspect = false;
+            panel.Image.raycastTarget = false;
+            SetTopCenter(panel.RectTransform, 0f, 278f, 472f, 76f);
+
+            var icon = CreateImage(panel.Transform, "Action Pictogram",
+                PauseMenuVisualCatalog.GetSprite(PauseMenuVisual.LanguageIcon));
+            icon.preserveAspect = true;
+            SetRect(icon.rectTransform, 24f, 16f, 44f, 44f);
+
+            settingsLanguageLabel = CreateText(panel.Transform, "Language Heading",
+                string.Empty, 22, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Bold);
+            SetRect(settingsLanguageLabel.rectTransform, 80f, 11f, 165f, 54f);
+
+            settingsEnglishBackground = CreatePanel("English Option", panel.Transform,
+                Color.clear).Image;
+            SetRect(settingsEnglishBackground.rectTransform, 253f, 13f, 90f, 50f);
+            var englishButton = settingsEnglishBackground.gameObject.AddComponent<Button>();
+            englishButton.targetGraphic = settingsEnglishBackground;
+            englishButton.transition = Selectable.Transition.None;
+            englishButton.onClick.AddListener(() => runtime.SetLanguage(InterfaceLanguage.English));
+            settingsEnglishLabel = CreateText(settingsEnglishBackground.transform, "Label",
+                "EN", 20, TextAnchor.MiddleCenter, WarmPaper, FontStyle.Bold);
+            Stretch(settingsEnglishLabel.rectTransform);
+
+            settingsChineseBackground = CreatePanel("Chinese Option", panel.Transform,
+                Color.clear).Image;
+            SetRect(settingsChineseBackground.rectTransform, 351f, 13f, 90f, 50f);
+            var chineseButton = settingsChineseBackground.gameObject.AddComponent<Button>();
+            chineseButton.targetGraphic = settingsChineseBackground;
+            chineseButton.transition = Selectable.Transition.None;
+            chineseButton.onClick.AddListener(() => runtime.SetLanguage(InterfaceLanguage.Chinese));
+            settingsChineseLabel = CreateText(settingsChineseBackground.transform, "Label",
+                "中文", 20, TextAnchor.MiddleCenter, WarmPaper, FontStyle.Bold);
+            Stretch(settingsChineseLabel.rectTransform);
+        }
+
+        private void RefreshSettingsLanguageSelector(bool chinese)
+        {
+            if (settingsEnglishBackground == null || settingsChineseBackground == null)
+                return;
+            settingsEnglishBackground.color = chinese
+                ? new Color(1f, 1f, 1f, 0.14f) : WarmPaper;
+            settingsChineseBackground.color = chinese
+                ? WarmPaper : new Color(1f, 1f, 1f, 0.14f);
+            settingsEnglishLabel.color = chinese ? WarmPaper : Graphite;
+            settingsChineseLabel.color = chinese ? Graphite : WarmPaper;
         }
 
         private Button CreateButton(

@@ -54,6 +54,7 @@ namespace UrbanWildlifeRooms.Core
         private CameraRecognitionFeedbackState cameraRecognitionState;
         private float cameraRecognitionProgress;
         private bool muted;
+        private bool languageOverriddenForTesting;
         private float masterVolume = 0.8f;
         private int speedMultiplier = 1;
         private int daySkipSpeed;
@@ -518,11 +519,27 @@ namespace UrbanWildlifeRooms.Core
 
         public void ToggleLanguage()
         {
-            Language = Language == InterfaceLanguage.Chinese
+            SetLanguage(Language == InterfaceLanguage.Chinese
                 ? InterfaceLanguage.English
-                : InterfaceLanguage.Chinese;
-            PlayerPrefs.SetInt(LanguageKey, (int)Language);
-            PlayerPrefs.Save();
+                : InterfaceLanguage.Chinese);
+        }
+
+        public void SetLanguage(InterfaceLanguage selectedLanguage)
+        {
+            if (Language == selectedLanguage) return;
+            Language = selectedLanguage;
+            if (!languageOverriddenForTesting)
+            {
+                PlayerPrefs.SetInt(LanguageKey, (int)Language);
+                PlayerPrefs.Save();
+            }
+            StateChanged?.Invoke();
+        }
+
+        public void UseLanguageForTesting(InterfaceLanguage selectedLanguage)
+        {
+            languageOverriddenForTesting = true;
+            Language = selectedLanguage;
             StateChanged?.Invoke();
         }
 
