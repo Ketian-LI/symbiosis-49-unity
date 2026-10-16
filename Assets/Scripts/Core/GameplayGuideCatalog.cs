@@ -53,11 +53,11 @@ namespace UrbanWildlifeRooms.Core
                     ? new GameplayGuidePage("你在经营什么？",
                         mode == GameMode.Research
                             ? "这是一张 7×7、由 49 间单格房组成的城市生态地图。移动房间，连接动物与食物，同时保住居民三段通勤。居民少于 3 人或累计 3 次动物死亡，本局结束。"
-                            : "这是一张 7×7、由 49 间单格房组成的城市生态地图。移动房间，连接动物与食物，同时保住居民三段通勤。居民少于 3 人、社区活力降至 0，或动物种群持续过低，都会结束本局。")
+                            : "这是一张 7×7、由 49 间单格房组成的城市生态地图。移动房间，连接动物与食物，同时保住居民三段通勤。居民少于 3 人，或动物种群持续过低，都会结束本局。")
                     : new GameplayGuidePage("What are you managing?",
                         mode == GameMode.Research
                             ? "This 7×7 city ecosystem has 49 single-cell rooms. Connect wildlife to food while preserving residents' work–meal–home routes. The run ends below three residents or after three animal deaths."
-                            : "This 7×7 city ecosystem has 49 single-cell rooms. Connect wildlife to food while preserving residents' work–meal–home routes. The run ends below three residents, at zero community health, or when wildlife stays too low.");
+                            : "This 7×7 city ecosystem has 49 single-cell rooms. Connect wildlife to food while preserving residents' work–meal–home routes. The run ends below three residents or when wildlife stays too low.");
             }
             if (index == 1)
             {
@@ -89,30 +89,30 @@ namespace UrbanWildlifeRooms.Core
             {
                 return chinese
                     ? new GameplayGuidePage("今日进食",
-                        "第二个圆环显示今日已进食／存活动物；点击可查看各房间的剩余食物份数。地图食物小牌的数字是库存，不是每天产出；悬停可看食物种类及今日实际新增。自然食物只补足到目标库存，昨天剩下的不会重复算作产出；人工投喂也不会每日补充。米色是人行路，青色是动物通道；有库存仍不保证动物能到达。",
+                        "第二个圆环显示今日已进食／存活动物；点击可查看各房间的剩余食物份数。地图食物小牌的数字是库存，不是每天产出；悬停可看食物种类及今日实际新增。自然食物只补足到目标库存，昨天剩下的不会重复算作产出；人工投喂也不会每日补充。规划时米色门口供人、青色门口供动物；相邻两侧同色才连通。有库存仍不保证动物能到达。",
                         metricKind: EcologicalMetricKind.FoodAccessibility)
                     : new GameplayGuidePage("Meals today",
-                        "Ring two shows animals fed today / living animals; click it for remaining food by room. A map food badge shows stock, not daily output. Hover for its type and portions actually added today. Natural food tops up to a target, so leftovers are not produced again; placed food does not refill daily. Beige routes are for people, teal for wildlife. Stock may still be out of reach.",
+                        "Ring two shows animals fed today / living animals; click it for remaining food by room. A map food badge shows stock, not daily output. Hover for its type and portions actually added today. Natural food tops up to a target, so leftovers are not produced again; placed food does not refill daily. In planning, beige doors are for people and teal doors for wildlife; both sides must match. Stock may still be out of reach.",
                         metricKind: EcologicalMetricKind.FoodAccessibility);
             }
             if (index == 5)
             {
                 return chinese
-                    ? new GameplayGuidePage("庇护指数",
-                        "第三个圆环是规则设定的庇护指数，不是可容纳动物的数量：鸽群广场、公园、灌木和狐狸洞提供基础 75%；四处成熟橡树最多补足 25%。鸽群广场可在布局编辑中整体移动，幼树或受损橡树不算成熟。",
+                    ? new GameplayGuidePage("成熟橡树",
+                        "第三个圆环显示成熟橡树／橡树总数，如 3/4 表示 4 株中已有 3 株成熟。它不是全部动物的庇护容量，也不反映动物门、绿地连通与灌木恢复；这些风险另看规划预览。",
                         metricKind: EcologicalMetricKind.HabitatProvision)
-                    : new GameplayGuidePage("Shelter index",
-                        "The third ring is a rule-based shelter index, not animal capacity. Pigeon plazas, park cover, shrubs and the fox den provide a 75% base; four mature oaks can add the final 25%. Pigeon plazas can move as whole rooms in layout edit. Young or damaged oaks do not count as mature.",
+                    : new GameplayGuidePage("Mature oaks",
+                        "Ring three shows mature oaks / all oak trees: 3/4 means three of four are mature. It is not total wildlife shelter capacity, and it omits animal doors, green links and recovering shrubs. Check planning for those risks.",
                         metricKind: EcologicalMetricKind.HabitatProvision);
             }
             if (index == 6)
             {
                 return chinese
                     ? new GameplayGuidePage("存活动物",
-                        "第四个圆环显示当前存活动物数／初始动物数，左下头像显示各物种存活数。无尽模式不自动复活；食物与通道恢复稳定后，可能逐渐迎来新动物。研究模式仍按固定时间重生。",
+                        "第四个圆环显示当前存活动物数／追踪中的动物总数，左下头像显示各物种存活数。无尽模式不自动复活；食物与通道恢复稳定后，可能逐渐迎来新动物。研究模式仍按固定时间重生。",
                         metricKind: EcologicalMetricKind.AnimalSafety)
                     : new GameplayGuidePage("Living animals",
-                        "The fourth ring shows living animals out of the starting population; bottom-left portraits show each species. In Endless Mode there is no automatic respawn: stable food and routes can attract replacements. Research Mode retains timed respawns.",
+                        "The fourth ring shows living animals out of all tracked animals; bottom-left portraits show each species. In Endless Mode there is no automatic respawn: stable food and routes can attract replacements. Research Mode retains timed respawns.",
                         metricKind: EcologicalMetricKind.AnimalSafety);
             }
             if (index == 7)
@@ -133,9 +133,9 @@ namespace UrbanWildlifeRooms.Core
             {
                 return chinese
                     ? new GameplayGuidePage("你可以怎样干预？",
-                        "从第 2 天起，每天有一处提前预告的动物通道事件；花园养护可能暂时关闭整间房的动物出口。每天只选一种行动：免费调整最多 3 间房（含移动或旋转），或成功投喂一次；投喂每 3 天才恢复。布局编辑可看青色通道与橙色受扰端点，按 R 可旋转通道。只查看或取消投喂不算行动。")
+                        "第 2 天起，每天预告一处动物通道事件；养护可能关闭整间房的动物口。每日选一种行动：免费移动或旋转最多 3 间房，或投喂一次（每 3 天恢复）。规划时短线为接通、圆点为未接通、橙色为封闭；选中房间可查看其端点，按 R 旋转。仅预览或取消不算行动。")
                     : new GameplayGuidePage("How can you intervene?",
-                        "From day 2, an animal-route event is announced ahead; maintenance may close a room's animal exits. Choose just one action each day: a free move or rotation affecting up to three rooms, or one successful feeding. Feeding returns every three days. Layout edit shows teal routes and amber blocked doors; hold a room and press R to rotate. Reviewing or cancelling feed does not count.");
+                        "From day 2, one wildlife-door event is announced ahead; maintenance may close a room's exits. Each day choose one: a free move or rotation of up to three rooms, or one feeding (available every three days). In planning, lines are links, dots are loose ends, and amber means closed. Select a room to see its ends; press R to rotate. Previewing or cancelling does not count.");
             }
 
             var type = AreaOrder[index - AreaPageStart];

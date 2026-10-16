@@ -110,11 +110,23 @@ namespace UrbanWildlifeRooms.Core
 
         private void HandleDaySettled(ResourceSettlement settlement)
         {
-            foreach (var roomId in Model.AdvanceOneCompleteDay())
+            var previous = new Dictionary<string, OakTreeStage>();
+            foreach (var pair in Model.Trees)
+                previous[pair.Key] = pair.Value.stage;
+
+            var matured = Model.AdvanceOneCompleteDay();
+            foreach (var pair in Model.Trees)
+            {
+                if (!visuals.TryGetValue(pair.Key, out var visual) || visual == null) continue;
+                if (previous.TryGetValue(pair.Key, out var before) && pair.Value.stage > before)
+                    visual.AnimateGrowthTo(pair.Value.stage);
+                else
+                    visual.SetStage(pair.Value.stage);
+            }
+            foreach (var roomId in matured)
             {
                 TreeMatured?.Invoke(roomId);
             }
-            SyncVisuals();
             StateChanged?.Invoke();
         }
 

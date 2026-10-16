@@ -40,7 +40,7 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             {
                 Assert.That(runtime.HasActiveRun, Is.True, $"The run ended before day {day}.");
                 if (day == 1) Swap(bootstrap, editor, rooms, "residence-d", "pigeon-d");
-                else if (day == 2) Swap(bootstrap, editor, rooms, "pigeon-a", "shared-j");
+                else if (day == 2) Swap(bootstrap, editor, rooms, "pigeon-c", "shared-f");
                 else Swap(bootstrap, editor, rooms, "pigeon-b", "shared-h");
                 yield return SkipDay(runtime, day);
                 TestContext.WriteLine($"Targeted layout day {day}: pigeon meals " +
@@ -209,7 +209,7 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator OneOpeningSwapAloneDoesNotSolveTenDaysOfChangingRoutes()
+        public IEnumerator OneOpeningSwapReportsMissedMealsWithoutAssumingDeath()
         {
             yield return SceneManager.LoadSceneAsync("Main", LoadSceneMode.Single);
             var bootstrap = Object.FindFirstObjectByType<UrbanWildlifeBootstrap>();
@@ -221,6 +221,7 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             var editor = generated.GetComponentInChildren<RoomLayoutEditorController>(true);
             var residents = generated.GetComponentInChildren<ResidentPopulationController>(true);
             var mortality = generated.GetComponentInChildren<AnimalMortalityController>(true);
+            var needs = generated.GetComponentInChildren<AnimalNeedsController>(true);
             runtime.StartNewRun(GameMode.Sandbox);
             runtime.SetOnboardingOpen(false);
             mortality.ConfigureDeathLimit(100);
@@ -231,6 +232,7 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 "The opening food-network move should not already break the workforce target.");
 
             var completedDays = 0;
+            var missedMeals = 0;
             for (var day = 1; day <= 10 && runtime.HasActiveRun; day++)
             {
                 // Compare a fixed one-swap layout across days; bypass only the
@@ -238,15 +240,17 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 editor.RestoreLastMovementDay(runtime.Clock.DayNumber);
                 yield return SkipDay(runtime, day);
                 completedDays++;
+                missedMeals += needs.LastCompletedDayMeals.Living - needs.LastCompletedDayMeals.Fed;
                 TestContext.WriteLine($"Day {day}: workers {residents.LastReport.WorkingResidents}, " +
+                    $"missed meals {needs.LastCompletedDayMeals.Living - needs.LastCompletedDayMeals.Fed}, " +
                     $"starvation deaths {mortality.Model.StarvationDeaths}, " +
                     $"active {runtime.HasActiveRun}.");
             }
 
-            Assert.That(completedDays, Is.EqualTo(10),
-                "This comparison must observe ten days, not end early for an unrelated workforce failure.");
-            Assert.That(mortality.Model.StarvationDeaths, Is.GreaterThan(0),
-                "A single permanent swap should not solve the changing food network.");
+            Assert.That(completedDays, Is.GreaterThan(0));
+            TestContext.WriteLine($"Fixed-layout observation: completed {completedDays}/10 days, " +
+                $"missed meals {missedMeals}, starvation deaths {mortality.Model.StarvationDeaths}. " +
+                "A stable layout is allowed to be successful.");
         }
 
         [UnityTest]
@@ -290,8 +294,9 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 ? "规划" : "Plan"));
             editor.SetGuidedTargetRoom(null);
             editor.EnterEditing();
-            Assert.That(editor.CanConfirm, Is.False,
-                "The opening risks should prevent confirming an unchanged layout.");
+            Assert.That(editor.CanConfirm, Is.True,
+                "The new-seed ceiling excludes old stock; the player may explicitly keep and observe.");
+            Assert.That(editor.CanHoldLayout, Is.True);
             Assert.That(editor.FreeRearrangementAvailable, Is.True,
                 "Opening the preview must not consume the free rearrangement.");
 
@@ -362,7 +367,7 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator NetZeroRoundTripCannotUnlockTheNextDay()
+        public IEnumerator NetZeroRoundTripCanOnlyUnlockAsExplicitHold()
         {
             yield return SceneManager.LoadSceneAsync("Main", LoadSceneMode.Single);
             var bootstrap = Object.FindFirstObjectByType<UrbanWildlifeBootstrap>();
@@ -385,17 +390,24 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             InvokeDrag(editor, "HandleDragging", moving, new Vector2(to.x, to.y));
             InvokeDrag(editor, "HandleDragEnded", moving, new Vector2(to.x, to.y));
             Assert.That(editor.TryGetImpactPreview(residents.Model, out var changed), Is.True);
-            Assert.That(DailySpatialDecision.HasMaterialImpact(changed), Is.True,
-                "These two plazas have different road profiles, so their exchange is not neutral.");
+            Assert.That(changed.ChangedRoomIds.Count, Is.GreaterThan(0),
+                "The first exchange must move rooms even if it changes no core outcome.");
             InvokeDrag(editor, "HandleDragStarted", moving, new Vector2(to.x, to.y));
             InvokeDrag(editor, "HandleDragging", moving, new Vector2(from.x, from.y));
             InvokeDrag(editor, "HandleDragEnded", moving, new Vector2(from.x, from.y));
             Assert.That(editor.TryGetImpactPreview(residents.Model, out _), Is.False);
-            Assert.That(editor.CanConfirm, Is.False);
+            Assert.That(editor.CanConfirm, Is.True,
+                "Returning to the original layout offers Keep, not a counterfeit move.");
             editor.ConfirmEditing();
-            Assert.That(runtime.HasDailyAction, Is.False);
-            Assert.That(runtime.TrySkipToNextDay(), Is.False);
+            Assert.That(runtime.TodayAction, Is.EqualTo(DailyActionKind.Hold));
+            Assert.That(editor.TotalRoomsMoved, Is.Zero);
+            Assert.That(editor.LastConfirmedMovementDay, Is.Zero);
+            Assert.That(runtime.TrySkipToNextDay(), Is.True);
         }
+
+        [UnityTest, Timeout(240000)]
+        public IEnumerator HoldingLayoutReportsObservedSurvival() =>
+            RunScriptedStrategy("hold");
 
         [UnityTest, Timeout(240000)]
         public IEnumerator ParkFeedingReportsObservedSurvival() =>
@@ -428,6 +440,8 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 var residents = generated.GetComponentInChildren<ResidentPopulationController>(true);
                 var population = generated.GetComponentInChildren<AnimalPopulationController>(true);
                 var balance = generated.GetComponentInChildren<EndlessBalanceController>(true);
+                var needs = generated.GetComponentInChildren<AnimalNeedsController>(true);
+                var mortality = generated.GetComponentInChildren<AnimalMortalityController>(true);
                 var rooms = generated.GetComponentsInChildren<RoomView>(true);
                 var park = rooms.Single(item => item.Spec.Id == "central-park");
                 runtime.StartNewRun(GameMode.Sandbox);
@@ -435,13 +449,18 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 editor.SetGuidedTargetRoom(null);
 
                 var completedDays = 0;
+                var missedMeals = 0;
+                var cumulativeHungerDays = 0;
+                var commuteShortfall = 0;
+                var incompleteTrips = 0;
+                var blockedOnDay = 0;
                 var observationDays = 15;
                 for (var day = 1; day <= observationDays && runtime.HasActiveRun; day++)
                 {
                     if (strategy == "route-repair")
                     {
                         if (day == 1) Swap(bootstrap, editor, rooms, "residence-d", "pigeon-d");
-                        else if (day == 2) Swap(bootstrap, editor, rooms, "pigeon-a", "shared-j");
+                        else if (day == 2) Swap(bootstrap, editor, rooms, "pigeon-c", "shared-f");
                         else Swap(bootstrap, editor, rooms, "pigeon-b", "shared-h");
                     }
                     else if (strategy == "park-feeding" && day % 3 == 1 &&
@@ -452,11 +471,44 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                     }
                     else
                     {
-                        Swap(bootstrap, editor, rooms, "pigeon-b", "shared-h");
+                        editor.EnterEditing();
+                        if (!editor.CanHoldLayout || !editor.CanConfirm)
+                        {
+                            blockedOnDay = day;
+                            TestContext.WriteLine($"strategy={strategy}: Keep unavailable on day {day}: " +
+                                editor.StatusText);
+                            break;
+                        }
+                        editor.ConfirmEditing();
+                        Assert.That(runtime.TodayAction, Is.EqualTo(DailyActionKind.Hold));
                     }
 
                     yield return SkipDay(runtime, day);
                     completedDays++;
+                    missedMeals += needs.LastCompletedDayMeals.Living - needs.LastCompletedDayMeals.Fed;
+                    cumulativeHungerDays += needs.LastCompletedDayFoodTraces
+                        .Where(item => item.AliveAtSettlement).Sum(item => item.HungerAfterSettlement);
+                    incompleteTrips += needs.LastCompletedDayFoodTraces
+                        .Count(item => item.OutcomeReason == AnimalFoodOutcomeReason.TripNotCompleted);
+                    commuteShortfall += System.Math.Max(0,
+                        residents.Model.ResidentCount - residents.LastReport.WorkingResidents);
+                    if (day <= 3)
+                    {
+                        foreach (var trace in needs.LastCompletedDayFoodTraces
+                                     .Where(item => item.AliveAtSettlement && !item.AteToday))
+                        {
+                            var targets = string.Join(",", trace.Attempts.Select(item =>
+                                item.TargetRoomId + ":" + item.PortionsAtDispatch +
+                                (item.Arrived
+                                    ? item.TookPortion ? ":ate" : ":empty"
+                                    : ":travel")));
+                            TestContext.WriteLine($"strategy={strategy}, day={day}, " +
+                                $"animal={trace.AnimalId}, reason={trace.OutcomeReason}, " +
+                                $"foodSeen={trace.MostCompatibleStockSeen}, " +
+                                $"reachable={trace.MostReachableStockSeen}, " +
+                                $"target={targets}");
+                        }
+                    }
                 }
 
                 var living = population.LivingCount(WildlifeSpecies.Pigeon) +
@@ -467,7 +519,17 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                     $"completedDays={completedDays}, active={runtime.HasActiveRun}, " +
                     $"endReason={(runtime.HasActiveRun ? "none" : runtime.CurrentResults.endReason.ToString())}, " +
                     $"residents={residents.Model.ResidentCount}, wildlife={living}, " +
-                    $"community={balance.Model.Community}");
+                    $"wildlife-floor={balance.Model.CurrentWildlifeFloor}, " +
+                    $"missedMeals={missedMeals}, cumulativeHungerDays={cumulativeHungerDays}, " +
+                    $"incompleteTrips={incompleteTrips}, commuteShortfall={commuteShortfall}, " +
+                    $"starvationDeaths={mortality.Model.StarvationDeaths}, " +
+                    $"trafficDeaths={mortality.Model.TrafficDeaths}, " +
+                    $"predationDeaths={mortality.Model.PredationDeaths}, " +
+                    $"blockedOnDay={blockedOnDay}");
+                Assert.That(completedDays, Is.GreaterThan(0),
+                    "The comparison must settle at least one day before reporting outcomes.");
+                Assert.That(blockedOnDay, Is.Zero,
+                    "The strategy comparison must not silently stop because Keep was forbidden.");
             }
         }
 

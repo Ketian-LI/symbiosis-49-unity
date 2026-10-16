@@ -97,6 +97,7 @@ namespace UrbanWildlifeRooms.UI
                     break;
 
                 case LayoutImpactMetricKind.PigeonSeedMealCeiling:
+                case LayoutImpactMetricKind.PigeonStockCeiling:
                 case LayoutImpactMetricKind.PigeonFoodAccess:
                     Oval(-0.05f, -0.04f, 0.27f, 0.23f, ivory);
                     Ring(0.05f, 0.05f, 0.045f, accent);

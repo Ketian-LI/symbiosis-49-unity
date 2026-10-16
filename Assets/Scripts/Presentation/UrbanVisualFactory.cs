@@ -95,5 +95,15 @@ namespace UrbanWildlifeRooms.Presentation
             block.SetColor(ColorId, color);
             renderer.SetPropertyBlock(block);
         }
+
+        public static void SetInkStrength(Renderer renderer, float strength)
+        {
+            if (renderer == null || renderer.sharedMaterial == null ||
+                !renderer.sharedMaterial.HasProperty(InkStrengthId)) return;
+            var block = new MaterialPropertyBlock();
+            renderer.GetPropertyBlock(block);
+            block.SetFloat(InkStrengthId, strength);
+            renderer.SetPropertyBlock(block);
+        }
     }
 }

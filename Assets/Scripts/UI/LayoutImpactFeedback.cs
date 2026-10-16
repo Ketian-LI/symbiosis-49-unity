@@ -24,7 +24,8 @@ namespace UrbanWildlifeRooms.UI
         SquirrelFoodAccess,
         HedgehogFoodAccess,
         FoxPreyAccess,
-        BufferedGarages
+        BufferedGarages,
+        PigeonStockCeiling
     }
 
     public readonly struct LayoutImpactMetric
@@ -69,25 +70,58 @@ namespace UrbanWildlifeRooms.UI
         private const string Bad = "#F3A984";
         private const string Neutral = "#E9DFC9";
 
-        // Two metrics are shown per page. Risks come first, then gains, then unchanged
-        // values; every metric remains reachable without opening a paragraph panel.
+        public static string ActionComparison(RoomLayoutImpactPreview impact,
+            int residentCount, bool feedAvailable, int nextFeedDay, bool chinese,
+            bool actionAlreadyUsed = false)
+        {
+            var living = Math.Max(0, impact.LivingPigeons);
+            var before = impact.BeforeSeedStockCeiling >= 0
+                ? impact.BeforeSeedStockCeiling : impact.BeforePigeonSeedMealCeiling;
+            var after = impact.AfterSeedStockCeiling >= 0
+                ? impact.AfterSeedStockCeiling : impact.AfterPigeonSeedMealCeiling;
+            var keep = chinese ? "维持" : "Keep";
+            var move = chinese ? "挪房" : "Move";
+            var feed = chinese ? "投喂" : "Feed";
+            var birdBefore = before < 0 ? "?" : $"≤{before}/{living}";
+            var birdAfter = after < 0 ? "?" : $"≤{after}/{living}";
+            var peopleBefore = $"{impact.Before.WorkingResidents}/{residentCount}";
+            var peopleAfter = $"{impact.After.WorkingResidents}/{residentCount}";
+            var unchangedMove = impact.ChangedRoomIds == null || impact.ChangedRoomIds.Count == 0;
+            var moveResult = unchangedMove
+                ? chinese ? "拖动房间查看" : "Drag a room to preview"
+                : chinese ? $"种子 {birdAfter} · 人 {peopleAfter}" : $"Seeds {birdAfter} · People {peopleAfter}";
+            var feedResult = actionAlreadyUsed
+                ? chinese ? "今日已选择行动" : "Today's action already chosen"
+                : feedAvailable
+                    ? chinese
+                        ? $"可放 {PlayerFoodSourceModel.PortionsPerSource} 份 / {PlayerFoodSourceModel.LifetimeSeconds:0} 秒 · 效果取决于地点"
+                        : $"Ready · {PlayerFoodSourceModel.PortionsPerSource} portions / {PlayerFoodSourceModel.LifetimeSeconds:0}s · site matters"
+                    : chinese ? $"冷却中 · 第 {nextFeedDay} 天可用" : $"Cooldown · available day {nextFeedDay}";
+            return chinese
+                ? $"{keep}  种子 {birdBefore} · 人 {peopleBefore}\n{move}  {moveResult}\n{feed}  {feedResult}"
+                : $"{keep}  Seeds {birdBefore} · People {peopleBefore}\n{move}  {moveResult}\n{feed}  {feedResult}";
+        }
+
+        // Keep the full forecast for reasoning and tests. The HUD shows only
+        // changed values in its comparison list; unchanged risks remain in its heading.
         public static IReadOnlyList<LayoutImpactMetric> BuildVisualMetrics(
             RoomLayoutImpactPreview impact, bool chinese)
         {
-            var seedsBelowBirds = impact.LivingPigeons > 0 &&
+            var seedsBelowBirds = impact.AfterSeedStockCeiling < 0 &&
+                                  impact.LivingPigeons > 0 &&
                                   impact.AfterSeedCapacity < impact.LivingPigeons;
             var metrics = new List<LayoutImpactMetric>
             {
                 new(LayoutImpactMetricKind.Seeds,
                     impact.LivingPigeons >= 0
-                        ? chinese ? $"次日种子 / 鸽 {impact.LivingPigeons}" +
+                        ? chinese ? $"次日种子容量 / 鸽 {impact.LivingPigeons}" +
                                     (seedsBelowBirds ? " · 仍偏少" : string.Empty)
-                            : $"Dawn seeds / {impact.LivingPigeons} birds" +
+                            : $"Dawn seed target / {impact.LivingPigeons} birds" +
                               (seedsBelowBirds ? " · LOW" : string.Empty)
                         : chinese ? "次日种子基准" : "Dawn seed target",
                     chinese
-                        ? "这是新增补给基准，不是保证餐数；现有存量、路线、到达时间和捕食仍会影响结果。"
-                        : "New replenishment, not guaranteed meals; current stock, routes, arrival time and predation still matter.",
+                        ? "这是明晨补给的目标容量，不是实际新增量或保证餐数；现有存量、路线、到达时间和捕食仍会影响结果。"
+                        : "This is dawn target capacity, not newly added portions or guaranteed meals; stock, travel and predation still matter.",
                     impact.BeforeSeedCapacity, impact.AfterSeedCapacity, true,
                     persistentRisk: seedsBelowBirds),
                 new(LayoutImpactMetricKind.ParkLinks, chinese ? "增产鸽群房" : "Productive plazas",
@@ -101,41 +135,65 @@ namespace UrbanWildlifeRooms.UI
                 new(LayoutImpactMetricKind.Waste, chinese ? "垃圾异常" : "Waste failures",
                     chinese ? $"按满员 {ResidentPopulationModel.MaximumResidents} 人测试的超载或送达失败点，越少越好。"
                         : $"Overflow or blocked sites at {ResidentPopulationModel.MaximumResidents} residents; lower is better.",
-                    impact.BeforeFullPopulationWasteOverflow, impact.AfterFullPopulationWasteOverflow, false),
-                new(LayoutImpactMetricKind.Shelter, chinese ? "今夜庇护" : "Cover tonight",
+                    impact.BeforeFullPopulationWasteOverflow, impact.AfterFullPopulationWasteOverflow, false,
+                    persistentRisk: impact.AfterFullPopulationWasteOverflow > 0),
+                new(LayoutImpactMetricKind.Shelter,
+                    impact.LivingHedgehogs > 0 && impact.AfterShelterPairs == 0
+                        ? chinese ? "今夜灌木庇护 · 无" : "Night shrub cover · NONE"
+                        : chinese ? "今夜灌木庇护" : "Night shrub cover",
                     chinese ? "今晚可用的相邻灌木组；不保证动物觅食成功。" : "Connected shrub pairs tonight; not a guaranteed meal.",
-                    impact.BeforeShelterPairs, impact.AfterShelterPairs, true)
+                    impact.BeforeShelterPairs, impact.AfterShelterPairs, true,
+                    persistentRisk: impact.LivingHedgehogs > 0 && impact.AfterShelterPairs == 0)
             };
             if (impact.LivingPigeons >= 0 &&
+                impact.BeforeSeedStockCeiling >= 0 && impact.AfterSeedStockCeiling >= 0)
+            {
+                var ceilingLow = impact.AfterSeedStockCeiling < impact.LivingPigeons;
+                if (ceilingLow || impact.BeforeSeedStockCeiling != impact.AfterSeedStockCeiling)
+                    metrics.Add(new LayoutImpactMetric(LayoutImpactMetricKind.PigeonStockCeiling,
+                        chinese ? $"常规路线种子上限 / 鸽 {impact.LivingPigeons}" +
+                                  (ceilingLow ? " · 不足" : string.Empty)
+                            : $"Normal-route seed cap / {impact.LivingPigeons} birds" +
+                              (ceilingLow ? " · LOW" : string.Empty),
+                        chinese ? "常规动物门下的种子匹配上限。旧存量结转，明晨只补到容量；极饿动物可借人行口，今日余下消耗及实际行走也未计入。"
+                            : "Seed matching cap on normal animal doors. Stock carries over and dawn tops up; starving birds may use pedestrian doors. Later consumption and travel are excluded.",
+                        impact.BeforeSeedStockCeiling, impact.AfterSeedStockCeiling, true,
+                        persistentRisk: ceilingLow));
+            }
+            else if (impact.LivingPigeons >= 0 &&
                 impact.BeforePigeonSeedMealCeiling >= 0 &&
                 impact.AfterPigeonSeedMealCeiling >= 0)
             {
                 var ceilingLow = impact.AfterPigeonSeedMealCeiling < impact.LivingPigeons;
                 if (ceilingLow || impact.BeforePigeonSeedMealCeiling != impact.AfterPigeonSeedMealCeiling)
                     metrics.Add(new LayoutImpactMetric(LayoutImpactMetricKind.PigeonSeedMealCeiling,
-                        chinese ? $"种子最多覆盖 / 鸽 {impact.LivingPigeons}" +
+                        chinese ? $"目标容量可达上限 / 鸽 {impact.LivingPigeons}" +
                                   (ceilingLow ? " · 不足" : string.Empty)
-                            : $"Seed reach / {impact.LivingPigeons} birds" +
+                            : $"Dawn-target reach ceiling / {impact.LivingPigeons} birds" +
                               (ceilingLow ? " · LOW" : string.Empty),
-                        chinese ? "按各鸽群的位置、动物通道和次日新增种子份数计算的理论上限；不含旧存量、其他食物和实际行走。"
-                            : "Theoretical ceiling from flock homes, wildlife routes and new dawn seeds; excludes old stock, other food and travel time.",
+                        chinese ? "按各鸽群位置、动物通道和明晨种子目标容量计算的理论上限；不含旧存量、其他食物和实际行走。"
+                            : "Theoretical ceiling from flock homes, wildlife routes and dawn target capacity; excludes stored seed, other food and travel.",
                         impact.BeforePigeonSeedMealCeiling,
                         impact.AfterPigeonSeedMealCeiling, true,
                         persistentRisk: ceilingLow));
             }
             if (impact.BeforeGreenCells >= 0 && impact.AfterGreenCells >= 0)
                 metrics.Add(new LayoutImpactMetric(LayoutImpactMetricKind.GreenCells,
-                    chinese ? "连通绿地" : "Linked greenery",
-                    chinese ? "从中央公园沿匹配的动物通道可到达的绿地格数；至少 4 格才稳定。"
-                        : "Green cells reachable from the park through matching animal passages; 4 make a stable network.",
-                    impact.BeforeGreenCells, impact.AfterGreenCells, true));
+                    impact.AfterGreenCells < GreenNetworkModel.StableCellCount
+                        ? chinese ? "连通绿地 · 不足" : "Linked greenery · LOW"
+                        : chinese ? "连通绿地" : "Linked greenery",
+                    chinese ? "公园沿动物门可达的绿地；4 格才稳定。连通不等于庇护或进食。"
+                        : "Green cells reached from the park; 4 make a stable network. A link is not cover or a meal.",
+                    impact.BeforeGreenCells, impact.AfterGreenCells, true,
+                    persistentRisk: impact.AfterGreenCells < GreenNetworkModel.StableCellCount));
             if (impact.MarketDay > 0)
             {
                 metrics.Add(new LayoutImpactMetric(LayoutImpactMetricKind.MarketWaste,
                     chinese ? "轮值垃圾" : "Rotation waste",
                     chinese ? $"第 {impact.MarketDay} 天轮值时的垃圾异常点；越少越好。"
                         : $"Waste failures during the day {impact.MarketDay} rotation; lower is better.",
-                    impact.BeforeMarketOverflow, impact.AfterMarketOverflow, false));
+                    impact.BeforeMarketOverflow, impact.AfterMarketOverflow, false,
+                    persistentRisk: impact.AfterMarketOverflow > 0));
             }
             if (impact.BeforeBufferedGarages != impact.AfterBufferedGarages)
             {
@@ -158,21 +216,21 @@ namespace UrbanWildlifeRooms.UI
                               (pigeonRoutesLow ? " · 仍不足" : string.Empty)
                         : $"Pigeon food routes / {pigeonPlazas}" +
                           (pigeonRoutesLow ? " · LOW" : string.Empty),
-                    chinese ? "明日可通往种子补给地点的鸽群房数；路线可达仍不保证每只鸽子实际进食。"
-                        : "Pigeon rooms with a route to next-day seed replenishment; a route still does not guarantee each bird eats.",
+                    chinese ? "可通往当前有种子或明晨能补种子的地点的鸽群房数；路线可达仍不保证每只鸽子实际进食。"
+                        : "Pigeon rooms reaching stocked or dawn-replenished seed; a route still does not guarantee each bird eats.",
                     beforeAccess.Pigeon, afterAccess.Pigeon, true,
                     persistentRisk: pigeonRoutesLow));
                 if (beforeAccess.Squirrel != afterAccess.Squirrel)
                     metrics.Add(new LayoutImpactMetric(LayoutImpactMetricKind.SquirrelFoodAccess,
                     chinese ? "松鼠食路" : "Squirrel food routes",
-                    chinese ? "明日可通往坚果来源的栖地数；包括连通的松鼠林地，搬树会使树倒下。"
-                        : "Habitats with a route to next-day nuts, including the linked squirrel grove; moved trees are felled.",
+                    chinese ? "可通往存量或明晨坚果来源的栖地数；包括松鼠林地，搬树会使树倒下。"
+                        : "Habitats reaching stored or dawn nuts, including the squirrel grove; moved trees are felled.",
                     beforeAccess.Squirrel, afterAccess.Squirrel, true));
                 if (beforeAccess.Hedgehog != afterAccess.Hedgehog)
                     metrics.Add(new LayoutImpactMetric(LayoutImpactMetricKind.HedgehogFoodAccess,
                     chinese ? "刺猬食路" : "Hedgehog food routes",
-                    chinese ? "明日可通往公园或连通刺猬花园昆虫点的栖地数；不计随机昆虫。"
-                        : "Habitats with a route to park or linked hedgehog-garden insects; random insects excluded.",
+                    chinese ? "可通往存量、公园或连通刺猬花园昆虫点的栖地数；不计明日随机昆虫。"
+                        : "Habitats reaching stored insects, the park or linked garden; tomorrow's random insects excluded.",
                     beforeAccess.Hedgehog, afterAccess.Hedgehog, true));
                 if (beforeAccess.FoxPrey != afterAccess.FoxPrey || afterAccess.FoxPrey > 0)
                     metrics.Add(new LayoutImpactMetric(LayoutImpactMetricKind.FoxPreyAccess,
@@ -197,10 +255,135 @@ namespace UrbanWildlifeRooms.UI
                     chinese ? $"第 {impact.ShelterRecoveryDay} 天恢复" : $"Recovers day {impact.ShelterRecoveryDay}",
                     chinese ? $"搬动 {impact.MovedShrubs} 株灌木；恢复后预计 {impact.RecoveredShelterPairs} 组。今夜庇护另见单独指标。"
                         : $"{impact.MovedShrubs} shrubs moved; {impact.RecoveredShelterPairs} pairs projected after recovery. See tonight's cover separately.",
-                    impact.BeforeShelterPairs, impact.RecoveredShelterPairs, true, true));
+                    impact.BeforeRecoveredShelterPairs >= 0
+                        ? impact.BeforeRecoveredShelterPairs : impact.BeforeShelterPairs,
+                    impact.RecoveredShelterPairs, true, true));
             }
+            // A larger seed harvest can still leave most birds unable to reach
+            // it. Put the flock-level deficit ahead of the production total.
             return metrics.OrderBy(metric => metric.IsRisk ? 0 : metric.Delayed ? 1 : metric.Changed ? 2 : 3)
-                .ThenBy(metric => metric.Kind).ToArray();
+                .ThenBy(metric => metric.IsRisk ? metric.Kind switch
+                {
+                    LayoutImpactMetricKind.Workers => -2,
+                    LayoutImpactMetricKind.PigeonSeedMealCeiling or
+                    LayoutImpactMetricKind.PigeonStockCeiling => -1,
+                    _ => (int)metric.Kind
+                } : (int)metric.Kind).ToArray();
+        }
+
+        public static IReadOnlyList<LayoutImpactMetric> FocusMetrics(
+            IReadOnlyList<LayoutImpactMetric> allMetrics)
+        {
+            return allMetrics.Where(metric => metric.Changed || metric.IsRisk || metric.Delayed)
+                .ToArray();
+        }
+
+        // The main comparison shows only changes that can alter a rule the
+        // player is trying to satisfy. Secondary forecasts remain available
+        // to systems/tests, but cannot masquerade as today's required action.
+        public static IReadOnlyList<LayoutImpactMetric> DecisionMetrics(
+            RoomLayoutImpactPreview impact, IReadOnlyList<LayoutImpactMetric> allMetrics)
+        {
+            return allMetrics.Where(metric => metric.Kind switch
+            {
+                LayoutImpactMetricKind.Workers or
+                LayoutImpactMetricKind.PigeonSeedMealCeiling or
+                LayoutImpactMetricKind.PigeonStockCeiling or
+                LayoutImpactMetricKind.PigeonFoodAccess or
+                LayoutImpactMetricKind.SquirrelFoodAccess or
+                LayoutImpactMetricKind.HedgehogFoodAccess or
+                LayoutImpactMetricKind.FoxPreyAccess => true,
+                LayoutImpactMetricKind.Seeds => DailySpatialDecision.SeedShortfallChanged(impact),
+                LayoutImpactMetricKind.GreenCells =>
+                    DailySpatialDecision.GreenDeficitChanged(impact) || metric.IsRisk,
+                LayoutImpactMetricKind.Shelter => impact.LivingHedgehogs > 0,
+                LayoutImpactMetricKind.ShrubRecovery =>
+                    DailySpatialDecision.FutureShelterChanged(impact),
+                _ => false
+            }).Where(metric => !metric.Changed || metric.Kind switch
+            {
+                LayoutImpactMetricKind.GreenCells =>
+                    DailySpatialDecision.GreenDeficitChanged(impact),
+                LayoutImpactMetricKind.Seeds =>
+                    DailySpatialDecision.SeedShortfallChanged(impact),
+                _ => true
+            }).ToArray();
+        }
+
+        public static string BaselineLabel(LayoutImpactMetric metric, bool chinese)
+        {
+            if (metric.Kind == LayoutImpactMetricKind.FoxPreyAccess)
+            {
+                var before = metric.Before > 0f ? chinese ? "是" : "Yes" : chinese ? "否" : "No";
+                var after = metric.After > 0f ? chinese ? "是" : "Yes" : chinese ? "否" : "No";
+                return metric.Changed ? $"{before} → {after}" :
+                    chinese ? $"现 {after}" : $"Now {after}";
+            }
+            return metric.Changed ? $"{metric.BeforeText} → {metric.After:0.#}" :
+                chinese ? $"现 {metric.After:0.#}" : $"Now {metric.After:0.#}";
+        }
+
+        public static string ChangeLabel(LayoutImpactMetric metric, bool chinese)
+        {
+            if (!metric.Changed)
+                return metric.IsRisk
+                    ? chinese ? "仍需处理" : "Still at risk"
+                    : chinese ? "保持" : "Stable";
+            if (metric.Kind == LayoutImpactMetricKind.FoxPreyAccess)
+                return metric.After > metric.Before
+                    ? chinese ? "捕食风险增加" : "Predation risk up"
+                    : chinese ? "猎物通道阻断" : "Prey route blocked";
+
+            var unit = MetricUnit(metric.Kind, chinese);
+            var amount = chinese ? $"{metric.DeltaText}{unit}" :
+                string.IsNullOrEmpty(unit) ? metric.DeltaText : $"{metric.DeltaText} {unit}";
+            if (metric.Delayed)
+                return chinese ? $"恢复后 {amount}" : $"After recovery {amount}";
+            if (metric.Neutral)
+                return chinese ? $"路线变化 {amount}" : $"Route change {amount}";
+            var improves = (metric.Delta > 0f) == metric.HigherIsBetter;
+            return chinese
+                ? $"{(improves ? "改善" : "恶化")} {amount}"
+                : $"{(improves ? "Better" : "Worse")} {amount}";
+        }
+
+        private static string MetricUnit(LayoutImpactMetricKind kind, bool chinese)
+        {
+            return kind switch
+            {
+                LayoutImpactMetricKind.Seeds => chinese ? "份" : "portions",
+                LayoutImpactMetricKind.PigeonSeedMealCeiling or
+                LayoutImpactMetricKind.PigeonStockCeiling => chinese ? "只" : "birds",
+                LayoutImpactMetricKind.ParkLinks or LayoutImpactMetricKind.PigeonFoodAccess =>
+                    chinese ? "间" : "rooms",
+                LayoutImpactMetricKind.GreenCells => chinese ? "格" : "cells",
+                LayoutImpactMetricKind.Workers => chinese ? "人" : "people",
+                LayoutImpactMetricKind.Waste or LayoutImpactMetricKind.MarketWaste =>
+                    chinese ? "处" : "sites",
+                LayoutImpactMetricKind.Shelter or LayoutImpactMetricKind.ShrubRecovery =>
+                    chinese ? "组" : "pairs",
+                LayoutImpactMetricKind.AnimalPassages => chinese ? "处" : "links",
+                LayoutImpactMetricKind.SquirrelFoodAccess or LayoutImpactMetricKind.HedgehogFoodAccess =>
+                    chinese ? "处" : "habitats",
+                LayoutImpactMetricKind.BufferedGarages => chinese ? "间" : "garages",
+                _ => string.Empty
+            };
+        }
+
+        public static string RiskHeadline(LayoutImpactMetric metric,
+            RoomLayoutImpactPreview impact, bool chinese)
+        {
+            if (metric.Kind == LayoutImpactMetricKind.PigeonSeedMealCeiling &&
+                impact.LivingPigeons > 0 && impact.AfterPigeonSeedMealCeiling >= 0)
+                return chinese
+                    ? $"鸽群目标容量可达 ≤{impact.AfterPigeonSeedMealCeiling}/{impact.LivingPigeons}"
+                    : $"Dawn-target reach ≤{impact.AfterPigeonSeedMealCeiling}/{impact.LivingPigeons} birds";
+            if (metric.Kind == LayoutImpactMetricKind.PigeonStockCeiling &&
+                impact.LivingPigeons > 0 && impact.AfterSeedStockCeiling >= 0)
+                return chinese
+                    ? $"常规种子可达 ≤{impact.AfterSeedStockCeiling}/{impact.LivingPigeons} 鸽"
+                    : $"Normal-route seeds ≤{impact.AfterSeedStockCeiling}/{impact.LivingPigeons} birds";
+            return metric.Label;
         }
 
         public static string Build(RoomLayoutImpactPreview impact, bool chinese,
@@ -281,9 +464,13 @@ namespace UrbanWildlifeRooms.UI
                     ? $"{eventName}｜第 {impact.MarketDay} 天·{marketName}（按满员）：超载/送达失败点 {impact.BeforeMarketOverflow}→{impact.AfterMarketOverflow} {Tag(marketDelta, false, true)}"
                     : $"{eventName} | day {impact.MarketDay}, {marketName}, {ResidentPopulationModel.MaximumResidents} residents: overflow/blocked sites {impact.BeforeMarketOverflow}→{impact.AfterMarketOverflow} {Tag(marketDelta, false, false)}");
             }
-            lines.Add(chinese
-                ? "与进入编辑时比较；庇护是布局预测，不保证觅食成功；不预测存量、动物的实际路线及车库风险。"
-                : "Compared with edit start; cover is a layout forecast, not a guaranteed meal. Stock, actual animal routes and traffic are not predicted.");
+            lines.Add(impact.CurrentSeedStock >= 0
+                ? chinese
+                    ? "与进入编辑时比较；已计当前种子存量，但不保证觅食成功；今日余下消耗、实际行走及车库风险未预测。"
+                    : "Compared with edit start; current seed stock is included, not guaranteed meals. Later consumption, travel and traffic remain unpredicted."
+                : chinese
+                    ? "与进入编辑时比较；庇护是布局预测，不保证觅食成功；不预测存量、动物的实际路线及车库风险。"
+                    : "Compared with edit start; cover is a layout forecast, not a guaranteed meal. Stock, actual animal routes and traffic are not predicted.");
             return string.Join("\n", lines);
         }
 

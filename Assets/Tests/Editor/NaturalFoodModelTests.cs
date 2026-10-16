@@ -9,6 +9,25 @@ namespace UrbanWildlifeRooms.Tests.Editor
     public sealed class NaturalFoodModelTests
     {
         [Test]
+        public void StockRevisionChangesOnlyWhenPortionsChange()
+        {
+            var food = new NaturalFoodModel(RoomLayoutData.All);
+            Assert.That(food.Revision, Is.Zero);
+            food.ProduceDawn(1, _ => OakTreeStage.Mature);
+            var produced = food.Revision;
+            Assert.That(produced, Is.GreaterThan(0));
+            food.ProduceDawn(2, _ => OakTreeStage.Mature);
+            Assert.That(food.Revision, Is.EqualTo(produced),
+                "Uncollected food is retained, not replenished on top.");
+            Assert.That(food.TryConsume("oak-a", NaturalFoodKind.Nut), Is.True);
+            Assert.That(food.Revision, Is.GreaterThan(produced));
+            var consumed = food.Revision;
+            food.ProduceDawn(3, _ => OakTreeStage.Mature);
+            Assert.That(food.Revision, Is.GreaterThan(consumed),
+                "A new portion invalidates the planning preview.");
+        }
+
+        [Test]
         public void DawnRewardsLinkedPigeonPlazasAndTheSquirrelGrove()
         {
             var layout = new RoomLayoutModel(RoomLayoutData.All);

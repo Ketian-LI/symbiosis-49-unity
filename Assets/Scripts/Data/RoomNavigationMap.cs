@@ -16,6 +16,7 @@ namespace UrbanWildlifeRooms.Data
         private readonly Dictionary<string, List<string>> neighbours = new();
         private readonly Dictionary<(string, string), Vector2> restrictedConnections = new();
         private readonly Dictionary<(string, string), AnimalPassagePort> animalConnectionPorts = new();
+        private readonly Dictionary<(string, string), AnimalPassagePort> pedestrianConnectionPorts = new();
         private readonly float cellSize;
         private readonly bool animalPassagesOnly;
         private readonly bool humanRoadsOnly;
@@ -91,6 +92,11 @@ namespace UrbanWildlifeRooms.Data
                         {
                             animalConnectionPorts[(nodes[first].Id, nodes[second].Id)] = firstPort;
                             animalConnectionPorts[(nodes[second].Id, nodes[first].Id)] = secondPort;
+                        }
+                        else
+                        {
+                            pedestrianConnectionPorts[(nodes[first].Id, nodes[second].Id)] = firstPort;
+                            pedestrianConnectionPorts[(nodes[second].Id, nodes[first].Id)] = secondPort;
                         }
                     }
 
@@ -323,6 +329,10 @@ namespace UrbanWildlifeRooms.Data
         public bool TryGetAnimalConnectionPort(string roomId, string neighbourId,
             out AnimalPassagePort port) =>
             animalConnectionPorts.TryGetValue((roomId, neighbourId), out port);
+
+        public bool TryGetPedestrianConnectionPort(string roomId, string neighbourId,
+            out AnimalPassagePort port) =>
+            pedestrianConnectionPorts.TryGetValue((roomId, neighbourId), out port);
 
         public Vector2 FindNearestLegalFloorPoint(Vector2 point, float wallClearance)
         {

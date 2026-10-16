@@ -42,6 +42,37 @@ namespace UrbanWildlifeRooms.Tests.Editor
         }
 
         [Test]
+        public void StockAwareCeilingCarriesSeedButDoesNotAddDawnCapacityTwice()
+        {
+            var map = Navigation(new RoomLayoutModel(RoomLayoutData.All), 4);
+            var flock = new[] { new KeyValuePair<string, int>("pigeon-b", 5) };
+            Assert.That(HabitatFoodNetworkModel.SeedCapacity(map, "pigeon-b", 4), Is.EqualTo(1));
+            var stored = new[]
+            {
+                new NaturalFoodState
+                {
+                    roomId = "pigeon-b", kind = NaturalFoodKind.Seed, portions = 5
+                }
+            };
+            var stockCeiling = HabitatFoodNetworkModel.ForecastPigeonSeedStockCeiling(
+                map, 4, flock, stored);
+            Assert.That(stockCeiling, Is.EqualTo(5),
+                "A resting plaza retains stock rather than losing it at dawn.");
+
+            var belowTarget = new[]
+            {
+                new NaturalFoodState
+                {
+                    roomId = "pigeon-b", kind = NaturalFoodKind.Seed, portions = 2
+                }
+            };
+            Assert.That(HabitatFoodNetworkModel.ForecastPigeonSeedStockCeiling(
+                map, 1, flock, belowTarget),
+                Is.EqualTo(HabitatFoodNetworkModel.ForecastPigeonSeedMealCeiling(map, 1, flock)),
+                "Two stored portions must not be added to the five-portion dawn target.");
+        }
+
+        [Test]
         public void DailyRouteClosureLosesProductionAndATargetedSwapRepairsIt()
         {
             var layout = new RoomLayoutModel(RoomLayoutData.All);
@@ -68,6 +99,28 @@ namespace UrbanWildlifeRooms.Tests.Editor
             Assert.That(HabitatFoodNetworkModel.SeedCapacity(map, "pigeon-b", 4), Is.EqualTo(1));
             Assert.That(HabitatFoodNetworkModel.SeedCapacity(map, "pigeon-c", 4), Is.EqualTo(5));
             Assert.That(HabitatFoodNetworkModel.TotalSeedCapacity(map, 4), Is.EqualTo(7));
+            var flocks = new[] { "pigeon-a", "pigeon-b", "pigeon-c", "pigeon-d" }
+                .Select(id => new KeyValuePair<string, int>(id, 3));
+            Assert.That(HabitatFoodNetworkModel.ForecastPigeonSeedMealCeiling(map, 4, flocks),
+                Is.EqualTo(7), "A reachable three-room route should keep the rest day playable.");
+        }
+
+        [Test]
+        public void PigeonsCanReachNaturalFoodThreeConnectedRoomsAway()
+        {
+            var map = Navigation(new RoomLayoutModel(RoomLayoutData.All), 1);
+            string destination = null;
+            foreach (var room in RoomLayoutData.All)
+            {
+                if (!map.TryFindRoute("pigeon-b", room.Id, out var route) || route.Count - 1 != 3)
+                    continue;
+                destination = room.Id;
+                break;
+            }
+            Assert.That(destination, Is.Not.Null, "Opening layout needs a three-step animal route.");
+            Assert.That(HabitatFoodNetworkModel.CanReachSource(map, "pigeon-b",
+                WildlifeSpecies.Pigeon, destination, out var distance), Is.True);
+            Assert.That(distance, Is.EqualTo(3));
         }
 
         [Test]

@@ -49,6 +49,27 @@ namespace UrbanWildlifeRooms.Tests.Editor
         }
 
         [Test]
+        public void PedestrianConnectionExposesTheExactDoorwayUsedByTheGraph()
+        {
+            var rooms = new[]
+            {
+                new RoomSpec("shared-d", "Path", RoomType.SharedSpace, 0, 0, 1, 1, true, ""),
+                new RoomSpec("office-a", "Office", RoomType.Office, 1, 0, 1, 1, true, "")
+            };
+            var placements = rooms.Select(room => new RoomPlacementData
+            {
+                id = room.Id, column = room.Column, row = room.Row
+            });
+            var map = new RoomNavigationMap(placements, rooms, 2f, humanRoadsOnly: true);
+            Assert.That(map.TryGetPedestrianConnectionPort("shared-d", "office-a", out var from),
+                Is.True);
+            Assert.That(from.Edge, Is.EqualTo(AnimalPassageEdge.East));
+            Assert.That(map.TryGetPedestrianConnectionPort("office-a", "shared-d", out var to),
+                Is.True);
+            Assert.That(to.Edge, Is.EqualTo(AnimalPassageEdge.West));
+        }
+
+        [Test]
         public void StartingLayoutKeepsMinimumWorkingResidentsOnPedestrianRoads()
         {
             var layout = new RoomLayoutModel(RoomLayoutData.All);

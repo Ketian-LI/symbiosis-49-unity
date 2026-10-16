@@ -134,13 +134,15 @@ namespace UrbanWildlifeRooms.Core
         // Preview the same yield, target selection and portion allocation as
         // settlement on a copy. Inspecting a route must never eat food.
         public ConstructionEcologyDayResult PreviewDay(int day,
-            ConstructionBoardModel board, string pigeonTileId)
+            ConstructionBoardModel board, string pigeonTileId,
+            int? squirrelsPresent = null, int? pigeonsPresent = null)
         {
             var copy = new ConstructionFoodModel();
             copy.stock.Clear();
             foreach (var pair in stock) copy.stock[pair.Key] = pair.Value;
             copy.LastSettledDay = LastSettledDay;
-            return copy.SettleDay(day, board, pigeonTileId);
+            return copy.SettleDay(day, board, pigeonTileId,
+                squirrelsPresent, pigeonsPresent);
         }
 
         // Used solely by the old externally-scored test/API path. It must not
@@ -151,15 +153,19 @@ namespace UrbanWildlifeRooms.Core
         }
 
         public ConstructionEcologyDayResult SettleDay(int day,
-            ConstructionBoardModel board, string pigeonTileId)
+            ConstructionBoardModel board, string pigeonTileId,
+            int? squirrelsPresent = null, int? pigeonsPresent = null)
         {
             if (board == null) throw new ArgumentNullException(nameof(board));
             if (day <= LastSettledDay) throw new InvalidOperationException(
                 "Food was already settled for this day.");
 
             var result = new ConstructionEcologyDayResult { day = day };
-            result.squirrelsPresent = SquirrelPopulation(board, day);
-            result.pigeonsPresent = PigeonPopulation(board, day, pigeonTileId);
+            result.squirrelsPresent = squirrelsPresent ?? SquirrelPopulation(board, day);
+            result.pigeonsPresent = pigeonsPresent ??
+                PigeonPopulation(board, day, pigeonTileId);
+            if (result.squirrelsPresent < 0 || result.pigeonsPresent < 0)
+                throw new ArgumentOutOfRangeException(nameof(squirrelsPresent));
             var greens = board.BuiltTiles.Where(tile =>
                 tile.category == ConstructionCategory.Green && tile.builtDay <= day)
                 .OrderBy(tile => tile.buildIndex).ToArray();

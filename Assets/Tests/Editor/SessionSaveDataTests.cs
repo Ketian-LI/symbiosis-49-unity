@@ -194,10 +194,8 @@ namespace UrbanWildlifeRooms.Tests.Editor
             model.Restore(legacy.endlessBalance);
             // JsonUtility may materialize field initializers for a missing field.
             // Null and a default instance must both preserve Standard rules.
-            Assert.That(EndlessDifficultyRules.For(legacy.sandboxSettings).StartingCommunity,
-                Is.EqualTo(60));
-            Assert.That(model.Community,
-                Is.EqualTo(UrbanWildlifeRooms.Core.EndlessBalanceModel.StartingCommunity));
+            Assert.That(EndlessDifficultyRules.For(legacy.sandboxSettings).WildlifeFloor,
+                Is.EqualTo(10));
             Assert.That(model.LastSettledDay, Is.Zero);
         }
     }

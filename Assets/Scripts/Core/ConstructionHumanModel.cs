@@ -50,13 +50,15 @@ namespace UrbanWildlifeRooms.Core
         public static ConstructionHumanDayResult SettleDay(int day,
             ConstructionBoardModel board,
             IReadOnlyCollection<string> blockedHomes = null,
-            IReadOnlyCollection<string> blockedFoodServices = null)
+            IReadOnlyCollection<string> blockedFoodServices = null,
+            IReadOnlyCollection<string> departedHomes = null)
         {
             if (day < 1) throw new ArgumentOutOfRangeException(nameof(day));
             if (board == null) throw new ArgumentNullException(nameof(board));
             var built = board.BuiltTiles.Where(tile => tile.builtDay <= day).ToArray();
             var homes = built.Where(tile =>
-                tile.category == ConstructionCategory.Residence).ToArray();
+                tile.category == ConstructionCategory.Residence &&
+                departedHomes?.Contains(tile.id) != true).ToArray();
             var services = built.Where(tile => DailyCapacity(tile.category) > 0 &&
                 tile.category != ConstructionCategory.Residence).ToArray();
             var remaining = services.ToDictionary(tile => tile.id,

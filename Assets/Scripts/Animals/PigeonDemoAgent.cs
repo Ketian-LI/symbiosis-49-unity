@@ -77,6 +77,18 @@ namespace UrbanWildlifeRooms.Animals
         public WildlifeSpecies Species => WildlifeSpecies.Pigeon;
         public Transform AgentTransform => transform;
         public bool IsRespondingToFood => foodMission;
+        public bool IsReturningFromFood => foodMission && !peckOnFoodArrival;
+        public bool TryGetRemainingFoodRoute(out IReadOnlyList<Vector3> route)
+        {
+            route = Array.Empty<Vector3>();
+            if (!IsAlive || !foodMission || foodWaypointIndex >= foodWaypoints.Count)
+                return false;
+            var points = new List<Vector3> { transform.position };
+            for (var index = foodWaypointIndex; index < foodWaypoints.Count; index++)
+                points.Add(foodWaypoints[index]);
+            route = points;
+            return true;
+        }
         public bool IsFlying => foodMissionFlying && foodMission ||
                                 escapingPredator && predatorEscapeTime >= 0.18f;
 

@@ -14,6 +14,8 @@ namespace UrbanWildlifeRooms.Core
     public sealed class EndlessDifficultySettings
     {
         public EndlessDifficulty template = EndlessDifficulty.Standard;
+        // Legacy save fields: read for compatibility, but no longer tune a
+        // hidden community-health loss condition.
         public int startingCommunity = 60;
         public int commuteTargetPercent = 90;
         public int wildlifeFloor = 10;
@@ -25,13 +27,13 @@ namespace UrbanWildlifeRooms.Core
             {
                 EndlessDifficulty.Gentle => new EndlessDifficultySettings
                 {
-                    template = EndlessDifficulty.Gentle, startingCommunity = 75,
-                    commuteTargetPercent = 75, wildlifeFloor = 8, wildlifeGraceDays = 3
+                    template = EndlessDifficulty.Gentle,
+                    wildlifeFloor = 8, wildlifeGraceDays = 3
                 },
                 EndlessDifficulty.Demanding => new EndlessDifficultySettings
                 {
-                    template = EndlessDifficulty.Demanding, startingCommunity = 45,
-                    commuteTargetPercent = 100, wildlifeFloor = 12, wildlifeGraceDays = 2
+                    template = EndlessDifficulty.Demanding,
+                    wildlifeFloor = 12, wildlifeGraceDays = 2
                 },
                 _ => new EndlessDifficultySettings()
             };
@@ -40,8 +42,8 @@ namespace UrbanWildlifeRooms.Core
         public EndlessDifficultySettings Normalized() => new EndlessDifficultySettings
         {
             template = EndlessDifficultyRules.Normalize(template),
-            startingCommunity = Math.Clamp(startingCommunity, 20, 100),
-            commuteTargetPercent = Math.Clamp(commuteTargetPercent, 50, 100),
+            startingCommunity = startingCommunity,
+            commuteTargetPercent = commuteTargetPercent,
             wildlifeFloor = Math.Clamp(wildlifeFloor, 3, 18),
             wildlifeGraceDays = Math.Clamp(wildlifeGraceDays, 1, 5)
         };
@@ -51,17 +53,13 @@ namespace UrbanWildlifeRooms.Core
             get
             {
                 var baseline = Preset(EndlessDifficultyRules.Normalize(template));
-                return startingCommunity != baseline.startingCommunity ||
-                       commuteTargetPercent != baseline.commuteTargetPercent ||
-                       wildlifeFloor != baseline.wildlifeFloor ||
+                return wildlifeFloor != baseline.wildlifeFloor ||
                        wildlifeGraceDays != baseline.wildlifeGraceDays;
             }
         }
     }
 
-    // Community changes retain the existing +4 / 0 / -4 / -8 ladder.
-    // The two lower bands follow the chosen commute target, so one visible
-    // target never leaves unseen preset-specific thresholds behind.
+    // Only wildlife collapse tuning remains in the Endless difficulty menu.
     public readonly struct EndlessDifficultyRules
     {
         private EndlessDifficultyRules(EndlessDifficultySettings settings)
@@ -71,12 +69,8 @@ namespace UrbanWildlifeRooms.Core
 
         public EndlessDifficultySettings Settings { get; }
         public EndlessDifficulty Difficulty => Settings.template;
-        public int StartingCommunity => Settings.startingCommunity;
         public int WildlifeFloor => Settings.wildlifeFloor;
         public int WildlifeGraceDays => Settings.wildlifeGraceDays;
-        public double GainShare => Settings.commuteTargetPercent / 100d;
-        public double StableShare => Math.Max(0d, GainShare - 0.15d);
-        public double MinorLossShare => Math.Max(0d, GainShare - 0.40d);
 
         public string Label(bool chinese)
         {
@@ -100,14 +94,5 @@ namespace UrbanWildlifeRooms.Core
         public static EndlessDifficultyRules For(EndlessDifficultySettings settings) =>
             new(settings ?? EndlessDifficultySettings.Preset(EndlessDifficulty.Standard));
 
-        public int CommunityChangeFor(int completedRoutes, int residents)
-        {
-            if (residents <= 0) return -8;
-            var share = Math.Max(0, completedRoutes) / (double)residents;
-            if (share >= GainShare) return 4;
-            if (share >= StableShare) return 0;
-            if (share >= MinorLossShare) return -4;
-            return -8;
-        }
     }
 }

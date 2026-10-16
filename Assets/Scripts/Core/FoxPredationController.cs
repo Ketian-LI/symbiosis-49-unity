@@ -178,6 +178,7 @@ namespace UrbanWildlifeRooms.Core
             if (naturalFood?.Model == null || !scavengingTargets.TryGetValue(fox, out var target))
                 return false;
             var startRoom = FindRoomId(fox.transform.position);
+            needs.RecordFoodScan(fox, startRoom);
             var routeMap = navigation.NavigationMapFor(fox);
             foreach (var source in naturalFood.Model.Sources.Values
                          .Where(item => item.kind == NaturalFoodKind.DiscardedFood && item.portions > 0)
@@ -196,7 +197,10 @@ namespace UrbanWildlifeRooms.Core
                         () => naturalFood.Model.PortionsIn(roomId, NaturalFoodKind.DiscardedFood) <= 0,
                         () =>
                         {
-                            if (naturalFood.TryConsume(roomId, NaturalFoodKind.DiscardedFood))
+                            var taken = naturalFood.TryConsume(roomId, NaturalFoodKind.DiscardedFood);
+                            needs.RecordFoodArrival(fox, roomId,
+                                NaturalFoodKind.DiscardedFood.ToString(), taken);
+                            if (taken)
                             {
                                 needs.RegisterPredationMeal(fox);
                                 huntCooldowns[fox] = 6f;
@@ -207,6 +211,8 @@ namespace UrbanWildlifeRooms.Core
                         hazard, fatal))
                     continue;
 
+                needs.RecordFoodTarget(fox, roomId,
+                    NaturalFoodKind.DiscardedFood.ToString(), source.portions, true);
                 huntCooldowns[fox] = 3f;
                 return true;
             }
@@ -229,6 +235,7 @@ namespace UrbanWildlifeRooms.Core
                 return;
             }
 
+            var preyRoomId = FindRoomId(target.agent.AgentTransform.position);
             var caught = false;
             if (!fox.BeginHunt(
                     route,
@@ -238,10 +245,12 @@ namespace UrbanWildlifeRooms.Core
                     {
                         if (target.isSafe())
                         {
+                            needs.RecordFoodArrival(fox, preyRoomId, "Prey", false);
                             return;
                         }
                         target.kill();
                         caught = !target.isAlive();
+                        needs.RecordFoodArrival(fox, preyRoomId, "Prey", caught);
                         if (caught)
                         {
                             needs.RegisterPredationMeal(fox);
@@ -254,8 +263,28 @@ namespace UrbanWildlifeRooms.Core
                 huntCooldowns[fox] = 1f;
                 return;
             }
+            needs.RecordFoodTarget(fox, preyRoomId, "Prey", 1, true);
             target.beginDefence();
             huntCooldowns[fox] = 3f;
+        }
+
+        // Read-only candidate for the route overlay. Do not call PlanRoute here:
+        // its traffic decision consumes random numbers and can alter the hunt.
+        public bool TryGetPotentialPrey(FoxDemoAgent fox, out Vector3 worldPosition)
+        {
+            worldPosition = default;
+            if (fox == null || !fox.IsAlive) return false;
+            var candidates = prey.Select(item => new FoxPreyCandidate(
+                item.id,
+                item.agent.Species,
+                Vector3.Distance(fox.transform.position, item.agent.AgentTransform.position),
+                item.isAlive(),
+                !item.isSafe()));
+            var selectedId = FoxPredationModel.SelectPrey(candidates);
+            var target = prey.FirstOrDefault(item => item.id == selectedId);
+            if (target == null || target.agent.AgentTransform == null) return false;
+            worldPosition = target.agent.AgentTransform.position;
+            return true;
         }
 
         private bool TryBuildRoute(

@@ -17,10 +17,10 @@ namespace UrbanWildlifeRooms.UI
         private bool selected;
         private bool pressed;
 
-        private static readonly Color RestingTint = new(0.10f, 0.17f, 0.19f, 0.42f);
-        private static readonly Color HighlightTint = new(0.44f, 0.80f, 0.91f, 0.55f);
-        private static readonly Color PressedTint = new(0.42f, 0.78f, 0.89f, 0.68f);
-        private static readonly Color RestingBorder = new(0.97f, 0.92f, 0.80f, 0.75f);
+        private static readonly Color RestingTint = new(0.10f, 0.17f, 0.19f, 0.94f);
+        private static readonly Color HighlightTint = new(0.16f, 0.39f, 0.43f, 0.97f);
+        private static readonly Color PressedTint = new(0.12f, 0.32f, 0.36f, 0.99f);
+        private static readonly Color RestingBorder = new(0.97f, 0.92f, 0.80f, 0.92f);
         private static readonly Color HighlightBorder = new(0.66f, 0.95f, 1f, 0.95f);
 
         public void Initialize(RoundedPanelGraphic targetArtwork)

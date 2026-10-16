@@ -273,6 +273,14 @@ namespace UrbanWildlifeRooms.Presentation
             targetPosition = roomTransform.position + Vector3.up * Mathf.Max(13f, targetSize * 1.7f);
         }
 
+        public void FocusRoomImmediate(Transform roomTransform, float footprintSize)
+        {
+            FocusRoom(roomTransform, footprintSize);
+            if (controlledCamera == null || roomTransform == null) return;
+            controlledCamera.transform.SetPositionAndRotation(targetPosition, targetRotation);
+            controlledCamera.orthographicSize = targetSize;
+        }
+
         public void Follow(Transform target, float viewSize)
         {
             if (target == null)

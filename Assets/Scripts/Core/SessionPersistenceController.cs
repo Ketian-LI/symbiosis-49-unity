@@ -24,6 +24,7 @@ namespace UrbanWildlifeRooms.Core
         private HedgehogForagingController hedgehogForaging;
         private DailyOutcomeController dailyOutcome;
         private EndlessBalanceController endlessBalance;
+        private FirstRunOnboardingController onboarding;
         private float autosaveTimer;
         private bool initialized;
         private string activeRunId;
@@ -56,7 +57,8 @@ namespace UrbanWildlifeRooms.Core
             WorkerPasserbyFeedingController workerFeedingController,
             HedgehogForagingController hedgehogForagingController,
             DailyOutcomeController dailyOutcomeController,
-            EndlessBalanceController endlessBalanceController)
+            EndlessBalanceController endlessBalanceController,
+            FirstRunOnboardingController onboardingController)
         {
             runtime = runtimeController;
             layoutEditor = editorController;
@@ -72,6 +74,7 @@ namespace UrbanWildlifeRooms.Core
             hedgehogForaging = hedgehogForagingController;
             dailyOutcome = dailyOutcomeController;
             endlessBalance = endlessBalanceController;
+            onboarding = onboardingController;
             layoutEditor.LayoutConfirmed += SaveNow;
             if (playerFeeding != null) playerFeeding.FoodPlaced += HandlePlayerFoodPlaced;
             runtime.SaveRequested += SaveNow;
@@ -241,6 +244,7 @@ namespace UrbanWildlifeRooms.Core
                         ? runtime.SandboxSettings.Normalized() : null,
                     elapsedSimulationSeconds = runtime.Clock.TotalSeconds,
                     speedMultiplier = runtime.SelectedSpeedMultiplier,
+                    storyOakOpeningPending = onboarding?.OakOpeningPending ?? false,
                     rooms = new System.Collections.Generic.List<RoomPlacementData>(layoutEditor.ExportLayout()),
                     residentCount = wasteManagement?.ResidentCount ?? WasteManagementController.StartingResidentCount,
                     operatingFoodShopCount = wasteManagement?.OperatingFoodShopCount ?? WasteManagementController.FoodShopCount,
@@ -396,6 +400,7 @@ namespace UrbanWildlifeRooms.Core
                 endlessBalance?.RestoreSession(save.endlessBalance, save.endlessDeadAnimalIds);
                 workerFeeding?.Quota.Restore(save.workerFeedDayNumber, save.workerFedResidentIds);
                 dailyOutcome?.RestoreSession(save.dailyOutcome);
+                onboarding?.RestoreOakOpeningPending(save.storyOakOpeningPending);
                 Debug.Log($"[SYMBIOSIS: 49] Continued saved session from {save.savedAtUtc}.", this);
             }
             catch (Exception exception)

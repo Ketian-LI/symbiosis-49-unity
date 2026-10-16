@@ -17,6 +17,8 @@ namespace UrbanWildlifeRooms.Data
         public UrbanWildlifeRooms.Core.EndlessDifficultySettings sandboxSettings;
         public double elapsedSimulationSeconds;
         public int speedMultiplier = 1;
+        // A new opening can be resumed without changing the older v2 save format.
+        public bool storyOakOpeningPending;
         public List<RoomPlacementData> rooms = new();
         public int residentCount = 4;
         public int operatingFoodShopCount = 2;
@@ -70,6 +72,7 @@ namespace UrbanWildlifeRooms.Data
     public sealed class EndlessBalanceSaveData
     {
         public int lastSettledDay;
+        // Legacy v2 fields. Keep old JSON readable; neither value is used.
         public int community = 60;
         public int lastCommunityChange;
         public int criticalWildlifeDays;
@@ -126,6 +129,11 @@ namespace UrbanWildlifeRooms.Data
     {
         public int pendingDay;
         public int pendingMovedRooms;
+        public int pendingCommuteForecastDay;
+        public int pendingPlannedWorkers;
+        public int pendingPigeonForecastDay;
+        public int pendingPigeonSeedCeiling;
+        public int pendingPigeonForecastBirds;
         public int previousTotalDeaths;
         public int previousStarvationDeaths;
         public int previousTrafficDeaths;
@@ -135,6 +143,11 @@ namespace UrbanWildlifeRooms.Data
         public int lastMovedRooms;
         public int lastWorkingResidents;
         public bool lastWorkingResidentsKnown;
+        public bool lastPlannedWorkersKnown;
+        public int lastPlannedWorkers;
+        public bool lastPigeonSeedForecastKnown;
+        public int lastPigeonSeedCeiling;
+        public int lastPigeonForecastBirds;
         public float lastProduction;
         public int lastSpending;
         public float lastClosingBalance;

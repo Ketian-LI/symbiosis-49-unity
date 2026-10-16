@@ -62,6 +62,17 @@ namespace UrbanWildlifeRooms.Core
                 .Where(tile => tile.category == ConstructionCategory.Residence)
                 .Count(home => board.ResidenceServiceRoute(home.id,
                     ConstructionCategory.Restaurant).Count > 0);
+            // A street only completes this beat if it is actually used by a
+            // later resident to reach a service. Placing a decorative street
+            // beside the first home must not count as solving the access need.
+            var laterHomeUsesStreet = placed
+                .Where(tile => tile.category == ConstructionCategory.Residence)
+                .Skip(1)
+                .Any(home => board.ResidenceServiceRoute(home.id,
+                        ConstructionCategory.Restaurant)
+                        .Concat(board.ResidenceServiceRoute(home.id,
+                            ConstructionCategory.Workshop))
+                        .Any(routeTile => routeTile.category == ConstructionCategory.Street));
             if (!directAccessBlocked && Has(ConstructionCategory.Waste) &&
                 placed.Count(tile => tile.category == ConstructionCategory.Residence) > 1 &&
                 placed.Where(tile => tile.category == ConstructionCategory.Residence)
@@ -86,8 +97,7 @@ namespace UrbanWildlifeRooms.Core
                     ? ConstructionStoryStage.BuildWasteRoom :
                 !directAccessBlocked
                     ? ConstructionStoryStage.AwaitAccessProblem :
-                !Has(ConstructionCategory.Street) ||
-                residentsWithRestaurantAccess < 2
+                residentsWithRestaurantAccess < 2 || !laterHomeUsesStreet
                     ? ConstructionStoryStage.BuildStreet :
                 !restaurantCrowded
                     ? ConstructionStoryStage.AwaitRestaurantCrowding :
@@ -97,30 +107,12 @@ namespace UrbanWildlifeRooms.Core
             return Stage;
         }
 
-        public bool IsUnlocked(ConstructionCategory category) => Stage switch
-        {
-            ConstructionStoryStage.WatchSquirrelEat or ConstructionStoryStage.BoardComplete
-                => false,
-            _ => category switch
-            {
-                ConstructionCategory.Green => true,
-                ConstructionCategory.Residence =>
-                    Stage >= ConstructionStoryStage.WelcomeResident,
-                ConstructionCategory.Restaurant =>
-                    Stage >= ConstructionStoryStage.BuildRestaurant,
-                ConstructionCategory.Workshop =>
-                    Stage >= ConstructionStoryStage.BuildWorkshop,
-                ConstructionCategory.Waste =>
-                    Stage >= ConstructionStoryStage.BuildWasteRoom,
-                ConstructionCategory.Street =>
-                    Stage >= ConstructionStoryStage.BuildStreet,
-                ConstructionCategory.Supermarket =>
-                    Stage >= ConstructionStoryStage.BuildSupermarket,
-                ConstructionCategory.Square =>
-                    Stage >= ConstructionStoryStage.FreeBuild,
-                _ => false
-            }
-        };
+        // The story suggests what to try next; it does not lock the player's
+        // construction choices. Day 1 remains the scripted oak observation.
+        public bool IsUnlocked(ConstructionCategory category) =>
+            Stage != ConstructionStoryStage.WatchSquirrelEat &&
+            Stage != ConstructionStoryStage.BoardComplete &&
+            Enum.IsDefined(typeof(ConstructionCategory), category);
 
         public ConstructionStorySaveData Export() => new()
         {

@@ -12,7 +12,7 @@ namespace UrbanWildlifeRooms.Data
         InsufficientWorkers,
         InsufficientResidents,
         WildlifePopulationCollapse,
-        CommunityCollapse
+        CommunityCollapse // Legacy result enum value; keep old saved results readable.
     }
 
     [Serializable]

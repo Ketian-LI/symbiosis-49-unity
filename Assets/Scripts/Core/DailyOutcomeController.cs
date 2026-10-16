@@ -14,6 +14,11 @@ namespace UrbanWildlifeRooms.Core
             MovedRooms = state.lastMovedRooms;
             WorkingResidents = state.lastWorkingResidents;
             WorkingResidentsKnown = state.lastWorkingResidentsKnown;
+            PlannedWorkersKnown = state.lastPlannedWorkersKnown;
+            PlannedWorkers = state.lastPlannedWorkers;
+            PigeonSeedForecastKnown = state.lastPigeonSeedForecastKnown;
+            PigeonSeedCeiling = state.lastPigeonSeedCeiling;
+            PigeonForecastBirds = state.lastPigeonForecastBirds;
             Production = state.lastProduction;
             Spending = state.lastSpending;
             ClosingBalance = state.lastClosingBalance;
@@ -34,6 +39,13 @@ namespace UrbanWildlifeRooms.Core
         public int MovedRooms { get; }
         public int WorkingResidents { get; }
         public bool WorkingResidentsKnown { get; }
+        public bool PlannedWorkersKnown { get; }
+        public int PlannedWorkers { get; }
+        // Legacy day-end comparison: route matching against dawn seed target
+        // capacities, not actual newly added portions or guaranteed meals.
+        public bool PigeonSeedForecastKnown { get; }
+        public int PigeonSeedCeiling { get; }
+        public int PigeonForecastBirds { get; }
         public float Production { get; }
         public int Spending { get; }
         public float ClosingBalance { get; }
@@ -58,7 +70,8 @@ namespace UrbanWildlifeRooms.Core
 
         public DailyOutcomeReport LastReport => new(state);
 
-        public void RecordMovement(int day, int count)
+        public void RecordMovement(int day, int count, int? plannedWorkers = null,
+            int? pigeonSeedCeiling = null, int pigeonForecastBirds = 0)
         {
             if (day <= state.lastDay || count <= 0)
             {
@@ -70,6 +83,16 @@ namespace UrbanWildlifeRooms.Core
                 state.pendingMovedRooms = 0;
             }
             state.pendingMovedRooms += count;
+            if (plannedWorkers.HasValue)
+            {
+                state.pendingCommuteForecastDay = day;
+                state.pendingPlannedWorkers = Math.Max(0, plannedWorkers.Value);
+            }
+            // A second rearrangement before the forecast day supersedes the
+            // previous route forecast. Holding the layout does not.
+            state.pendingPigeonForecastDay = pigeonSeedCeiling.HasValue ? day + 1 : 0;
+            state.pendingPigeonSeedCeiling = Math.Max(0, pigeonSeedCeiling ?? 0);
+            state.pendingPigeonForecastBirds = Math.Max(0, pigeonForecastBirds);
         }
 
         public void CompleteDay(ResourceSettlement settlement, int workingResidents, int totalDeaths,
@@ -85,6 +108,14 @@ namespace UrbanWildlifeRooms.Core
                 ? state.pendingMovedRooms : 0;
             state.lastWorkingResidents = Math.Max(0, workingResidents);
             state.lastWorkingResidentsKnown = true;
+            state.lastPlannedWorkersKnown = state.pendingCommuteForecastDay == settlement.DayNumber;
+            state.lastPlannedWorkers = state.lastPlannedWorkersKnown
+                ? state.pendingPlannedWorkers : 0;
+            state.lastPigeonSeedForecastKnown = state.pendingPigeonForecastDay == settlement.DayNumber;
+            state.lastPigeonSeedCeiling = state.lastPigeonSeedForecastKnown
+                ? state.pendingPigeonSeedCeiling : 0;
+            state.lastPigeonForecastBirds = state.lastPigeonSeedForecastKnown
+                ? state.pendingPigeonForecastBirds : 0;
             state.lastProduction = settlement.Production;
             state.lastSpending = settlement.TotalCost;
             state.lastClosingBalance = settlement.ClosingBalance;
@@ -106,6 +137,14 @@ namespace UrbanWildlifeRooms.Core
             state.predationHistoryKnown = true;
             state.pendingDay = 0;
             state.pendingMovedRooms = 0;
+            state.pendingCommuteForecastDay = 0;
+            state.pendingPlannedWorkers = 0;
+            if (state.lastPigeonSeedForecastKnown)
+            {
+                state.pendingPigeonForecastDay = 0;
+                state.pendingPigeonSeedCeiling = 0;
+                state.pendingPigeonForecastBirds = 0;
+            }
         }
 
         public void Reset(int totalDeaths = 0, int starvationDeaths = 0, int trafficDeaths = 0,
@@ -125,6 +164,11 @@ namespace UrbanWildlifeRooms.Core
         {
             pendingDay = state.pendingDay,
             pendingMovedRooms = state.pendingMovedRooms,
+            pendingCommuteForecastDay = state.pendingCommuteForecastDay,
+            pendingPlannedWorkers = state.pendingPlannedWorkers,
+            pendingPigeonForecastDay = state.pendingPigeonForecastDay,
+            pendingPigeonSeedCeiling = state.pendingPigeonSeedCeiling,
+            pendingPigeonForecastBirds = state.pendingPigeonForecastBirds,
             previousTotalDeaths = state.previousTotalDeaths,
             previousStarvationDeaths = state.previousStarvationDeaths,
             previousTrafficDeaths = state.previousTrafficDeaths,
@@ -134,6 +178,11 @@ namespace UrbanWildlifeRooms.Core
             lastMovedRooms = state.lastMovedRooms,
             lastWorkingResidents = state.lastWorkingResidents,
             lastWorkingResidentsKnown = state.lastWorkingResidentsKnown,
+            lastPlannedWorkersKnown = state.lastPlannedWorkersKnown,
+            lastPlannedWorkers = state.lastPlannedWorkers,
+            lastPigeonSeedForecastKnown = state.lastPigeonSeedForecastKnown,
+            lastPigeonSeedCeiling = state.lastPigeonSeedCeiling,
+            lastPigeonForecastBirds = state.lastPigeonForecastBirds,
             lastProduction = state.lastProduction,
             lastSpending = state.lastSpending,
             lastClosingBalance = state.lastClosingBalance,
@@ -162,6 +211,11 @@ namespace UrbanWildlifeRooms.Core
             {
                 pendingDay = Math.Max(0, saved.pendingDay),
                 pendingMovedRooms = Math.Max(0, saved.pendingMovedRooms),
+                pendingCommuteForecastDay = Math.Max(0, saved.pendingCommuteForecastDay),
+                pendingPlannedWorkers = Math.Max(0, saved.pendingPlannedWorkers),
+                pendingPigeonForecastDay = Math.Max(0, saved.pendingPigeonForecastDay),
+                pendingPigeonSeedCeiling = Math.Max(0, saved.pendingPigeonSeedCeiling),
+                pendingPigeonForecastBirds = Math.Max(0, saved.pendingPigeonForecastBirds),
                 previousTotalDeaths = Math.Min(Math.Max(0, saved.previousTotalDeaths), Math.Max(0, totalDeaths)),
                 previousStarvationDeaths = Math.Min(Math.Max(0, saved.previousStarvationDeaths), Math.Max(0, starvationDeaths)),
                 previousTrafficDeaths = Math.Min(Math.Max(0, saved.previousTrafficDeaths), Math.Max(0, trafficDeaths)),
@@ -175,6 +229,11 @@ namespace UrbanWildlifeRooms.Core
                 lastMovedRooms = Math.Max(0, saved.lastMovedRooms),
                 lastWorkingResidents = Math.Max(0, saved.lastWorkingResidents),
                 lastWorkingResidentsKnown = saved.lastWorkingResidentsKnown,
+                lastPlannedWorkersKnown = saved.lastPlannedWorkersKnown,
+                lastPlannedWorkers = Math.Max(0, saved.lastPlannedWorkers),
+                lastPigeonSeedForecastKnown = saved.lastPigeonSeedForecastKnown,
+                lastPigeonSeedCeiling = Math.Max(0, saved.lastPigeonSeedCeiling),
+                lastPigeonForecastBirds = Math.Max(0, saved.lastPigeonForecastBirds),
                 lastProduction = Math.Max(0f, saved.lastProduction),
                 lastSpending = Math.Max(0, saved.lastSpending),
                 lastClosingBalance = saved.lastClosingBalance,
@@ -244,7 +303,12 @@ namespace UrbanWildlifeRooms.Core
 
         private void HandleRoomsMoved(IReadOnlyList<string> ids)
         {
-            Model.RecordMovement(runtime.Clock.DayNumber, ids?.Count ?? 0);
+            var forecast = layout.LastConfirmedImpact;
+            Model.RecordMovement(runtime.Clock.DayNumber, ids?.Count ?? 0,
+                forecast?.After.WorkingResidents,
+                forecast is { } impact && impact.AfterPigeonSeedMealCeiling >= 0
+                    ? impact.AfterPigeonSeedMealCeiling : null,
+                forecast?.LivingPigeons ?? 0);
             StateChanged?.Invoke();
         }
 

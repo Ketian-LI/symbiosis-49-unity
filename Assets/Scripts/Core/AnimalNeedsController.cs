@@ -7,6 +7,75 @@ using UrbanWildlifeRooms.Data;
 
 namespace UrbanWildlifeRooms.Core
 {
+    // A diagnostic record of what the visible foraging controllers actually
+    // attempted. A reachable source is an opportunity, not a promised meal.
+    public sealed class AnimalFoodAttemptTrace
+    {
+        public AnimalFoodAttemptTrace() { }
+
+        public AnimalFoodAttemptTrace(bool arrived, bool tookPortion)
+        {
+            Arrived = arrived;
+            TookPortion = tookPortion;
+        }
+
+        public int DispatchDay { get; internal set; }
+        public int ArrivalDay { get; internal set; }
+        public string TargetRoomId { get; internal set; }
+        public string FoodKind { get; internal set; }
+        public int PortionsAtDispatch { get; internal set; }
+        public bool RouteReachableAtDispatch { get; internal set; }
+        public bool Arrived { get; internal set; }
+        public bool TookPortion { get; internal set; }
+
+        internal AnimalFoodAttemptTrace Copy() => (AnimalFoodAttemptTrace)MemberwiseClone();
+    }
+
+    public sealed class AnimalFoodDayTrace
+    {
+        public int Day { get; internal set; }
+        public string AnimalId { get; internal set; }
+        public WildlifeSpecies Species { get; internal set; }
+        public string HomeRoomId { get; internal set; }
+        public bool AliveAtSettlement { get; internal set; }
+        public bool AteToday { get; internal set; }
+        public int HungerBeforeSettlement { get; internal set; }
+        public int HungerAfterSettlement { get; internal set; }
+        public int ForagingScans { get; internal set; }
+        public int MostCompatibleStockSeen { get; internal set; }
+        public int MostReachableStockSeen { get; internal set; }
+        public string ReachableSourceSeen { get; internal set; }
+        // These are post-foraging snapshots, not the stock available at dawn.
+        public int CompatibleStockAtSettlement { get; internal set; }
+        public int ReachableStockAtSettlement { get; internal set; }
+        public bool MatchedFoodAccessAtSettlement { get; internal set; }
+        public IReadOnlyList<AnimalFoodAttemptTrace> Attempts { get; internal set; }
+        public AnimalFoodOutcomeReason OutcomeReason { get; internal set; }
+    }
+
+    // These are evidence categories, not a claim that a reachable portion
+    // would certainly have been eaten before the day ended.
+    public enum AnimalFoodOutcomeReason
+    {
+        Fed,
+        NoForagingScan,
+        NoCompatibleFoodObserved,
+        NoReachableFoodObserved,
+        ReachableButNoTrip,
+        TripNotCompleted,
+        ArrivedWithoutPortion,
+        CollectedButNotEaten
+    }
+
+    internal sealed class AnimalFoodScanTrace
+    {
+        public int Day;
+        public int Scans;
+        public int MostCompatibleStock;
+        public int MostReachableStock;
+        public string ReachableSource;
+    }
+
     public readonly struct AnimalMealDaySummary
     {
         public AnimalMealDaySummary(int day, int fed, int living, int pigeonsFed,
@@ -78,12 +147,16 @@ namespace UrbanWildlifeRooms.Core
         private AnimalMortalityController mortality;
         private AnimalNavigationCoordinator navigation;
         private readonly Dictionary<string, bool> foodAccessById = new();
+        private readonly Dictionary<string, List<AnimalFoodAttemptTrace>> foodAttemptsById = new();
+        private readonly Dictionary<string, AnimalFoodScanTrace> foodScansById = new();
         private float accessRefreshTimer;
         private bool refreshingFoodAccess;
 
         public event Action StateChanged;
         public AnimalNeedsModel Model { get; private set; }
         public AnimalMealDaySummary LastCompletedDayMeals { get; private set; }
+        public IReadOnlyList<AnimalFoodDayTrace> LastCompletedDayFoodTraces { get; private set; } =
+            Array.Empty<AnimalFoodDayTrace>();
         public int LivingUnfedCount => Model == null
             ? 0
             : agentsById.Values.Count(agent => IsAlive(agent) && NeedsMeal(agent));
@@ -190,6 +263,9 @@ namespace UrbanWildlifeRooms.Core
         public void RestoreSession(IEnumerable<AnimalNeedSaveData> states)
         {
             Model?.Restore(states);
+            foodAttemptsById.Clear();
+            foodScansById.Clear();
+            LastCompletedDayFoodTraces = Array.Empty<AnimalFoodDayTrace>();
             RefreshWarnings();
             StateChanged?.Invoke();
         }
@@ -215,6 +291,8 @@ namespace UrbanWildlifeRooms.Core
         {
             if (animal == null || !idsByAgent.TryGetValue(animal, out var id)) return;
             Model?.ResetIndividual(id);
+            foodAttemptsById.Remove(id);
+            foodScansById.Remove(id);
             RefreshWarnings();
             StateChanged?.Invoke();
         }
@@ -234,6 +312,14 @@ namespace UrbanWildlifeRooms.Core
             return NeedsMeal(agent);
         }
 
+        public IReadOnlyList<AnimalFoodAttemptTrace> FoodAttemptsFor(IWildlifeLayoutAgent agent)
+        {
+            return agent != null && idsByAgent.TryGetValue(agent, out var id) &&
+                   foodAttemptsById.TryGetValue(id, out var attempts)
+                ? attempts.Select(item => item.Copy()).ToArray()
+                : Array.Empty<AnimalFoodAttemptTrace>();
+        }
+
         public bool CanReceiveWorkerMeal(IWildlifeLayoutAgent agent)
         {
             return agent != null && IsAlive(agent) && NeedsMeal(agent);
@@ -244,16 +330,94 @@ namespace UrbanWildlifeRooms.Core
             HandleAnimalAte(predator);
         }
 
+        public void RecordFoodTarget(IWildlifeLayoutAgent animal, string roomId,
+            string foodKind, int portionsAtDispatch, bool routeReachable)
+        {
+            if (animal == null || !idsByAgent.TryGetValue(animal, out var id) ||
+                string.IsNullOrEmpty(roomId) || !runtime.HasActiveRun)
+                return;
+            if (!foodAttemptsById.TryGetValue(id, out var attempts))
+                foodAttemptsById[id] = attempts = new List<AnimalFoodAttemptTrace>();
+            attempts.Add(new AnimalFoodAttemptTrace
+            {
+                DispatchDay = runtime.Clock.DayNumber,
+                TargetRoomId = roomId,
+                FoodKind = foodKind,
+                PortionsAtDispatch = Math.Max(0, portionsAtDispatch),
+                RouteReachableAtDispatch = routeReachable
+            });
+        }
+
+        public void RecordFoodScan(IWildlifeLayoutAgent animal, string startRoomId)
+        {
+            if (animal == null || string.IsNullOrEmpty(startRoomId) ||
+                !idsByAgent.TryGetValue(animal, out var id) || !runtime.HasActiveRun ||
+                naturalFood?.Model == null || navigation == null)
+                return;
+            var day = runtime.Clock.DayNumber;
+            if (!foodScansById.TryGetValue(id, out var scan) || scan.Day != day)
+                foodScansById[id] = scan = new AnimalFoodScanTrace { Day = day };
+            scan.Scans++;
+            var compatible = 0;
+            var reachable = 0;
+            string nearest = null;
+            var nearestDistance = int.MaxValue;
+            var map = navigation.NavigationMapFor(animal);
+            foreach (var source in naturalFood.Model.Sources.Values)
+            {
+                if (source == null || source.portions <= 0 ||
+                    !CanEat(animal.Species,
+                        new FoodAccessSlot(source.roomId, source.kind, false)))
+                    continue;
+                compatible += source.portions;
+                if (!HabitatFoodNetworkModel.CanReachSource(map, startRoomId,
+                        animal.Species, source.roomId, out var distance) ||
+                    animal.Species == WildlifeSpecies.Squirrel &&
+                    (!homeRooms.TryGetValue(animal, out var squirrelHome) ||
+                     !HabitatFoodNetworkModel.IsWithinSquirrelHomeRange(map,
+                         squirrelHome, source.roomId)))
+                    continue;
+                reachable += source.portions;
+                if (distance >= nearestDistance) continue;
+                nearestDistance = distance;
+                nearest = source.roomId;
+            }
+            scan.MostCompatibleStock = Math.Max(scan.MostCompatibleStock, compatible);
+            if (reachable > scan.MostReachableStock)
+            {
+                scan.MostReachableStock = reachable;
+                scan.ReachableSource = nearest;
+            }
+        }
+
+        public void RecordFoodArrival(IWildlifeLayoutAgent animal, string roomId,
+            string foodKind, bool tookPortion)
+        {
+            if (animal == null || !idsByAgent.TryGetValue(animal, out var id) ||
+                !foodAttemptsById.TryGetValue(id, out var attempts))
+                return;
+            var attempt = attempts.LastOrDefault(item => !item.Arrived &&
+                item.TargetRoomId == roomId && item.FoodKind == foodKind);
+            if (attempt == null) return;
+            attempt.Arrived = true;
+            attempt.ArrivalDay = runtime.Clock.DayNumber;
+            attempt.TookPortion = tookPortion;
+        }
+
         // Natural pigeon food is awarded only after the visible trip reaches
         // the source. The portion and the daily meal change together.
         public bool TryFeedFromNaturalArrival(
             IWildlifeLayoutAgent animal, string roomId, NaturalFoodKind kind)
         {
-            if (animal == null || !IsAlive(animal) || !NeedsMeal(animal) ||
-                !naturalFood.TryConsume(roomId, kind))
+            if (animal == null || !IsAlive(animal) || !NeedsMeal(animal))
             {
+                RecordFoodArrival(animal, roomId, kind.ToString(), false);
                 return false;
             }
+
+            var consumed = naturalFood.TryConsume(roomId, kind);
+            RecordFoodArrival(animal, roomId, kind.ToString(), consumed);
+            if (!consumed) return false;
 
             Model.MarkMeal(idsByAgent[animal]);
             RefreshWarnings();
@@ -279,6 +443,8 @@ namespace UrbanWildlifeRooms.Core
         private void HandleSettlementPreparing(int completedDay)
         {
             AllocateAvailableFood();
+            RefreshFoodAccess();
+            LastCompletedDayFoodTraces = CaptureFoodTraces(completedDay);
             var livingIds = agentsById.Where(pair => IsAlive(pair.Value))
                 .Select(pair => pair.Key).ToArray();
             var fed = livingIds.Count(id => Model.Animals[id].ateToday);
@@ -319,6 +485,91 @@ namespace UrbanWildlifeRooms.Core
             }
             RefreshWarnings();
             StateChanged?.Invoke();
+            foreach (var attempts in foodAttemptsById.Values)
+                attempts.RemoveAll(item => item.DispatchDay < completedDay);
+            foodScansById.Clear();
+        }
+
+        private IReadOnlyList<AnimalFoodDayTrace> CaptureFoodTraces(int day)
+        {
+            var result = new List<AnimalFoodDayTrace>(agentsById.Count);
+            foreach (var pair in agentsById.OrderBy(item => item.Key, StringComparer.Ordinal))
+            {
+                var state = Model.Animals[pair.Key];
+                homeRooms.TryGetValue(pair.Value, out var home);
+                var compatible = 0;
+                var reachable = 0;
+                var routeMap = navigation?.NavigationMapFor(pair.Value);
+                foreach (var source in naturalFood.Model.Sources.Values)
+                {
+                    if (source == null || source.portions <= 0 ||
+                        !CanEat(state.species, new FoodAccessSlot(source.roomId, source.kind, false)))
+                        continue;
+                    compatible += source.portions;
+                    if (HabitatFoodNetworkModel.CanReachSource(routeMap, home,
+                            state.species, source.roomId, out _) &&
+                        (state.species != WildlifeSpecies.Squirrel ||
+                         HabitatFoodNetworkModel.IsWithinSquirrelHomeRange(routeMap,
+                             home, source.roomId)))
+                        reachable += source.portions;
+                }
+                foodAttemptsById.TryGetValue(pair.Key, out var allAttempts);
+                foodScansById.TryGetValue(pair.Key, out var scans);
+                var today = allAttempts == null
+                    ? Array.Empty<AnimalFoodAttemptTrace>()
+                    : allAttempts.Where(item => item.DispatchDay == day || item.ArrivalDay == day)
+                        .Select(item => item.Copy()).ToArray();
+                var alive = IsAlive(pair.Value);
+                var scanCount = scans != null && scans.Day == day ? scans.Scans : 0;
+                var compatibleSeen = scans != null && scans.Day == day
+                    ? scans.MostCompatibleStock : 0;
+                var reachableSeen = scans != null && scans.Day == day
+                    ? scans.MostReachableStock : 0;
+                result.Add(new AnimalFoodDayTrace
+                {
+                    Day = day,
+                    AnimalId = pair.Key,
+                    Species = state.species,
+                    HomeRoomId = home,
+                    AliveAtSettlement = alive,
+                    AteToday = state.ateToday,
+                    HungerBeforeSettlement = state.hungerDays,
+                    HungerAfterSettlement = alive
+                        ? state.ateToday ? 0 : state.hungerDays + 1
+                        : state.hungerDays,
+                    ForagingScans = scanCount,
+                    MostCompatibleStockSeen = compatibleSeen,
+                    MostReachableStockSeen = reachableSeen,
+                    ReachableSourceSeen = scans != null && scans.Day == day
+                        ? scans.ReachableSource : null,
+                    CompatibleStockAtSettlement = compatible,
+                    ReachableStockAtSettlement = reachable,
+                    MatchedFoodAccessAtSettlement = foodAccessById.TryGetValue(pair.Key,
+                        out var access) && access,
+                    Attempts = today,
+                    OutcomeReason = ClassifyFoodOutcome(state.ateToday, scanCount,
+                        compatibleSeen, reachableSeen, today)
+                });
+            }
+            return result;
+        }
+
+        public static AnimalFoodOutcomeReason ClassifyFoodOutcome(bool ateToday,
+            int scanCount, int compatibleStockSeen, int reachableStockSeen,
+            IReadOnlyList<AnimalFoodAttemptTrace> attempts)
+        {
+            if (ateToday) return AnimalFoodOutcomeReason.Fed;
+            if (attempts != null && attempts.Any(item => item.Arrived && !item.TookPortion))
+                return AnimalFoodOutcomeReason.ArrivedWithoutPortion;
+            if (attempts != null && attempts.Any(item => item.Arrived && item.TookPortion))
+                return AnimalFoodOutcomeReason.CollectedButNotEaten;
+            if (attempts != null && attempts.Any(item => !item.Arrived))
+                return AnimalFoodOutcomeReason.TripNotCompleted;
+            if (scanCount <= 0) return AnimalFoodOutcomeReason.NoForagingScan;
+            if (reachableStockSeen > 0) return AnimalFoodOutcomeReason.ReachableButNoTrip;
+            return compatibleStockSeen > 0
+                ? AnimalFoodOutcomeReason.NoReachableFoodObserved
+                : AnimalFoodOutcomeReason.NoCompatibleFoodObserved;
         }
 
         private void AllocateAvailableFood()
@@ -403,6 +654,8 @@ namespace UrbanWildlifeRooms.Core
                 return;
             }
             Model.ResetIndividual(id);
+            foodAttemptsById.Remove(id);
+            foodScansById.Remove(id);
             if (vitality.Species == WildlifeSpecies.Squirrel &&
                 agentsById[id] is SquirrelDemoAgent squirrel)
             {
@@ -416,6 +669,9 @@ namespace UrbanWildlifeRooms.Core
         {
             Model?.Reset();
             LastCompletedDayMeals = default;
+            LastCompletedDayFoodTraces = Array.Empty<AnimalFoodDayTrace>();
+            foodAttemptsById.Clear();
+            foodScansById.Clear();
             RefreshWarnings();
             StateChanged?.Invoke();
         }

@@ -122,6 +122,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
                         "Animal Death Limit" => new Vector2(410f, 184f),
                         "Animals Fed Today" => new Vector2(420f, 120f),
                         "Resident Count" => new Vector2(310f, 84f),
+                        "Mature Oaks" => new Vector2(340f, 94f),
                         _ => new Vector2(310f, 76f)
                     };
                     Assert.That(tooltip.sizeDelta, Is.EqualTo(expectedSize));
@@ -173,14 +174,14 @@ namespace UrbanWildlifeRooms.Tests.Editor
                     {
                         EcologicalMetricKind.HumanFunction => "居民",
                         EcologicalMetricKind.FoodAccessibility => "今日已进食",
-                        EcologicalMetricKind.HabitatProvision => "庇护指数",
+                        EcologicalMetricKind.HabitatProvision => "成熟橡树",
                         _ => "存活动物"
                     };
                     var englishName = kind switch
                     {
                         EcologicalMetricKind.HumanFunction => "Residents",
                         EcologicalMetricKind.FoodAccessibility => "Fed today",
-                        EcologicalMetricKind.HabitatProvision => "Shelter index",
+                        EcologicalMetricKind.HabitatProvision => "Mature oaks",
                         _ => "Living animals"
                     };
                     AssertHoverTooltip(holder, kind.ToString(), chineseName, englishName);
@@ -232,13 +233,27 @@ namespace UrbanWildlifeRooms.Tests.Editor
 
                 var residents = hud.GetEcologicalIndicatorRect(EcologicalMetricKind.HumanFunction);
                 var food = hud.GetEcologicalIndicatorRect(EcologicalMetricKind.FoodAccessibility);
+                var oaks = hud.GetEcologicalIndicatorRect(EcologicalMetricKind.HabitatProvision);
                 var animals = hud.GetEcologicalIndicatorRect(EcologicalMetricKind.AnimalSafety);
+                var metrics = generated.GetComponentInChildren<EcologicalMetricsController>(true);
+                Assert.That(metrics, Is.Not.Null);
+                Assert.That(metrics.TotalOakCount, Is.GreaterThan(0));
                 Assert.That(residents.Find("Resident Count Badge").GetComponentInChildren<Text>().text,
                     Is.EqualTo("4/8"));
+                Assert.That(residents.Find("Value Ring").GetComponent<CircularMeterGraphic>().Value,
+                    Is.EqualTo(4f / ResidentPopulationModel.MaximumResidents).Within(0.001f));
                 Assert.That(food.Find("Value Badge").GetComponentInChildren<Text>().text,
                     Is.EqualTo($"0/{AnimalPopulationDefaults.Total}"));
+                Assert.That(food.Find("Value Ring").GetComponent<CircularMeterGraphic>().Value,
+                    Is.EqualTo(0f).Within(0.001f));
+                Assert.That(oaks.Find("Value Badge").GetComponentInChildren<Text>().text,
+                    Is.EqualTo($"{metrics.MatureOakCount}/{metrics.TotalOakCount}"));
+                Assert.That(oaks.Find("Value Ring").GetComponent<CircularMeterGraphic>().Value,
+                    Is.EqualTo(metrics.MatureOakCount / (float)metrics.TotalOakCount).Within(0.001f));
                 Assert.That(animals.Find("Value Badge").GetComponentInChildren<Text>().text,
                     Is.EqualTo($"{AnimalPopulationDefaults.Total}/{AnimalPopulationDefaults.Total}"));
+                Assert.That(animals.Find("Value Ring").GetComponent<CircularMeterGraphic>().Value,
+                    Is.EqualTo(1f).Within(0.001f));
                 Assert.That(hud.AnimalDeathIndicatorRect.Find("Death Count Badge")
                     .GetComponentInChildren<Text>().text,
                     Is.EqualTo($"{AnimalPopulationDefaults.Total}/{EndlessBalanceModel.WildlifeEmergencyFloor}"));
@@ -248,6 +263,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
                 {
                     var tooltip = hud.GetEcologicalIndicatorRect(kind)
                         .Find("Hover Detail").GetComponentInChildren<Text>(true);
+                    Assert.That(tooltip.text, Does.Not.Contain("%"), $"{kind} should show counts, not an index");
                     Assert.That(tooltip.preferredHeight,
                         Is.LessThanOrEqualTo(tooltip.rectTransform.rect.height + 2f),
                         $"{kind} tooltip is clipped");
@@ -375,6 +391,13 @@ namespace UrbanWildlifeRooms.Tests.Editor
             Assert.That(englishFood.Body, Does.Contain("stock, not daily output"));
             Assert.That(englishFood.Body, Does.Contain("actually added today"));
             Assert.That(pages[5].Body, Does.Contain("成熟橡树"));
+            Assert.That(pages[5].Body, Does.Contain("3/4"));
+            Assert.That(pages[5].Body, Does.Contain("不是全部动物的庇护容量"));
+            Assert.That(pages[5].Body, Does.Contain("绿地连通与灌木恢复"));
+            var englishShelter = GameplayGuideCatalog.GetPage(5, false);
+            Assert.That(englishShelter.Body, Does.Contain("3/4"));
+            Assert.That(englishShelter.Body, Does.Contain("not total wildlife shelter capacity"));
+            Assert.That(englishShelter.Body, Does.Contain("recovering shrubs"));
             Assert.That(pages[6].Body, Does.Contain("存活动物"));
             Assert.That(pages[7].Body, Does.Contain("连续 2 天低于危急线"));
             Assert.That(GameplayGuideCatalog.GetPage(7, true, GameMode.Research).Body,
@@ -519,11 +542,48 @@ namespace UrbanWildlifeRooms.Tests.Editor
                 Assert.That(card.GetComponent<Image>().sprite, Is.Not.Null);
                 Assert.That(card.GetComponent<Image>().sprite.name, Is.EqualTo("Tutorial Panel V2"));
                 Assert.That(card.GetComponent<Image>().type, Is.EqualTo(Image.Type.Sliced));
-                Assert.That(card.GetComponent<Image>().color.a, Is.LessThan(1f));
+                Assert.That(card.GetComponent<Image>().color.a, Is.EqualTo(1f));
+                var backing = card.Find("Tutorial Text Backing")?.GetComponent<RoundedPanelGraphic>();
+                Assert.That(backing, Is.Not.Null);
+                Assert.That(backing.color.a, Is.GreaterThanOrEqualTo(0.95f));
+                Assert.That(backing.raycastTarget, Is.False);
+                Assert.That(backing.transform.GetSiblingIndex(),
+                    Is.LessThan(card.Find("Instruction").GetSiblingIndex()));
 
                 overlay.ShowGuide(3, GameplayGuideCatalog.PageCount,
                     GameplayGuideCatalog.GetPage(3, true), null, true);
                 Assert.That(overlay.CurrentInstruction, Does.Contain("居民人数"));
+            }
+            finally
+            {
+                Object.DestroyImmediate(hud);
+            }
+        }
+
+        [Test]
+        public void PracticeInstructionsFitTheReadableCardInBothLanguages()
+        {
+            var hud = new GameObject("Tutorial HUD");
+            try
+            {
+                var overlay = hud.AddComponent<FirstRunOnboardingOverlay>();
+                overlay.Build(UrbanFontResolver.GetFont(), null, HideFlags.None);
+                var body = hud.transform.Find("First Run Onboarding/One Sentence Tutorial Card/Instruction")
+                    .GetComponent<Text>();
+                foreach (var chinese in new[] { true, false })
+                {
+                    foreach (var step in new[]
+                    {
+                        OnboardingStep.SelectResident, OnboardingStep.InspectWaste,
+                        OnboardingStep.PracticeLayout, OnboardingStep.PlaceFood
+                    })
+                    {
+                        overlay.Show(step, null, chinese);
+                        Assert.That(body.preferredHeight,
+                            Is.LessThanOrEqualTo(body.rectTransform.rect.height + 2f),
+                            $"Step {step}, Chinese={chinese}");
+                    }
+                }
             }
             finally
             {
@@ -542,6 +602,17 @@ namespace UrbanWildlifeRooms.Tests.Editor
             Assert.That(model.CompleteStep(OnboardingStep.PracticeLayout), Is.True);
             Assert.That(model.CompleteStep(OnboardingStep.PlaceFood), Is.True);
             Assert.That(model.Step, Is.EqualTo(OnboardingStep.Complete));
+        }
+
+        [Test]
+        public void OakOpeningRequiresTheSquirrelEncounterBeforeCompletion()
+        {
+            var model = new FirstRunOnboardingModel();
+            model.BeginOakOpening();
+            Assert.That(model.Step, Is.EqualTo(OnboardingStep.OakOpening));
+            Assert.That(model.CompleteStep(OnboardingStep.SelectResident), Is.False);
+            Assert.That(model.CompleteStep(OnboardingStep.OakOpening), Is.True);
+            Assert.That(model.IsActive, Is.False);
         }
 
         [Test]
@@ -616,6 +687,41 @@ namespace UrbanWildlifeRooms.Tests.Editor
                 Assert.That(overlay.CurrentHeader, Does.Contain("4/4"));
                 Assert.That(overlay.CurrentInstruction, Does.Contain("每 3 天"));
                 Assert.That(next.gameObject.activeSelf, Is.True);
+            }
+            finally
+            {
+                Object.DestroyImmediate(hud);
+            }
+        }
+
+        [Test]
+        public void OakLessonUsesTheSelectedRoomAndItsCurrentGrowthStage()
+        {
+            var hud = new GameObject("Oak Lesson HUD");
+            try
+            {
+                var overlay = hud.AddComponent<FirstRunOnboardingOverlay>();
+                overlay.Build(UrbanFontResolver.GetFont(), null, HideFlags.None);
+                var oak = RoomLayoutData.All.Single(room => room.Id == "oak-a");
+
+                overlay.Show(OnboardingStep.OakOpening, null, false,
+                    OnboardingPromptPhase.OakRoomIdentified);
+                overlay.ShowOakRoomFact(oak, OakTreeStage.Mature, false,
+                    OnboardingPromptPhase.OakRoomIdentified);
+                Assert.That(overlay.CurrentHeader, Is.EqualTo("Oak Habitat A"));
+                Assert.That(overlay.CurrentInstruction, Does.Contain("Oak habitat"));
+
+                overlay.Show(OnboardingStep.OakOpening, null, false,
+                    OnboardingPromptPhase.OakFunctions);
+                overlay.ShowOakRoomFact(oak, OakTreeStage.Mature, false,
+                    OnboardingPromptPhase.OakFunctions);
+                Assert.That(overlay.CurrentInstruction, Does.Contain("nut stock refills to 1"));
+
+                overlay.Show(OnboardingStep.OakOpening, null, true,
+                    OnboardingPromptPhase.OakFunctions);
+                overlay.ShowOakRoomFact(oak, OakTreeStage.Young, true,
+                    OnboardingPromptPhase.OakFunctions);
+                Assert.That(overlay.CurrentInstruction, Does.Contain("暂不补充坚果"));
             }
             finally
             {

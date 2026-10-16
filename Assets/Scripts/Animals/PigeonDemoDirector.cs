@@ -26,6 +26,8 @@ namespace UrbanWildlifeRooms.Animals
         private Transform selectedAnimal;
 
         public Transform SelectedAnimal => selectedAnimal;
+        public event Action<IWildlifeLayoutAgent> AnimalSelected;
+        public event Action SelectionCleared;
 
         public void Initialize(
             BoardCameraController cameraController,
@@ -113,7 +115,7 @@ namespace UrbanWildlifeRooms.Animals
         {
             if (selectedPigeon != null && selectedPigeon.IsAlive)
             {
-                FollowAnimal(selectedPigeon.transform, 1.45f, selectedPigeon);
+                FollowAnimal(selectedPigeon.transform, 1.45f, selectedPigeon, selectedPigeon);
             }
         }
 
@@ -121,7 +123,7 @@ namespace UrbanWildlifeRooms.Animals
         {
             if (squirrel != null && squirrel.IsAlive)
             {
-                FollowAnimal(squirrel.transform, 1.45f);
+                FollowAnimal(squirrel.transform, 1.45f, squirrel);
             }
         }
 
@@ -129,7 +131,7 @@ namespace UrbanWildlifeRooms.Animals
         {
             if (hedgehog != null && hedgehog.IsAlive)
             {
-                FollowAnimal(hedgehog.transform, 1.35f);
+                FollowAnimal(hedgehog.transform, 1.35f, hedgehog);
             }
         }
 
@@ -137,11 +139,12 @@ namespace UrbanWildlifeRooms.Animals
         {
             if (fox != null && fox.IsAlive)
             {
-                FollowAnimal(fox.transform, 1.85f);
+                FollowAnimal(fox.transform, 1.85f, fox);
             }
         }
 
-        private void FollowAnimal(Transform target, float viewSize, PigeonDemoAgent pigeon = null)
+        private void FollowAnimal(Transform target, float viewSize,
+            IWildlifeLayoutAgent animal, PigeonDemoAgent pigeon = null)
         {
             if (target == null || boardCamera == null || runtime == null ||
                 !runtime.HasActiveRun || runtime.AtDesktop || runtime.PauseMenuOpen ||
@@ -167,6 +170,7 @@ namespace UrbanWildlifeRooms.Animals
             selectedPigeon?.SetSelected(true);
             selectedOther?.SetSelected(true);
             boardCamera.Follow(target, viewSize);
+            AnimalSelected?.Invoke(animal);
         }
 
         private void StopFollowing()
@@ -182,6 +186,7 @@ namespace UrbanWildlifeRooms.Animals
                 selectedOther = null;
             }
             selectedAnimal = null;
+            SelectionCleared?.Invoke();
         }
 
         private static void AddSelection(Component animal, float worldSize)

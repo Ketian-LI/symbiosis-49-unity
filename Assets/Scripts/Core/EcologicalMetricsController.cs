@@ -29,6 +29,7 @@ namespace UrbanWildlifeRooms.Core
         public int LivingUnfedCount { get; private set; }
         public int TotalAnimalSlots { get; private set; }
         public int MatureOakCount { get; private set; }
+        public int TotalOakCount { get; private set; }
 
         public void Initialize(
             WasteManagementController wasteController,
@@ -99,6 +100,7 @@ namespace UrbanWildlifeRooms.Core
                                population.TotalCount(WildlifeSpecies.Fox);
             LivingUnfedCount = needs.LivingUnfedCount;
             MatureOakCount = oakTrees.Model?.Trees.Values.Count(item => item.stage == OakTreeStage.Mature) ?? 0;
+            TotalOakCount = oakTrees.Model?.Trees.Count ?? 0;
             var hungry = needs.Model?.Animals.Values.Count(item => item.hungerDays >= 1) ?? 0;
             Snapshot = EcologicalMetricsModel.Calculate(
                 waste.HumanFunctionPenalty,

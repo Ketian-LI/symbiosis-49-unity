@@ -28,7 +28,11 @@ namespace UrbanWildlifeRooms.Presentation
             int beforeBufferedGarages = 0, int afterBufferedGarages = 0,
             int beforeGreenCells = -1, int afterGreenCells = -1,
             int livingPigeons = -1,
-            int beforePigeonSeedMealCeiling = -1, int afterPigeonSeedMealCeiling = -1)
+            int beforePigeonSeedMealCeiling = -1, int afterPigeonSeedMealCeiling = -1,
+            int livingHedgehogs = -1,
+            int beforeRecoveredShelterPairs = -1,
+            int beforeSeedStockCeiling = -1, int afterSeedStockCeiling = -1,
+            int currentSeedStock = -1)
         {
             MovementCost = movementCost;
             Before = before;
@@ -48,6 +52,7 @@ namespace UrbanWildlifeRooms.Presentation
             BeforeShelterPairs = beforeShelterPairs;
             AfterShelterPairs = afterShelterPairs;
             RecoveredShelterPairs = recoveredShelterPairs;
+            BeforeRecoveredShelterPairs = beforeRecoveredShelterPairs;
             MovedShrubs = movedShrubs;
             ShelterRecoveryDay = shelterRecoveryDay;
             BeforeAnimalConnections = beforeAnimalConnections;
@@ -61,6 +66,10 @@ namespace UrbanWildlifeRooms.Presentation
             LivingPigeons = livingPigeons;
             BeforePigeonSeedMealCeiling = beforePigeonSeedMealCeiling;
             AfterPigeonSeedMealCeiling = afterPigeonSeedMealCeiling;
+            LivingHedgehogs = livingHedgehogs;
+            BeforeSeedStockCeiling = beforeSeedStockCeiling;
+            AfterSeedStockCeiling = afterSeedStockCeiling;
+            CurrentSeedStock = currentSeedStock;
         }
 
         public int MovementCost { get; }
@@ -81,6 +90,7 @@ namespace UrbanWildlifeRooms.Presentation
         public int BeforeShelterPairs { get; }
         public int AfterShelterPairs { get; }
         public int RecoveredShelterPairs { get; }
+        public int BeforeRecoveredShelterPairs { get; }
         public int MovedShrubs { get; }
         public int ShelterRecoveryDay { get; }
         public int BeforeAnimalConnections { get; }
@@ -94,6 +104,10 @@ namespace UrbanWildlifeRooms.Presentation
         public int LivingPigeons { get; }
         public int BeforePigeonSeedMealCeiling { get; }
         public int AfterPigeonSeedMealCeiling { get; }
+        public int LivingHedgehogs { get; }
+        public int BeforeSeedStockCeiling { get; }
+        public int AfterSeedStockCeiling { get; }
+        public int CurrentSeedStock { get; }
     }
 
     public sealed class RoomLayoutEditorController : MonoBehaviour
@@ -134,11 +148,13 @@ namespace UrbanWildlifeRooms.Presentation
         private int decisionRevision;
         private int assessedRevision = -1;
         private int assessedDay = -1;
+        private int assessedFoodRevision = -1;
         private bool assessedMaterialImpact;
         private bool assessedCanHold;
         private ShrubShelterModel shrubShelter;
         private OakTreeGrowthModel oakTrees;
         private AnimalPopulationController animalPopulation;
+        private NaturalFoodModel naturalFood;
         private IReadOnlyDictionary<PigeonDemoAgent, string> pigeonHomes;
 
         public event Action StateChanged;
@@ -162,6 +178,9 @@ namespace UrbanWildlifeRooms.Presentation
         public int LastConfirmedMovementDay => lastConfirmedMovementDay;
         public int LastConfirmedPlanningDay => lastConfirmedPlanningDay;
         public int LastConfirmedHoldDay => lastConfirmedHoldDay;
+        // Valid only for the most recent confirmation in this runtime. The
+        // outcome recorder takes a compact copy when RoomsMoved fires.
+        public RoomLayoutImpactPreview? LastConfirmedImpact { get; private set; }
         public bool HasMaterialImpact => AssessDailyDecision().material;
         public bool CanHoldLayout => AssessDailyDecision().canHold;
         private bool DailyDecisionEligible => GetChangedRoomIds().Count == 0
@@ -249,7 +268,7 @@ namespace UrbanWildlifeRooms.Presentation
                     ? GetChangedRoomIds().Count > 0
                         ? "Forecast changed · free today"
                         : runtime != null && runtime.Mode == GameMode.Sandbox
-                            ? "Stable forecast · keep layout"
+                            ? "Keep layout and observe risks"
                         : runtime != null && runtime.HasDailyAction
                             ? "Today's action complete"
                             : "Move a room or feed to advance"
@@ -295,7 +314,7 @@ namespace UrbanWildlifeRooms.Presentation
                         ? GetChangedRoomIds().Count > 0
                             ? "预测已改变 · 今日调整免费"
                             : runtime != null && runtime.Mode == GameMode.Sandbox
-                                ? "预测稳定 · 可选择维持布局"
+                                ? "可选择维持布局 · 继续观察风险"
                             : runtime != null && runtime.HasDailyAction
                                 ? "今日行动已完成 · 可确认检查"
                                 : "可确认检查 · 今日仍需交换或投喂"
@@ -321,6 +340,12 @@ namespace UrbanWildlifeRooms.Presentation
             animalPopulation = population;
         }
 
+        public void BindNaturalFood(NaturalFoodModel food)
+        {
+            naturalFood = food;
+            assessedRevision = -1;
+        }
+
         public void BindResidentPopulation(ResidentPopulationModel population)
         {
             residentPopulation = population;
@@ -332,10 +357,12 @@ namespace UrbanWildlifeRooms.Presentation
             if (residentPopulation == null || runtime == null || model == null ||
                 !IsEditing || dragging)
                 return (false, false);
-            if (assessedRevision != decisionRevision || assessedDay != runtime.Clock.DayNumber)
+            if (assessedRevision != decisionRevision || assessedDay != runtime.Clock.DayNumber ||
+                assessedFoodRevision != (naturalFood?.Revision ?? -1))
             {
                 assessedRevision = decisionRevision;
                 assessedDay = runtime.Clock.DayNumber;
+                assessedFoodRevision = naturalFood?.Revision ?? -1;
                 assessedMaterialImpact = false;
                 assessedCanHold = false;
                 if (TryGetImpactPreview(residentPopulation, out var impact, true))
@@ -363,6 +390,19 @@ namespace UrbanWildlifeRooms.Presentation
             return HabitatFoodNetworkModel.ForecastPigeonSeedMealCeiling(
                 navigation, dayNumber, livingByHome);
         }
+
+        public int ForecastCurrentPigeonSeedStockCeiling(RoomNavigationMap navigation,
+            int dayNumber)
+        {
+            if (pigeonHomes == null || naturalFood == null) return -1;
+            var livingByHome = pigeonHomes.Where(pair => pair.Key != null && pair.Key.IsAlive)
+                .GroupBy(pair => pair.Value, StringComparer.Ordinal)
+                .Select(group => new KeyValuePair<string, int>(group.Key, group.Count()));
+            return HabitatFoodNetworkModel.ForecastPigeonSeedStockCeiling(
+                navigation, dayNumber, livingByHome, naturalFood.Sources.Values);
+        }
+
+        public int NaturalFoodRevision => naturalFood?.Revision ?? -1;
 
         // Project the actual drop operation on a copy. No live room, resident,
         // resource balance, or saved layout is changed by this preview.
@@ -448,15 +488,20 @@ namespace UrbanWildlifeRooms.Presentation
             var projectedRecoveryNavigation = new RoomNavigationMap(
                 projected.ExportData(), RoomLayoutData.All, cellSize,
                 true, shelterRecoveryDay);
+            var originalRecoveryNavigation = new RoomNavigationMap(
+                original.ExportData(), RoomLayoutData.All, cellSize,
+                true, shelterRecoveryDay);
             var movedShrubs = new HashSet<string>(changedRoomIds.FindAll(id =>
                 RoomLayoutData.All.Any(room => room.Id == id && room.Type == RoomType.ShrubHabitat)),
                 StringComparer.Ordinal);
             var shelterDay = runtime.Clock.DayNumber;
             var beforeFoodAccess = HabitatFoodNetworkModel.ForecastHabitatAccess(
-                originalAnimalNavigation, originalNavigation, seedForecastDay, oakTrees);
+                originalAnimalNavigation, originalNavigation, seedForecastDay, oakTrees,
+                existingSources: naturalFood?.Sources.Values);
             var afterFoodAccess = HabitatFoodNetworkModel.ForecastHabitatAccess(
                 projectedAnimalNavigation, projectedNavigation, seedForecastDay,
-                oakTrees, new HashSet<string>(changedRoomIds, StringComparer.Ordinal));
+                oakTrees, new HashSet<string>(changedRoomIds, StringComparer.Ordinal),
+                naturalFood?.Sources.Values);
             var livingPigeonsByHome = pigeonHomes?.Where(pair => pair.Key != null && pair.Key.IsAlive)
                 .GroupBy(pair => pair.Value, StringComparer.Ordinal)
                 .Select(group => new KeyValuePair<string, int>(group.Key, group.Count()))
@@ -500,7 +545,21 @@ namespace UrbanWildlifeRooms.Presentation
                         originalAnimalNavigation, seedForecastDay, livingPigeonsByHome),
                 livingPigeonsByHome == null ? -1 :
                     HabitatFoodNetworkModel.ForecastPigeonSeedMealCeiling(
-                        projectedAnimalNavigation, seedForecastDay, livingPigeonsByHome));
+                        projectedAnimalNavigation, seedForecastDay, livingPigeonsByHome),
+                animalPopulation?.LivingCount(WildlifeSpecies.Hedgehog) ?? -1,
+                shrubShelter?.ConnectedPairCount(originalRecoveryNavigation,
+                    shelterRecoveryDay) ?? -1,
+                livingPigeonsByHome == null || naturalFood == null ? -1 :
+                    HabitatFoodNetworkModel.ForecastPigeonSeedStockCeiling(
+                        originalAnimalNavigation, seedForecastDay, livingPigeonsByHome,
+                        naturalFood.Sources.Values),
+                livingPigeonsByHome == null || naturalFood == null ? -1 :
+                    HabitatFoodNetworkModel.ForecastPigeonSeedStockCeiling(
+                        projectedAnimalNavigation, seedForecastDay, livingPigeonsByHome,
+                        naturalFood.Sources.Values),
+                naturalFood == null ? -1 : naturalFood.Sources.Values
+                    .Where(source => source.kind == NaturalFoodKind.Seed)
+                    .Sum(source => source.portions));
             return true;
         }
 
@@ -537,6 +596,7 @@ namespace UrbanWildlifeRooms.Presentation
 
             ApplyAllPlacements();
             snapshot = model.CaptureSnapshot();
+            LastConfirmedImpact = null;
             LayoutRestored?.Invoke();
             NotifyStateChanged();
             return true;
@@ -566,6 +626,7 @@ namespace UrbanWildlifeRooms.Presentation
             lastConfirmedMovementDay = 0;
             lastConfirmedPlanningDay = 0;
             lastConfirmedHoldDay = 0;
+            LastConfirmedImpact = null;
             snapshot = model.CaptureSnapshot();
             ApplyAllPlacements();
             LayoutConfirmed?.Invoke();
@@ -662,6 +723,9 @@ namespace UrbanWildlifeRooms.Presentation
 
             var movedRoomIds = GetChangedRoomIds();
             var wasGuidedPractice = guidedTargetRoomId != null;
+            LastConfirmedImpact = movedRoomIds.Count > 0 && residentPopulation != null &&
+                                  TryGetImpactPreview(residentPopulation, out var confirmedImpact)
+                ? confirmedImpact : null;
             snapshot = model.CaptureSnapshot();
             ExitEditing();
             if (!wasGuidedPractice)
@@ -1248,17 +1312,29 @@ namespace UrbanWildlifeRooms.Presentation
                 (runtime.Mode == GameMode.Sandbox ? 1 : 0);
             var navigation = new RoomNavigationMap(
                 placements, RoomLayoutData.All, cellSize, true, routeDay);
+            var pedestrianNavigation = new RoomNavigationMap(
+                placements, RoomLayoutData.All, cellSize, humanRoadsOnly: true);
             foreach (var view in views.Values)
             {
-                var connected = new HashSet<AnimalPassagePort>();
+                var connectedAnimal = new HashSet<AnimalPassagePort>();
                 foreach (var neighbour in navigation.NeighboursOf(view.Spec.Id))
                 {
                     if (navigation.TryGetAnimalConnectionPort(view.Spec.Id, neighbour, out var port))
                     {
-                        connected.Add(port);
+                        connectedAnimal.Add(port);
                     }
                 }
-                view.SetAnimalPassageConnections(connected);
+                var connectedPedestrian = new HashSet<AnimalPassagePort>();
+                foreach (var neighbour in pedestrianNavigation.NeighboursOf(view.Spec.Id))
+                {
+                    if (pedestrianNavigation.TryGetPedestrianConnectionPort(
+                            view.Spec.Id, neighbour, out var port))
+                    {
+                        connectedPedestrian.Add(port);
+                    }
+                }
+                view.SetAnimalPassageConnections(connectedAnimal);
+                view.SetPedestrianPassageConnections(connectedPedestrian);
             }
         }
 
@@ -1267,6 +1343,7 @@ namespace UrbanWildlifeRooms.Presentation
             foreach (var view in views.Values)
             {
                 view.SetAnimalPassageConnections(Array.Empty<AnimalPassagePort>());
+                view.SetPedestrianPassageConnections(Array.Empty<AnimalPassagePort>());
             }
         }
     }

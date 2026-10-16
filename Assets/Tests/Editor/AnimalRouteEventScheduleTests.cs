@@ -89,6 +89,38 @@ namespace UrbanWildlifeRooms.Tests.Editor
             Assert.That(moved.TryFindRoute("fox-den", "canteen-a", out _), Is.True);
         }
 
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(4)]
+        [TestCase(6)]
+        [TestCase(8)]
+        public void SeveralOneSwapRoutesImprovePigeonAccessWithoutBreakingGreenCore(int day)
+        {
+            var baseline = new RoomNavigationMap(new RoomLayoutModel(RoomLayoutData.All).ExportData(),
+                RoomLayoutData.All, 2f, true, day);
+            var homes = new[] { "pigeon-a", "pigeon-b", "pigeon-c", "pigeon-d" }
+                .Select(id => new System.Collections.Generic.KeyValuePair<string, int>(id, 3)).ToArray();
+            var baselineMeals = HabitatFoodNetworkModel.ForecastPigeonSeedMealCeiling(
+                baseline, day, homes);
+            var movable = RoomLayoutData.All.Where(room => room.Movable).ToArray();
+            var better = new System.Collections.Generic.List<string>();
+            for (var first = 0; first < movable.Length; first++)
+            for (var second = first + 1; second < movable.Length; second++)
+            {
+                var layout = new RoomLayoutModel(RoomLayoutData.All);
+                if (!layout.TrySwap(movable[first].Id, movable[second].Id)) continue;
+                var map = new RoomNavigationMap(layout.ExportData(), RoomLayoutData.All, 2f, true, day);
+                var green = GreenNetworkModel.ConnectedCount(map);
+                var meals = HabitatFoodNetworkModel.ForecastPigeonSeedMealCeiling(map, day, homes);
+                if (green >= GreenNetworkModel.StableCellCount && meals > baselineMeals)
+                    better.Add($"{movable[first].Id}/{movable[second].Id}: meals {meals}, green {green}");
+            }
+            TestContext.WriteLine($"day={day}; baselineMeals={baselineMeals}; " +
+                                  $"food-improving swaps={better.Count}");
+            Assert.That(better.Count, Is.GreaterThanOrEqualTo(2),
+                $"Day {day} should leave more than one food-improving layout response.");
+        }
+
         private static bool IsStraight(System.Collections.Generic.IReadOnlyList<AnimalPassagePort> ports) =>
             ports.Count == 2 && ((int)ports[0].Edge + 2) % 4 == (int)ports[1].Edge;
 

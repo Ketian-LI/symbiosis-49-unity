@@ -8,12 +8,76 @@ using UrbanWildlifeRooms.Core;
 using UrbanWildlifeRooms.Data;
 using UrbanWildlifeRooms.Presentation;
 using UrbanWildlifeRooms.UI;
+using UrbanWildlifeRooms.Animals;
 
 namespace UrbanWildlifeRooms.Tests.PlayMode
 {
     public sealed class MainMenuLiveSceneTests
     {
         [UnityTest]
+        public IEnumerator DesktopShowsOnlyCentralOakAndSquirrelOnOriginalBoard()
+        {
+            yield return SceneManager.LoadSceneAsync("Main", LoadSceneMode.Single);
+            yield return null;
+
+            var bootstrap = Object.FindFirstObjectByType<UrbanWildlifeBootstrap>();
+            var generated = bootstrap.transform.Find(UrbanWildlifeBootstrap.GeneratedRootName);
+            var preview = generated.GetComponent<ConstructionOpeningBoardPreview>();
+            var foundation = generated.Find("7x7 Modular Floor/Fixed Board Foundation");
+            var oak = System.Array.Find(generated.GetComponentsInChildren<RoomView>(true),
+                room => room.Spec.Id == "oak-a");
+            var squirrels = generated.GetComponentsInChildren<SquirrelDemoAgent>(true);
+
+            Assert.That(preview, Is.Not.Null);
+            Assert.That(preview.IsPreviewing, Is.True);
+            Assert.That(preview.IsCaseClosed, Is.True,
+                "The desktop must begin with both lid halves shut.");
+            Assert.That(preview.CaseShell.Find("West lid hinge/Navy lid half"),
+                Is.Not.Null);
+            Assert.That(preview.CaseShell.Find("East lid hinge/Navy lid half"),
+                Is.Not.Null);
+            Assert.That(foundation, Is.Not.Null);
+            Assert.That(foundation.gameObject.activeInHierarchy, Is.True);
+            Assert.That(oak.VisualRoot.position.x, Is.EqualTo(0f).Within(0.01f));
+            Assert.That(oak.VisualRoot.position.z, Is.EqualTo(0f).Within(0.01f));
+            var matureTree = System.Array.Find(
+                oak.VisualRoot.GetComponentsInChildren<Transform>(true),
+                child => child.name == "Low-poly Mature Tree");
+            Assert.That(matureTree, Is.Not.Null,
+                "The opening should reuse the original three-dimensional oak.");
+            var openingTreeScale = matureTree.localScale.x;
+            var openingTreePosition = matureTree.localPosition;
+            Assert.That(openingTreePosition.x, Is.EqualTo(-0.24f).Within(0.001f));
+            Assert.That(System.Array.FindAll(generated.GetComponentsInChildren<RoomView>(true),
+                room => room.VisualRoot.gameObject.activeInHierarchy).Length, Is.EqualTo(1));
+            Assert.That(System.Array.FindAll(squirrels,
+                animal => System.Array.Exists(animal.GetComponentsInChildren<Renderer>(true),
+                    renderer => renderer.enabled)).Length, Is.EqualTo(1));
+            Assert.That(System.Array.FindAll(
+                generated.GetComponentsInChildren<PigeonDemoAgent>(true),
+                animal => animal.gameObject.activeInHierarchy).Length, Is.Zero,
+                "Legacy pigeons must not appear on vacant construction plots.");
+
+            preview.RestoreFullBoard();
+            Assert.That(preview.IsPreviewing, Is.False);
+            Assert.That(preview.CaseShell.gameObject.activeSelf, Is.False,
+                "The older full-board mode must not retain the closed case lid.");
+            Assert.That(matureTree.localScale.x * 1.55f,
+                Is.EqualTo(openingTreeScale).Within(0.001f),
+                "Returning to the older mode must restore its original tree scale.");
+            Assert.That(Vector3.Distance(matureTree.localPosition,
+                openingTreePosition), Is.GreaterThan(0.1f),
+                "Returning to the older mode must restore its corner planting position.");
+            Assert.That(System.Array.FindAll(generated.GetComponentsInChildren<RoomView>(true),
+                room => room.VisualRoot.gameObject.activeInHierarchy).Length, Is.EqualTo(49));
+            Assert.That(System.Array.FindAll(
+                generated.GetComponentsInChildren<PigeonDemoAgent>(true),
+                animal => animal.gameObject.activeInHierarchy).Length,
+                Is.GreaterThan(0), "The legacy board must be restorable.");
+        }
+
+        [UnityTest]
+        [Ignore("Legacy Sandbox card now enters Endless Build; construction navigation tests cover the public menu.")]
         public IEnumerator SandboxEntryAndReturnMoveCameraAcrossTheSameVisibleBoard()
         {
             yield return SceneManager.LoadSceneAsync("Main", LoadSceneMode.Single);
@@ -68,15 +132,19 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             sandbox.onClick.Invoke();
             var difficultyCard = menu.Find("Endless Difficulty Overlay/Endless Difficulty Card");
             Assert.That(difficultyCard, Is.Not.Null);
+            Assert.That(difficultyCard.Find("Difficulty Setting 2 Label"), Is.Null,
+                "Retired community-health controls must not leave empty rows.");
+            var rulesText = difficultyCard.Find("Difficulty Rule Summary").GetComponent<Text>().text;
+            Assert.That(rulesText.ToLowerInvariant(), Does.Not.Contain("community"));
+            Assert.That(rulesText, Does.Not.Contain("社区活力"));
             Assert.That(runtime.AtDesktop, Is.True,
                 "Selecting Endless should expose rules before starting the run.");
             difficultyCard.Find("Gentle Difficulty").GetComponent<Button>().onClick.Invoke();
-            difficultyCard.Find("Difficulty Setting 2 Increase")
+            difficultyCard.Find("Difficulty Setting 0 Increase")
                 .GetComponent<Button>().onClick.Invoke();
             difficultyCard.Find("Start Configured Endless")
                 .GetComponent<Button>().onClick.Invoke();
             Assert.That(runtime.AtDesktop, Is.False);
-            Assert.That(runtime.SandboxSettings.startingCommunity, Is.EqualTo(75));
             Assert.That(runtime.SandboxSettings.wildlifeFloor, Is.EqualTo(9));
             Assert.That(generated.GetComponentInChildren<EndlessBalanceController>(true)
                 .Model.CurrentWildlifeFloor, Is.EqualTo(9));
@@ -130,6 +198,7 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
         }
 
         [UnityTest]
+        [Ignore("Legacy difficulty overlay is retired from the public Endless Build flow.")]
         public IEnumerator ExistingEndlessRunCanContinueOrConfirmNewSettings()
         {
             yield return SceneManager.LoadSceneAsync("Main", LoadSceneMode.Single);
@@ -154,7 +223,7 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             Assert.That(runtime.AtDesktop, Is.True);
             card.Find("Continue Existing Endless").GetComponent<Button>().onClick.Invoke();
             Assert.That(runtime.AtDesktop, Is.False);
-            Assert.That(runtime.SandboxSettings.startingCommunity, Is.EqualTo(75));
+            Assert.That(runtime.SandboxSettings.wildlifeFloor, Is.EqualTo(8));
 
             runtime.ReturnToDesktop();
             yield return null;
@@ -165,12 +234,12 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             start.onClick.Invoke();
             Assert.That(runtime.AtDesktop, Is.True,
                 "The first New Run click must not replace a resumable run.");
-            Assert.That(runtime.SandboxSettings.startingCommunity, Is.EqualTo(75));
+            Assert.That(runtime.SandboxSettings.wildlifeFloor, Is.EqualTo(8));
             Assert.That(start.GetComponentInChildren<Text>().text, Does.Contain("Confirm").Or.Contain("确认"));
             start.onClick.Invoke();
             Assert.That(runtime.AtDesktop, Is.False);
-            Assert.That(runtime.SandboxSettings.startingCommunity, Is.EqualTo(50));
-            Assert.That(runtime.SandboxSettings.commuteTargetPercent, Is.EqualTo(100));
+            Assert.That(runtime.SandboxSettings.wildlifeFloor, Is.EqualTo(13));
+            Assert.That(runtime.SandboxSettings.wildlifeGraceDays, Is.EqualTo(2));
 
             if (BuildVariantSettings.SupportsResearch)
             {

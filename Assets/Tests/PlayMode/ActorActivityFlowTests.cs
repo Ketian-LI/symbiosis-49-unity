@@ -15,6 +15,55 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
     public sealed class ActorActivityFlowTests
     {
         [UnityTest]
+        public IEnumerator OakGrowthAnimatesOnlyLiveDayChangesAndSnapsOnRestore()
+        {
+            var plot = new GameObject("Animated Oak Plot");
+            var felled = new GameObject("Felled");
+            var sapling = new GameObject("Sapling");
+            var young = new GameObject("Young");
+            var mature = new GameObject("Mature");
+            foreach (var root in new[] { felled, sapling, young, mature })
+                root.transform.SetParent(plot.transform, false);
+            try
+            {
+                var visual = plot.AddComponent<OakTreeStageVisual>();
+                var anchor = new Vector3(1f, 0f, -1f);
+                visual.Initialize(felled, sapling, young, mature,
+                    OakTreeStage.Young, anchor);
+                Time.timeScale = 0f;
+                visual.AnimateGrowthTo(OakTreeStage.Mature);
+
+                Assert.That(visual.Stage, Is.EqualTo(OakTreeStage.Mature));
+                Assert.That(visual.IsGrowthAnimating, Is.True);
+                Assert.That(mature.activeSelf, Is.True);
+                Assert.That(mature.transform.localScale.x, Is.LessThan(1f));
+                Assert.That(mature.transform.localPosition.x +
+                    mature.transform.localScale.x * anchor.x, Is.EqualTo(anchor.x).Within(0.001f),
+                    "The plant must grow in place, not slide across the plot.");
+
+                yield return new WaitForSecondsRealtime(1f);
+                Assert.That(visual.IsGrowthAnimating, Is.False);
+                Assert.That(young.activeSelf, Is.False);
+                Assert.That(mature.activeSelf, Is.True);
+                Assert.That(mature.transform.localScale, Is.EqualTo(Vector3.one));
+                Assert.That(mature.transform.localPosition, Is.EqualTo(Vector3.zero));
+
+                visual.SetStage(OakTreeStage.Young);
+                visual.AnimateGrowthTo(OakTreeStage.Mature);
+                visual.SetStage(OakTreeStage.Sapling);
+                Assert.That(visual.IsGrowthAnimating, Is.False);
+                Assert.That(sapling.activeSelf, Is.True);
+                Assert.That(mature.activeSelf, Is.False);
+                Assert.That(mature.transform.localScale, Is.EqualTo(Vector3.one));
+            }
+            finally
+            {
+                Time.timeScale = 1f;
+                Object.Destroy(plot);
+            }
+        }
+
+        [UnityTest]
         public IEnumerator EveryLivingAnimalCanOpenAndLeaveTheFollowView()
         {
             yield return LoadRun();
@@ -86,47 +135,39 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator TutorialKeepsPeopleAndDaytimeAnimalsMovingWithoutAdvancingTheClock()
+        public IEnumerator OakOpeningShowsOnlyOneRoamingSquirrelWithoutAdvancingTheClock()
         {
             yield return LoadRun();
             var generated = Object.FindFirstObjectByType<UrbanWildlifeBootstrap>()
                 .transform.Find(UrbanWildlifeBootstrap.GeneratedRootName);
             var runtime = generated.GetComponentInChildren<GameRuntimeController>(true);
             runtime.StartNewRun(GameMode.Sandbox);
-            runtime.SetOnboardingOpen(true);
 
             Assert.That(runtime.IsPaused, Is.True);
             Assert.That(Time.timeScale, Is.Zero);
             var initialClock = runtime.Clock.TotalSeconds;
-            var citizens = generated.GetComponentsInChildren<CitizenDemoAgent>(true);
-            var pigeons = generated.GetComponentsInChildren<PigeonDemoAgent>(true);
-            Assert.That(citizens.Length, Is.GreaterThan(0));
-            Assert.That(pigeons.Length, Is.GreaterThan(0));
+            var squirrels = generated.GetComponentsInChildren<SquirrelDemoAgent>();
+            Assert.That(squirrels.Length, Is.EqualTo(1));
+            Assert.That(generated.GetComponentsInChildren<CitizenDemoAgent>().Length, Is.Zero);
+            Assert.That(generated.GetComponentsInChildren<PigeonDemoAgent>().Length, Is.Zero);
 
-            var citizenMoved = false;
-            var pigeonMoved = false;
-            var citizenOrigin = citizens[0].transform.position;
-            var pigeonOrigin = pigeons[0].transform.position;
+            var squirrelMoved = false;
+            var squirrelOrigin = squirrels[0].transform.position;
             var deadline = Time.realtimeSinceStartup + 6f;
-            while (Time.realtimeSinceStartup < deadline && (!citizenMoved || !pigeonMoved))
+            while (Time.realtimeSinceStartup < deadline && !squirrelMoved)
             {
                 yield return null;
-                citizenMoved |= Vector3.Distance(citizenOrigin, citizens[0].transform.position) > 0.04f;
-                pigeonMoved |= Vector3.Distance(pigeonOrigin, pigeons[0].transform.position) > 0.04f;
+                squirrelMoved |= Vector3.Distance(squirrelOrigin, squirrels[0].transform.position) > 0.04f;
             }
 
-            Assert.That(citizenMoved, Is.True, "Residents should visibly move while the guide is open.");
-            Assert.That(pigeonMoved, Is.True, "Daytime animals should visibly move while the guide is open.");
+            Assert.That(squirrelMoved, Is.True, "The opening squirrel should be alive and moving.");
             Assert.That(runtime.Clock.TotalSeconds, Is.EqualTo(initialClock).Within(0.001d));
 
             runtime.SetSpeed(0);
-            var pausedCitizenPosition = citizens[0].transform.position;
-            var pausedPigeonPosition = pigeons[0].transform.position;
+            var pausedSquirrelPosition = squirrels[0].transform.position;
             yield return new WaitForSecondsRealtime(0.3f);
-            Assert.That(Vector3.Distance(pausedCitizenPosition, citizens[0].transform.position),
-                Is.LessThan(0.001f), "An explicit player pause must still freeze residents.");
-            Assert.That(Vector3.Distance(pausedPigeonPosition, pigeons[0].transform.position),
-                Is.LessThan(0.001f), "An explicit player pause must still freeze animals.");
+            Assert.That(Vector3.Distance(pausedSquirrelPosition, squirrels[0].transform.position),
+                Is.LessThan(0.001f), "An explicit player pause must still freeze the squirrel.");
         }
 
         [UnityTest]

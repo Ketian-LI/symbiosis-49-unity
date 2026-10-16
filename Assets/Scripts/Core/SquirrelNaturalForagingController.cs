@@ -12,6 +12,7 @@ namespace UrbanWildlifeRooms.Core
         private readonly Dictionary<SquirrelDemoAgent, float> retryTimers = new();
         private GameRuntimeController runtime;
         private NaturalFoodController naturalFood;
+        private AnimalNeedsController needs;
         private AnimalNavigationCoordinator navigation;
         private GarageTrafficController traffic;
         private Transform mapRoot;
@@ -23,10 +24,12 @@ namespace UrbanWildlifeRooms.Core
             AnimalNavigationCoordinator navigationCoordinator,
             GarageTrafficController trafficController,
             Transform boardRoot,
-            IEnumerable<SquirrelDemoAgent> agents)
+            IEnumerable<SquirrelDemoAgent> agents,
+            AnimalNeedsController needsController = null)
         {
             runtime = runtimeController;
             naturalFood = foodController;
+            needs = needsController;
             navigation = navigationCoordinator;
             navigation.NavigationChanged += HandleNavigationChanged;
             traffic = trafficController;
@@ -121,6 +124,7 @@ namespace UrbanWildlifeRooms.Core
             var routeMap = navigation.NavigationMapFor(squirrel);
             var cacheRoom = FindRoomId(squirrel.CachePosition);
             var currentRoom = FindRoomId(squirrel.transform.position);
+            needs?.RecordFoodScan(squirrel, currentRoom);
             if (!HabitatFoodNetworkModel.IsWithinSquirrelHomeRange(
                     routeMap, cacheRoom, currentRoom))
             {
@@ -162,12 +166,21 @@ namespace UrbanWildlifeRooms.Core
                         toFood,
                         toCache,
                         0.15f,
-                        () => naturalFood.TryConsume(source.RoomId, NaturalFoodKind.Nut),
+                        () =>
+                        {
+                            var taken = naturalFood.TryConsume(source.RoomId, NaturalFoodKind.Nut);
+                            needs?.RecordFoodArrival(squirrel, source.RoomId,
+                                NaturalFoodKind.Nut.ToString(), taken);
+                            return taken;
+                        },
                         foodHazard,
                         foodFatal,
                         cacheHazard,
                         cacheFatal))
                 {
+                    needs?.RecordFoodTarget(squirrel, source.RoomId,
+                        NaturalFoodKind.Nut.ToString(),
+                        naturalFood.Model.PortionsIn(source.RoomId, NaturalFoodKind.Nut), true);
                     retryTimers[squirrel] = 4f;
                     return;
                 }

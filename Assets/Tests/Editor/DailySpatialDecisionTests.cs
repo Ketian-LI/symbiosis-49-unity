@@ -29,11 +29,11 @@ namespace UrbanWildlifeRooms.Tests.Editor
             Assert.That(DailySpatialDecision.HasMaterialImpact(
                 Preview(beforeWorkers: 4, afterWorkers: 3)), Is.True);
             Assert.That(DailySpatialDecision.HasMaterialImpact(
-                Preview(beforeSeeds: 12, afterSeeds: 13)), Is.True);
+                Preview(beforeSeeds: 11, afterSeeds: 12)), Is.True);
         }
 
         [Test]
-        public void MovingShrubQualifiesBecauseShelterMustRecover()
+        public void MovingShrubWithoutChangingCurrentOrFutureCoverDoesNotQualify()
         {
             var impact = new RoomLayoutImpactPreview(0,
                 new ResidentCommutePreview(4, 0),
@@ -43,23 +43,56 @@ namespace UrbanWildlifeRooms.Tests.Editor
                 recoveredShelterPairs: 2, movedShrubs: 1,
                 beforeAnimalConnections: 4, afterAnimalConnections: 4,
                 beforeGreenCells: 4, afterGreenCells: 4,
-                beforePigeonSeedMealCeiling: 12, afterPigeonSeedMealCeiling: 12);
+                beforePigeonSeedMealCeiling: 12, afterPigeonSeedMealCeiling: 12,
+                livingHedgehogs: 2, beforeRecoveredShelterPairs: 2);
+            Assert.That(DailySpatialDecision.HasMaterialImpact(impact), Is.False);
+        }
+
+        [Test]
+        public void FutureShelterGainCountsEvenWhenTonightIsUnchanged()
+        {
+            var impact = new RoomLayoutImpactPreview(0,
+                new ResidentCommutePreview(4, 0), new ResidentCommutePreview(4, 0),
+                4, 4, 12, 12, 0, 0, 0, null, 0, 0, null,
+                beforeShelterPairs: 0, afterShelterPairs: 0,
+                recoveredShelterPairs: 2, movedShrubs: 1,
+                beforeGreenCells: 4, afterGreenCells: 4,
+                livingHedgehogs: 2, beforeRecoveredShelterPairs: 0);
             Assert.That(DailySpatialDecision.HasMaterialImpact(impact), Is.True);
         }
 
         [Test]
-        public void KeepingLayoutRequiresCoreForecastToBeStable()
+        public void SurplusAndRawConnectivityChangesDoNotCountAsDailyDecision()
+        {
+            var impact = new RoomLayoutImpactPreview(0,
+                new ResidentCommutePreview(4, 0), new ResidentCommutePreview(4, 0),
+                2, 3, 12, 13, 0, 1, 0, null, 0, 1, null,
+                beforeAnimalConnections: 4, afterAnimalConnections: 5,
+                beforeBufferedGarages: 0, afterBufferedGarages: 1,
+                beforeGreenCells: 4, afterGreenCells: 5,
+                livingPigeons: 12,
+                beforePigeonSeedMealCeiling: 12, afterPigeonSeedMealCeiling: 12);
+            Assert.That(DailySpatialDecision.HasMaterialImpact(impact), Is.False);
+        }
+
+        [Test]
+        public void KeepingLayoutAllowsAnInformedRiskRatherThanForcingASwap()
         {
             Assert.That(DailySpatialDecision.CanKeepLayout(Preview(), 4), Is.True);
             Assert.That(DailySpatialDecision.BlockingRisk(
                 Preview(beforeWorkers: 3, afterWorkers: 3), 4),
                 Is.EqualTo(DailySpatialDecision.Risk.Commute));
             Assert.That(DailySpatialDecision.CanKeepLayout(
-                Preview(beforeWaste: 1), 4), Is.False);
+                Preview(beforeWorkers: 3, afterWorkers: 3), 4), Is.True,
+                "A missed commute is an economic consequence, not a mandate to move a room.");
             Assert.That(DailySpatialDecision.CanKeepLayout(
-                Preview(beforeGreen: 3), 4), Is.False);
+                Preview(beforeWaste: 1), 4), Is.True,
+                "The current waste score cannot trigger a resident loss and must not block holding.");
             Assert.That(DailySpatialDecision.CanKeepLayout(
-                Preview(pigeonMeals: 11), 4), Is.False);
+                Preview(beforeGreen: 3), 4), Is.True);
+            Assert.That(DailySpatialDecision.CanKeepLayout(
+                Preview(pigeonMeals: 11), 4), Is.True,
+                "New-seed ceiling omits old stock and other meals; the player may choose to observe.");
         }
     }
 }

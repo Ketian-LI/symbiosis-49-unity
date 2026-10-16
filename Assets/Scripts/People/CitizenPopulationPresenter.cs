@@ -132,6 +132,24 @@ namespace UrbanWildlifeRooms.People
         public bool TryBuildActivityRoute(string residentId, out IReadOnlyList<Vector3> route)
         {
             route = Array.Empty<Vector3>();
+            if (!TryBuildActivityRouteLegs(residentId, out var toWork,
+                    out var toMeal, out var toHome))
+                return false;
+            var points = new List<Vector3>(toWork);
+            points.AddRange(toMeal.Skip(1));
+            points.AddRange(toHome.Skip(1));
+            route = points;
+            return true;
+        }
+
+        // Keep the three legs separate so the selected resident's route can
+        // distinguish work, meal and return-home without inventing shortcuts.
+        public bool TryBuildActivityRouteLegs(string residentId,
+            out IReadOnlyList<Vector3> toWork,
+            out IReadOnlyList<Vector3> toMeal,
+            out IReadOnlyList<Vector3> toHome)
+        {
+            toWork = toMeal = toHome = Array.Empty<Vector3>();
             if (populationModel == null || boardRoot == null ||
                 !populationModel.TryGetRoute(residentId, out var residenceId,
                     out var officeId, out var foodShopId))
@@ -158,18 +176,22 @@ namespace UrbanWildlifeRooms.People
             {
                 return false;
             }
-            var toHome = BuildRoute(navigation,
+            var toHomeRoute = BuildRoute(navigation,
                 toFoodShop[toFoodShop.Count - 1], residenceId);
-            if (toHome.Count == 0)
+            if (toHomeRoute.Count == 0)
             {
                 return false;
             }
 
-            var points = new List<Vector3> { home };
-            points.AddRange(toOffice);
-            points.AddRange(toFoodShop);
-            points.AddRange(toHome);
-            route = points;
+            var workPoints = new List<Vector3> { home };
+            workPoints.AddRange(toOffice);
+            var mealPoints = new List<Vector3> { workPoints[workPoints.Count - 1] };
+            mealPoints.AddRange(toFoodShop);
+            var homePoints = new List<Vector3> { mealPoints[mealPoints.Count - 1] };
+            homePoints.AddRange(toHomeRoute);
+            toWork = workPoints;
+            toMeal = mealPoints;
+            toHome = homePoints;
             return true;
         }
 

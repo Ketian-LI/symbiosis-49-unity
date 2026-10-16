@@ -7,34 +7,28 @@ namespace UrbanWildlifeRooms.Tests.Editor
 {
     public sealed class EndlessBalanceModelTests
     {
-        [TestCase(4, 4, 4)]
-        [TestCase(3, 4, 0)]
-        [TestCase(2, 4, -4)]
-        [TestCase(1, 4, -8)]
-        public void CommunityChange_UsesCompletedRouteShare(int completed, int total, int expected)
-        {
-            Assert.That(EndlessBalanceModel.CommunityChangeFor(completed, total), Is.EqualTo(expected));
-        }
-
         [Test]
-        public void PresetIsEditableAndLowerCommuteBandsFollowChosenTarget()
+        public void LegacyCommunitySettingsDoNotChangeActiveDifficulty()
         {
             var settings = EndlessDifficultySettings.Preset(EndlessDifficulty.Gentle);
             settings.startingCommunity = 85;
-            settings.commuteTargetPercent = 80;
+            settings.commuteTargetPercent = 100;
+            Assert.That(settings.IsCustom, Is.False);
+            Assert.That(EndlessDifficultyRules.For(settings).Label(false), Is.EqualTo("Gentle"));
+        }
+
+        [Test]
+        public void PresetIsEditableForWildlifeThresholdAndGrace()
+        {
+            var settings = EndlessDifficultySettings.Preset(EndlessDifficulty.Gentle);
             settings.wildlifeFloor = 6;
             settings.wildlifeGraceDays = 4;
             var rules = EndlessDifficultyRules.For(settings);
             var model = new EndlessBalanceModel(settings);
             Assert.That(settings.IsCustom, Is.True);
             Assert.That(rules.Label(false), Is.EqualTo("Custom"));
-            Assert.That(model.Community, Is.EqualTo(85));
             Assert.That(model.CurrentWildlifeFloor, Is.EqualTo(6));
             Assert.That(model.WildlifeGraceDays, Is.EqualTo(4));
-            Assert.That(rules.CommunityChangeFor(8, 10), Is.EqualTo(4));
-            Assert.That(rules.CommunityChangeFor(7, 10), Is.Zero);
-            Assert.That(rules.CommunityChangeFor(4, 10), Is.EqualTo(-4));
-            Assert.That(rules.CommunityChangeFor(3, 10), Is.EqualTo(-8));
         }
 
         [Test]
@@ -42,11 +36,8 @@ namespace UrbanWildlifeRooms.Tests.Editor
         {
             var settings = new EndlessDifficultySettings
             {
-                startingCommunity = 150, commuteTargetPercent = 10,
                 wildlifeFloor = 30, wildlifeGraceDays = 0
             }.Normalized();
-            Assert.That(settings.startingCommunity, Is.EqualTo(100));
-            Assert.That(settings.commuteTargetPercent, Is.EqualTo(50));
             Assert.That(settings.wildlifeFloor, Is.EqualTo(18));
             Assert.That(settings.wildlifeGraceDays, Is.EqualTo(1));
 
@@ -56,10 +47,10 @@ namespace UrbanWildlifeRooms.Tests.Editor
             var model = new EndlessBalanceModel(custom);
             for (var day = 1; day <= 3; day++)
             {
-                model.SettleDay(day, 4, 4, 7);
+                model.SettleDay(day, 7);
                 Assert.That(model.WildlifeCollapse, Is.False);
             }
-            model.SettleDay(4, 4, 4, 7);
+            model.SettleDay(4, 7);
             Assert.That(model.WildlifeCollapse, Is.True);
             model.Reset();
             Assert.That(model.CriticalWildlifeDays, Is.Zero);
@@ -70,14 +61,14 @@ namespace UrbanWildlifeRooms.Tests.Editor
         public void SameDayCannotSettleTwice_AndWildlifeHasGraceDay()
         {
             var model = new EndlessBalanceModel();
-            model.SettleDay(1, 2, 4, 9);
-            model.SettleDay(1, 0, 4, 0);
-            Assert.That(model.Community, Is.EqualTo(56));
+            model.SettleDay(1, 9);
+            model.SettleDay(1, 0);
             Assert.That(model.CriticalWildlifeDays, Is.EqualTo(1));
+            Assert.That(model.LastWildlifeCount, Is.EqualTo(9));
             Assert.That(model.WildlifeCollapse, Is.False);
-            model.SettleDay(2, 4, 4, 9);
+            model.SettleDay(2, 9);
             Assert.That(model.WildlifeCollapse, Is.True);
-            model.SettleDay(3, 4, 4, 10);
+            model.SettleDay(3, 10);
             Assert.That(model.WildlifeCollapse, Is.False);
         }
 
@@ -110,7 +101,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
         public void SaveRestoreKeepsPressureAndRecoveryProgress()
         {
             var model = new EndlessBalanceModel();
-            model.SettleDay(3, 2, 4, 9);
+            model.SettleDay(3, 9);
             model.SelectArrival(
                 new Dictionary<WildlifeSpecies, bool> { [WildlifeSpecies.Pigeon] = true },
                 new Dictionary<WildlifeSpecies, int> { [WildlifeSpecies.Pigeon] = 11 },
@@ -118,7 +109,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
             var restored = new EndlessBalanceModel();
             restored.Restore(model.Export());
             Assert.That(restored.LastSettledDay, Is.EqualTo(3));
-            Assert.That(restored.Community, Is.EqualTo(56));
+            Assert.That(restored.LastWildlifeCount, Is.EqualTo(9));
             Assert.That(restored.CriticalWildlifeDays, Is.EqualTo(1));
             Assert.That(restored.RecoveryProgress(WildlifeSpecies.Pigeon), Is.EqualTo(1));
         }
@@ -150,19 +141,5 @@ namespace UrbanWildlifeRooms.Tests.Editor
                 Is.EqualTo(12));
         }
 
-        [Test]
-        public void CommunityCanRecoverBeforeZeroAndThenCollapses()
-        {
-            var model = new EndlessBalanceModel();
-            for (var day = 1; day <= 7; day++)
-                model.SettleDay(day, 0, 4, 19);
-            Assert.That(model.Community, Is.EqualTo(4));
-            Assert.That(model.CommunityCollapse, Is.False);
-            model.SettleDay(8, 4, 4, 19);
-            Assert.That(model.Community, Is.EqualTo(8));
-            model.SettleDay(9, 0, 4, 19);
-            Assert.That(model.CommunityCollapse, Is.True);
-            Assert.That(model.Community, Is.Zero);
-        }
     }
 }

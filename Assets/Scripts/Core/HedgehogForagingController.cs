@@ -177,6 +177,7 @@ namespace UrbanWildlifeRooms.Core
 
         private void TryBeginForaging(HedgehogDemoAgent hedgehog)
         {
+            needs.RecordFoodScan(hedgehog, FindRoomId(hedgehog.transform.position));
             var sources = naturalFood.Model.Sources.Values
                 .Where(item => item.kind == NaturalFoodKind.Insect && item.portions > 0)
                 .Select(item => item.roomId)
@@ -211,7 +212,10 @@ namespace UrbanWildlifeRooms.Core
                         route,
                         () =>
                         {
-                            if (naturalFood.TryConsume(source.RoomId, NaturalFoodKind.Insect))
+                            var taken = naturalFood.TryConsume(source.RoomId, NaturalFoodKind.Insect);
+                            needs.RecordFoodArrival(hedgehog, source.RoomId,
+                                NaturalFoodKind.Insect.ToString(), taken);
+                            if (taken)
                             {
                                 needs.RegisterPredationMeal(hedgehog);
                                 if (trackedDay == missionDay)
@@ -231,6 +235,9 @@ namespace UrbanWildlifeRooms.Core
                         hazard,
                         fatal))
                 {
+                    needs.RecordFoodTarget(hedgehog, source.RoomId,
+                        NaturalFoodKind.Insect.ToString(),
+                        naturalFood.Model.PortionsIn(source.RoomId, NaturalFoodKind.Insect), true);
                     if (coveredRoute) coveredTrips++;
                     else otherTrips++;
                     ForagingRouteStarted?.Invoke(coveredRoute, source.RoomId);

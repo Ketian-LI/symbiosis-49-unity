@@ -65,6 +65,7 @@ namespace UrbanWildlifeRooms.Core
         private FirstRunOnboardingController onboardingController;
         private Transform mapRoot;
         private CitizenPopulationPresenter citizenPopulationPresenter;
+        private PigeonDemoDirector animalFollowDirector;
         private PigeonDemoAgent pigeonDemoAgent;
         private SquirrelDemoAgent squirrelDemoAgent;
         private HedgehogDemoAgent hedgehogDemoAgent;
@@ -186,8 +187,19 @@ namespace UrbanWildlifeRooms.Core
             BuildEndlessBalance();
             BuildDailyOutcome();
             BuildResearchSession();
+            BuildSelectedRoutes();
             BuildFirstRunOnboarding();
             BuildSessionPersistence();
+
+            // The public construction story starts on this very board, with
+            // only its central oak and squirrel visible at the desktop.
+            // The legacy simulation is restored if one of its modes starts.
+            if (Application.isPlaying)
+            {
+                generatedRoot.gameObject.AddComponent<ConstructionOpeningBoardPreview>()
+                    .Initialize(runtimeController, generatedRoot, mapRoot,
+                        roomViews, squirrelDemoAgent);
+            }
 
             if (validationErrors.Count == 0)
             {
@@ -324,12 +336,18 @@ namespace UrbanWildlifeRooms.Core
                     var color = (column + row) % 2 == 0
                         ? UrbanPalette.BoardSlot
                         : UrbanPalette.BoardSlotAlternate;
-                    CreateBox(
+                    var slot = CreateBox(
                         $"Foundation Slot {column + 1}-{row + 1}",
                         slotsRoot,
                         new Vector3(x, -0.025f, z),
                         new Vector3(slotSize, 0.08f, slotSize),
                         color);
+                    var face = CreateBox("Pastel plot face", slot.transform,
+                        new Vector3(0f, 0.54f, 0f),
+                        new Vector3(0.94f, 0.20f, 0.94f),
+                        UrbanPalette.BoardSlotTop);
+                    UrbanVisualFactory.SetInkStrength(
+                        face.GetComponent<Renderer>(), 0f);
                 }
             }
 
@@ -340,25 +358,34 @@ namespace UrbanWildlifeRooms.Core
         {
             const float rimThickness = 0.34f;
             const float rimHeight = 0.22f;
-            const float capHeight = 0.34f;
-            const float capThickness = 0.18f;
-            const float capWidth = 0.66f;
             var rimOffset = mapSize * 0.5f + 0.34f;
-            var capOffset = mapSize * 0.5f + 0.04f;
+            var inlayOffset = mapSize * 0.5f + 0.20f;
+            var woodOffset = mapSize * 0.5f + 0.59f;
+            var cornerOffset = mapSize * 0.5f + 0.48f;
             var boundaryRoot = NewObject("Automatic Boundary Cover Layer", foundationRoot).transform;
 
             CreateBox("North Board Rim", boundaryRoot, new Vector3(0f, 0.04f, rimOffset), new Vector3(mapSize + 1.02f, rimHeight, rimThickness), UrbanPalette.Boundary);
             CreateBox("South Board Rim", boundaryRoot, new Vector3(0f, 0.04f, -rimOffset), new Vector3(mapSize + 1.02f, rimHeight, rimThickness), UrbanPalette.Boundary);
             CreateBox("West Board Rim", boundaryRoot, new Vector3(-rimOffset, 0.04f, 0f), new Vector3(rimThickness, rimHeight, mapSize + 1.02f), UrbanPalette.Boundary);
             CreateBox("East Board Rim", boundaryRoot, new Vector3(rimOffset, 0.04f, 0f), new Vector3(rimThickness, rimHeight, mapSize + 1.02f), UrbanPalette.Boundary);
-
-            for (var index = 0; index < RoomLayoutData.GridSize; index++)
+            foreach (var side in new[] { -1f, 1f })
             {
-                var axis = (index + 0.5f - RoomLayoutData.GridSize * 0.5f) * cellSize;
-                CreateBox($"North Boundary Cap {index + 1}", boundaryRoot, new Vector3(axis, 0.38f, capOffset), new Vector3(capWidth, capHeight, capThickness), UrbanPalette.Boundary);
-                CreateBox($"South Boundary Cap {index + 1}", boundaryRoot, new Vector3(axis, 0.38f, -capOffset), new Vector3(capWidth, capHeight, capThickness), UrbanPalette.Boundary);
-                CreateBox($"West Boundary Cap {index + 1}", boundaryRoot, new Vector3(-capOffset, 0.38f, axis), new Vector3(capThickness, capHeight, capWidth), UrbanPalette.Boundary);
-                CreateBox($"East Boundary Cap {index + 1}", boundaryRoot, new Vector3(capOffset, 0.38f, axis), new Vector3(capThickness, capHeight, capWidth), UrbanPalette.Boundary);
+                CreateBox("Wooden case edge", boundaryRoot,
+                    new Vector3(0f, 0.04f, side * woodOffset),
+                    new Vector3(mapSize + 1.35f, 0.22f, 0.16f), UrbanPalette.BoardFrameWood);
+                CreateBox("Wooden case edge", boundaryRoot,
+                    new Vector3(side * woodOffset, 0.04f, 0f),
+                    new Vector3(0.16f, 0.22f, mapSize + 1.35f), UrbanPalette.BoardFrameWood);
+                CreateBox("Brass inner rule", boundaryRoot,
+                    new Vector3(0f, 0.18f, side * inlayOffset),
+                    new Vector3(mapSize + 0.48f, 0.035f, 0.055f), UrbanPalette.BoardFrameBrass);
+                CreateBox("Brass inner rule", boundaryRoot,
+                    new Vector3(side * inlayOffset, 0.18f, 0f),
+                    new Vector3(0.055f, 0.035f, mapSize + 0.48f), UrbanPalette.BoardFrameBrass);
+                foreach (var end in new[] { -1f, 1f })
+                    CreateBox("Brass corner plate", boundaryRoot,
+                        new Vector3(side * cornerOffset, 0.18f, end * cornerOffset),
+                        new Vector3(0.26f, 0.055f, 0.26f), UrbanPalette.BoardFrameBrass);
             }
         }
 
@@ -1306,7 +1333,8 @@ namespace UrbanWildlifeRooms.Core
                 sapling,
                 young,
                 mature,
-                startsRecovering ? OakTreeStage.Young : OakTreeStage.Mature);
+                startsRecovering ? OakTreeStage.Young : OakTreeStage.Mature,
+                localPosition);
         }
 
         private void CreateBush(Transform parent, Vector3 localPosition, float scale)
@@ -1490,7 +1518,8 @@ namespace UrbanWildlifeRooms.Core
                 workerFeedingController,
                 hedgehogForagingController,
                 dailyOutcomeController,
-                endlessBalanceController);
+                endlessBalanceController,
+                onboardingController);
         }
 
         private void BuildWasteManagement()
@@ -1561,6 +1590,7 @@ namespace UrbanWildlifeRooms.Core
                 roomViews,
                 surfaceMaterial,
                 generatedHideFlags);
+            layoutEditorController.BindNaturalFood(naturalFoodController.Model);
             hud.BindNaturalFood(naturalFoodController);
         }
 
@@ -1714,8 +1744,8 @@ namespace UrbanWildlifeRooms.Core
             layoutEditorController.BindAnimalPopulation(animalPopulationController);
 
             var followObject = NewObject("Wildlife Follow Director", generatedRoot);
-            var followDirector = followObject.AddComponent<PigeonDemoDirector>();
-            followDirector.Initialize(
+            animalFollowDirector = followObject.AddComponent<PigeonDemoDirector>();
+            animalFollowDirector.Initialize(
                 boardCameraController,
                 runtimeController,
                 pigeonAgents,
@@ -1938,7 +1968,8 @@ namespace UrbanWildlifeRooms.Core
                 animalNavigationCoordinator,
                 garageTrafficController,
                 mapRoot,
-                squirrelAgents);
+                squirrelAgents,
+                animalNeedsController);
         }
 
         private void BuildPigeonNaturalForaging()
@@ -2019,11 +2050,33 @@ namespace UrbanWildlifeRooms.Core
                 wasteManagementController,
                 citizenPopulationPresenter,
                 roomViews,
+                generatedRoot,
+                squirrelDemoAgent,
+                oakTreeLifecycleController,
+                boardCameraController,
                 hud,
                 LayoutCamera,
                 UrbanFontResolver.GetFont(),
                 generatedHideFlags);
             hud.BindOnboarding(onboardingController);
+        }
+
+        private void BuildSelectedRoutes()
+        {
+            var routeObject = NewObject("Selected Resident And Wildlife Routes", generatedRoot);
+            routeObject.AddComponent<SelectedRouteOverlay>().Initialize(
+                runtimeController,
+                boardCameraController,
+                citizenPopulationPresenter,
+                animalFollowDirector,
+                animalNavigationCoordinator,
+                naturalFoodController,
+                playerFeedingController,
+                foxPredationController,
+                mapRoot,
+                wildlifeHomeRooms,
+                hud,
+                generatedHideFlags);
         }
 
         private static RoomSpec FindRoomSpec(string roomId)
@@ -2192,6 +2245,7 @@ namespace UrbanWildlifeRooms.Core
             onboardingController = null;
             mapRoot = null;
             citizenPopulationPresenter = null;
+            animalFollowDirector = null;
             pigeonDemoAgent = null;
             squirrelDemoAgent = null;
             hedgehogDemoAgent = null;

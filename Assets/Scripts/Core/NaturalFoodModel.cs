@@ -39,6 +39,7 @@ namespace UrbanWildlifeRooms.Core
 
         public IReadOnlyDictionary<string, NaturalFoodState> Sources => sources;
         public int TotalPortions => sources.Values.Sum(source => source.portions);
+        public int Revision { get; private set; }
 
         public void ProduceDawn(
             int dayNumber,
@@ -136,6 +137,7 @@ namespace UrbanWildlifeRooms.Core
             }
 
             source.portions--;
+            Revision++;
             if (source.portions == 0)
             {
                 sources.Remove(key);
@@ -170,6 +172,7 @@ namespace UrbanWildlifeRooms.Core
         public void Restore(IEnumerable<NaturalFoodSaveData> savedSources, int currentDayNumber = 0)
         {
             sources.Clear();
+            Revision++;
             productionDayNumber = currentDayNumber > 0 ? currentDayNumber : -1;
             recordingCurrentDay = true;
             foreach (var item in savedSources ?? Array.Empty<NaturalFoodSaveData>())
@@ -199,6 +202,7 @@ namespace UrbanWildlifeRooms.Core
         public void Reset()
         {
             sources.Clear();
+            Revision++;
             productionDayNumber = -1;
             recordingCurrentDay = true;
         }
@@ -222,6 +226,7 @@ namespace UrbanWildlifeRooms.Core
             {
                 var added = Math.Max(0, maximumPortions - source.portions);
                 source.portions += added;
+                if (added > 0) Revision++;
                 if (recordingCurrentDay)
                     source.addedToday += added;
                 else
@@ -237,6 +242,7 @@ namespace UrbanWildlifeRooms.Core
                 addedToday = recordingCurrentDay ? maximumPortions : 0,
                 dailyAdditionKnown = recordingCurrentDay
             };
+            Revision++;
         }
 
         private void BeginProductionDay(int dayNumber)

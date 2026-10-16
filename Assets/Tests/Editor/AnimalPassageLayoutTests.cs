@@ -180,14 +180,17 @@ namespace UrbanWildlifeRooms.Tests.Editor
                 var blocked = overlay.GetComponentsInChildren<Renderer>()
                     .Single(item => item.name == "Animal Passage Port West 0");
                 var open = overlay.GetComponentsInChildren<Renderer>()
-                    .Single(item => item.name == "Animal Passage Port East 0");
+                    .Single(item => item.name == "Animal Passage East 0");
                 var block = new MaterialPropertyBlock();
                 blocked.GetPropertyBlock(block);
                 Assert.That(block.GetColor("_Color").r, Is.GreaterThan(0.9f));
                 open.GetPropertyBlock(block);
                 Assert.That(block.GetColor("_Color").g, Is.GreaterThan(0.8f));
                 Assert.That(blocked.enabled, Is.True);
-                Assert.That(open.enabled, Is.False, "Open crossings are drawn as lines, not dots.");
+                Assert.That(open.enabled, Is.True, "Open crossings are drawn as lines, not dots.");
+                Assert.That(overlay.GetComponentsInChildren<Renderer>()
+                    .Single(item => item.name == "Animal Passage Port East 0").enabled,
+                    Is.False);
                 overlay.SetPreview(false, 0, 2);
                 Assert.That(overlay.gameObject.activeSelf, Is.False);
             }
@@ -219,6 +222,42 @@ namespace UrbanWildlifeRooms.Tests.Editor
                     Is.False);
                 Assert.That(renderers.Where(item => item.name.StartsWith("Animal Passage Port "))
                     .All(item => !item.enabled), Is.True);
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+                Object.DestroyImmediate(material);
+            }
+        }
+
+        [Test]
+        public void PlanningOverlayUsesTheSameShortMarksForPedestrianDoors()
+        {
+            var room = Spec("shared-i", 0, 0, 1, 1);
+            var root = new GameObject("Pedestrian Door Test");
+            var material = new Material(Shader.Find("Standard"));
+            try
+            {
+                AnimalPassageVisual.Build(root.transform, room, 2f, 0.16f,
+                    material, HideFlags.None);
+                var overlay = root.GetComponentInChildren<AnimalPassageOverlay>(true);
+                overlay.SetConnectedPedestrianPorts(new[]
+                {
+                    new AnimalPassagePort(AnimalPassageEdge.North, 0)
+                });
+                overlay.SetPreview(true, 0, 1);
+                var renderers = overlay.GetComponentsInChildren<Renderer>();
+                Assert.That(renderers.Single(item => item.name == "Pedestrian Passage North 0").enabled,
+                    Is.True);
+                Assert.That(renderers.Single(item => item.name == "Pedestrian Passage South 0").enabled,
+                    Is.False);
+                Assert.That(renderers.Single(item => item.name == "Pedestrian Passage Port South 0").enabled,
+                    Is.False);
+                overlay.SetShowUnconnectedPorts(true);
+                Assert.That(renderers.Single(item => item.name == "Pedestrian Passage Port South 0").enabled,
+                    Is.True, "Selecting a room must reveal its unmatched human doorway.");
+                Assert.That(renderers.Single(item => item.name == "Pedestrian Passage Port North 0").enabled,
+                    Is.False);
             }
             finally
             {

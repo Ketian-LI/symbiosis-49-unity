@@ -9,6 +9,32 @@ namespace UrbanWildlifeRooms.Tests.Editor
     public sealed class LayoutImpactFeedbackTests
     {
         [Test]
+        public void ActionComparisonUsesStockUpperBoundAndDoesNotPromiseFeedingOutcome()
+        {
+            var impact = new RoomLayoutImpactPreview(0,
+                new ResidentCommutePreview(3, 0f), new ResidentCommutePreview(4, 0f),
+                2, 2, 7, 7, 0, 0, 0, null, 0, 0,
+                new[] { "pigeon-b", "shared-h" }, livingPigeons: 12,
+                beforePigeonSeedMealCeiling: 5, afterPigeonSeedMealCeiling: 5,
+                beforeSeedStockCeiling: 7, afterSeedStockCeiling: 9,
+                currentSeedStock: 4);
+
+            var chinese = LayoutImpactFeedback.ActionComparison(impact, 4, true, 1, true);
+            Assert.That(chinese, Does.Contain("维持  种子 ≤7/12 · 人 3/4"));
+            Assert.That(chinese, Does.Contain("挪房  种子 ≤9/12 · 人 4/4"));
+            Assert.That(chinese, Does.Contain("可放 5 份 / 30 秒 · 效果取决于地点"));
+            Assert.That(chinese, Does.Not.Contain("必定"));
+            var metric = LayoutImpactFeedback.BuildVisualMetrics(impact, true)
+                .Single(item => item.Kind == LayoutImpactMetricKind.PigeonStockCeiling);
+            Assert.That(metric.Detail, Does.Contain("只补到容量"));
+            Assert.That(LayoutImpactFeedback.BuildVisualMetrics(impact, true)
+                .Any(item => item.Kind == LayoutImpactMetricKind.PigeonSeedMealCeiling), Is.False);
+            Assert.That(LayoutImpactFeedback.ActionComparison(
+                impact, 4, false, 4, true, actionAlreadyUsed: true),
+                Does.Contain("今日已选择行动"));
+        }
+
+        [Test]
         public void MovingBufferShowsRiskTradeoffWithoutPromisingSafety()
         {
             var impact = new RoomLayoutImpactPreview(0,
@@ -70,7 +96,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
             Assert.That(seeds.Label, Does.Contain("仍偏少"));
             Assert.That(seeds.IsRisk, Is.True,
                 "A positive seed delta must not hide a remaining supply warning.");
-            Assert.That(seeds.Detail, Does.Contain("不是保证餐数"));
+            Assert.That(seeds.Detail, Does.Contain("不是实际新增量或保证餐数"));
             Assert.That(seeds.Detail, Does.Contain("捕食"));
             Assert.That(seeds.After, Is.EqualTo(9));
         }
@@ -94,6 +120,26 @@ namespace UrbanWildlifeRooms.Tests.Editor
         }
 
         [Test]
+        public void UnreachableNewSeedsLeadThePreviewEvenWhenProductionRises()
+        {
+            var impact = new RoomLayoutImpactPreview(0,
+                new ResidentCommutePreview(4, 3f), new ResidentCommutePreview(4, 3f),
+                2, 2, 7, 9, 0, 0, 0, null, 0, 0,
+                new[] { "pigeon-b", "shared-h" }, livingPigeons: 12,
+                beforePigeonSeedMealCeiling: 4, afterPigeonSeedMealCeiling: 3);
+
+            var metrics = LayoutImpactFeedback.BuildVisualMetrics(impact, true);
+            Assert.That(metrics[0].Kind, Is.EqualTo(LayoutImpactMetricKind.PigeonSeedMealCeiling));
+            Assert.That(metrics[0].DeltaText, Is.EqualTo("-1"));
+            Assert.That(metrics.Single(item => item.Kind == LayoutImpactMetricKind.Seeds).DeltaText,
+                Is.EqualTo("+2"));
+            Assert.That(LayoutImpactFeedback.RiskHeadline(metrics[0], impact, true),
+                Does.Contain("可达 ≤3/12"));
+            Assert.That(LayoutImpactFeedback.RiskHeadline(metrics[0], impact, false),
+                Does.Contain("reach ≤3/12 birds"));
+        }
+
+        [Test]
         public void UnchangedPigeonRouteDeficitRemainsVisibleAsPersistentRisk()
         {
             var impact = new RoomLayoutImpactPreview(0,
@@ -109,6 +155,43 @@ namespace UrbanWildlifeRooms.Tests.Editor
             Assert.That(routes.IsRisk, Is.True);
             Assert.That(routes.Label, Does.Contain("仍不足"));
             Assert.That(routes.Detail, Does.Contain("不保证每只鸽子实际进食"));
+        }
+
+        [Test]
+        public void HedgehogCoverAndGreenStabilityRemainVisibleWithoutAMetricDelta()
+        {
+            var impact = new RoomLayoutImpactPreview(0,
+                new ResidentCommutePreview(4, 3f), new ResidentCommutePreview(4, 3f),
+                1, 1, 12, 12, 0, 0, 0, null, 0, 0,
+                new[] { "office-a", "shared-g" },
+                beforeShelterPairs: 0, afterShelterPairs: 0,
+                beforeGreenCells: 3, afterGreenCells: 3,
+                livingHedgehogs: 2);
+
+            var metrics = LayoutImpactFeedback.BuildVisualMetrics(impact, true);
+            var cover = metrics.Single(item => item.Kind == LayoutImpactMetricKind.Shelter);
+            var greenery = metrics.Single(item => item.Kind == LayoutImpactMetricKind.GreenCells);
+            Assert.That(cover.IsRisk, Is.True);
+            Assert.That(cover.Label, Does.Contain("无"));
+            Assert.That(greenery.IsRisk, Is.True);
+            Assert.That(greenery.Detail, Does.Contain("连通不等于庇护或进食"));
+            Assert.That(metrics.TakeWhile(item => item.IsRisk), Does.Contain(cover));
+            Assert.That(metrics.TakeWhile(item => item.IsRisk), Does.Contain(greenery));
+        }
+
+        [Test]
+        public void NoLivingHedgehogsDoesNotRaiseAnEmptyShrubCoverWarning()
+        {
+            var impact = new RoomLayoutImpactPreview(0,
+                new ResidentCommutePreview(4, 3f), new ResidentCommutePreview(4, 3f),
+                1, 1, 12, 12, 0, 0, 0, null, 0, 0,
+                new[] { "office-a", "shared-g" },
+                beforeShelterPairs: 0, afterShelterPairs: 0,
+                livingHedgehogs: 0);
+
+            var cover = LayoutImpactFeedback.BuildVisualMetrics(impact, false)
+                .Single(item => item.Kind == LayoutImpactMetricKind.Shelter);
+            Assert.That(cover.IsRisk, Is.False);
         }
 
         [Test]
@@ -139,10 +222,12 @@ namespace UrbanWildlifeRooms.Tests.Editor
 
             var metrics = LayoutImpactFeedback.BuildVisualMetrics(impact, true);
 
-            Assert.That(metrics[0].Kind, Is.EqualTo(LayoutImpactMetricKind.ShrubRecovery));
-            Assert.That(metrics[0].Label, Does.Contain("第 3 天恢复"));
-            Assert.That(metrics[0].DeltaText, Is.EqualTo("+2"));
-            Assert.That(metrics[0].Delayed, Is.True);
+            var recovery = metrics.Single(item => item.Kind == LayoutImpactMetricKind.ShrubRecovery);
+            Assert.That(metrics[0].Kind, Is.EqualTo(LayoutImpactMetricKind.Waste),
+                "An unresolved waste failure remains ahead of delayed benefits.");
+            Assert.That(recovery.Label, Does.Contain("第 3 天恢复"));
+            Assert.That(recovery.DeltaText, Is.EqualTo("+2"));
+            Assert.That(recovery.Delayed, Is.True);
         }
 
         [Test]
@@ -177,7 +262,10 @@ namespace UrbanWildlifeRooms.Tests.Editor
 
             var metrics = LayoutImpactFeedback.BuildVisualMetrics(impact, true);
 
-            Assert.That(metrics[0].Kind, Is.EqualTo(LayoutImpactMetricKind.HedgehogFoodAccess));
+            Assert.That(metrics[0].Kind, Is.EqualTo(LayoutImpactMetricKind.Waste));
+            Assert.That(metrics[0].IsRisk, Is.True);
+            Assert.That(metrics.ToList().FindIndex(item => item.Kind == LayoutImpactMetricKind.HedgehogFoodAccess),
+                Is.LessThan(metrics.ToList().FindIndex(item => item.Kind == LayoutImpactMetricKind.PigeonFoodAccess)));
             Assert.That(metrics.Single(item => item.Kind == LayoutImpactMetricKind.PigeonFoodAccess)
                 .DeltaText, Is.EqualTo("+1"));
             Assert.That(metrics.Single(item => item.Kind == LayoutImpactMetricKind.FoxPreyAccess)
@@ -300,6 +388,69 @@ namespace UrbanWildlifeRooms.Tests.Editor
             Assert.That(text, Does.Contain("今夜相邻灌木 0→0 组"));
             Assert.That(text, Does.Contain("第 3 天恢复后预计 2 组"));
             Assert.That(text, Does.Contain("不保证觅食成功"));
+        }
+
+        [Test]
+        public void FocusPreviewHidesSafeUnchangedValuesButKeepsPersistentRisks()
+        {
+            var all = new[]
+            {
+                new LayoutImpactMetric(LayoutImpactMetricKind.GreenCells, "连通绿地", "", 5, 5, true),
+                new LayoutImpactMetric(LayoutImpactMetricKind.Waste, "垃圾异常", "", 0, 0, false),
+                new LayoutImpactMetric(LayoutImpactMetricKind.Seeds, "新增种子", "", 4, 6, true),
+                new LayoutImpactMetric(LayoutImpactMetricKind.Shelter, "今夜灌木庇护", "", 0, 0,
+                    true, persistentRisk: true),
+                new LayoutImpactMetric(LayoutImpactMetricKind.ShrubRecovery, "稍后恢复", "", 0, 2,
+                    true, delayed: true)
+            };
+
+            var focused = LayoutImpactFeedback.FocusMetrics(all);
+
+            Assert.That(focused.Select(metric => metric.Kind), Is.EqualTo(new[]
+            {
+                LayoutImpactMetricKind.Seeds,
+                LayoutImpactMetricKind.Shelter,
+                LayoutImpactMetricKind.ShrubRecovery
+            }));
+            Assert.That(all.Length - focused.Count, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void DailyDecisionCardsExcludeSecondaryWasteAndSurplusChanges()
+        {
+            var impact = new RoomLayoutImpactPreview(0,
+                new ResidentCommutePreview(4, 0), new ResidentCommutePreview(3, 0),
+                2, 3, 12, 13, 0, 1, 0, null, 0, 1, null,
+                beforeGreenCells: 4, afterGreenCells: 5, livingPigeons: 12,
+                beforePigeonSeedMealCeiling: 12, afterPigeonSeedMealCeiling: 12);
+            var cards = LayoutImpactFeedback.DecisionMetrics(impact,
+                LayoutImpactFeedback.BuildVisualMetrics(impact, true))
+                .Where(metric => metric.Changed).ToArray();
+
+            Assert.That(cards.Select(metric => metric.Kind),
+                Is.EqualTo(new[] { LayoutImpactMetricKind.Workers }));
+            Assert.That(DailySpatialDecision.HasMaterialImpact(impact), Is.True);
+        }
+
+        [Test]
+        public void PreviewCardUsesOneComparisonAndPlainLanguageChange()
+        {
+            var greenery = new LayoutImpactMetric(LayoutImpactMetricKind.GreenCells,
+                "连通绿地", "", 3, 5, true);
+            var waste = new LayoutImpactMetric(LayoutImpactMetricKind.Waste,
+                "垃圾异常", "", 2, 1, false);
+            var fox = new LayoutImpactMetric(LayoutImpactMetricKind.FoxPreyAccess,
+                "狐狸可达猎物", "", 0, 1, false);
+            var unresolved = new LayoutImpactMetric(LayoutImpactMetricKind.Shelter,
+                "今夜灌木庇护", "", 0, 0, true, persistentRisk: true);
+
+            Assert.That(LayoutImpactFeedback.BaselineLabel(greenery, true), Is.EqualTo("3 → 5"));
+            Assert.That(LayoutImpactFeedback.ChangeLabel(greenery, true), Is.EqualTo("改善 +2格"));
+            Assert.That(LayoutImpactFeedback.ChangeLabel(waste, true), Is.EqualTo("改善 -1处"));
+            Assert.That(LayoutImpactFeedback.BaselineLabel(fox, true), Is.EqualTo("否 → 是"));
+            Assert.That(LayoutImpactFeedback.ChangeLabel(fox, false), Is.EqualTo("Predation risk up"));
+            Assert.That(LayoutImpactFeedback.BaselineLabel(unresolved, true), Is.EqualTo("现 0"));
+            Assert.That(LayoutImpactFeedback.ChangeLabel(unresolved, true), Is.EqualTo("仍需处理"));
         }
 
         private static RoomLayoutImpactPreview Preview(int beforePark, int afterPark,

@@ -49,6 +49,7 @@ namespace UrbanWildlifeRooms.Data
     [Serializable]
     public sealed class ConstructionBoardSaveData
     {
+        public int expansionRings;
         public List<ConstructionTileData> tiles = new();
     }
 
@@ -63,8 +64,13 @@ namespace UrbanWildlifeRooms.Data
         public const int StarterRow = Size / 2;
         public const string StarterOakId = "starter-oak";
 
-        private readonly ConstructionTileData[,] cells = new ConstructionTileData[Size, Size];
+        private readonly Dictionary<(int column, int row), ConstructionTileData> cells = new();
         private readonly List<ConstructionTileData> tiles = new();
+        public int ExpansionRings { get; private set; }
+        public int MinCoordinate => -ExpansionRings;
+        public int MaxCoordinate => Size - 1 + ExpansionRings;
+        public int CurrentCapacity => (Size + 2 * ExpansionRings) *
+            (Size + 2 * ExpansionRings);
 
         public ConstructionBoardModel()
         {
@@ -81,20 +87,28 @@ namespace UrbanWildlifeRooms.Data
         }
 
         public int BuiltCount => tiles.Count;
-        public bool IsFull => BuiltCount == Capacity;
+        public bool IsFull => BuiltCount == CurrentCapacity;
+        public bool Contains(int column, int row) => InBounds(column, row);
+        public bool ExpandWhenFull()
+        {
+            if (!IsFull || ExpansionRings >= 1000) return false;
+            ExpansionRings++;
+            return true;
+        }
         public IReadOnlyList<ConstructionTileData> BuiltTiles => tiles.Select(Clone).ToArray();
         public ConstructionTileData FirstResidence => CloneOrNull(tiles.FirstOrDefault(
             tile => tile.category == ConstructionCategory.Residence));
 
-        public ConstructionTileData At(int column, int row) => InBounds(column, row)
-            ? cells[column, row] == null ? null : Clone(cells[column, row]) : null;
+        public ConstructionTileData At(int column, int row) =>
+            InBounds(column, row) && cells.TryGetValue((column, row), out var tile)
+                ? Clone(tile) : null;
 
         public ConstructionPlacementFailure CheckPlacement(int column, int row,
             ConstructionCategory category, GreenPlanting planting = GreenPlanting.None)
         {
             if (IsFull) return ConstructionPlacementFailure.BoardFull;
             if (!InBounds(column, row)) return ConstructionPlacementFailure.OutsideBoard;
-            if (cells[column, row] != null) return ConstructionPlacementFailure.Occupied;
+            if (cells.ContainsKey((column, row))) return ConstructionPlacementFailure.Occupied;
             if (!Enum.IsDefined(typeof(ConstructionCategory), category) ||
                 (category == ConstructionCategory.Green && planting == GreenPlanting.None) ||
                 (category != ConstructionCategory.Green && planting != GreenPlanting.None) ||
@@ -295,6 +309,7 @@ namespace UrbanWildlifeRooms.Data
 
         public ConstructionBoardSaveData Export() => new()
         {
+            expansionRings = ExpansionRings,
             tiles = tiles.Select(Clone).ToList()
         };
 
@@ -303,7 +318,11 @@ namespace UrbanWildlifeRooms.Data
         {
             board = null;
             var ordered = saved?.tiles?.OrderBy(tile => tile?.buildIndex).ToArray();
-            if (ordered == null || ordered.Length is < 1 or > Capacity ||
+            if (saved == null || saved.expansionRings < 0 ||
+                saved.expansionRings > 1000 || ordered == null ||
+                ordered.Length < 1 ||
+                ordered.Length > (Size + 2 * saved.expansionRings) *
+                    (Size + 2 * saved.expansionRings) ||
                 ordered[0]?.id != StarterOakId || ordered[0].buildIndex != 1 ||
                 ordered[0].column != StarterColumn || ordered[0].row != StarterRow ||
                 ordered[0].builtDay < 0 || ordered[0].builtDay > 1 ||
@@ -312,6 +331,7 @@ namespace UrbanWildlifeRooms.Data
                 return false;
 
             var candidate = new ConstructionBoardModel();
+            candidate.ExpansionRings = saved.expansionRings;
             var previousDay = 1;
             for (var index = 1; index < ordered.Length; index++)
             {
@@ -330,7 +350,7 @@ namespace UrbanWildlifeRooms.Data
 
         private void Add(ConstructionTileData tile)
         {
-            cells[tile.column, tile.row] = tile;
+            cells[(tile.column, tile.row)] = tile;
             tiles.Add(tile);
         }
 
@@ -361,12 +381,14 @@ namespace UrbanWildlifeRooms.Data
                          (column, row - 1), (column, row + 1)
                      })
             {
-                if (InBounds(x, y) && cells[x, y] != null) yield return cells[x, y];
+                if (InBounds(x, y) && cells.TryGetValue((x, y), out var tile))
+                    yield return tile;
             }
         }
 
-        private static bool InBounds(int column, int row) =>
-            column >= 0 && row >= 0 && column < Size && row < Size;
+        private bool InBounds(int column, int row) =>
+            column >= MinCoordinate && row >= MinCoordinate &&
+            column <= MaxCoordinate && row <= MaxCoordinate;
 
         private static ConstructionTileData Clone(ConstructionTileData tile) => new()
         {

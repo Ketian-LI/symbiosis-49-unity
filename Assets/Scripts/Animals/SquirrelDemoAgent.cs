@@ -67,6 +67,20 @@ namespace UrbanWildlifeRooms.Animals
         public WildlifeSpecies Species => WildlifeSpecies.Squirrel;
         public Transform AgentTransform => transform;
         public bool IsRespondingToFood => foodMission;
+        public bool TryGetRemainingFoodRoute(out IReadOnlyList<Vector3> route,
+            out bool returningWithFood)
+        {
+            route = Array.Empty<Vector3>();
+            returningWithFood = returningToCache;
+            var waypoints = returningToCache ? cacheReturnWaypoints : foodWaypoints;
+            if (!IsAlive || !foodMission || foodWaypointIndex >= waypoints.Count)
+                return false;
+            var points = new List<Vector3> { transform.position };
+            for (var index = foodWaypointIndex; index < waypoints.Count; index++)
+                points.Add(waypoints[index]);
+            route = points;
+            return true;
+        }
         public bool HasFoodInTransit => carryingFood;
         public bool CanResumeCacheReturn => carryingFood && !foodMission && !panicking && !relocating && IsAlive;
         public int CachePortions { get; private set; }

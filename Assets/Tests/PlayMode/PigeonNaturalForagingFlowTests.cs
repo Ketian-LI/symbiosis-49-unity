@@ -38,6 +38,12 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             }
             Assert.That(pigeon.IsRespondingToFood, Is.True,
                 "The pigeon should leave its home room for a natural source.");
+            var dispatched = needs.FoodAttemptsFor(pigeon).Last();
+            Assert.That(dispatched.TargetRoomId, Is.Not.Empty);
+            Assert.That(dispatched.FoodKind, Is.EqualTo(NaturalFoodKind.Seed.ToString()));
+            Assert.That(dispatched.PortionsAtDispatch, Is.GreaterThan(0));
+            Assert.That(dispatched.RouteReachableAtDispatch, Is.True);
+            Assert.That(dispatched.Arrived, Is.False);
             Assert.That(needs.Model.Animals["pigeon-01"].ateToday, Is.False,
                 "Dispatch alone must not award a meal.");
 
@@ -47,6 +53,9 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 yield return null;
             }
             Assert.That(needs.Model.Animals["pigeon-01"].ateToday, Is.True);
+            var arrived = needs.FoodAttemptsFor(pigeon).Last();
+            Assert.That(arrived.Arrived, Is.True);
+            Assert.That(arrived.TookPortion, Is.True);
             Assert.That(Vector3.Distance(start, pigeon.transform.position), Is.GreaterThan(0.1f));
             // After eating, the same travel state carries the bird back home.
             deadline = Time.realtimeSinceStartup + 5f;
@@ -104,6 +113,7 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             yield return null;
 
             var runtime = generated.GetComponentInChildren<GameRuntimeController>(true);
+            var needs = generated.GetComponentInChildren<AnimalNeedsController>(true);
             var food = generated.GetComponentInChildren<NaturalFoodController>(true);
             var squirrel = generated.GetComponentsInChildren<SquirrelDemoAgent>(true).First();
             runtime.StartNewRun(GameMode.Sandbox);
@@ -121,6 +131,8 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             while (!squirrel.IsRespondingToFood && Time.realtimeSinceStartup < deadline)
                 yield return null;
             Assert.That(squirrel.IsRespondingToFood, Is.True);
+            Assert.That(needs.FoodAttemptsFor(squirrel).Last().PortionsAtDispatch,
+                Is.GreaterThan(0));
             Assert.That(food.Model.PortionsIn("oak-a", NaturalFoodKind.Nut), Is.EqualTo(1),
                 "Starting the journey must not remove a nut from the room.");
             Assert.That(squirrel.CachePortions, Is.Zero);
@@ -129,6 +141,8 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 yield return null;
             Assert.That(squirrel.CachePortions, Is.EqualTo(1));
             Assert.That(food.Model.PortionsIn("oak-a", NaturalFoodKind.Nut), Is.Zero);
+            Assert.That(needs.FoodAttemptsFor(squirrel).Any(item => item.Arrived && item.TookPortion),
+                Is.True);
             Assert.That(Vector3.Distance(start, squirrel.transform.position), Is.GreaterThan(0.1f));
         }
 

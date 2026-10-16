@@ -16,7 +16,6 @@ namespace UrbanWildlifeRooms.Core
 
         private GameRuntimeController runtime;
         private ResourceEconomyController economy;
-        private ResidentPopulationController residents;
         private AnimalPopulationController population;
         private AnimalNeedsController needs;
         private AnimalMortalityController mortality;
@@ -38,7 +37,7 @@ namespace UrbanWildlifeRooms.Core
         {
             runtime = runtimeController ?? throw new ArgumentNullException(nameof(runtimeController));
             economy = economyController ?? throw new ArgumentNullException(nameof(economyController));
-            residents = residentController ?? throw new ArgumentNullException(nameof(residentController));
+            _ = residentController ?? throw new ArgumentNullException(nameof(residentController));
             population = populationController ?? throw new ArgumentNullException(nameof(populationController));
             needs = needsController ?? throw new ArgumentNullException(nameof(needsController));
             mortality = mortalityController ?? throw new ArgumentNullException(nameof(mortalityController));
@@ -85,15 +84,8 @@ namespace UrbanWildlifeRooms.Core
                 Model == null || settlement.DayNumber <= Model.LastSettledDay)
                 return;
 
-            var report = residents.LastReport;
-            if (report.DayNumber != settlement.DayNumber)
-            {
-                Debug.LogError($"[SYMBIOSIS: 49] Missing actual resident settlement for day {settlement.DayNumber}.", this);
-                return;
-            }
             var livingBeforeArrival = TotalLiving();
-            Model.SettleDay(settlement.DayNumber, report.WorkingResidents,
-                report.ResidentsEvaluated, livingBeforeArrival);
+            Model.SettleDay(settlement.DayNumber, livingBeforeArrival);
 
             var eligible = new Dictionary<WildlifeSpecies, bool>();
             var living = new Dictionary<WildlifeSpecies, int>();
@@ -121,17 +113,14 @@ namespace UrbanWildlifeRooms.Core
             }
             StateChanged?.Invoke();
 
-            if ((Model.WildlifeCollapse || Model.CommunityCollapse) && runtime.HasActiveRun)
+            if (Model.WildlifeCollapse && runtime.HasActiveRun)
             {
                 var results = new RunResultsData
                 {
-                    endReason = Model.WildlifeCollapse
-                        ? RunEndReason.WildlifePopulationCollapse
-                        : RunEndReason.CommunityCollapse,
+                    endReason = RunEndReason.WildlifePopulationCollapse,
                     daysSurvived = Mathf.Max(1, settlement.DayNumber),
                     finalWildlifeCount = livingBeforeArrival,
-                    requiredWildlifeCount = Model.CurrentWildlifeFloor,
-                    finalCommunity = Model.Community
+                    requiredWildlifeCount = Model.CurrentWildlifeFloor
                 };
                 mortality.PopulateResults(results);
                 runtime.EndRun(results);

@@ -1,5 +1,7 @@
 using NUnit.Framework;
 using UrbanWildlifeRooms.Core;
+using UrbanWildlifeRooms.Data;
+using UrbanWildlifeRooms.UI;
 
 namespace UrbanWildlifeRooms.Tests.Editor
 {
@@ -87,6 +89,78 @@ namespace UrbanWildlifeRooms.Tests.Editor
                 3, 4, 2, 1, 0, predationDeaths: 1);
             Assert.That(legacy.LastReport.PredationDeaths, Is.Zero,
                 "Restoring an older save must not attribute an earlier fox kill to the new day.");
+        }
+
+        [Test]
+        public void MovementForecastUsesCorrectDayAndSurvivesSaveRestore()
+        {
+            var model = new DailyOutcomeModel();
+            model.RecordMovement(1, 2, plannedWorkers: 3,
+                pigeonSeedCeiling: 8, pigeonForecastBirds: 12);
+            var restored = new DailyOutcomeModel();
+            restored.Restore(model.Export(), 0, 0, 0);
+            restored.CompleteDay(new ResourceSettlement(1, 0f, 0f, 0, 0, 0f, 0f),
+                3, 0, 0, 0, 0);
+            Assert.That(restored.LastReport.PlannedWorkersKnown, Is.True);
+            Assert.That(restored.LastReport.PlannedWorkers, Is.EqualTo(3));
+            Assert.That(restored.LastReport.PigeonSeedForecastKnown, Is.False,
+                "Tomorrow's seed-route forecast must not be compared with today's meals.");
+
+            restored.CompleteDay(new ResourceSettlement(2, 0f, 0f, 0, 0, 0f, 0f),
+                4, 0, 0, 0, 0,
+                meals: new AnimalMealDaySummary(2, 14, 19, 9, 12, 1));
+            Assert.That(restored.LastReport.PlannedWorkersKnown, Is.False);
+            Assert.That(restored.LastReport.PigeonSeedForecastKnown, Is.True);
+            Assert.That(restored.LastReport.PigeonSeedCeiling, Is.EqualTo(8));
+            Assert.That(UrbanWildlifeHud.DailyOutcomeSummary(restored.LastReport, true),
+                Does.Contain("实际进食 14/19"));
+            Assert.That(UrbanWildlifeHud.DailyOutcomeSummary(restored.LastReport, true),
+                Does.Contain("补给目标容量可达 ≤8/12"));
+        }
+
+        [Test]
+        public void NewRearrangementSupersedesEarlierNextDaySeedForecast()
+        {
+            var model = new DailyOutcomeModel();
+            model.RecordMovement(1, 2, 3, 8, 12);
+            model.CompleteDay(new ResourceSettlement(1, 0f, 0f, 0, 0, 0f, 0f),
+                3, 0, 0, 0, 0);
+            model.RecordMovement(2, 2, 4, 10, 12);
+            model.CompleteDay(new ResourceSettlement(2, 0f, 0f, 0, 0, 0f, 0f),
+                4, 0, 0, 0, 0);
+            Assert.That(model.LastReport.PigeonSeedForecastKnown, Is.False);
+            model.CompleteDay(new ResourceSettlement(3, 0f, 0f, 0, 0, 0f, 0f),
+                4, 0, 0, 0, 0);
+            Assert.That(model.LastReport.PigeonSeedForecastKnown, Is.True);
+            Assert.That(model.LastReport.PigeonSeedCeiling, Is.EqualTo(10));
+        }
+
+        [Test]
+        public void RecordedDeathCauseTakesPriorityOverAnUnfedFlockHypothesis()
+        {
+            var report = new DailyOutcomeReport(new DailyOutcomeSaveData
+            {
+                lastDay = 2,
+                lastDeaths = 1,
+                lastPredationDeaths = 1,
+                lastMealsKnown = true,
+                lastFedPigeons = 8,
+                lastLivingPigeons = 12,
+                lastSeedPortionsLeft = 3
+            });
+
+            Assert.That(UrbanWildlifeHud.DailyOutcomeHint(report, true), Does.Contain("狐狸捕食"));
+            Assert.That(UrbanWildlifeHud.DailyOutcomeHint(report, false), Does.Contain("Fox predation"));
+            Assert.That(UrbanWildlifeHud.DailyOutcomeHint(report, true), Does.Not.Contain("仍有种子"));
+
+            var noDeath = new DailyOutcomeReport(new DailyOutcomeSaveData
+            {
+                lastMealsKnown = true,
+                lastFedPigeons = 8,
+                lastLivingPigeons = 12,
+                lastSeedPortionsLeft = 3
+            });
+            Assert.That(UrbanWildlifeHud.DailyOutcomeHint(noDeath, true), Does.Contain("仍有种子"));
         }
     }
 }

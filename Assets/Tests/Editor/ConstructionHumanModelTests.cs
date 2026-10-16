@@ -243,7 +243,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
             Place(run, 4, 1, ConstructionCategory.Street);
             Assert.That(run.StoryStage, Is.EqualTo(
                 ConstructionStoryStage.AwaitRestaurantCrowding));
-            Assert.That(run.IsUnlocked(ConstructionCategory.Supermarket), Is.False);
+            Assert.That(run.IsUnlocked(ConstructionCategory.Supermarket), Is.True);
             Assert.That(run.TrySimulateDay(out _), Is.True);
             Assert.That(run.LastHumanDay.restaurantDemand, Is.EqualTo(2));
             Assert.That(run.LastHumanDay.restaurantRejectedForCapacity,

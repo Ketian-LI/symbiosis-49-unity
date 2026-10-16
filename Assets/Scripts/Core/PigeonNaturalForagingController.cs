@@ -115,6 +115,8 @@ namespace UrbanWildlifeRooms.Core
                 {
                     continue;
                 }
+                foreach (var bird in availableBirds)
+                    needs.RecordFoodScan(bird, flock.Key);
 
                 // The flock chooses one place. Limited portions may send only
                 // part of it now; the rest can leave for a later source.
@@ -174,6 +176,8 @@ namespace UrbanWildlifeRooms.Core
                             continue;
                         }
                         reservations[bird] = (roomId, kind);
+                        needs.RecordFoodTarget(bird, roomId, kind.ToString(),
+                            Math.Max(0, remaining - dispatched), true);
                         dispatched++;
                     }
                     if (dispatched > 0)

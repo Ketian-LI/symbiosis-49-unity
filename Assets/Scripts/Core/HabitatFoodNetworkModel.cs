@@ -39,7 +39,8 @@ namespace UrbanWildlifeRooms.Core
         public static AnimalFoodAccessSnapshot ForecastHabitatAccess(
             RoomNavigationMap animalNavigation, RoomNavigationMap humanNavigation,
             int dayNumber, OakTreeGrowthModel oakTrees = null,
-            ISet<string> movedRooms = null)
+            ISet<string> movedRooms = null,
+            IEnumerable<NaturalFoodState> existingSources = null)
         {
             if (animalNavigation == null || humanNavigation == null)
                 return default;
@@ -50,9 +51,13 @@ namespace UrbanWildlifeRooms.Core
                 .Select(room => room.Id).ToArray();
             var shrubHomes = RoomLayoutData.All.Where(room => room.Type == RoomType.ShrubHabitat)
                 .Select(room => room.Id).ToArray();
+            var stocked = (existingSources ?? Array.Empty<NaturalFoodState>())
+                .Where(source => source != null && source.portions > 0).ToArray();
             var seedSources = pigeonHomes
                 .Where(id => SeedCapacity(animalNavigation, id, dayNumber) > 0)
-                .Concat(new[] { "central-park" }).ToArray();
+                .Concat(new[] { "central-park" })
+                .Concat(stocked.Where(source => source.kind == NaturalFoodKind.Seed)
+                    .Select(source => source.roomId)).Distinct(StringComparer.Ordinal).ToArray();
             var nutSources = oakTrees == null ? Array.Empty<string>() : oakHomes
                 .Where(id => movedRooms == null || !movedRooms.Contains(id))
                 .Where(id => oakTrees.StageOf(id) == OakTreeStage.Mature ||
@@ -66,6 +71,10 @@ namespace UrbanWildlifeRooms.Core
             var squirrelHomes = oakHomes.Concat(new[] { grove }).ToArray();
             var hedgehogHomes = shrubHomes.Concat(new[] { garden }).ToArray();
             var preyHomes = pigeonHomes.Concat(squirrelHomes).Concat(hedgehogHomes).ToArray();
+            var stockedNuts = stocked.Where(source => source.kind == NaturalFoodKind.Nut)
+                .Select(source => source.roomId);
+            var stockedInsects = stocked.Where(source => source.kind == NaturalFoodKind.Insect)
+                .Select(source => source.roomId);
             // FoxPredationController uses the full animal route (with garage
             // hazards), not the short foraging limits used by small animals.
             var foxReach = preyHomes.Any(id =>
@@ -78,12 +87,13 @@ namespace UrbanWildlifeRooms.Core
             return new AnimalFoodAccessSnapshot(
                 ReachableHomes(pigeonHomes, WildlifeSpecies.Pigeon, seedSources),
                 ReachableHomes(squirrelHomes, WildlifeSpecies.Squirrel,
-                    nutSources.Concat(connectedGreen.Count >= GreenNetworkModel.StableCellCount &&
-                                      connectedGreen.Contains(grove) ? new[] { grove } : Array.Empty<string>())),
+                    nutSources.Concat(stockedNuts).Concat(
+                        connectedGreen.Count >= GreenNetworkModel.StableCellCount &&
+                        connectedGreen.Contains(grove) ? new[] { grove } : Array.Empty<string>())),
                 ReachableHomes(hedgehogHomes, WildlifeSpecies.Hedgehog,
                     new[] { "central-park" }.Concat(connectedGreen.Count >= GreenNetworkModel.StableCellCount &&
                         connectedGreen.Contains(garden)
-                        ? new[] { garden } : Array.Empty<string>())),
+                        ? new[] { garden } : Array.Empty<string>()).Concat(stockedInsects)),
                 foxReach);
         }
 
@@ -125,12 +135,45 @@ namespace UrbanWildlifeRooms.Core
             return RoomLayoutData.All.Sum(room => SeedCapacity(navigation, room.Id, dayNumber));
         }
 
-        // Capacity-aware upper bound for newly replenished seeds only. A route
+        // Capacity-aware upper bound from dawn target capacities only. A route
         // to one portion cannot promise a meal to every bird in a flock, and
         // several flocks may compete for the same reachable source. Existing
         // stock, other food and visible travel are deliberately excluded.
         public static int ForecastPigeonSeedMealCeiling(RoomNavigationMap navigation,
             int dayNumber, IEnumerable<KeyValuePair<string, int>> livingPigeonsByHome)
+        {
+            if (navigation == null || livingPigeonsByHome == null) return 0;
+            return MatchPigeonsToSeeds(navigation, livingPigeonsByHome,
+                RoomLayoutData.All.ToDictionary(room => room.Id,
+                    room => SeedCapacity(navigation, room.Id, dayNumber), StringComparer.Ordinal));
+        }
+
+        // Seed matching ceiling on ordinary animal doors at the next dawn.
+        // Existing portions carry over, and production tops each room up to
+        // its target rather than adding a new target on top. Consumption can
+        // lower this; starving animals' temporary pedestrian access can raise
+        // the actual opportunity, so this is not a guaranteed meal forecast.
+        public static int ForecastPigeonSeedStockCeiling(RoomNavigationMap navigation,
+            int dayNumber, IEnumerable<KeyValuePair<string, int>> livingPigeonsByHome,
+            IEnumerable<NaturalFoodState> existingSources)
+        {
+            if (navigation == null || livingPigeonsByHome == null) return 0;
+            var portionsByRoom = RoomLayoutData.All.ToDictionary(room => room.Id,
+                room => SeedCapacity(navigation, room.Id, dayNumber), StringComparer.Ordinal);
+            foreach (var source in existingSources ?? Array.Empty<NaturalFoodState>())
+            {
+                if (source == null || source.kind != NaturalFoodKind.Seed ||
+                    source.portions <= 0 || !portionsByRoom.ContainsKey(source.roomId))
+                    continue;
+                portionsByRoom[source.roomId] = Math.Max(portionsByRoom[source.roomId],
+                    source.portions);
+            }
+            return MatchPigeonsToSeeds(navigation, livingPigeonsByHome, portionsByRoom);
+        }
+
+        private static int MatchPigeonsToSeeds(RoomNavigationMap navigation,
+            IEnumerable<KeyValuePair<string, int>> livingPigeonsByHome,
+            IReadOnlyDictionary<string, int> portionsByRoom)
         {
             if (navigation == null || livingPigeonsByHome == null)
                 return 0;
@@ -140,10 +183,9 @@ namespace UrbanWildlifeRooms.Core
                 .OrderBy(pair => pair.Key, StringComparer.Ordinal)
                 .SelectMany(pair => Enumerable.Repeat(pair.Key, pair.Value))
                 .ToArray();
-            var portions = RoomLayoutData.All
-                .OrderBy(room => room.Id, StringComparer.Ordinal)
-                .SelectMany(room => Enumerable.Repeat(room.Id,
-                    SeedCapacity(navigation, room.Id, dayNumber)))
+            var portions = portionsByRoom
+                .OrderBy(pair => pair.Key, StringComparer.Ordinal)
+                .SelectMany(pair => Enumerable.Repeat(pair.Key, pair.Value))
                 .ToArray();
             var ownerByPortion = Enumerable.Repeat(-1, portions.Length).ToArray();
 
@@ -231,7 +273,9 @@ namespace UrbanWildlifeRooms.Core
             }
             var maxSteps = species switch
             {
-                WildlifeSpecies.Pigeon => 2,
+                // Pigeons follow food farther than the ground foragers, but
+                // still need a connected animal route through the board.
+                WildlifeSpecies.Pigeon => 3,
                 WildlifeSpecies.Squirrel => 1,
                 WildlifeSpecies.Hedgehog => 2,
                 WildlifeSpecies.Fox => 5,

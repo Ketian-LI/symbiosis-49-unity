@@ -60,6 +60,38 @@ namespace UrbanWildlifeRooms.Tests.Editor
         }
 
         [Test]
+        public void StoryRoomFocusIsCentredWithoutWaitingForCameraInterpolation()
+        {
+            var cameraObject = new GameObject("Story Camera Test");
+            var oak = new GameObject("Story Oak");
+            try
+            {
+                cameraObject.transform.SetPositionAndRotation(
+                    new Vector3(0f, 32f, 0f), Quaternion.Euler(90f, 0f, 0f));
+                var camera = cameraObject.AddComponent<Camera>();
+                camera.orthographic = true;
+                camera.orthographicSize = 14.2f;
+                var controller = cameraObject.AddComponent<BoardCameraController>();
+                controller.Initialize(camera);
+                controller.SetMenuViewImmediate();
+                oak.transform.position = new Vector3(8.6f, 0f, -4.3f);
+
+                controller.FocusRoomImmediate(oak.transform, 4.3f);
+
+                var viewport = camera.WorldToViewportPoint(oak.transform.position);
+                Assert.That(controller.IsMenuView, Is.False);
+                Assert.That(camera.orthographic, Is.True);
+                Assert.That(viewport.x, Is.EqualTo(0.5f).Within(0.001f));
+                Assert.That(viewport.y, Is.EqualTo(0.5f).Within(0.001f));
+            }
+            finally
+            {
+                Object.DestroyImmediate(oak);
+                Object.DestroyImmediate(cameraObject);
+            }
+        }
+
+        [Test]
         public void TabletopPhotographFacesMenuCameraAndReturnsToGameplayPlane()
         {
             var cameraObject = new GameObject("Backdrop Camera Test");

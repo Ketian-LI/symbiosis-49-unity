@@ -263,8 +263,30 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             moveButton.onClick.Invoke();
             Assert.That(editor.IsEditing, Is.True);
             Assert.That(overlay.gameObject.activeSelf, Is.True);
+            var legend = generated.GetComponentsInChildren<Transform>(true)
+                .Single(item => item.name == "Doorway Route Legend");
+            Assert.That(legend.gameObject.activeInHierarchy, Is.True);
+            var rule = legend.Find("Matching Doorway Rule")?.GetComponent<Text>();
+            Assert.That(rule?.text, runtime.Language == InterfaceLanguage.Chinese
+                ? Does.Contain("两侧同色") : Does.Contain("Match both ends"));
+            Canvas.ForceUpdateCanvases();
+            Assert.That(rule.preferredWidth,
+                Is.LessThanOrEqualTo(rule.rectTransform.rect.width + 2f));
+            var people = generated.GetComponentInChildren<ResidentPopulationController>(true)
+                .Model.NavigationMap;
+            var office = generated.GetComponentsInChildren<RoomView>(true)
+                .Single(item => item.Spec.Id == "office-a");
+            var neighbour = people.NeighboursOf("office-a").First();
+            Assert.That(people.TryGetPedestrianConnectionPort("office-a", neighbour, out var port),
+                Is.True);
+            var officeOverlay = office.VisualRoot.GetComponentInChildren<AnimalPassageOverlay>(true);
+            var pedestrianMark = officeOverlay.GetComponentsInChildren<Renderer>()
+                .Single(item => item.name == $"Pedestrian Passage {port.Edge} {port.Segment}");
+            Assert.That(pedestrianMark.enabled, Is.True,
+                "The planning view must reveal connected pedestrian doors even inside offices.");
             editor.CancelEditing();
             Assert.That(overlay.gameObject.activeSelf, Is.False);
+            Assert.That(legend.gameObject.activeSelf, Is.False);
         }
 
         [UnityTearDown]

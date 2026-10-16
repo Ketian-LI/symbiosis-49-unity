@@ -3,6 +3,7 @@ namespace UrbanWildlifeRooms.Core
     public enum OnboardingStep
     {
         Hidden,
+        OakOpening,
         SelectResident,
         InspectWaste,
         PracticeLayout,
@@ -20,6 +21,11 @@ namespace UrbanWildlifeRooms.Core
             Step = OnboardingStep.SelectResident;
         }
 
+        public void BeginOakOpening()
+        {
+            Step = OnboardingStep.OakOpening;
+        }
+
         public bool CompleteStep(OnboardingStep completed)
         {
             if (!IsActive || completed != Step)
@@ -28,6 +34,7 @@ namespace UrbanWildlifeRooms.Core
             }
             Step = Step switch
             {
+                OnboardingStep.OakOpening => OnboardingStep.Complete,
                 OnboardingStep.SelectResident => OnboardingStep.InspectWaste,
                 OnboardingStep.InspectWaste => OnboardingStep.PracticeLayout,
                 OnboardingStep.PracticeLayout => OnboardingStep.PlaceFood,

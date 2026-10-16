@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using UrbanWildlifeRooms.Animals;
 using UrbanWildlifeRooms.Core;
+using UrbanWildlifeRooms.UI;
 
 namespace UrbanWildlifeRooms.Tests.Editor
 {
@@ -60,6 +61,41 @@ namespace UrbanWildlifeRooms.Tests.Editor
 
             Assert.That(restored.Animals["hedgehog-01"].hungerDays, Is.Zero);
             Assert.That(restored.Animals["hedgehog-01"].ateToday, Is.True);
+        }
+
+        [Test]
+        public void FoodDiagnosisDistinguishesMissingStockFromAnUnfinishedTrip()
+        {
+            Assert.That(AnimalNeedsController.ClassifyFoodOutcome(false, 1, 0, 0,
+                System.Array.Empty<AnimalFoodAttemptTrace>()),
+                Is.EqualTo(AnimalFoodOutcomeReason.NoCompatibleFoodObserved));
+            Assert.That(AnimalNeedsController.ClassifyFoodOutcome(false, 1, 2, 0,
+                System.Array.Empty<AnimalFoodAttemptTrace>()),
+                Is.EqualTo(AnimalFoodOutcomeReason.NoReachableFoodObserved));
+            Assert.That(AnimalNeedsController.ClassifyFoodOutcome(false, 1, 2, 2,
+                System.Array.Empty<AnimalFoodAttemptTrace>()),
+                Is.EqualTo(AnimalFoodOutcomeReason.ReachableButNoTrip));
+            Assert.That(AnimalNeedsController.ClassifyFoodOutcome(false, 1, 2, 2,
+                new[] { new AnimalFoodAttemptTrace() }),
+                Is.EqualTo(AnimalFoodOutcomeReason.TripNotCompleted));
+            Assert.That(AnimalNeedsController.ClassifyFoodOutcome(false, 1, 2, 2,
+                new[] { new AnimalFoodAttemptTrace(true, true) }),
+                Is.EqualTo(AnimalFoodOutcomeReason.CollectedButNotEaten));
+            Assert.That(AnimalNeedsController.ClassifyFoodOutcome(true, 0, 0, 0,
+                System.Array.Empty<AnimalFoodAttemptTrace>()),
+                Is.EqualTo(AnimalFoodOutcomeReason.Fed));
+        }
+
+        [Test]
+        public void DailyFoodHintNamesTheObservedFailureWithoutClaimingFoodWasGone()
+        {
+            var blocked = UrbanWildlifeHud.FoodTraceHint(WildlifeSpecies.Pigeon,
+                "pigeon-01", AnimalFoodOutcomeReason.NoReachableFoodObserved, true);
+            var unfinished = UrbanWildlifeHud.FoodTraceHint(WildlifeSpecies.Pigeon,
+                "pigeon-01", AnimalFoodOutcomeReason.TripNotCompleted, false);
+            Assert.That(blocked, Does.Contain("动物通道到不了"));
+            Assert.That(unfinished, Does.Contain("trip not completed"));
+            Assert.That(unfinished, Does.Not.Contain("stock gone"));
         }
     }
 }

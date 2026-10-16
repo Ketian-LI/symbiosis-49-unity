@@ -14,6 +14,10 @@ namespace UrbanWildlifeRooms.Core
         public static string DefaultPath => Path.Combine(
             Application.persistentDataPath, "construction-run-v1.json");
 
+        public static string PathFor(ConstructionGameMode mode) => Path.Combine(
+            Application.persistentDataPath, mode == ConstructionGameMode.Endless
+                ? "construction-endless-v1.json" : "construction-run-v1.json");
+
         public ConstructionRunStore(string path)
         {
             if (string.IsNullOrWhiteSpace(path))

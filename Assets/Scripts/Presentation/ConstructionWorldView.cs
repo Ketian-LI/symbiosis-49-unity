@@ -1,0 +1,817 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Rendering;
+using UrbanWildlifeRooms.Animals;
+using UrbanWildlifeRooms.Core;
+using UrbanWildlifeRooms.Data;
+using UrbanWildlifeRooms.People;
+
+namespace UrbanWildlifeRooms.Presentation
+{
+    // Presentation only: the construction model remains the sole source of
+    // placement, food and route outcomes. This reuses the original low-poly
+    // furniture, sketch material and animated characters in the new mode.
+    public sealed class ConstructionWorldView : MonoBehaviour
+    {
+        // Unity's existing room kit uses 3.1 world units per cell. The 4.3 cm
+        // physical tile dimension is not a Unity scene-space measurement.
+        private const float Pitch = WorldScaleStandards.CellSizeMeters;
+        private const float PrototypeToLegacyScale = Pitch / 4.3f;
+        private readonly Dictionary<string, GameObject> rooms = new();
+        private readonly Dictionary<string, OakTreeStageVisual> growthVisuals = new();
+        private readonly Dictionary<string, int> growthStages = new();
+        private Transform world;
+        private GameObject boardBase;
+        private Camera boardCamera;
+        private Material surface;
+        private Material tabletopMaterial;
+        private Transform tabletop;
+        private Vector3 cameraOffset;
+        private SquirrelDemoVisual squirrel;
+        private PigeonDemoVisual pigeon;
+        private readonly Dictionary<string, CitizenDemoVisual> residents = new();
+        private CitizenDemoVisual commutingResident;
+        private CitizenDemoVisual arrivingResident;
+        private Vector3 commutingHomePosition;
+        private Vector3 arrivingHomePosition;
+        private Coroutine foraging;
+        private Coroutine commuting;
+        private Coroutine pigeonArrival;
+        private Coroutine residentArrival;
+        private bool usingOpeningBoard;
+        private GameObject caseHardware;
+        private Coroutine entranceCameraMotion;
+        private Coroutine entranceRoomReveal;
+
+        public bool IsReady => world != null && boardCamera != null;
+        public Transform BoardFoundation => boardBase == null ? null : boardBase.transform;
+        public bool UsesOpeningBoard => usingOpeningBoard;
+        public bool IsEntranceCameraMoving => entranceCameraMotion != null;
+
+        public void Initialize(Camera camera, RectTransform boardArea,
+            float cellSpacing)
+        {
+            if (world != null || camera == null || boardArea == null ||
+                SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
+                return;
+            surface = UrbanVisualFactory.CreateSurfaceMaterial();
+            world = new GameObject("Construction low-poly world").transform;
+            world.SetParent(transform, false);
+            world.localPosition = Vector3.zero;
+            boardCamera = camera;
+            var cameraStartPosition = camera.transform.position;
+            var cameraStartRotation = camera.transform.rotation;
+            var cameraStartSize = camera.orthographicSize;
+            Canvas.ForceUpdateCanvases();
+            var corners = new Vector3[4];
+            boardArea.GetWorldCorners(corners);
+            var lower = RectTransformUtility.WorldToScreenPoint(null, corners[0]);
+            var upper = RectTransformUtility.WorldToScreenPoint(null, corners[2]);
+            var screenCentre = (lower + upper) * 0.5f;
+            var canvas = boardArea.GetComponentInParent<Canvas>();
+            var spacingPixels = cellSpacing * canvas.rootCanvas.scaleFactor;
+            var gameplaySize = Pitch * Screen.height /
+                (2f * Mathf.Max(1f, spacingPixels));
+            cameraOffset = new Vector3(
+                (0.5f - screenCentre.x / Screen.width) *
+                    2f * gameplaySize * camera.aspect,
+                42f,
+                (0.5f - screenCentre.y / Screen.height) *
+                    2f * gameplaySize);
+            var opening = FindFirstObjectByType<ConstructionOpeningBoardPreview>();
+            usingOpeningBoard = opening != null && opening.IsPreviewing &&
+                opening.BoardCamera == camera && opening.Foundation != null &&
+                opening.OpeningOak?.VisualRoot != null;
+            if (!usingOpeningBoard)
+            {
+                camera.transform.position = cameraOffset;
+                camera.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+                camera.orthographicSize = gameplaySize;
+                camera.orthographic = true;
+            }
+            camera.clearFlags = CameraClearFlags.SolidColor;
+            camera.backgroundColor = new Color(0.93f, 0.89f, 0.79f);
+            camera.targetTexture = null;
+            camera.nearClipPlane = 0.1f;
+            camera.farClipPlane = 180f;
+            if (usingOpeningBoard)
+            {
+                // Both construction modes continue on the exact board object
+                // seen in the opening, rather than a second scene's facsimile.
+                boardBase = opening.Foundation.gameObject;
+                tabletop = opening.Tabletop;
+                entranceCameraMotion = StartCoroutine(MoveOpeningCamera(
+                    cameraStartPosition, cameraStartRotation, cameraStartSize,
+                    gameplaySize));
+                var starter = opening.OpeningOak.VisualRoot.gameObject;
+                rooms[ConstructionBoardModel.StarterOakId] = starter;
+                var growth = starter.GetComponentInChildren<OakTreeStageVisual>(true);
+                if (growth != null)
+                    growthVisuals[ConstructionBoardModel.StarterOakId] = growth;
+                squirrel = opening.OpeningSquirrel == null ? null :
+                    opening.OpeningSquirrel.GetComponent<SquirrelDemoVisual>();
+            }
+            else
+            {
+                BuildTabletop();
+                RenderSettings.ambientMode = AmbientMode.Flat;
+                RenderSettings.ambientLight = new Color(0.82f, 0.80f, 0.78f);
+                var lightObject = new GameObject("Construction board light");
+                lightObject.transform.SetParent(transform, false);
+                lightObject.transform.rotation = Quaternion.Euler(55f, -30f, 0f);
+                var light = lightObject.AddComponent<Light>();
+                light.type = LightType.Directional;
+                light.intensity = 1.05f;
+                light.cullingMask = 1 << 29;
+                BuildBoardFoundation();
+            }
+            BuildBoardCaseHardware();
+        }
+
+        private IEnumerator MoveOpeningCamera(Vector3 fromPosition,
+            Quaternion fromRotation, float fromSize, float toSize)
+        {
+            var initialTabletopPosition = tabletop == null ? Vector3.zero : tabletop.position;
+            var initialTabletopScale = tabletop == null ? Vector3.one : tabletop.localScale;
+            var finalTabletopPosition = new Vector3(cameraOffset.x, -0.58f,
+                cameraOffset.z);
+            var finalTabletopScale = new Vector3(
+                toSize * boardCamera.aspect * 2f * 1.22f / 10f,
+                1f, toSize * 2f * 1.22f / 10f);
+            const float duration = 0.85f;
+            var elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                var eased = Mathf.SmoothStep(0f, 1f,
+                    Mathf.Clamp01(elapsed / duration));
+                boardCamera.transform.SetPositionAndRotation(
+                    Vector3.Lerp(fromPosition, cameraOffset, eased),
+                    Quaternion.Slerp(fromRotation, Quaternion.Euler(90f, 0f, 0f), eased));
+                boardCamera.orthographicSize = Mathf.Lerp(fromSize, toSize, eased);
+                if (tabletop != null)
+                {
+                    tabletop.position = Vector3.Lerp(initialTabletopPosition,
+                        finalTabletopPosition, eased);
+                    tabletop.localScale = Vector3.Lerp(initialTabletopScale,
+                        finalTabletopScale, eased);
+                }
+                yield return null;
+            }
+            entranceCameraMotion = null;
+        }
+
+        public void RevealRestoredRooms()
+        {
+            if (!usingOpeningBoard || rooms.Count <= 1) return;
+            if (entranceRoomReveal != null) StopCoroutine(entranceRoomReveal);
+            entranceRoomReveal = StartCoroutine(RevealRooms());
+        }
+
+        private IEnumerator RevealRooms()
+        {
+            var arrivals = new List<Transform>();
+            var scales = new List<Vector3>();
+            foreach (var entry in rooms)
+            {
+                if (entry.Key == ConstructionBoardModel.StarterOakId || entry.Value == null)
+                    continue;
+                arrivals.Add(entry.Value.transform);
+                scales.Add(entry.Value.transform.localScale);
+                entry.Value.transform.localScale = Vector3.zero;
+            }
+            const float stagger = 0.065f;
+            const float growth = 0.42f;
+            var duration = growth + Mathf.Max(0, arrivals.Count - 1) * stagger;
+            var elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                for (var i = 0; i < arrivals.Count; i++)
+                    if (arrivals[i] != null)
+                    {
+                        var progress = Mathf.SmoothStep(0f, 1f,
+                            Mathf.Clamp01((elapsed - i * stagger) / growth));
+                        arrivals[i].localScale = scales[i] * progress;
+                    }
+                yield return null;
+            }
+            for (var i = 0; i < arrivals.Count; i++)
+                if (arrivals[i] != null) arrivals[i].localScale = scales[i];
+            entranceRoomReveal = null;
+        }
+
+        private void BuildBoardCaseHardware()
+        {
+            if (boardBase == null || caseHardware != null) return;
+            const float mapSize = 7f * Pitch;
+            var half = mapSize * 0.5f;
+            caseHardware = new GameObject("Folding board-case hardware");
+            caseHardware.transform.SetParent(boardBase.transform, false);
+            // These sit below and just outside the original foundation; no
+            // room mesh, empty plot or click collider is replaced.
+            Box("Deep navy case tray", caseHardware.transform,
+                new Vector3(0f, -0.46f, 0f),
+                new Vector3(mapSize + 1.4f, 0.44f, mapSize + 1.4f),
+                UrbanPalette.Boundary);
+            foreach (var side in new[] { -1f, 1f })
+            {
+                Box("Case edge inlay", caseHardware.transform,
+                    new Vector3(side * (half + 0.42f), -0.13f, 0f),
+                    new Vector3(0.09f, 0.09f, mapSize + 1.3f),
+                    UrbanPalette.Doorframe);
+                foreach (var hingeZ in new[] { -6.2f, 0f, 6.2f })
+                    Box("Brass case hinge", caseHardware.transform,
+                        new Vector3(side * (half + 0.5f), 0.05f, hingeZ),
+                        new Vector3(0.42f, 0.22f, 1.02f),
+                        UrbanPalette.Doorframe);
+            }
+            Box("Front case clasp", caseHardware.transform,
+                new Vector3(0f, 0.02f, -half - 0.5f),
+                new Vector3(1.2f, 0.19f, 0.46f), UrbanPalette.Doorframe);
+            SetLayer(caseHardware, 29);
+        }
+
+        public void SetViewport(int minColumn, int minRow)
+        {
+            if (!IsReady || boardCamera == null) return;
+            var centre = Cell(minColumn + 3, minRow + 3);
+            boardCamera.transform.position = cameraOffset +
+                new Vector3(centre.x, 0f, centre.z);
+            if (boardBase != null)
+                boardBase.transform.localPosition = centre;
+            if (tabletop != null)
+                tabletop.position = new Vector3(boardCamera.transform.position.x,
+                    -0.58f, boardCamera.transform.position.z);
+        }
+
+        private void BuildTabletop()
+        {
+            var texture = Resources.Load<Texture2D>(
+                "UI/GameplayHud/gameplay-tabletop-backdrop-v01");
+            if (texture == null) return;
+            var shader = Shader.Find("Universal Render Pipeline/Unlit") ??
+                Shader.Find("Unlit/Texture") ?? Shader.Find("Standard");
+            tabletopMaterial = new Material(shader) { mainTexture = texture };
+            if (tabletopMaterial.HasProperty("_BaseColor"))
+                tabletopMaterial.SetColor("_BaseColor", Color.white);
+            var plane = GameObject.CreatePrimitive(PrimitiveType.Plane);
+            plane.name = "Gameplay Tabletop Backdrop";
+            plane.transform.SetParent(transform, false);
+            tabletop = plane.transform;
+            tabletop.position = new Vector3(cameraOffset.x, -0.58f, cameraOffset.z);
+            tabletop.rotation = Quaternion.Euler(0f, 180f, 0f);
+            var halfHeight = boardCamera.orthographicSize;
+            tabletop.localScale = new Vector3(
+                halfHeight * boardCamera.aspect * 2f * 1.22f / 10f,
+                1f, halfHeight * 2f * 1.22f / 10f);
+            var renderer = plane.GetComponent<MeshRenderer>();
+            renderer.sharedMaterial = tabletopMaterial;
+            renderer.shadowCastingMode = ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+            var collider = plane.GetComponent<Collider>();
+            if (collider != null) Destroy(collider);
+        }
+
+        private void BuildBoardFoundation()
+        {
+            // Same board dimensions, palette, slot spacing and rim detail as
+            // the opening scene's BuildFixedBoardFoundation.
+            const float mapSize = 7f * Pitch;
+            boardBase = new GameObject("Board base");
+            boardBase.transform.SetParent(world, false);
+            Box("Paper Board", boardBase.transform,
+                new Vector3(0f, -0.18f, 0f),
+                new Vector3(mapSize + 1.25f, 0.28f, mapSize + 1.25f),
+                UrbanPalette.Boundary);
+            var slotSize = Pitch - 0.28f;
+            for (var row = 0; row < 7; row++)
+            for (var column = 0; column < 7; column++)
+            {
+                var slot = Box($"Empty plot {column + 1},{row + 1}", boardBase.transform,
+                    Cell(column, row) + new Vector3(0f, -0.025f, 0f),
+                    new Vector3(slotSize, 0.08f, slotSize),
+                    (column + row) % 2 == 0
+                        ? UrbanPalette.BoardSlot : UrbanPalette.BoardSlotAlternate);
+                var face = Box("Pastel plot face", slot.transform,
+                    new Vector3(0f, 0.54f, 0f),
+                    new Vector3(0.94f, 0.20f, 0.94f),
+                    UrbanPalette.BoardSlotTop);
+                UrbanVisualFactory.SetInkStrength(face.GetComponent<Renderer>(), 0f);
+            }
+            var rimOffset = mapSize * 0.5f + 0.34f;
+            var inlayOffset = mapSize * 0.5f + 0.20f;
+            var woodOffset = mapSize * 0.5f + 0.59f;
+            var cornerOffset = mapSize * 0.5f + 0.48f;
+            foreach (var side in new[] { -1f, 1f })
+            {
+                Box(side < 0 ? "West Board Rim" : "East Board Rim",
+                    boardBase.transform, new Vector3(side * rimOffset, 0.04f, 0f),
+                    new Vector3(0.34f, 0.22f, mapSize + 1.02f),
+                    UrbanPalette.Boundary);
+                Box(side < 0 ? "South Board Rim" : "North Board Rim",
+                    boardBase.transform, new Vector3(0f, 0.04f, side * rimOffset),
+                    new Vector3(mapSize + 1.02f, 0.22f, 0.34f),
+                    UrbanPalette.Boundary);
+                Box("Wooden case edge", boardBase.transform,
+                    new Vector3(0f, 0.04f, side * woodOffset),
+                    new Vector3(mapSize + 1.35f, 0.22f, 0.16f), UrbanPalette.BoardFrameWood);
+                Box("Wooden case edge", boardBase.transform,
+                    new Vector3(side * woodOffset, 0.04f, 0f),
+                    new Vector3(0.16f, 0.22f, mapSize + 1.35f), UrbanPalette.BoardFrameWood);
+                Box("Brass inner rule", boardBase.transform,
+                    new Vector3(0f, 0.18f, side * inlayOffset),
+                    new Vector3(mapSize + 0.48f, 0.035f, 0.055f), UrbanPalette.BoardFrameBrass);
+                Box("Brass inner rule", boardBase.transform,
+                    new Vector3(side * inlayOffset, 0.18f, 0f),
+                    new Vector3(0.055f, 0.035f, mapSize + 0.48f), UrbanPalette.BoardFrameBrass);
+                foreach (var end in new[] { -1f, 1f })
+                    Box("Brass corner plate", boardBase.transform,
+                        new Vector3(side * cornerOffset, 0.18f, end * cornerOffset),
+                        new Vector3(0.26f, 0.055f, 0.26f), UrbanPalette.BoardFrameBrass);
+            }
+            SetLayer(boardBase, 29);
+        }
+
+        public void Sync(ConstructionRunModel run, bool animateGrowth)
+        {
+            if (!IsReady || run == null) return;
+            foreach (var tile in run.BuiltTiles)
+            {
+                if (!rooms.ContainsKey(tile.id)) AddRoom(tile);
+                if (tile.category != ConstructionCategory.Green) continue;
+                var stage = run.GreenGrowthStage(tile.id);
+                if (growthVisuals.TryGetValue(tile.id, out var growth))
+                {
+                    if (!growthStages.TryGetValue(tile.id, out var previous))
+                        growth.SetStage(ToOakStage(stage));
+                    else if (stage != previous)
+                    {
+                        if (animateGrowth && stage > previous)
+                            growth.AnimateGrowthTo(ToOakStage(stage));
+                        else growth.SetStage(ToOakStage(stage));
+                    }
+                }
+                growthStages[tile.id] = stage;
+            }
+            SyncActors(run);
+        }
+
+        public void ClearBuiltWorld()
+        {
+            // A new construction run keeps this view object alive. Remove the
+            // previous run's meshes before Sync creates its starter oak again.
+            if (foraging != null) StopCoroutine(foraging);
+            if (commuting != null) StopCoroutine(commuting);
+            if (pigeonArrival != null) StopCoroutine(pigeonArrival);
+            if (residentArrival != null) StopCoroutine(residentArrival);
+            foraging = null;
+            commuting = null;
+            pigeonArrival = null;
+            residentArrival = null;
+            commutingResident = null;
+            arrivingResident = null;
+            foreach (var entry in rooms)
+            {
+                if (usingOpeningBoard && entry.Key == ConstructionBoardModel.StarterOakId)
+                    continue;
+                var room = entry.Value;
+                if (room == null) continue;
+                room.SetActive(false);
+                Destroy(room);
+            }
+            rooms.Clear();
+            growthVisuals.Clear();
+            growthStages.Clear();
+            if (usingOpeningBoard)
+            {
+                var opening = FindFirstObjectByType<ConstructionOpeningBoardPreview>();
+                if (opening?.OpeningOak?.VisualRoot != null)
+                {
+                    var starter = opening.OpeningOak.VisualRoot.gameObject;
+                    rooms[ConstructionBoardModel.StarterOakId] = starter;
+                    var growth = starter.GetComponentInChildren<OakTreeStageVisual>(true);
+                    if (growth != null)
+                        growthVisuals[ConstructionBoardModel.StarterOakId] = growth;
+                }
+            }
+            if (pigeon != null)
+            {
+                pigeon.gameObject.SetActive(false);
+                Destroy(pigeon.gameObject);
+                pigeon = null;
+            }
+            foreach (var resident in residents.Values)
+            {
+                if (resident == null) continue;
+                resident.gameObject.SetActive(false);
+                Destroy(resident.gameObject);
+            }
+            residents.Clear();
+            if (squirrel != null)
+                squirrel.transform.localPosition = new Vector3(0.6f, 0.23f, -0.7f);
+        }
+
+        public void PlayForaging(IReadOnlyList<ConstructionTileData> squirrelRoute,
+            IReadOnlyList<ConstructionTileData> pigeonRoute)
+        {
+            if (!IsReady) return;
+            if (foraging != null) StopCoroutine(foraging);
+            foraging = StartCoroutine(Foraging(squirrelRoute, pigeonRoute));
+        }
+
+        public void PlayPigeonArrival()
+        {
+            if (!IsReady || pigeon == null || !pigeon.gameObject.activeSelf) return;
+            if (pigeonArrival != null) StopCoroutine(pigeonArrival);
+            pigeonArrival = StartCoroutine(AnimatePigeonArrival(pigeon.transform));
+        }
+
+        private IEnumerator AnimatePigeonArrival(Transform actor)
+        {
+            var landing = actor.localPosition;
+            var fullScale = actor.localScale;
+            var approach = landing + new Vector3(-0.9f, 2.1f, 0.8f);
+            actor.localPosition = approach;
+            actor.localScale = fullScale * 0.72f;
+            yield return null;
+            const float duration = 0.8f;
+            var elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Mathf.Min(Time.unscaledDeltaTime, 0.05f);
+                var progress = Mathf.SmoothStep(0f, 1f,
+                    Mathf.Clamp01(elapsed / duration));
+                actor.localPosition = Vector3.Lerp(approach, landing, progress);
+                actor.localScale = Vector3.Lerp(fullScale * 0.72f,
+                    fullScale, progress);
+                yield return null;
+            }
+            actor.localPosition = landing;
+            actor.localScale = fullScale;
+            pigeonArrival = null;
+        }
+
+        public void PlayResidentCommute(IReadOnlyList<string> routeTileIds,
+            IReadOnlyList<ConstructionTileData> builtTiles)
+        {
+            if (!IsReady || routeTileIds == null ||
+                routeTileIds.Count < 2) return;
+            if (!residents.TryGetValue(routeTileIds[0], out var resident) ||
+                resident == null || !resident.gameObject.activeSelf) return;
+            var byId = new Dictionary<string, ConstructionTileData>();
+            foreach (var tile in builtTiles) byId[tile.id] = tile;
+            var route = new List<ConstructionTileData>();
+            foreach (var id in routeTileIds)
+                if (byId.TryGetValue(id, out var tile)) route.Add(tile);
+            if (route.Count < 2) return;
+            if (residentArrival != null)
+            {
+                StopCoroutine(residentArrival);
+                residentArrival = null;
+                if (arrivingResident != null)
+                    arrivingResident.transform.localPosition = arrivingHomePosition;
+                arrivingResident = null;
+            }
+            if (commuting != null)
+            {
+                StopCoroutine(commuting);
+                if (commutingResident != null)
+                    commutingResident.transform.localPosition = commutingHomePosition;
+                commutingResident = null;
+            }
+            commutingResident = resident;
+            commutingHomePosition = resident.transform.localPosition;
+            commuting = StartCoroutine(Commute(resident, route));
+        }
+
+        public void PlayResidentArrival(string homeTileId)
+        {
+            if (!IsReady || !residents.TryGetValue(homeTileId, out var resident) ||
+                resident == null || !resident.gameObject.activeSelf) return;
+            if (residentArrival != null)
+            {
+                StopCoroutine(residentArrival);
+                if (arrivingResident != null)
+                    arrivingResident.transform.localPosition = arrivingHomePosition;
+                arrivingResident = null;
+            }
+            arrivingResident = resident;
+            arrivingHomePosition = resident.transform.localPosition;
+            residentArrival = StartCoroutine(AnimateResidentArrival(resident.transform));
+        }
+
+        private IEnumerator AnimateResidentArrival(Transform actor)
+        {
+            var home = actor.localPosition;
+            var entrance = home + new Vector3(-1.1f, 0f, 0.55f);
+            actor.localPosition = entrance;
+            yield return null;
+            const float duration = 0.85f;
+            var elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Mathf.Min(Time.unscaledDeltaTime, 0.05f);
+                actor.localPosition = Vector3.Lerp(entrance, home,
+                    Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration)));
+                yield return null;
+            }
+            actor.localPosition = home;
+            residentArrival = null;
+            arrivingResident = null;
+        }
+
+        private void AddRoom(ConstructionTileData tile)
+        {
+            var type = RoomTypeFor(tile);
+            var root = new GameObject($"{tile.id} {type}");
+            root.transform.SetParent(world, false);
+            root.transform.localPosition = Cell(tile.column, tile.row);
+            root.transform.localScale = Vector3.one * PrototypeToLegacyScale;
+            SetLayer(root, 29);
+            rooms.Add(tile.id, root);
+            Box("Room floor", root.transform, new Vector3(0f, 0.12f, 0f),
+                new Vector3(4.08f, 0.24f, 4.08f), UrbanPalette.ForRoom(type));
+            ConstructionPlotFrameVisual.BuildFrame(root.transform, surface);
+            if (tile.category == ConstructionCategory.Green)
+                AddGreen(root.transform, tile);
+            else if (tile.category == ConstructionCategory.Street)
+                AddStreet(root.transform);
+            else if (tile.category == ConstructionCategory.Square)
+                AddSquare(root.transform);
+            else if (tile.category == ConstructionCategory.Waste)
+            {
+                var waste = root.AddComponent<WasteRoomLoadVisual>();
+                waste.Initialize(surface, HideFlags.None);
+            }
+            else
+            {
+                var spec = new RoomSpec(tile.id, type.ToString(), type,
+                    tile.column, tile.row, 1, 1, false, string.Empty);
+                RoomInteriorVisualBuilder.Build(root.transform, spec,
+                    4.08f, 4.08f, surface, HideFlags.None);
+            }
+            SetLayer(root, 29);
+        }
+
+        private void AddStreet(Transform parent)
+        {
+            var stone = Color.Lerp(UrbanPalette.Board, Color.white, 0.12f);
+            Box("Street north-south paving", parent,
+                new Vector3(0f, 0.25f, 0f),
+                new Vector3(1.24f, 0.022f, 3.83f), stone);
+            Box("Street east-west paving", parent,
+                new Vector3(0f, 0.26f, 0f),
+                new Vector3(3.83f, 0.022f, 1.24f), stone);
+        }
+
+        private void AddSquare(Transform parent)
+        {
+            Box("Square stone paving", parent,
+                new Vector3(0f, 0.25f, 0f),
+                new Vector3(3.78f, 0.025f, 3.78f), UrbanPalette.Board);
+            Box("Square planted bed", parent,
+                new Vector3(-1.10f, 0.29f, 1.10f),
+                new Vector3(0.82f, 0.10f, 0.82f), UrbanPalette.Doorframe);
+            Bush(parent, new Vector3(-1.10f, 0.47f, 1.10f), 0.62f);
+            Box("Square bench seat", parent,
+                new Vector3(0.95f, 0.47f, -1.05f),
+                new Vector3(1.02f, 0.10f, 0.34f), new Color(0.54f, 0.34f, 0.20f));
+            Box("Square bench back", parent,
+                new Vector3(0.95f, 0.64f, -1.20f),
+                new Vector3(1.02f, 0.29f, 0.08f), new Color(0.43f, 0.27f, 0.18f));
+        }
+
+        private void AddGreen(Transform parent, ConstructionTileData tile)
+        {
+            var stages = new GameObject[3];
+            for (var stage = 0; stage < stages.Length; stage++)
+            {
+                var root = new GameObject($"Green growth stage {stage}");
+                root.transform.SetParent(parent, false);
+                stages[stage] = root;
+                if (tile.planting == GreenPlanting.Oak)
+                {
+                    LowPolyTreeVisualBuilder.Build(root.transform,
+                        new Vector3(-0.20f, 0f, 0.18f),
+                        stage == 0 ? 0.46f : stage == 1 ? 0.80f : 1.25f,
+                        stage < 2, surface, HideFlags.None);
+                    Bush(root.transform, new Vector3(1.12f, 0.40f, -1.02f),
+                        stage == 0 ? 0.25f : 0.39f);
+                }
+                else
+                {
+                    var shrub = tile.planting == GreenPlanting.Shrub;
+                    var count = shrub ? 1 + stage * 2 : 2 + stage * 3;
+                    for (var index = 0; index < count; index++)
+                    {
+                        var x = -1.18f + index % 3 * 1.12f;
+                        var z = -0.95f + index / 3 * 1.02f;
+                        Bush(root.transform, new Vector3(x, 0.34f, z),
+                            shrub ? 0.48f + stage * 0.12f : 0.20f + stage * 0.05f);
+                    }
+                }
+            }
+            var visual = parent.gameObject.AddComponent<OakTreeStageVisual>();
+            visual.Initialize(null, stages[0], stages[1], stages[2],
+                OakTreeStage.Sapling);
+            growthVisuals[tile.id] = visual;
+        }
+
+        private void SyncActors(ConstructionRunModel run)
+        {
+            if (squirrel == null)
+            {
+                var actor = NewActor("Squirrel", world, new Vector3(0.6f, 0.23f, -0.7f));
+                squirrel = actor.AddComponent<SquirrelDemoVisual>();
+                squirrel.Initialize(surface, HideFlags.None);
+                SetLayer(actor, 29);
+            }
+            squirrel.gameObject.SetActive(run.SquirrelPopulation > 0);
+            var pigeonTile = run.BuiltTiles == null ? null :
+                System.Linq.Enumerable.FirstOrDefault(run.BuiltTiles,
+                    tile => tile.id == run.PigeonTileId);
+            if (pigeonTile != null && pigeon == null)
+            {
+                var actor = NewActor("Pigeon flock", world,
+                    Cell(pigeonTile.column, pigeonTile.row) + new Vector3(-0.5f, 0.23f, 0.5f));
+                pigeon = actor.AddComponent<PigeonDemoVisual>();
+                pigeon.Initialize(surface, HideFlags.None);
+                SetLayer(actor, 29);
+            }
+            if (pigeon != null) pigeon.gameObject.SetActive(run.PigeonPopulation > 0);
+            foreach (var home in run.BuiltTiles)
+            {
+                if (home.category != ConstructionCategory.Residence) continue;
+                if (!residents.TryGetValue(home.id, out var resident) || resident == null)
+                {
+                    var actor = NewActor(home.id == run.FirstResidentHomeTileId
+                            ? "First resident" : $"Resident {home.id}",
+                        world, ResidentPosition(home.column, home.row));
+                    resident = actor.AddComponent<CitizenDemoVisual>();
+                    resident.Initialize(surface, HideFlags.None);
+                    SetLayer(actor, 29);
+                    residents[home.id] = resident;
+                }
+                resident.gameObject.SetActive(run.HasResident(home.id));
+            }
+        }
+
+        private IEnumerator Foraging(IReadOnlyList<ConstructionTileData> squirrelRoute,
+            IReadOnlyList<ConstructionTileData> pigeonRoute)
+        {
+            // Route animation is illustrative; meal outcomes come exclusively
+            // from the model and are never inferred from visual position.
+            if (squirrelRoute?.Count > 1 && squirrel != null)
+                yield return Travel(squirrel.transform, squirrelRoute, 0.65f);
+            if (pigeonRoute?.Count > 1 && pigeon != null)
+                yield return Travel(pigeon.transform, pigeonRoute, 0.85f);
+            foraging = null;
+        }
+
+        private IEnumerator Commute(CitizenDemoVisual resident,
+            IReadOnlyList<ConstructionTileData> route)
+        {
+            yield return Travel(resident.transform, route, 0.25f);
+            commuting = null;
+            commutingResident = null;
+        }
+
+        private static IEnumerator Travel(Transform actor,
+            IReadOnlyList<ConstructionTileData> route, float pace)
+        {
+            var start = actor.localPosition;
+            for (var index = 1; index < route.Count; index++)
+            {
+                var from = actor.localPosition;
+                var to = Cell(route[index].column, route[index].row) +
+                    new Vector3(0.55f, 0.23f, -0.5f);
+                var elapsed = 0f;
+                while (elapsed < pace)
+                {
+                    elapsed += Time.unscaledDeltaTime;
+                    actor.localPosition = Vector3.Lerp(from, to,
+                        Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / pace)));
+                    yield return null;
+                }
+            }
+            actor.localPosition = start;
+        }
+
+        private void Update()
+        {
+            var time = Time.unscaledTime;
+            squirrel?.ApplyPose(foraging != null ? SquirrelDemoState.Hop :
+                SquirrelDemoState.Idle, time);
+            pigeon?.ApplyPose(pigeonArrival != null ? PigeonDemoState.Flutter :
+                foraging != null ? PigeonDemoState.Walk :
+                    PigeonDemoState.Idle, time);
+            foreach (var resident in residents.Values)
+                resident?.ApplyPose(resident == commutingResident ||
+                    resident == arrivingResident ? CitizenDemoState.Walk :
+                    CitizenDemoState.Idle, time);
+        }
+
+        private void OnDestroy()
+        {
+            if (caseHardware != null) Destroy(caseHardware);
+            if (surface != null) Destroy(surface);
+            if (tabletopMaterial != null) Destroy(tabletopMaterial);
+        }
+
+        private static RoomType RoomTypeFor(ConstructionTileData tile) => tile.category switch
+        {
+            ConstructionCategory.Residence => RoomType.Residence,
+            ConstructionCategory.Restaurant => RoomType.Canteen,
+            ConstructionCategory.Workshop => RoomType.Office,
+            ConstructionCategory.Supermarket => RoomType.Supermarket,
+            ConstructionCategory.Waste => RoomType.Trash,
+            ConstructionCategory.Street => RoomType.Garage,
+            ConstructionCategory.Square => RoomType.CommunitySquare,
+            _ => tile.planting == GreenPlanting.Oak ? RoomType.OakHabitat :
+                tile.planting == GreenPlanting.Shrub ? RoomType.ShrubHabitat :
+                RoomType.CentralPark
+        };
+
+        private static Vector3 Cell(int column, int row) =>
+            new((column - 3) * Pitch, 0f, (3 - row) * Pitch);
+
+        private static Vector3 ResidentPosition(int column, int row) =>
+            Cell(column, row) + new Vector3(0.8f, 0.23f, -0.5f);
+
+        private static OakTreeStage ToOakStage(int growth) => growth switch
+        {
+            <= 0 => OakTreeStage.Sapling,
+            1 => OakTreeStage.Young,
+            _ => OakTreeStage.Mature
+        };
+
+        private GameObject Box(string name, Transform parent, Vector3 position,
+            Vector3 size, Color color) =>
+            UrbanVisualFactory.CreatePrimitive(PrimitiveType.Cube, name, parent,
+                position, size, color, surface, true, HideFlags.None);
+
+        private void Bush(Transform parent, Vector3 position, float size) =>
+            LowPolyTreeVisualBuilder.BuildFacetedFoliage(
+                "Faceted green foliage", parent, position, Vector3.one * size,
+                17f, UrbanPalette.ShrubLeaf, surface, HideFlags.None);
+
+        private static GameObject NewActor(string name, Transform parent, Vector3 position)
+        {
+            var actor = new GameObject(name);
+            actor.transform.SetParent(parent, false);
+            actor.transform.localPosition = position;
+            return actor;
+        }
+
+        private static void SetLayer(GameObject root, int layer)
+        {
+            foreach (var child in root.GetComponentsInChildren<Transform>(true))
+                child.gameObject.layer = layer;
+        }
+    }
+
+    // Built construction rooms use the older board's navy wall and pale
+    // threshold language. Connectivity is still decided by the model.
+    public static class ConstructionPlotFrameVisual
+    {
+        public static void BuildFrame(Transform parent, Material surface)
+        {
+            foreach (var side in new[] { -1f, 1f })
+            {
+                foreach (var end in new[] { -1f, 1f })
+                {
+                    Box("North-south wall", parent,
+                        new Vector3(end * 1.37f, 0.43f, side * 1.97f),
+                        new Vector3(1.16f, 0.42f, 0.14f),
+                        UrbanPalette.Wall, surface);
+                    Box("East-west wall", parent,
+                        new Vector3(side * 1.97f, 0.43f, end * 1.37f),
+                        new Vector3(0.14f, 0.42f, 1.16f),
+                        UrbanPalette.Wall, surface);
+                    Box("Room corner", parent,
+                        new Vector3(side * 1.97f, 0.42f, end * 1.97f),
+                        new Vector3(0.19f, 0.58f, 0.19f),
+                        UrbanPalette.Boundary, surface);
+                }
+                Box("North-south threshold", parent,
+                    new Vector3(0f, 0.29f, side * 1.97f),
+                    new Vector3(1.22f, 0.08f, 0.17f),
+                    UrbanPalette.Doorframe, surface);
+                Box("East-west threshold", parent,
+                    new Vector3(side * 1.97f, 0.29f, 0f),
+                    new Vector3(0.17f, 0.08f, 1.22f),
+                    UrbanPalette.Doorframe, surface);
+            }
+        }
+
+        private static void Box(string name, Transform parent, Vector3 position,
+            Vector3 size, Color color, Material surface)
+        {
+            var item = UrbanVisualFactory.CreatePrimitive(PrimitiveType.Cube,
+                name, parent, position, size, color, surface, true, HideFlags.None);
+            item.layer = parent.gameObject.layer;
+        }
+    }
+}

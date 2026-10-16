@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UrbanWildlifeRooms.Core;
+using UrbanWildlifeRooms.Data;
 using UrbanWildlifeRooms.Presentation;
 
 namespace UrbanWildlifeRooms.UI
@@ -8,6 +9,19 @@ namespace UrbanWildlifeRooms.UI
     public enum OnboardingPromptPhase
     {
         Default,
+        OakMet,
+        OakRoomIdentified,
+        OakFunctions,
+        OakDate,
+        OakNextDay,
+        HumanHome,
+        HumanHomeIdentified,
+        HumanResident,
+        HumanResidentMet,
+        HumanWork,
+        HumanWorkIdentified,
+        HumanMeal,
+        HumanMealIdentified,
         WasteReviewed,
         RoomInTray,
         RestoreRoom,
@@ -32,6 +46,7 @@ namespace UrbanWildlifeRooms.UI
         private Text header;
         private Text gesture;
         private Text instruction;
+        private Image oakFactIcon;
         private Text skipLabel;
         private GameObject continueButton;
         private Text continueLabel;
@@ -45,12 +60,16 @@ namespace UrbanWildlifeRooms.UI
         private bool shouldBeVisible;
         private bool suppressed;
         private bool showingGuide;
+        private bool showingOakFact;
+        private OnboardingPromptPhase currentPhase;
         private Vector2 cardVelocity;
 
         public System.Action SkipRequested;
         public System.Action ContinueRequested;
         public System.Action PreviousRequested;
         public System.Action HighlightedResidentRequested;
+        public System.Action HighlightedSquirrelRequested;
+        public System.Action HighlightedRoomRequested;
         public bool IsVisible => root != null && root.gameObject.activeSelf;
         public string CurrentInstruction => instruction != null ? instruction.text : string.Empty;
         public string CurrentHeader => header != null ? header.text : string.Empty;
@@ -75,7 +94,18 @@ namespace UrbanWildlifeRooms.UI
             spotlightButton = spotlightImage.gameObject.AddComponent<Button>();
             spotlightButton.targetGraphic = spotlightImage;
             spotlightButton.transition = Selectable.Transition.None;
-            spotlightButton.onClick.AddListener(() => HighlightedResidentRequested?.Invoke());
+            spotlightButton.onClick.AddListener(() =>
+            {
+                if (step == OnboardingStep.OakOpening && currentPhase is
+                    (OnboardingPromptPhase.OakMet or OnboardingPromptPhase.HumanHome or
+                     OnboardingPromptPhase.HumanWork or OnboardingPromptPhase.HumanMeal))
+                    HighlightedRoomRequested?.Invoke();
+                else if (step == OnboardingStep.OakOpening &&
+                         currentPhase == OnboardingPromptPhase.HumanResident)
+                    HighlightedResidentRequested?.Invoke();
+                else if (step == OnboardingStep.OakOpening) HighlightedSquirrelRequested?.Invoke();
+                else HighlightedResidentRequested?.Invoke();
+            });
             var outline = spotlight.gameObject.AddComponent<Outline>();
             outline.effectColor = new Color(0.10f, 0.28f, 0.30f, 0.72f);
             outline.effectDistance = new Vector2(2f, -2f);
@@ -87,9 +117,14 @@ namespace UrbanWildlifeRooms.UI
             {
                 card.sprite = panelSprite;
                 card.type = Image.Type.Sliced;
-                // The source artwork already has a translucent center. This
-                // tint keeps the board visible without losing text contrast.
-                card.color = new Color(1f, 1f, 1f, 0.90f);
+                card.color = Color.white;
+                // The source artwork has a translucent center. Keep its border,
+                // but give the instructions a nearly opaque surface so rooms
+                // and moving characters cannot show through the text.
+                var textBacking = NewRounded("Tutorial Text Backing", card.transform,
+                    hideFlags, new Color(0.07f, 0.11f, 0.14f, 0.97f), 13f);
+                Stretch(textBacking.rectTransform, 11f);
+                textBacking.raycastTarget = false;
             }
             else
             {
@@ -110,13 +145,17 @@ namespace UrbanWildlifeRooms.UI
             header = NewText("Step Progress", card.transform, hideFlags, font, string.Empty, 18,
                 TextAnchor.MiddleLeft);
             SetRect(header.rectTransform, 61f, 120f, 280f, 30f);
-            instruction = NewText("Instruction", card.transform, hideFlags, font, string.Empty, 18,
+            instruction = NewText("Instruction", card.transform, hideFlags, font, string.Empty, 20,
                 TextAnchor.MiddleLeft);
             instruction.fontStyle = FontStyle.Normal;
             instruction.font = font;
             SetRect(instruction.rectTransform, 22f, 51f, 406f, 68f);
             instruction.horizontalOverflow = HorizontalWrapMode.Wrap;
             instruction.verticalOverflow = VerticalWrapMode.Truncate;
+            oakFactIcon = NewImage("Oak Room Fact Icon", card.transform, hideFlags, Color.white);
+            oakFactIcon.preserveAspect = true;
+            oakFactIcon.raycastTarget = false;
+            oakFactIcon.gameObject.SetActive(false);
 
             for (var index = 0; index < progressSegments.Length; index++)
             {
@@ -174,8 +213,17 @@ namespace UrbanWildlifeRooms.UI
             string overrideInstruction = null)
         {
             showingGuide = false;
+            showingOakFact = false;
+            currentPhase = phase;
+            oakFactIcon.gameObject.SetActive(false);
             tutorialShade.raycastTarget = false;
-            spotlightImage.raycastTarget = nextStep == OnboardingStep.SelectResident && worldTarget != null;
+            spotlightImage.raycastTarget =
+                (nextStep == OnboardingStep.SelectResident ||
+                 (nextStep == OnboardingStep.OakOpening &&
+                  (phase is OnboardingPromptPhase.Default or OnboardingPromptPhase.OakMet or
+                      OnboardingPromptPhase.HumanHome or OnboardingPromptPhase.HumanResident or
+                      OnboardingPromptPhase.HumanWork or OnboardingPromptPhase.HumanMeal))) &&
+                worldTarget != null;
             spotlightButton.interactable = spotlightImage.raycastTarget;
             step = nextStep;
             target = worldTarget;
@@ -188,16 +236,15 @@ namespace UrbanWildlifeRooms.UI
             }
             previousButton.SetActive(false);
             foreach (var segment in progressSegments)
-            {
-                segment.gameObject.SetActive(true);
-            }
+                segment.gameObject.SetActive(nextStep != OnboardingStep.OakOpening);
             gesture.gameObject.SetActive(false);
-            instruction.fontSize = 18;
+            instruction.fontSize = 20;
             baseInstruction = overrideInstruction ?? InstructionFor(nextStep, phase, chinese);
             instruction.text = baseInstruction;
             feedbackUntil = 0f;
             var ordinal = nextStep switch
             {
+                OnboardingStep.OakOpening => 1,
                 OnboardingStep.SelectResident => 1,
                 OnboardingStep.InspectWaste => 2,
                 OnboardingStep.PracticeLayout => 3,
@@ -205,22 +252,57 @@ namespace UrbanWildlifeRooms.UI
             };
             var title = nextStep switch
             {
+                OnboardingStep.OakOpening => phase switch
+                {
+                    OnboardingPromptPhase.OakDate => chinese ? "日期与昼夜" : "Days & phases",
+                    OnboardingPromptPhase.OakNextDay => chinese ? "进入下一天" : "The next day",
+                    OnboardingPromptPhase.HumanHome or OnboardingPromptPhase.HumanHomeIdentified =>
+                        chinese ? "第一间住宅" : "A human home",
+                    OnboardingPromptPhase.HumanResident or OnboardingPromptPhase.HumanResidentMet =>
+                        chinese ? "一位居民" : "A resident",
+                    OnboardingPromptPhase.HumanWork or OnboardingPromptPhase.HumanWorkIdentified =>
+                        chinese ? "工作房间" : "A place to work",
+                    OnboardingPromptPhase.HumanMeal or OnboardingPromptPhase.HumanMealIdentified =>
+                        chinese ? "吃饭的地方" : "A place to eat",
+                    _ => chinese ? "一棵橡树" : "One oak tree"
+                },
                 OnboardingStep.SelectResident => chinese ? "居民路线" : "Resident route",
                 OnboardingStep.InspectWaste => chinese ? "垃圾清运" : "Waste collection",
                 OnboardingStep.PracticeLayout => chinese ? "移动房间" : "Move a room",
                 _ => chinese ? "安全投喂" : "Safe feeding"
             };
-            header.text = chinese ? $"新手教程  {ordinal}/4  ·  {title}" : $"Tutorial  {ordinal}/4  ·  {title}";
-            skipLabel.text = chinese ? "跳过" : "Skip";
-            continueButton.SetActive(phase == OnboardingPromptPhase.WasteReviewed ||
+            header.text = nextStep == OnboardingStep.OakOpening
+                ? chinese ? $"序章  ·  {title}" : $"Prologue  ·  {title}"
+                : chinese ? $"新手教程  {ordinal}/4  ·  {title}" : $"Tutorial  {ordinal}/4  ·  {title}";
+            skipLabel.text = nextStep == OnboardingStep.OakOpening
+                ? chinese ? "跳过开场" : "Skip intro"
+                : chinese ? "跳过" : "Skip";
+            continueButton.SetActive(phase == OnboardingPromptPhase.OakRoomIdentified ||
+                                     phase == OnboardingPromptPhase.OakFunctions ||
+                                     phase == OnboardingPromptPhase.OakDate ||
+                                     phase == OnboardingPromptPhase.OakNextDay ||
+                                     phase == OnboardingPromptPhase.HumanHomeIdentified ||
+                                     phase == OnboardingPromptPhase.HumanResidentMet ||
+                                     phase == OnboardingPromptPhase.HumanWorkIdentified ||
+                                     phase == OnboardingPromptPhase.HumanMealIdentified ||
+                                     phase == OnboardingPromptPhase.WasteReviewed ||
                                      phase == OnboardingPromptPhase.LayoutRetry ||
                                      phase == OnboardingPromptPhase.ReplayFinish);
-            continueLabel.text = phase == OnboardingPromptPhase.ReplayFinish
+            continueLabel.text = phase == OnboardingPromptPhase.OakNextDay
+                ? chinese ? "认识人类" : "Meet the people"
+                : phase == OnboardingPromptPhase.HumanMealIdentified
+                ? chinese ? "进入游戏" : "Enter game"
+                : phase == OnboardingPromptPhase.OakFunctions
+                ? chinese ? "查看日期" : "See the clock"
+                : phase == OnboardingPromptPhase.OakRoomIdentified
+                ? chinese ? "查看功能" : "See functions"
+                : phase == OnboardingPromptPhase.ReplayFinish
                 ? chinese ? "完成" : "Finish"
                 : phase == OnboardingPromptPhase.LayoutRetry
                     ? chinese ? "重试" : "Retry"
                 : chinese ? "继续" : "Next";
-            gesture.text = phase == OnboardingPromptPhase.WasteReviewed ||
+            gesture.text = phase == OnboardingPromptPhase.HumanMealIdentified ||
+                           phase == OnboardingPromptPhase.WasteReviewed ||
                            phase == OnboardingPromptPhase.ReplayFinish
                 ? "✓" : "☝";
             for (var index = 0; index < progressSegments.Length; index++)
@@ -229,14 +311,26 @@ namespace UrbanWildlifeRooms.UI
                     ? new Color(0.32f, 0.84f, 0.80f, 1f)
                     : new Color(0.35f, 0.38f, 0.37f, 0.9f);
             }
-            spotlight.gameObject.SetActive(target != null || uiTarget != null);
+            spotlight.gameObject.SetActive((target != null || uiTarget != null) &&
+                phase != OnboardingPromptPhase.OakRoomIdentified &&
+                phase != OnboardingPromptPhase.OakFunctions &&
+                phase != OnboardingPromptPhase.HumanHomeIdentified &&
+                phase != OnboardingPromptPhase.HumanResidentMet &&
+                phase != OnboardingPromptPhase.HumanWorkIdentified &&
+                phase != OnboardingPromptPhase.HumanMealIdentified);
             spotlight.sizeDelta = phase switch
             {
+                OnboardingPromptPhase.OakMet => new Vector2(230f, 230f),
+                OnboardingPromptPhase.HumanHome or OnboardingPromptPhase.HumanWork or
+                    OnboardingPromptPhase.HumanMeal => new Vector2(230f, 230f),
+                OnboardingPromptPhase.OakDate or OnboardingPromptPhase.OakNextDay =>
+                    new Vector2(134f, 134f),
                 OnboardingPromptPhase.RoomInTray => new Vector2(180f, 180f),
                 OnboardingPromptPhase.ConfirmLayout => new Vector2(90f, 90f),
                 OnboardingPromptPhase.FeedingActive => new Vector2(210f, 210f),
                 _ => nextStep switch
                 {
+                    OnboardingStep.OakOpening => new Vector2(118f, 118f),
                     OnboardingStep.SelectResident => new Vector2(96f, 96f),
                     OnboardingStep.PlaceFood => new Vector2(120f, 120f),
                     _ => new Vector2(156f, 156f)
@@ -246,10 +340,73 @@ namespace UrbanWildlifeRooms.UI
             PositionCard(true);
         }
 
+        public void ShowOakRoomFact(RoomSpec room, OakTreeStage stage, bool chinese,
+            OnboardingPromptPhase phase)
+        {
+            if (room == null || step != OnboardingStep.OakOpening ||
+                (phase != OnboardingPromptPhase.OakRoomIdentified &&
+                 phase != OnboardingPromptPhase.OakFunctions)) return;
+
+            showingOakFact = true;
+            header.text = UrbanPalette.LocalizedRoomName(room, chinese);
+            if (phase == OnboardingPromptPhase.OakRoomIdentified)
+            {
+                oakFactIcon.sprite = RoomIconCatalog.GetSprite(room.Type);
+                baseInstruction = chinese
+                    ? $"房间类型：{UrbanPalette.TypeName(room.Type)}。点击房间，就能查看名称和类型图标。"
+                    : "Room type: Oak habitat. Select a room to see its name and type icon.";
+            }
+            else
+            {
+                oakFactIcon.sprite = RoomContextVisualCatalog.GetSprite(stage switch
+                {
+                    OakTreeStage.Felled => RoomContextVisual.OakFelled,
+                    OakTreeStage.Sapling => RoomContextVisual.OakSapling,
+                    OakTreeStage.Young => RoomContextVisual.OakYoung,
+                    _ => RoomContextVisual.OakMature
+                });
+                baseInstruction = stage == OakTreeStage.Mature
+                    ? chinese
+                        ? "成熟橡树：松鼠栖息；黎明时坚果库存补至 1 份。能否吃到还要看路线。"
+                        : "Mature oak: squirrel shelter; nut stock refills to 1 at dawn. A reachable route still matters."
+                    : chinese
+                        ? "这棵橡树还未成熟，暂不补充坚果。查看图标可判断它的生长状态。"
+                        : "This oak is not mature and does not refill nuts yet. Its icon shows the growth stage.";
+            }
+            instruction.text = baseInstruction;
+            oakFactIcon.gameObject.SetActive(oakFactIcon.sprite != null);
+            PositionCard(true);
+        }
+
+        public void ShowHumanRoomFact(RoomSpec room, OnboardingPromptPhase phase, bool chinese)
+        {
+            if (room == null || step != OnboardingStep.OakOpening) return;
+            showingOakFact = true;
+            header.text = UrbanPalette.LocalizedRoomName(room, chinese);
+            oakFactIcon.sprite = RoomIconCatalog.GetSprite(room.Type);
+            baseInstruction = phase switch
+            {
+                OnboardingPromptPhase.HumanHomeIdentified => chinese
+                    ? "住宅是居民的出发地和归处。房间图标表示它的用途。"
+                    : "A home is where a resident starts and returns. The icon identifies the room's purpose.",
+                OnboardingPromptPhase.HumanWorkIdentified => chinese
+                    ? "工作房提供上班目的地，并有接纳人数上限；还需要可达路线。"
+                    : "A workplace has limited capacity. Residents also need a reachable route to it.",
+                _ => chinese
+                    ? "餐饮房提供吃饭目的地，也有接纳人数上限。完整的一天还要能回家。"
+                    : "A food shop has limited capacity. A complete day also needs a route home."
+            };
+            instruction.text = baseInstruction;
+            oakFactIcon.gameObject.SetActive(oakFactIcon.sprite != null);
+            PositionCard(true);
+        }
+
         public void ShowGuide(int pageIndex, int pageCount, GameplayGuidePage page,
             Transform worldTarget, bool chinese, RectTransform highlightedUi = null)
         {
             showingGuide = true;
+            showingOakFact = false;
+            oakFactIcon.gameObject.SetActive(false);
             tutorialShade.raycastTarget = true;
             spotlightImage.raycastTarget = false;
             spotlightButton.interactable = false;
@@ -361,6 +518,41 @@ namespace UrbanWildlifeRooms.UI
 
         private static string InstructionFor(OnboardingStep value, OnboardingPromptPhase phase, bool chinese)
         {
+            if (value == OnboardingStep.OakOpening)
+            {
+                if (phase is OnboardingPromptPhase.HumanHome or OnboardingPromptPhase.HumanResident or
+                    OnboardingPromptPhase.HumanResidentMet or OnboardingPromptPhase.HumanWork or
+                    OnboardingPromptPhase.HumanMeal)
+                {
+                    return phase switch
+                    {
+                        OnboardingPromptPhase.HumanHome => chinese
+                            ? "橡树旁出现第一间人类住宅。点击它，看看这块板是什么。"
+                            : "A human home appears beside the oak. Select it to learn what this tile is.",
+                        OnboardingPromptPhase.HumanResident => chinese
+                            ? "住宅里来了一位居民。点击他，认识需要安排日常路线的人。"
+                            : "A resident arrives at the home. Select them to meet the person who needs a daily route.",
+                        OnboardingPromptPhase.HumanResidentMet => chinese
+                            ? "这位居民每天需要从家出发，去工作、吃饭，再回家。下一步看看目的地。"
+                            : "This resident needs to leave home, work, eat, then return home each day. Next, see the destinations.",
+                        OnboardingPromptPhase.HumanWork => chinese
+                            ? "第一处目的地出现了：点击工作房，看看它的作用。"
+                            : "The first destination appears. Select the workplace to see its role.",
+                        _ => chinese
+                            ? "还有吃饭的地方。点击餐饮房，完成这条日常需求链。"
+                            : "There is also a place to eat. Select the food shop to complete the daily needs chain."
+                    };
+                }
+                if (phase == OnboardingPromptPhase.OakNextDay)
+                    return chinese
+                        ? "每天完成一次空间选择才能进入次日；新一天结算橡树生长和自然食物。"
+                        : "Make one spatial choice each day to reach the next. Oak growth and natural food settle at dawn.";
+                return phase == OnboardingPromptPhase.OakMet
+                    ? chinese ? "松鼠停在橡树旁。点击它所在的房间，看看这是什么地方。"
+                        : "The squirrel stops beside the oak. Select the room around it to learn what this place is."
+                    : chinese ? "这棵橡树是松鼠目前唯一的家。点击松鼠，看看故事从哪里开始。"
+                        : "One oak. One squirrel. This tree is its whole world. Select the squirrel to begin.";
+            }
             if (value == OnboardingStep.PracticeLayout)
             {
                 return phase switch
@@ -378,8 +570,8 @@ namespace UrbanWildlifeRooms.UI
                         ? "布局练习已取消。点“重试”重新练习，或点“跳过”继续游戏。"
                         : "Layout practice was cancelled. Press Retry, or Skip to continue playing.",
                     _ => chinese
-                        ? "把高亮的 1×1 房间拖到左侧托盘；松开鼠标后再放回。"
-                        : "Drag the highlighted 1×1 room to the tray on the left, then return it."
+                        ? "把高亮房间拖到左侧托盘，松开后再放回原位。"
+                        : "Drag the highlighted room to the left tray, then put it back."
                 };
             }
             if (value == OnboardingStep.PlaceFood)
@@ -399,7 +591,7 @@ namespace UrbanWildlifeRooms.UI
             }
             return value switch
             {
-                OnboardingStep.SelectResident => chinese ? "点击高亮居民或光圈，查看住处—办公室—餐饮路线。" : "Select the highlighted resident or ring to reveal their home–office–food route.",
+                OnboardingStep.SelectResident => chinese ? "点击光圈，查看住处→工作→餐饮路线。" : "Select the ring to view the home → work → food route.",
                 OnboardingStep.InspectWaste => chinese ? "点击高亮垃圾房，查看容量与下一次清运。" : "Select the highlighted waste room to inspect capacity and collection time.",
                 _ => string.Empty
             };
@@ -416,7 +608,7 @@ namespace UrbanWildlifeRooms.UI
                 : new Rect(-960f, -540f, 1920f, 1080f);
             var narrowGuide = showingGuide && viewport.width < 760f;
             var width = showingGuide ? 720f : 500f;
-            var height = showingGuide ? narrowGuide ? 350f : 260f : 185f;
+            var height = showingGuide ? narrowGuide ? 350f : 260f : 200f;
             var actualWidth = Mathf.Min(width, viewport.width - 40f);
             cardRect.anchorMin = cardRect.anchorMax = new Vector2(0.5f, 0.5f);
             cardRect.pivot = new Vector2(0.5f, 0.5f);
@@ -443,7 +635,8 @@ namespace UrbanWildlifeRooms.UI
             var buttonWidth = narrowGuide ? 80f : 92f;
             SetBottomRight(skipButtonRect, 15f, 13f, buttonWidth, 36f);
             SetBottomRight(continueButton.GetComponent<RectTransform>(),
-                narrowGuide ? 108f : 119f, 13f, buttonWidth, 36f);
+                narrowGuide ? 108f : 119f, 13f,
+                step == OnboardingStep.OakOpening ? 158f : buttonWidth, 36f);
             SetBottomRight(previousButton.GetComponent<RectTransform>(),
                 narrowGuide ? 201f : 223f, 13f, buttonWidth, 36f);
             if (showingGuide)
@@ -458,10 +651,11 @@ namespace UrbanWildlifeRooms.UI
             {
                 SetRect(header.rectTransform, 28f, height - 55f,
                     Mathf.Max(170f, actualWidth - 56f), 28f);
-                SetRect(instruction.rectTransform, 28f, 57f,
-                    Mathf.Max(210f, actualWidth - 56f), height - 118f);
-                instruction.fontSize = 18;
+                SetRect(instruction.rectTransform, showingOakFact ? 82f : 28f, 57f,
+                    Mathf.Max(180f, actualWidth - (showingOakFact ? 110f : 56f)), height - 118f);
+                instruction.fontSize = showingOakFact ? 18 : 20;
             }
+            SetRect(oakFactIcon.rectTransform, 27f, height - 132f, 46f, 46f);
         }
 
         private static RectTransform NewRect(string name, Transform parent, HideFlags hideFlags)

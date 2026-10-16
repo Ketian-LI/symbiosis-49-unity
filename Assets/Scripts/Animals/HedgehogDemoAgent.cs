@@ -57,6 +57,17 @@ namespace UrbanWildlifeRooms.Animals
         public WildlifeVitality Vitality => vitality;
         public bool IsPredatorSafe => predatorDefence && predatorDefenceTime >= 0.32f;
         public bool IsForaging => foraging;
+        public bool TryGetRemainingFoodRoute(out IReadOnlyList<Vector3> route)
+        {
+            route = Array.Empty<Vector3>();
+            if (!IsAlive || !foraging || forageWaypointIndex >= forageWaypoints.Count)
+                return false;
+            var points = new List<Vector3> { transform.position };
+            for (var index = forageWaypointIndex; index < forageWaypoints.Count; index++)
+                points.Add(forageWaypoints[index]);
+            route = points;
+            return true;
+        }
         public bool IsWaitingForCompanion => waitingForCompanion;
 
         public void BindNavigation(AnimalNavigationCoordinator coordinator) =>

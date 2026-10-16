@@ -7,11 +7,16 @@ namespace UrbanWildlifeRooms.Presentation
     {
         public static readonly Color Background = Hex("F3F0EA");
         public static readonly Color Board = Hex("DCD5C8");
-        public static readonly Color BoardSlot = Hex("CEC5B6");
-        public static readonly Color BoardSlotAlternate = Hex("D6CEBF");
+        // Empty plots are recessed, unbuilt spaces. Keep them quieter than
+        // the illustrated rooms instead of reading as 49 white UI buttons.
+        public static readonly Color BoardSlot = Hex("A9A595");
+        public static readonly Color BoardSlotAlternate = Hex("A5A293");
+        public static readonly Color BoardSlotTop = Hex("C9C6B8");
         // The assembled-board reference uses a charcoal-navy frame; the brighter
         // blue from the isolated room concepts is reserved for later skins.
         public static readonly Color Boundary = Hex("263653");
+        public static readonly Color BoardFrameWood = Hex("755E49");
+        public static readonly Color BoardFrameBrass = Hex("C4A36B");
         // Light in the scene lifts this warm cream toward the reference threshold.
         public static readonly Color Doorframe = Hex("C8AB82");
         public static readonly Color Wall = Hex("24324C");

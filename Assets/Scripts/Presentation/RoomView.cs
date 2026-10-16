@@ -15,6 +15,7 @@ namespace UrbanWildlifeRooms.Presentation
         private bool hovered;
         private bool hoverVisible;
         private Vector3 restingPosition;
+        private Vector3? presentationWorldPosition;
         private Quaternion restingRotation;
         private float lastClickTime = -10f;
         private bool layoutEditing;
@@ -36,6 +37,17 @@ namespace UrbanWildlifeRooms.Presentation
 
         public RoomSpec Spec { get; private set; }
         public Transform VisualRoot => visualRoot;
+
+        // The construction opening reuses this legacy room mesh at the centre
+        // of a sparse board. Legacy hover/selection refreshes must not move it
+        // back to its stored 49-room placement while that presentation runs.
+        public void SetPresentationWorldPosition(Vector3? position)
+        {
+            presentationWorldPosition = position;
+            if (visualRoot == null) return;
+            if (position.HasValue) visualRoot.position = position.Value;
+            else visualRoot.localPosition = restingPosition;
+        }
 
         public void Initialize(
             RoomSpec spec,
@@ -96,7 +108,7 @@ namespace UrbanWildlifeRooms.Presentation
                 dragging = false;
                 swapPreviewing = false;
                 dragPreviewLegal = null;
-                visualRoot.localPosition = restingPosition;
+                RestoreDisplayPosition();
             }
 
             ApplyState();
@@ -105,6 +117,11 @@ namespace UrbanWildlifeRooms.Presentation
         public void SetAnimalPassageConnections(IReadOnlyCollection<AnimalPassagePort> ports)
         {
             animalPassages?.SetConnectedPorts(ports);
+        }
+
+        public void SetPedestrianPassageConnections(IReadOnlyCollection<AnimalPassagePort> ports)
+        {
+            animalPassages?.SetConnectedPedestrianPorts(ports);
         }
 
         public void SetDragPreview(bool legal)
@@ -141,7 +158,7 @@ namespace UrbanWildlifeRooms.Presentation
         {
             swapPreviewing = false;
             dragPreviewLegal = null;
-            visualRoot.localPosition = restingPosition;
+            RestoreDisplayPosition();
             visualRoot.localRotation = restingRotation;
             if (layoutEditing)
                 animalPassages?.SetPreview(true, placedQuarterTurns, editingDay);
@@ -154,7 +171,7 @@ namespace UrbanWildlifeRooms.Presentation
             placedQuarterTurns = quarterTurns;
             restingPosition = localPosition;
             restingRotation = Quaternion.Euler(0f, quarterTurns * 90f, 0f);
-            visualRoot.localPosition = restingPosition;
+            RestoreDisplayPosition();
             visualRoot.localRotation = restingRotation;
             if (layoutEditing)
                 animalPassages?.SetPreview(true, placedQuarterTurns, editingDay);
@@ -166,7 +183,7 @@ namespace UrbanWildlifeRooms.Presentation
 
         public void RestoreRestingPlacement()
         {
-            visualRoot.localPosition = restingPosition;
+            RestoreDisplayPosition();
             visualRoot.localRotation = restingRotation;
             dragPreviewLegal = null;
             ApplyState();
@@ -301,9 +318,17 @@ namespace UrbanWildlifeRooms.Presentation
             UrbanVisualFactory.ApplyColor(floorRenderer, displayColor);
             if (!dragging && !swapPreviewing)
             {
-                visualRoot.localPosition = restingPosition;
+                RestoreDisplayPosition();
                 visualRoot.localRotation = restingRotation;
             }
+        }
+
+        private void RestoreDisplayPosition()
+        {
+            if (presentationWorldPosition.HasValue)
+                visualRoot.position = presentationWorldPosition.Value;
+            else
+                visualRoot.localPosition = restingPosition;
         }
     }
 }

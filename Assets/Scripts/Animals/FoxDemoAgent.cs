@@ -53,6 +53,19 @@ namespace UrbanWildlifeRooms.Animals
         public bool IsAlive => vitality == null || vitality.IsAlive;
         public WildlifeVitality Vitality => vitality;
         public bool IsHunting => hunting;
+        public bool TryGetRemainingFoodRoute(out IReadOnlyList<Vector3> route)
+        {
+            route = Array.Empty<Vector3>();
+            if (!IsAlive || !hunting || huntTarget == null)
+                return false;
+            var points = new List<Vector3> { transform.position };
+            for (var index = huntWaypointIndex; index < huntWaypoints.Count; index++)
+                points.Add(index == huntWaypoints.Count - 1
+                    ? huntTarget.position : huntWaypoints[index]);
+            if (points.Count == 1) points.Add(huntTarget.position);
+            route = points;
+            return true;
+        }
         public Vector3 SpawnPosition => spawnPosition;
 
         public void BindNavigation(AnimalNavigationCoordinator coordinator) =>

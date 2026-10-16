@@ -13,7 +13,7 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
     public sealed class EndlessBalanceFlowTests
     {
         [UnityTest]
-        public IEnumerator CustomStartRestartAndRestoreUseSameRules()
+        public IEnumerator CustomWildlifeRulesSurviveStartRestartAndRestore()
         {
             yield return SceneManager.LoadSceneAsync("Main", LoadSceneMode.Single);
             var generated = UnityEngine.Object.FindFirstObjectByType<UrbanWildlifeBootstrap>()
@@ -23,16 +23,13 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             var runtime = generated.GetComponentInChildren<GameRuntimeController>(true);
             var balance = generated.GetComponentInChildren<EndlessBalanceController>(true);
             var custom = EndlessDifficultySettings.Preset(EndlessDifficulty.Gentle);
-            custom.startingCommunity = 85;
             custom.wildlifeFloor = 6;
             custom.wildlifeGraceDays = 4;
             runtime.StartNewRun(GameMode.Sandbox, custom);
-            Assert.That(balance.Model.Community, Is.EqualTo(85));
             Assert.That(balance.Model.CurrentWildlifeFloor, Is.EqualTo(6));
             Assert.That(balance.Model.WildlifeGraceDays, Is.EqualTo(4));
-            balance.Model.SettleDay(1, 0, 4, 5);
+            balance.Model.SettleDay(1, 5);
             runtime.RestartRun();
-            Assert.That(balance.Model.Community, Is.EqualTo(85));
             Assert.That(balance.Model.CriticalWildlifeDays, Is.Zero);
 
             var saved = balance.Model.Export();
@@ -40,21 +37,20 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 EndlessDifficulty.Gentle, custom);
             balance.RestoreSession(saved, Array.Empty<string>());
             Assert.That(balance.Model.CurrentWildlifeFloor, Is.EqualTo(6));
-            Assert.That(balance.Model.Community, Is.EqualTo(85));
+            Assert.That(balance.Model.LastSettledDay, Is.Zero);
 
             runtime.RestoreSession(0d, 1, GameMode.Sandbox,
                 EndlessDifficulty.Gentle, null);
             balance.RestoreSession(null, Array.Empty<string>());
-            Assert.That(balance.Model.Community, Is.EqualTo(75),
-                "An enum-only older save should use its preset when editable settings are absent.");
+            Assert.That(balance.Model.CurrentWildlifeFloor, Is.EqualTo(8),
+                "An enum-only older save should use its wildlife preset.");
 
             runtime.StartNewRun(GameMode.Research, custom);
-            Assert.That(runtime.SandboxSettings.startingCommunity, Is.EqualTo(60));
             Assert.That(balance.Model.CurrentWildlifeFloor, Is.EqualTo(10));
         }
 
         [UnityTest]
-        public IEnumerator ZeroCommunityEndsSandboxButNotResearch()
+        public IEnumerator LegacyZeroCommunityNoLongerEndsEitherMode()
         {
             yield return SceneManager.LoadSceneAsync("Main", LoadSceneMode.Single);
             var generated = UnityEngine.Object.FindFirstObjectByType<UrbanWildlifeBootstrap>()
@@ -80,21 +76,21 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             runtime.SetOnboardingOpen(false);
             balance.RestoreSession(new EndlessBalanceSaveData
             {
-                community = 4,
+                community = 0,
                 lastWildlifeCount = AnimalPopulationDefaults.Total
             }, Array.Empty<string>());
             reportProperty.SetValue(residents, failedCommute);
             settleMethod.Invoke(balance, new object[] { settlement });
-            Assert.That(runtime.HasActiveRun, Is.False);
-            Assert.That(runtime.CurrentResults.endReason, Is.EqualTo(RunEndReason.CommunityCollapse));
-            Assert.That(runtime.CurrentResults.finalCommunity, Is.Zero);
+            Assert.That(runtime.HasActiveRun, Is.True,
+                "A retired community value must not end an Endless run.");
+            Assert.That(balance.Model.LastSettledDay, Is.EqualTo(1));
 
             runtime.StartNewRun(GameMode.Research);
             runtime.SetOnboardingOpen(false);
             reportProperty.SetValue(residents, failedCommute);
             settleMethod.Invoke(balance, new object[] { settlement });
             Assert.That(runtime.HasActiveRun, Is.True,
-                "Sandbox community pressure must not change Research end conditions.");
+                "Research end conditions must remain unchanged.");
         }
 
         [UnityTearDown]
