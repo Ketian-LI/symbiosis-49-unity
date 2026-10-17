@@ -172,6 +172,11 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 "Construction UI/Building choices/Feedback backing/Feedback preview")
                 .GetComponent<Text>();
             Assert.That(riskPreview.text, Does.Contain("Fox risk"));
+            var riskIcon = riskRoot.transform.Find(
+                "Construction UI/Building choices/Feedback backing/Feedback icon")
+                .GetComponent<Image>();
+            Assert.That(riskIcon.sprite, Is.Not.Null);
+            Assert.That(riskIcon.sprite.texture.name, Does.Contain("population-fox"));
             var forecast = run.PreviewEcologyDay();
             var riskTile = run.BuiltTiles.First(tile =>
                 tile.id == forecast.predationTileId);

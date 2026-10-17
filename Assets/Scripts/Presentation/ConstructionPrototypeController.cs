@@ -94,6 +94,7 @@ namespace UrbanWildlifeRooms.Presentation
         private Text nextStepHeading;
         private Text feedbackText;
         private Image feedbackPanel;
+        private Image feedbackIcon;
         private Text progressText;
         private Text placementGuideText;
         private Text animalMetricText;
@@ -920,7 +921,7 @@ namespace UrbanWildlifeRooms.Presentation
                 Ink, TextAnchor.MiddleLeft);
             feedbackText.raycastTarget = false;
             feedbackText.gameObject.AddComponent<CanvasGroup>().alpha = 0f;
-            var feedbackIcon = Panel("Feedback icon", feedbackPanel.transform,
+            feedbackIcon = Panel("Feedback icon", feedbackPanel.transform,
                 new Vector2(-107, -8), new Vector2(35, 35), Color.white);
             feedbackIcon.sprite = LoadSprite("UI/GameplayHud/metric-food-access-v01");
             feedbackIcon.preserveAspect = true;
@@ -1254,12 +1255,27 @@ namespace UrbanWildlifeRooms.Presentation
                     new Vector2(20, 20), "W", 13, true, Color.white,
                     TextAnchor.MiddleCenter).raycastTarget = false;
                 workNeedMarkers[column, row] = workNeed.gameObject;
-                var foxRisk = Panel("Fox risk", button.transform,
-                    new Vector2(-30, 29), new Vector2(24, 24),
-                    new Color(0.67f, 0.30f, 0.23f));
-                foxRisk.raycastTarget = false;
-                var foxRiskIcon = Panel("Fox risk icon", foxRisk.transform,
-                    Vector2.zero, new Vector2(19, 19), Color.white);
+                var foxRisk = NewRect("Fox risk", button.transform,
+                    Vector2.zero, new Vector2(88, 88));
+                var warningRed = new Color(0.72f, 0.29f, 0.22f, 0.92f);
+                foreach (var edge in new[]
+                {
+                    (name: "Top", position: new Vector2(0, 44),
+                        size: new Vector2(88, 3)),
+                    (name: "Bottom", position: new Vector2(0, -44),
+                        size: new Vector2(88, 3)),
+                    (name: "Left", position: new Vector2(-44, 0),
+                        size: new Vector2(3, 88)),
+                    (name: "Right", position: new Vector2(44, 0),
+                        size: new Vector2(3, 88))
+                })
+                    Panel($"Fox risk {edge.name}", foxRisk,
+                        edge.position, edge.size, warningRed).raycastTarget = false;
+                var foxBadge = Panel("Fox risk badge", foxRisk,
+                    new Vector2(-30, 29), new Vector2(29, 29), warningRed);
+                foxBadge.raycastTarget = false;
+                var foxRiskIcon = Panel("Fox risk icon", foxBadge.transform,
+                    Vector2.zero, new Vector2(24, 24), Color.white);
                 foxRiskIcon.sprite = LoadSprite("UI/GameplayHud/population-fox-v02");
                 foxRiskIcon.preserveAspect = true;
                 foxRiskIcon.raycastTarget = false;
@@ -2109,7 +2125,7 @@ namespace UrbanWildlifeRooms.Presentation
                     tile.id == predationRiskTileId);
                 foxRiskMarkers[column, row].transform.localScale =
                     tile != null && tile.id == focusedPredationTileId
-                        ? Vector3.one * 1.28f : Vector3.one;
+                        ? Vector3.one * 1.08f : Vector3.one;
                 var canPlaceHere = tile == null && mayBuild &&
                     run.CheckPlacement(worldColumn, worldRow, selectedCategory,
                         plantingToPlace) == ConstructionPlacementFailure.None;
@@ -2199,6 +2215,9 @@ namespace UrbanWildlifeRooms.Presentation
             feedbackPanel.gameObject.SetActive(!hasPendingPlacement &&
                 (!string.IsNullOrWhiteSpace(feedbackText.text) ||
                  !string.IsNullOrEmpty(predationRiskText)));
+            feedbackIcon.sprite = string.IsNullOrEmpty(predationRiskText)
+                ? LoadSprite("UI/GameplayHud/metric-food-access-v01")
+                : LoadSprite("UI/GameplayHud/population-fox-v02");
             feedbackPreviewText.text = string.IsNullOrEmpty(predationRiskText)
                 ? ShortPreview(feedbackText.text, 43)
                 : focusedPredationTileId == predationRiskTileId
