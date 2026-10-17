@@ -254,6 +254,16 @@ namespace UrbanWildlifeRooms.Presentation
         {
             ClearResetConfirmation();
             if (run == null) return false;
+            if (run.IsCategoryAtLimit(category))
+            {
+                if (feedbackText != null)
+                    feedbackText.text = L(
+                        $"{CategoryLabel(category)} limit reached " +
+                        $"({run.CategoryBuiltCount(category)}/{run.CategoryLimit(category)}). Choose another type.",
+                        $"{CategoryLabel(category)}已达上限" +
+                        $"（{run.CategoryBuiltCount(category)}/{run.CategoryLimit(category)}），请选择其他建筑。");
+                return false;
+            }
             if (!CanSelectCategory(category))
             {
                 if (feedbackText != null)
@@ -459,6 +469,8 @@ namespace UrbanWildlifeRooms.Presentation
                 feedbackText.text = failure == ConstructionBuildFailure.LockedByStory
                     ? L("Finish observing the oak before building.",
                         "先完成橡树观察，再开始建造。")
+                    : failure == ConstructionBuildFailure.TypeLimitReached
+                        ? PlacementMessage(ConstructionPlacementFailure.TypeLimitReached)
                     : failure == ConstructionBuildFailure.DailyLimitReached
                         ? L("One new cell per day. Check tomorrow's needs, then advance.",
                             "每天只能建造一格。查看次日需求后推进日期。")
@@ -1543,18 +1555,18 @@ namespace UrbanWildlifeRooms.Presentation
                     () => CategoryHoverDetails(category),
                     TooltipLocation.LeftLeaf);
                 var label = button.GetComponentInChildren<Text>();
-                label.rectTransform.anchoredPosition = new Vector2(13, 0);
-                label.rectTransform.sizeDelta = new Vector2(82, 38);
+                label.rectTransform.anchoredPosition = new Vector2(0, 0);
+                label.rectTransform.sizeDelta = new Vector2(64, 38);
                 var status = TextAt("Unlock status", button.transform,
                     new Vector2(19, -13), new Vector2(90, 17), "", 11,
                     false, Paper, TextAnchor.MiddleLeft);
                 status.raycastTarget = false;
                 status.gameObject.AddComponent<CanvasGroup>().alpha = 0f;
-                var countBacking = Panel("Valid plot badge", button.transform,
-                    new Vector2(62, -18), new Vector2(21, 18), Ink);
+                var countBacking = Panel("Build limit badge", button.transform,
+                    new Vector2(57, -18), new Vector2(40, 18), Ink);
                 countBacking.raycastTarget = false;
-                var count = TextAt("Valid plot count", countBacking.transform,
-                    Vector2.zero, new Vector2(21, 18), "–", 11, true,
+                var count = TextAt("Built and limit", countBacking.transform,
+                    Vector2.zero, new Vector2(40, 18), "–", 11, true,
                     Paper, TextAnchor.MiddleCenter);
                 count.raycastTarget = false;
                 categoryCountLabels.Add(category, count);
@@ -1716,7 +1728,9 @@ namespace UrbanWildlifeRooms.Presentation
             var planting = category == ConstructionCategory.Green
                 ? selectedPlanting : GreenPlanting.None;
             var plots = AvailablePlotCount(category, planting);
-            var availability = run.IsUnlocked(category)
+            var availability = run.IsCategoryAtLimit(category)
+                ? L("Type limit reached", "此类建筑已达上限")
+                : run.IsUnlocked(category)
                 ? plots > 0 ? L($"Valid plots: {plots}", $"可放置：{plots} 处")
                     : PlacementPrerequisite(category)
                 : L("Available after the oak lesson", "完成橡树观察后可选");
@@ -1746,7 +1760,12 @@ namespace UrbanWildlifeRooms.Presentation
                 _ => L("A shared space within the neighbourhood.",
                     "社区中的公共空间。")
             };
-            return $"{purpose}\n{availability}";
+            var quota = run.Mode == ConstructionGameMode.Fill
+                ? L($"Built {run.CategoryBuiltCount(category)}/{run.CategoryLimit(category)}",
+                    $"已建 {run.CategoryBuiltCount(category)}/{run.CategoryLimit(category)}")
+                : L($"Built {run.CategoryBuiltCount(category)} · no type limit",
+                    $"已建 {run.CategoryBuiltCount(category)} · 无类型上限");
+            return $"{purpose}\n{quota}\n{availability}";
         }
 
         private string PlantingHoverDetails(GreenPlanting planting) =>
@@ -1843,7 +1862,7 @@ namespace UrbanWildlifeRooms.Presentation
         };
 
         private bool CanSelectCategory(ConstructionCategory category) =>
-            run != null && run.IsUnlocked(category);
+            run != null && run.IsUnlocked(category) && !run.IsCategoryAtLimit(category);
 
         private string SelectedBuildLabel() => selectedCategory == ConstructionCategory.Green
             ? L($"{PlantingLabel(selectedPlanting)} green",
@@ -2070,10 +2089,11 @@ namespace UrbanWildlifeRooms.Presentation
             selectedBuildIcon.sprite = RoomIconCatalog.GetSprite(RoomTypeFor(
                 selectedCategory, selectedPlanting));
             plantingPanel.SetActive(selectedCategory == ConstructionCategory.Green &&
-                run.IsUnlocked(ConstructionCategory.Green));
+                CanSelectCategory(ConstructionCategory.Green));
 
             foreach (var pair in categoryButtons)
             {
+                var atLimit = run.IsCategoryAtLimit(pair.Key);
                 var unlocked = CanSelectCategory(pair.Key) && !run.IsFinished;
                 var categoryPlotCount = unlocked ? AvailablePlotCount(pair.Key,
                     pair.Key == ConstructionCategory.Green ? selectedPlanting :
@@ -2081,23 +2101,32 @@ namespace UrbanWildlifeRooms.Presentation
                 // Players can select any building after the oak lesson. A
                 // zero-site choice explains the spatial rule, not a story lock.
                 pair.Value.interactable = !run.IsFinished;
-                pair.Value.GetComponent<Image>().color = pair.Key == selectedCategory
+                pair.Value.GetComponent<Image>().color = atLimit
+                    ? new Color(0.66f, 0.68f, 0.66f)
+                    : pair.Key == selectedCategory
                         ? new Color(0.73f, 0.96f, 0.88f) : Color.white;
                 var status = categoryStatusLabels[pair.Key];
                 status.text = run.IsFinished
                     ? L("Run ended", "本局结束")
+                    : atLimit
+                        ? L("Limit reached", "已达上限")
                     : !unlocked
                         ? L("Day 1", "第 1 天")
                     : categoryPlotCount == 0
                         ? PlacementPrerequisite(pair.Key)
                         : L($"{categoryPlotCount} plots", $"可放{categoryPlotCount}处");
                 status.color = categoryPlotCount == 0 ? Gold : Paper;
-                categoryCountLabels[pair.Key].text = unlocked && categoryPlotCount > 0
-                    ? categoryPlotCount.ToString() : "–";
+                categoryCountLabels[pair.Key].text = run.Mode == ConstructionGameMode.Fill
+                    ? $"{run.CategoryBuiltCount(pair.Key)}/{run.CategoryLimit(pair.Key)}"
+                    : unlocked && categoryPlotCount > 0
+                        ? categoryPlotCount.ToString() : "–";
             }
             if (paletteNotice != null)
-                paletteNotice.text = L($"Selected: {SelectedBuildLabel()}",
-                    $"已选：{SelectedBuildLabel()}");
+                paletteNotice.text = run.Mode == ConstructionGameMode.Fill
+                    ? L($"Selected: {SelectedBuildLabel()}\nBadges: built / limit",
+                        $"已选：{SelectedBuildLabel()}\n角标：已建 / 上限")
+                    : L($"Selected: {SelectedBuildLabel()}",
+                        $"已选：{SelectedBuildLabel()}");
             foreach (var pair in plantingButtons)
                 pair.Value.GetComponent<Image>().color = pair.Key == selectedPlanting
                     ? new Color(0.73f, 0.96f, 0.88f) : Color.white;
@@ -2815,6 +2844,9 @@ namespace UrbanWildlifeRooms.Presentation
                     "街道须从住宅或已接通街道延伸。"),
             ConstructionPlacementFailure.Occupied =>
                 L("That cell is already built.", "这格已有建筑。"),
+            ConstructionPlacementFailure.TypeLimitReached =>
+                L("This building type has reached its 49-cell limit. Choose another type.",
+                    "此类建筑已达 49 格模式的数量上限，请选择其他建筑。"),
             _ => L("This cell cannot be built here.", "这格不能建造所选建筑。")
         };
 

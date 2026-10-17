@@ -31,7 +31,8 @@ namespace UrbanWildlifeRooms.Data
         NeedsHomeOrRestaurant,
         StreetNeedsHomeConnection,
         InvalidPlanting,
-        InvalidBuildDay
+        InvalidBuildDay,
+        TypeLimitReached
     }
 
     [Serializable]

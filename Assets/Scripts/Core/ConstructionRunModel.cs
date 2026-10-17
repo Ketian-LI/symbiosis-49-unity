@@ -40,7 +40,8 @@ namespace UrbanWildlifeRooms.Core
         LockedByStory,
         InvalidPlacement,
         DailyLimitReached,
-        RunFinished
+        RunFinished,
+        TypeLimitReached
     }
 
     [Serializable]
@@ -130,6 +131,27 @@ namespace UrbanWildlifeRooms.Core
             (CurrentDay == 1 || BuiltToday);
         public bool IsFull => board.IsFull;
         public IReadOnlyList<ConstructionTileData> BuiltTiles => board.BuiltTiles;
+        // Fill-mode limits are deliberately not a fixed recipe: their total
+        // exceeds 49, so players still decide which neighbourhood to build.
+        // The starter oak counts toward the Green limit.
+        public int CategoryLimit(ConstructionCategory category) =>
+            Mode == ConstructionGameMode.Endless ? int.MaxValue : category switch
+            {
+                ConstructionCategory.Green => 24,
+                ConstructionCategory.Residence => 14,
+                ConstructionCategory.Workshop => 8,
+                ConstructionCategory.Restaurant => 6,
+                ConstructionCategory.Supermarket => 5,
+                ConstructionCategory.Waste => 8,
+                ConstructionCategory.Street => 14,
+                ConstructionCategory.Square => 12,
+                _ => throw new ArgumentOutOfRangeException(nameof(category))
+            };
+        public int CategoryBuiltCount(ConstructionCategory category) =>
+            board.BuiltTiles.Count(tile => tile.category == category);
+        public bool IsCategoryAtLimit(ConstructionCategory category) =>
+            Mode == ConstructionGameMode.Fill &&
+            CategoryBuiltCount(category) >= CategoryLimit(category);
         public ConstructionStoryStage StoryStage => story.Stage;
         public int AnimalScore => score.AnimalScore;
         public int HumanScore => score.HumanScore;
@@ -181,8 +203,13 @@ namespace UrbanWildlifeRooms.Core
         public bool IsUnlocked(ConstructionCategory category) =>
             story.IsUnlocked(category);
         public ConstructionPlacementFailure CheckPlacement(int column, int row,
-            ConstructionCategory category, GreenPlanting planting = GreenPlanting.None) =>
-            board.CheckPlacement(column, row, category, planting);
+            ConstructionCategory category, GreenPlanting planting = GreenPlanting.None)
+        {
+            var placement = board.CheckPlacement(column, row, category, planting);
+            return placement == ConstructionPlacementFailure.None &&
+                IsCategoryAtLimit(category)
+                    ? ConstructionPlacementFailure.TypeLimitReached : placement;
+        }
         public int AdjacentGreenCount(string residenceId) =>
             board.AdjacentGreenCount(residenceId);
         public int ConnectedGreenCount(string greenId) =>
@@ -363,6 +390,13 @@ namespace UrbanWildlifeRooms.Core
             // An invalid attempt can still reveal an access problem in the
             // story, even if this day's one construction slot is already used.
             var check = board.CheckPlacement(column, row, category, planting);
+            if (check == ConstructionPlacementFailure.None &&
+                IsCategoryAtLimit(category))
+            {
+                placementFailure = ConstructionPlacementFailure.TypeLimitReached;
+                failure = ConstructionBuildFailure.TypeLimitReached;
+                return false;
+            }
             if (check == ConstructionPlacementFailure.None && BuiltToday)
             {
                 failure = ConstructionBuildFailure.DailyLimitReached;

@@ -201,8 +201,15 @@ namespace UrbanWildlifeRooms.Tests.Editor
                     System.Math.Abs(position.row - 3));
             foreach (var position in positions)
                 if (run.At(position.column, position.row) == null)
+                {
+                    var category = !run.IsCategoryAtLimit(ConstructionCategory.Green)
+                        ? ConstructionCategory.Green
+                        : !run.IsCategoryAtLimit(ConstructionCategory.Residence)
+                            ? ConstructionCategory.Residence : ConstructionCategory.Square;
                     PlaceAndSimulate(run, position.column, position.row,
-                        ConstructionCategory.Green, GreenPlanting.Meadow);
+                        category, category == ConstructionCategory.Green
+                            ? GreenPlanting.Meadow : GreenPlanting.None);
+                }
             return run;
         }
 

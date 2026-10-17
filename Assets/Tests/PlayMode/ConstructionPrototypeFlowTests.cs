@@ -994,6 +994,8 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             Assert.That(story.rectTransform.rect.width, Is.LessThanOrEqualTo(250f),
                 "Text must remain inside the opaque part of the left paper leaf.");
             Assert.That(category.text, Is.EqualTo("绿地"));
+            Assert.That(canvas.Find("Building choices/Build Green/Build limit badge/Built and limit")
+                .GetComponent<Text>().text, Is.EqualTo("1/24"));
             Assert.That(category.font.name, Does.Contain("NotoSansSC"));
             Assert.That(canvas.Find("Paper background").GetComponent<Image>().sprite,
                 Is.Not.Null);
@@ -1109,6 +1111,45 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator ReachedFillLimitIsVisibleAndAnotherTypeRemainsBuildable()
+        {
+            var run = new ConstructionRunModel();
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            var positions = Enumerable.Range(0, 7)
+                .SelectMany(column => Enumerable.Range(0, 7)
+                    .Select(row => (column, row)))
+                .Where(point => point != (3, 3))
+                .OrderBy(point => Mathf.Abs(point.column - 3) +
+                    Mathf.Abs(point.row - 3)).ToArray();
+            foreach (var point in positions.Take(run.CategoryLimit(ConstructionCategory.Green) - 1))
+            {
+                Assert.That(run.TryBuild(point.column, point.row,
+                    ConstructionCategory.Green, GreenPlanting.Meadow,
+                    out _, out _, out _), Is.True);
+                Assert.That(run.TrySimulateDay(out _), Is.True);
+            }
+            var root = new GameObject("Construction category limit test");
+            var controller = root.AddComponent<ConstructionPrototypeController>();
+            controller.UseRunForTesting(run);
+            yield return null;
+            var canvas = root.transform.Find("Construction UI");
+            var badge = canvas.Find(
+                "Building choices/Build Green/Build limit badge/Built and limit")
+                .GetComponent<Text>();
+            Assert.That(badge.text, Is.EqualTo("24/24"));
+            Assert.That(controller.TrySelect(ConstructionCategory.Green), Is.False);
+            var feedback = canvas.Find("Building choices/Feedback backing/Feedback")
+                .GetComponent<Text>();
+            Assert.That(feedback.text, Does.Contain("limit reached"));
+            Assert.That(controller.TrySelect(ConstructionCategory.Residence), Is.True);
+            var next = positions[run.CategoryLimit(ConstructionCategory.Green) - 1];
+            Assert.That(controller.TryPlace(next.column, next.row), Is.True);
+            Assert.That(run.CategoryBuiltCount(ConstructionCategory.Residence), Is.EqualTo(1));
+            Object.Destroy(root);
+            yield return null;
+        }
+
+        [UnityTest]
         public IEnumerator FullBoardShowsResultAndCanStartNewRun()
         {
             var run = new ConstructionRunModel();
@@ -1121,8 +1162,13 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                     Mathf.Abs(position.row - 3));
             foreach (var position in positions)
             {
+                var category = !run.IsCategoryAtLimit(ConstructionCategory.Green)
+                    ? ConstructionCategory.Green
+                    : !run.IsCategoryAtLimit(ConstructionCategory.Residence)
+                        ? ConstructionCategory.Residence : ConstructionCategory.Square;
                 Assert.That(run.TryBuild(position.column, position.row,
-                    ConstructionCategory.Green, GreenPlanting.Meadow,
+                    category, category == ConstructionCategory.Green
+                        ? GreenPlanting.Meadow : GreenPlanting.None,
                     out _, out var failure, out _), Is.True, failure.ToString());
                 Assert.That(run.TrySimulateDay(out _), Is.True);
             }
@@ -1283,8 +1329,13 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             {
                 if (controller.BuiltCount == 49) break;
                 if (occupied.Contains((position.column, position.row))) continue;
+                var category = !saved.IsCategoryAtLimit(ConstructionCategory.Green)
+                    ? ConstructionCategory.Green
+                    : !saved.IsCategoryAtLimit(ConstructionCategory.Residence)
+                        ? ConstructionCategory.Residence : ConstructionCategory.Square;
                 PlaceAndAdvance(controller, position.column, position.row,
-                    ConstructionCategory.Green, GreenPlanting.Meadow);
+                    category, category == ConstructionCategory.Green
+                        ? GreenPlanting.Meadow : GreenPlanting.None);
             }
             Assert.That(controller.BuiltCount, Is.EqualTo(49));
             Assert.That(controller.CurrentDay, Is.EqualTo(49));

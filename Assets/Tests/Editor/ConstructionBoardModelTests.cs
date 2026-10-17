@@ -106,6 +106,58 @@ namespace UrbanWildlifeRooms.Tests.Editor
         }
 
         [Test]
+        public void FillModeCapsEachCategoryButStillAllowsFortyNineChoices()
+        {
+            var run = new ConstructionRunModel();
+            var categories = Enum.GetValues(typeof(ConstructionCategory))
+                .Cast<ConstructionCategory>().ToArray();
+            Assert.That(categories.All(category => run.CategoryLimit(category) > 0 &&
+                run.CategoryLimit(category) < ConstructionBoardModel.Capacity), Is.True);
+            Assert.That(categories.Sum(run.CategoryLimit),
+                Is.GreaterThan(ConstructionBoardModel.Capacity),
+                "Caps must leave room to choose a composition, not prescribe one.");
+            Assert.That(run.CategoryBuiltCount(ConstructionCategory.Green), Is.EqualTo(1),
+                "The starting oak counts as a green room.");
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            var positions = Enumerable.Range(0, 7)
+                .SelectMany(column => Enumerable.Range(0, 7)
+                    .Select(row => (column, row)))
+                .Where(point => point != (3, 3))
+                .OrderBy(point => Math.Abs(point.column - 3) +
+                    Math.Abs(point.row - 3)).ToArray();
+            var greenLimit = run.CategoryLimit(ConstructionCategory.Green);
+            foreach (var point in positions.Take(greenLimit - 1))
+            {
+                Build(run, point.column, point.row, ConstructionCategory.Green,
+                    GreenPlanting.Meadow);
+                Assert.That(run.TrySimulateDay(out _), Is.True);
+            }
+            var next = positions[greenLimit - 1];
+            Assert.That(run.IsCategoryAtLimit(ConstructionCategory.Green), Is.True);
+            Assert.That(run.CheckPlacement(next.column, next.row,
+                ConstructionCategory.Green, GreenPlanting.Meadow),
+                Is.EqualTo(ConstructionPlacementFailure.TypeLimitReached));
+            Assert.That(run.TryPreviewBuildImpact(next.column, next.row,
+                ConstructionCategory.Green, GreenPlanting.Meadow, out _), Is.False);
+            Assert.That(run.TryBuild(next.column, next.row,
+                ConstructionCategory.Green, GreenPlanting.Meadow,
+                out _, out var failure, out var placement), Is.False);
+            Assert.That(failure, Is.EqualTo(ConstructionBuildFailure.TypeLimitReached));
+            Assert.That(placement,
+                Is.EqualTo(ConstructionPlacementFailure.TypeLimitReached));
+            Assert.That(run.BuiltCount, Is.EqualTo(greenLimit));
+            Assert.That(run.CheckPlacement(next.column, next.row,
+                ConstructionCategory.Residence),
+                Is.EqualTo(ConstructionPlacementFailure.None));
+            Build(run, next.column, next.row, ConstructionCategory.Residence);
+            Assert.That(ConstructionRunModel.TryRestore(run.Export(), out var restored),
+                Is.True);
+            Assert.That(restored.IsCategoryAtLimit(ConstructionCategory.Green), Is.True);
+            Assert.That(new ConstructionRunModel(ConstructionGameMode.Endless)
+                .CategoryLimit(ConstructionCategory.Green), Is.EqualTo(int.MaxValue));
+        }
+
+        [Test]
         public void EndlessUnsustainedPigeonFlockCanEndTheRun()
         {
             var run = new ConstructionRunModel(ConstructionGameMode.Endless);
@@ -638,8 +690,9 @@ namespace UrbanWildlifeRooms.Tests.Editor
                     Math.Abs(position.row - 3));
             foreach (var position in positions)
             {
+                var choice = FillChoice(run);
                 Build(run, position.column, position.row,
-                    ConstructionCategory.Green, GreenPlanting.Meadow);
+                    choice.category, choice.planting);
                 Assert.That(run.TrySimulateDay(out var ecology), Is.True);
                 observedMeals += ecology.AnimalMeals;
             }
@@ -671,8 +724,9 @@ namespace UrbanWildlifeRooms.Tests.Editor
                     Math.Abs(position.row - 3));
             foreach (var position in positions)
             {
+                var choice = FillChoice(run);
                 Assert.That(run.TryBuild(position.column, position.row,
-                    ConstructionCategory.Green, GreenPlanting.Meadow,
+                    choice.category, choice.planting,
                     out _, out var failure, out _), Is.True, failure.ToString());
                 if (!run.IsFull) Assert.That(run.TryEndDay(0, 0), Is.True);
             }
@@ -832,6 +886,16 @@ namespace UrbanWildlifeRooms.Tests.Editor
                 out var built, out var failure, out var placement), Is.True,
                 $"{failure}: {placement}");
             return built;
+        }
+
+        private static (ConstructionCategory category, GreenPlanting planting)
+            FillChoice(ConstructionRunModel run)
+        {
+            if (!run.IsCategoryAtLimit(ConstructionCategory.Green))
+                return (ConstructionCategory.Green, GreenPlanting.Meadow);
+            return !run.IsCategoryAtLimit(ConstructionCategory.Residence)
+                ? (ConstructionCategory.Residence, GreenPlanting.None)
+                : (ConstructionCategory.Square, GreenPlanting.None);
         }
     }
 }
