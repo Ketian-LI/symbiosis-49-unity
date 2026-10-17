@@ -528,8 +528,6 @@ namespace UrbanWildlifeRooms.Presentation
                 ConstructionStoryStage.WatchResidentEat
                 ? run.FirstResidentRestaurantRoute
                 : Array.Empty<ConstructionTileData>();
-            var squirrelRoute = run.PreviewSquirrelFoodRoute();
-            var pigeonRoute = run.PreviewPigeonFoodRoute();
             if (!run.TrySimulateConstructionDay(out var ecology)) return false;
             var human = run.LastHumanDay;
             feedbackText.text = openingMeal && ecology.squirrelAte
@@ -584,21 +582,16 @@ namespace UrbanWildlifeRooms.Presentation
             if (newPigeonFlock) worldView?.PlayPigeonArrival();
             Refresh();
             worldView?.PlayForaging(
-                ecology.predatedSpecies == ConstructionPreySpecies.Squirrel
-                    ? null : squirrelRoute,
-                ecology.predatedSpecies == ConstructionPreySpecies.Pigeon
-                    ? null : pigeonRoute);
+                ecology.squirrelFoodTileIds.Select(target =>
+                    run.GreenFoodRouteTo(ConstructionBoardModel.StarterOakId,
+                        target)).ToArray(),
+                ecology.pigeonMealTileIds.Select(target =>
+                    run.GreenFoodRouteTo(run.PigeonTileId, target)).ToArray());
             if (ecology.predatedSpecies != ConstructionPreySpecies.None)
                 worldView?.PlayFoxHunt(ecology.foxHuntRouteTileIds, run.BuiltTiles,
                     ecology.predatedSpecies);
             if (human?.residents != null)
-            {
-                var firstJourney = human.residents.FirstOrDefault(person =>
-                    (person.worked || person.ate) && person.routeTileIds.Count > 1);
-                if (firstJourney != null)
-                    worldView?.PlayResidentCommute(firstJourney.routeTileIds,
-                        run.BuiltTiles);
-            }
+                worldView?.PlayResidentCommutes(human.residents, run.BuiltTiles);
             if (newPigeonFlock)
                 foreach (var tile in run.BuiltTiles)
                     if (tile.id == run.PigeonTileId)

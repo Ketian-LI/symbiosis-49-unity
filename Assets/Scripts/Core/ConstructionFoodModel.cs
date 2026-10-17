@@ -41,6 +41,9 @@ namespace UrbanWildlifeRooms.Core
         public string pigeonFoodTileId;
         public int pigeonsPresent;
         public List<string> pigeonFoodTileIds = new();
+        // One source per fed pigeon; pigeonFoodTileIds remains the distinct
+        // source list used by the food-location UI and older saves.
+        public List<string> pigeonMealTileIds = new();
         public ConstructionPreySpecies predatedSpecies;
         public string predationTileId;
         public List<string> foxHuntRouteTileIds = new();
@@ -318,6 +321,8 @@ namespace UrbanWildlifeRooms.Core
                         Eat(result, source.id, portions);
                         result.pigeonsFed += portions;
                         result.pigeonFoodTileIds.Add(source.id);
+                        for (var portion = 0; portion < portions; portion++)
+                            result.pigeonMealTileIds.Add(source.id);
                         result.pigeonFoodTileId ??= source.id;
                     }
                 }

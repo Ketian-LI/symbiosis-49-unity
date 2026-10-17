@@ -288,9 +288,14 @@ namespace UrbanWildlifeRooms.Tests.Editor
                 board, 5, first.id), Is.EqualTo(3));
             Assert.That(preview.pigeonsFed, Is.EqualTo(3));
             Assert.That(preview.pigeonFoodTileIds.Count, Is.GreaterThan(1));
+            Assert.That(preview.pigeonMealTileIds.Count,
+                Is.EqualTo(preview.pigeonsFed),
+                "Each fed pigeon needs its own settled food destination.");
             var actual = food.SettleDay(5, board, first.id);
             Assert.That(actual.pigeonFoodTileIds,
                 Is.EqualTo(preview.pigeonFoodTileIds));
+            Assert.That(actual.pigeonMealTileIds,
+                Is.EqualTo(preview.pigeonMealTileIds));
             Assert.That(actual.foodChanges.Sum(change => change.eaten),
                 Is.EqualTo(actual.AnimalMeals));
         }

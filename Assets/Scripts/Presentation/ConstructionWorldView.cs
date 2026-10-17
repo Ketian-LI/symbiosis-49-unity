@@ -47,19 +47,17 @@ namespace UrbanWildlifeRooms.Presentation
         private readonly List<SquirrelDemoVisual> squirrels = new();
         private readonly List<PigeonDemoVisual> pigeons = new();
         private readonly Dictionary<Transform, Vector3> animalHomes = new();
-        private Transform travelingSquirrel;
-        private Transform travelingPigeon;
+        private readonly HashSet<Transform> travelingAnimals = new();
+        private readonly List<Coroutine> foragingTrips = new();
         private Transform travelingFox;
         private float foxContactUntil;
         private GameObject transientFoxPrey;
         private bool transientFoxPreyIsGhost;
         private readonly Dictionary<string, CitizenDemoVisual> residents = new();
-        private CitizenDemoVisual commutingResident;
+        private readonly Dictionary<CitizenDemoVisual, Vector3> commutingHomes = new();
+        private readonly List<Coroutine> commuteTrips = new();
         private CitizenDemoVisual arrivingResident;
-        private Vector3 commutingHomePosition;
         private Vector3 arrivingHomePosition;
-        private Coroutine foraging;
-        private Coroutine commuting;
         private Coroutine pigeonArrival;
         private Coroutine foxHunt;
         private Coroutine residentArrival;
@@ -391,22 +389,17 @@ namespace UrbanWildlifeRooms.Presentation
         {
             // A new construction run keeps this view object alive. Remove the
             // previous run's meshes before Sync creates its starter oak again.
-            if (foraging != null) StopCoroutine(foraging);
+            StopForaging();
             if (foxHunt != null) StopCoroutine(foxHunt);
             HideTransientFoxPrey();
-            if (commuting != null) StopCoroutine(commuting);
+            StopCommuting();
             if (pigeonArrival != null) StopCoroutine(pigeonArrival);
             if (residentArrival != null) StopCoroutine(residentArrival);
-            foraging = null;
             foxHunt = null;
             travelingFox = null;
             foxContactUntil = 0f;
-            commuting = null;
             pigeonArrival = null;
             residentArrival = null;
-            travelingSquirrel = null;
-            travelingPigeon = null;
-            commutingResident = null;
             arrivingResident = null;
             for (var index = 1; index < squirrels.Count; index++)
                 if (squirrels[index] != null)
@@ -479,18 +472,25 @@ namespace UrbanWildlifeRooms.Presentation
 
         public void PlayForaging(IReadOnlyList<ConstructionTileData> squirrelRoute,
             IReadOnlyList<ConstructionTileData> pigeonRoute)
+            => PlayForaging(
+                squirrelRoute == null ? null :
+                    new IReadOnlyList<ConstructionTileData>[] { squirrelRoute },
+                pigeonRoute == null ? null :
+                    new IReadOnlyList<ConstructionTileData>[] { pigeonRoute });
+
+        public void PlayForaging(
+            IReadOnlyList<IReadOnlyList<ConstructionTileData>> squirrelRoutes,
+            IReadOnlyList<IReadOnlyList<ConstructionTileData>> pigeonRoutes)
         {
             if (!IsReady) return;
-            if (foraging != null) StopCoroutine(foraging);
+            StopForaging();
             if (foxHunt != null) StopCoroutine(foxHunt);
             HideTransientFoxPrey();
             foxHunt = null;
             travelingFox = null;
             foxContactUntil = 0f;
-            travelingSquirrel = null;
-            travelingPigeon = null;
-            RestoreAnimalHomes();
-            foraging = StartCoroutine(Foraging(squirrelRoute, pigeonRoute));
+            StartForagingTrips(squirrels, squirrelRoutes, false);
+            StartForagingTrips(pigeons, pigeonRoutes, true);
         }
 
         public void PlayPigeonArrival()
@@ -650,17 +650,20 @@ namespace UrbanWildlifeRooms.Presentation
 
         public void PlayResidentCommute(IReadOnlyList<string> routeTileIds,
             IReadOnlyList<ConstructionTileData> builtTiles)
+            => PlayResidentCommutes(new[] { new ConstructionResidentDayResult
+            {
+                routeTileIds = routeTileIds == null ? new List<string>() :
+                    new List<string>(routeTileIds),
+                worked = true
+            } }, builtTiles);
+
+        public void PlayResidentCommutes(
+            IReadOnlyList<ConstructionResidentDayResult> journeys,
+            IReadOnlyList<ConstructionTileData> builtTiles)
         {
-            if (!IsReady || routeTileIds == null ||
-                routeTileIds.Count < 2) return;
-            if (!residents.TryGetValue(routeTileIds[0], out var resident) ||
-                resident == null || !resident.gameObject.activeSelf) return;
+            if (!IsReady || journeys == null || builtTiles == null) return;
             var byId = new Dictionary<string, ConstructionTileData>();
             foreach (var tile in builtTiles) byId[tile.id] = tile;
-            var route = new List<ConstructionTileData>();
-            foreach (var id in routeTileIds)
-                if (byId.TryGetValue(id, out var tile)) route.Add(tile);
-            if (route.Count < 2) return;
             if (residentArrival != null)
             {
                 StopCoroutine(residentArrival);
@@ -669,16 +672,24 @@ namespace UrbanWildlifeRooms.Presentation
                     arrivingResident.transform.localPosition = arrivingHomePosition;
                 arrivingResident = null;
             }
-            if (commuting != null)
+            StopCommuting();
+            foreach (var journey in journeys)
             {
-                StopCoroutine(commuting);
-                if (commutingResident != null)
-                    commutingResident.transform.localPosition = commutingHomePosition;
-                commutingResident = null;
+                if (journey == null || (!journey.worked && !journey.ate) ||
+                    journey.routeTileIds == null ||
+                    journey.routeTileIds.Count < 2 ||
+                    !residents.TryGetValue(journey.homeTileId ??
+                        journey.routeTileIds[0], out var resident) ||
+                    resident == null || !resident.gameObject.activeSelf)
+                    continue;
+                var route = new List<ConstructionTileData>();
+                foreach (var id in journey.routeTileIds)
+                    if (byId.TryGetValue(id, out var tile)) route.Add(tile);
+                if (route.Count != journey.routeTileIds.Count || route.Count < 2)
+                    continue;
+                commutingHomes[resident] = resident.transform.localPosition;
+                commuteTrips.Add(StartCoroutine(Commute(resident, route)));
             }
-            commutingResident = resident;
-            commutingHomePosition = resident.transform.localPosition;
-            commuting = StartCoroutine(Commute(resident, route));
         }
 
         public void PlayResidentArrival(string homeTileId)
@@ -856,7 +867,7 @@ namespace UrbanWildlifeRooms.Presentation
                 var home = Cell(tile.column, tile.row) +
                     AnimalOffset(index, false);
                 animalHomes[visual.transform] = home;
-                if (visual.transform != travelingSquirrel)
+                if (!travelingAnimals.Contains(visual.transform))
                     visual.transform.position = home;
             }
             var pigeonTile = run.BuiltTiles == null ? null :
@@ -887,7 +898,7 @@ namespace UrbanWildlifeRooms.Presentation
                 var home = Cell(pigeonTile.column, pigeonTile.row) +
                     AnimalOffset(index, true);
                 animalHomes[visual.transform] = home;
-                if (visual.transform != travelingPigeon &&
+                if (!travelingAnimals.Contains(visual.transform) &&
                     (visual != pigeon || pigeonArrival == null))
                     visual.transform.position = home;
             }
@@ -948,30 +959,36 @@ namespace UrbanWildlifeRooms.Presentation
             }
         }
 
-        private IEnumerator Foraging(IReadOnlyList<ConstructionTileData> squirrelRoute,
-            IReadOnlyList<ConstructionTileData> pigeonRoute)
+        private void StartForagingTrips<T>(IReadOnlyList<T> actors,
+            IReadOnlyList<IReadOnlyList<ConstructionTileData>> routes, bool bird)
+            where T : MonoBehaviour
         {
-            // Route animation is illustrative; meal outcomes come exclusively
-            // from the model and are never inferred from visual position.
-            if (squirrelRoute?.Count > 0 && squirrel != null &&
-                squirrel.gameObject.activeInHierarchy)
+            if (routes == null) return;
+            for (var index = 0; index < actors.Count && index < routes.Count; index++)
             {
-                travelingSquirrel = squirrel.transform;
-                yield return TravelAnimal(squirrel.transform, squirrelRoute, 0.65f);
-                travelingSquirrel = null;
+                var actor = actors[index];
+                var route = routes[index];
+                if (actor == null || !actor.gameObject.activeInHierarchy ||
+                    route == null || route.Count == 0) continue;
+                travelingAnimals.Add(actor.transform);
+                foragingTrips.Add(StartCoroutine(ForagingTrip(actor.transform,
+                    route, index, bird)));
             }
-            if (pigeonRoute?.Count > 0 && pigeon != null &&
-                pigeon.gameObject.activeInHierarchy)
-            {
-                travelingPigeon = pigeon.transform;
-                yield return TravelAnimal(pigeon.transform, pigeonRoute, 0.85f);
-                travelingPigeon = null;
-            }
-            foraging = null;
+        }
+
+        private IEnumerator ForagingTrip(Transform actor,
+            IReadOnlyList<ConstructionTileData> route, int index, bool bird)
+        {
+            // One visible journey per meal recorded by the day model. The
+            // presentation never decides whether an animal ate.
+            yield return TravelAnimal(actor, route, bird ? 0.85f : 0.65f,
+                index, bird);
+            travelingAnimals.Remove(actor);
         }
 
         private IEnumerator TravelAnimal(Transform actor,
-            IReadOnlyList<ConstructionTileData> route, float pace)
+            IReadOnlyList<ConstructionTileData> route, float pace,
+            int visualIndex, bool bird)
         {
             if (!animalHomes.TryGetValue(actor, out var home)) yield break;
             // A food source in the home tile is still a visible short forage,
@@ -986,7 +1003,7 @@ namespace UrbanWildlifeRooms.Presentation
             for (var index = 1; index < route.Count; index++)
             {
                 var target = Cell(route[index].column, route[index].row) +
-                    AnimalOffset(0, actor == travelingPigeon);
+                    AnimalOffset(visualIndex, bird);
                 yield return MoveBetween(actor, actor.position, target, pace);
             }
             yield return MoveBetween(actor, actor.position, home, pace);
@@ -1016,6 +1033,15 @@ namespace UrbanWildlifeRooms.Presentation
                     entry.Key.position = entry.Value;
         }
 
+        private void StopForaging()
+        {
+            foreach (var trip in foragingTrips)
+                if (trip != null) StopCoroutine(trip);
+            foragingTrips.Clear();
+            travelingAnimals.Clear();
+            RestoreAnimalHomes();
+        }
+
         private static Vector3 AnimalOffset(int index, bool bird)
         {
             var positions = bird ? PigeonOffsets : SquirrelOffsets;
@@ -1026,8 +1052,18 @@ namespace UrbanWildlifeRooms.Presentation
             IReadOnlyList<ConstructionTileData> route)
         {
             yield return Travel(resident.transform, route, 0.25f);
-            commuting = null;
-            commutingResident = null;
+            commutingHomes.Remove(resident);
+        }
+
+        private void StopCommuting()
+        {
+            foreach (var trip in commuteTrips)
+                if (trip != null) StopCoroutine(trip);
+            commuteTrips.Clear();
+            foreach (var entry in commutingHomes)
+                if (entry.Key != null)
+                    entry.Key.transform.localPosition = entry.Value;
+            commutingHomes.Clear();
         }
 
         private static IEnumerator Travel(Transform actor,
@@ -1059,7 +1095,7 @@ namespace UrbanWildlifeRooms.Presentation
                 var visual = squirrels[index];
                 if (visual == null || !visual.gameObject.activeInHierarchy) continue;
                 Wander(visual.transform, index, time,
-                    visual.transform == travelingSquirrel ||
+                    travelingAnimals.Contains(visual.transform) ||
                     visual.gameObject == transientFoxPrey);
                 visual.ApplyPose(visual.gameObject == transientFoxPrey
                     ? SquirrelDemoState.Alert : SquirrelDemoState.Hop,
@@ -1071,7 +1107,7 @@ namespace UrbanWildlifeRooms.Presentation
                 if (visual == null || !visual.gameObject.activeInHierarchy) continue;
                 var arriving = visual == pigeon && pigeonArrival != null;
                 Wander(visual.transform, index + 5, time,
-                    arriving || visual.transform == travelingPigeon ||
+                    arriving || travelingAnimals.Contains(visual.transform) ||
                     visual.gameObject == transientFoxPrey);
                 visual.ApplyPose(arriving || visual.gameObject == transientFoxPrey
                     ? PigeonDemoState.Flutter :
@@ -1091,7 +1127,8 @@ namespace UrbanWildlifeRooms.Presentation
                     FoxDemoState.Trot, time);
             }
             foreach (var resident in residents.Values)
-                resident?.ApplyPose(resident == commutingResident ||
+                resident?.ApplyPose((resident != null &&
+                    commutingHomes.ContainsKey(resident)) ||
                     resident == arrivingResident ? CitizenDemoState.Walk :
                     CitizenDemoState.Idle, time);
         }

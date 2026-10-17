@@ -279,6 +279,9 @@ namespace UrbanWildlifeRooms.Core
         public IReadOnlyList<IReadOnlyList<ConstructionTileData>> PreviewPigeonFoodRoutes()
             => PreviewEcologyDay().pigeonFoodTileIds.Select(target =>
                 board.GreenRouteBetween(PigeonTileId, target)).ToArray();
+        public IReadOnlyList<ConstructionTileData> GreenFoodRouteTo(
+            string originTileId, string foodTileId) =>
+            board.GreenRouteBetween(originTileId, foodTileId);
         public IReadOnlyList<ConstructionTileData> ResidenceRouteTo(
             string residenceId, string serviceTileId) =>
             board.ResidenceServiceRouteTo(residenceId, serviceTileId);

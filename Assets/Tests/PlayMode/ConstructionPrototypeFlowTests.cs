@@ -72,13 +72,72 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             var squirrelRoute = run.PreviewSquirrelFoodRoute();
             Assert.That(squirrelRoute.Count, Is.EqualTo(1),
                 "This checks visible foraging even when food is in the home room.");
+            var pigeonRoute = run.PreviewPigeonFoodRoute();
+            Assert.That(pigeonRoute.Count, Is.GreaterThan(0));
             view.PlayForaging(
-                squirrelRoute, run.PreviewPigeonFoodRoute());
+                new System.Collections.Generic.IReadOnlyList<ConstructionTileData>[]
+                    { squirrelRoute },
+                new System.Collections.Generic.IReadOnlyList<ConstructionTileData>[]
+                    { pigeonRoute, pigeonRoute });
             var start = squirrel.position;
+            var firstBirdStart = birds[0].transform.position;
+            var secondBirdStart = birds[1].transform.position;
             yield return new WaitForSecondsRealtime(0.45f);
             Assert.That(Vector3.Distance(start, squirrel.position),
                 Is.GreaterThan(0.08f),
                 "A same-room food route should not leave the squirrel motionless.");
+            Assert.That(Vector3.Distance(firstBirdStart,
+                birds[0].transform.position), Is.GreaterThan(0.08f));
+            Assert.That(Vector3.Distance(secondBirdStart,
+                birds[1].transform.position), Is.GreaterThan(0.08f),
+                "The second fed pigeon must forage too, not just the first bird.");
+            Object.Destroy(root);
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator TwoFedSquirrelsBothShowTheirFoodTrips()
+        {
+            var run = new ConstructionRunModel();
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            foreach (var position in new[] { (4, 3), (3, 2) })
+            {
+                Assert.That(run.TryBuild(position.Item1, position.Item2,
+                    ConstructionCategory.Green, GreenPlanting.Oak,
+                    out _, out _, out _), Is.True);
+                Assert.That(run.TrySimulateDay(out _), Is.True);
+            }
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            Assert.That(run.SquirrelPopulation, Is.EqualTo(2));
+            var routes = run.PreviewSquirrelFoodRoutes();
+            Assert.That(routes.Count, Is.EqualTo(2));
+
+            var root = new GameObject("Two squirrel forage presentation test");
+            var controller = root.AddComponent<ConstructionPrototypeController>();
+            controller.UseRunForTesting(run);
+            yield return null;
+            if (SystemInfo.graphicsDeviceType ==
+                UnityEngine.Rendering.GraphicsDeviceType.Null)
+            {
+                Object.Destroy(root);
+                yield break;
+            }
+            var squirrels = root.transform.Find("Construction low-poly world")
+                .GetComponentsInChildren<UrbanWildlifeRooms.Animals.SquirrelDemoVisual>();
+            Assert.That(squirrels.Length, Is.EqualTo(2));
+            var view = root.GetComponent<ConstructionWorldView>();
+            var firstStart = squirrels[0].transform.position;
+            var secondStart = squirrels[1].transform.position;
+            view.PlayForaging(routes, null);
+            var firstImmediate = squirrels[0].transform.position;
+            var secondImmediate = squirrels[1].transform.position;
+            yield return new WaitForSecondsRealtime(0.35f);
+            Assert.That(Mathf.Max(Vector3.Distance(firstStart, firstImmediate),
+                Vector3.Distance(firstStart, squirrels[0].transform.position)),
+                Is.GreaterThan(0.08f));
+            Assert.That(Mathf.Max(Vector3.Distance(secondStart, secondImmediate),
+                Vector3.Distance(secondStart, squirrels[1].transform.position)),
+                Is.GreaterThan(0.08f));
             Object.Destroy(root);
             yield return null;
         }
@@ -1083,6 +1142,53 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 Assert.That(secondActor.localPosition.x,
                     Is.GreaterThan(WorldScaleStandards.CellSizeMeters),
                     "The second resident should appear at the second home, not the first.");
+                var firstHome = afterSecondHome.BuiltTiles.Single(tile =>
+                    tile.id == afterSecondHome.FirstResidentHomeTileId);
+                var service = afterSecondHome.BuiltTiles.First(tile =>
+                    tile.category == ConstructionCategory.Workshop);
+                var view = root.GetComponent<ConstructionWorldView>();
+                view.PlayResidentCommutes(
+                    Array.Empty<ConstructionResidentDayResult>(),
+                    afterSecondHome.BuiltTiles);
+                var firstStart = firstActor.localPosition;
+                var secondStart = secondActor.localPosition;
+                view.PlayResidentCommutes(new[]
+                {
+                    new ConstructionResidentDayResult
+                    {
+                        homeTileId = firstHome.id,
+                        worked = true,
+                        routeTileIds = new System.Collections.Generic.List<string>
+                            { firstHome.id, service.id, firstHome.id }
+                    },
+                    new ConstructionResidentDayResult
+                    {
+                        homeTileId = secondHome.id,
+                        worked = true,
+                        routeTileIds = new System.Collections.Generic.List<string>
+                            { secondHome.id, service.id, secondHome.id }
+                    }
+                }, afterSecondHome.BuiltTiles);
+                var firstImmediate = firstActor.localPosition;
+                var secondImmediate = secondActor.localPosition;
+                yield return new WaitForSecondsRealtime(0.35f);
+                Assert.That(Mathf.Max(
+                    Vector3.Distance(firstStart, firstImmediate),
+                    Vector3.Distance(firstStart, firstActor.localPosition)),
+                    Is.GreaterThan(0.1f));
+                Assert.That(Mathf.Max(
+                    Vector3.Distance(secondStart, secondImmediate),
+                    Vector3.Distance(secondStart, secondActor.localPosition)),
+                    Is.GreaterThan(0.1f),
+                    "Both resident visuals should move on supplied routes.");
+                view.PlayResidentCommutes(
+                    Array.Empty<ConstructionResidentDayResult>(),
+                    afterSecondHome.BuiltTiles);
+                Assert.That(Vector3.Distance(firstStart, firstActor.localPosition),
+                    Is.LessThan(0.1f));
+                Assert.That(Vector3.Distance(secondStart, secondActor.localPosition),
+                    Is.LessThan(0.1f),
+                    "Stopping simultaneous commutes must restore both homes.");
             }
             PlaceAndAdvance(controller, 4, 2, ConstructionCategory.Street);
             PlaceAndAdvance(controller, 5, 2, ConstructionCategory.Street);
