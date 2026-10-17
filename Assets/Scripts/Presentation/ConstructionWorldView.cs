@@ -50,6 +50,8 @@ namespace UrbanWildlifeRooms.Presentation
         private Transform travelingSquirrel;
         private Transform travelingPigeon;
         private Transform travelingFox;
+        private GameObject transientFoxPrey;
+        private bool transientFoxPreyIsGhost;
         private readonly Dictionary<string, CitizenDemoVisual> residents = new();
         private CitizenDemoVisual commutingResident;
         private CitizenDemoVisual arrivingResident;
@@ -390,6 +392,7 @@ namespace UrbanWildlifeRooms.Presentation
             // previous run's meshes before Sync creates its starter oak again.
             if (foraging != null) StopCoroutine(foraging);
             if (foxHunt != null) StopCoroutine(foxHunt);
+            HideTransientFoxPrey();
             if (commuting != null) StopCoroutine(commuting);
             if (pigeonArrival != null) StopCoroutine(pigeonArrival);
             if (residentArrival != null) StopCoroutine(residentArrival);
@@ -478,6 +481,7 @@ namespace UrbanWildlifeRooms.Presentation
             if (!IsReady) return;
             if (foraging != null) StopCoroutine(foraging);
             if (foxHunt != null) StopCoroutine(foxHunt);
+            HideTransientFoxPrey();
             foxHunt = null;
             travelingFox = null;
             travelingSquirrel = null;
@@ -494,7 +498,8 @@ namespace UrbanWildlifeRooms.Presentation
         }
 
         public void PlayFoxHunt(IReadOnlyList<string> routeTileIds,
-            IReadOnlyList<ConstructionTileData> builtTiles)
+            IReadOnlyList<ConstructionTileData> builtTiles,
+            ConstructionPreySpecies preySpecies)
         {
             if (!IsReady || fox == null || !fox.gameObject.activeInHierarchy ||
                 routeTileIds == null || routeTileIds.Count < 2) return;
@@ -505,7 +510,88 @@ namespace UrbanWildlifeRooms.Presentation
                 if (byId.TryGetValue(id, out var tile)) route.Add(tile);
             if (route.Count < 2) return;
             if (foxHunt != null) StopCoroutine(foxHunt);
+            HideTransientFoxPrey();
+            RevealFoxPrey(preySpecies, route[route.Count - 1]);
             foxHunt = StartCoroutine(AnimateFoxHunt(route));
+        }
+
+        private void RevealFoxPrey(ConstructionPreySpecies species,
+            ConstructionTileData target)
+        {
+            var preyHome = Cell(target.column, target.row) +
+                (species switch
+                {
+                    ConstructionPreySpecies.Squirrel => SquirrelOffsets[0],
+                    ConstructionPreySpecies.Pigeon => PigeonOffsets[0],
+                    _ => new Vector3(-0.48f, 0.23f, 0.42f)
+                });
+            switch (species)
+            {
+                case ConstructionPreySpecies.Squirrel:
+                    for (var index = squirrels.Count - 1; index >= 0; index--)
+                        if (squirrels[index] != null &&
+                            !squirrels[index].gameObject.activeSelf)
+                        {
+                            transientFoxPrey = squirrels[index].gameObject;
+                            break;
+                        }
+                    break;
+                case ConstructionPreySpecies.Pigeon:
+                    for (var index = pigeons.Count - 1; index >= 0; index--)
+                        if (pigeons[index] != null &&
+                            !pigeons[index].gameObject.activeSelf)
+                        {
+                            transientFoxPrey = pigeons[index].gameObject;
+                            break;
+                        }
+                    break;
+                case ConstructionPreySpecies.Hedgehog when hedgehog != null &&
+                    !hedgehog.gameObject.activeSelf:
+                    transientFoxPrey = hedgehog.gameObject;
+                    break;
+            }
+            if (transientFoxPrey == null)
+            {
+                var actor = NewActor("Fox hunt prey", world, preyHome);
+                switch (species)
+                {
+                    case ConstructionPreySpecies.Squirrel:
+                        actor.AddComponent<SquirrelDemoVisual>()
+                            .Initialize(surface, HideFlags.None);
+                        break;
+                    case ConstructionPreySpecies.Pigeon:
+                        actor.AddComponent<PigeonDemoVisual>()
+                            .Initialize(surface, HideFlags.None);
+                        break;
+                    case ConstructionPreySpecies.Hedgehog:
+                        actor.AddComponent<HedgehogDemoVisual>()
+                            .Initialize(surface, HideFlags.None);
+                        break;
+                    default:
+                        Destroy(actor);
+                        return;
+                }
+                SetLayer(actor, 29);
+                transientFoxPrey = actor;
+                transientFoxPreyIsGhost = true;
+            }
+            else
+            {
+                transientFoxPrey.transform.position = preyHome;
+                animalHomes[transientFoxPrey.transform] = preyHome;
+            }
+            transientFoxPrey.SetActive(true);
+        }
+
+        private void HideTransientFoxPrey()
+        {
+            if (transientFoxPrey != null)
+            {
+                transientFoxPrey.SetActive(false);
+                if (transientFoxPreyIsGhost) Destroy(transientFoxPrey);
+            }
+            transientFoxPrey = null;
+            transientFoxPreyIsGhost = false;
         }
 
         private IEnumerator AnimateFoxHunt(IReadOnlyList<ConstructionTileData> route)
@@ -516,6 +602,7 @@ namespace UrbanWildlifeRooms.Presentation
                 yield return MoveBetween(travelingFox, travelingFox.position,
                     Cell(route[index].column, route[index].row) +
                     new Vector3(0.25f, 0.23f, -0.18f), 0.32f);
+            HideTransientFoxPrey();
             for (var index = route.Count - 2; index >= 0; index--)
                 yield return MoveBetween(travelingFox, travelingFox.position,
                     index == 0 ? home : Cell(route[index].column,
@@ -748,10 +835,12 @@ namespace UrbanWildlifeRooms.Presentation
             {
                 var visual = squirrels[index];
                 if (visual == null) continue;
-                var active = index < squirrelCount;
+                var active = index < squirrelCount ||
+                    visual.gameObject == transientFoxPrey;
                 visual.gameObject.SetActive(active);
                 if (!active) continue;
                 visual.SetVisible(true);
+                if (visual.gameObject == transientFoxPrey) continue;
                 var tile = oakTiles[index % oakTiles.Length];
                 var home = Cell(tile.column, tile.row) +
                     AnimalOffset(index, false);
@@ -778,10 +867,12 @@ namespace UrbanWildlifeRooms.Presentation
             {
                 var visual = pigeons[index];
                 if (visual == null) continue;
-                var active = index < pigeonCount;
+                var active = index < pigeonCount ||
+                    visual.gameObject == transientFoxPrey;
                 visual.gameObject.SetActive(active);
                 if (!active) continue;
                 visual.SetVisible(true);
+                if (visual.gameObject == transientFoxPrey) continue;
                 var home = Cell(pigeonTile.column, pigeonTile.row) +
                     AnimalOffset(index, true);
                 animalHomes[visual.transform] = home;
@@ -799,7 +890,8 @@ namespace UrbanWildlifeRooms.Presentation
             }
             if (hedgehog != null)
             {
-                hedgehog.gameObject.SetActive(hedgehogTile != null);
+                hedgehog.gameObject.SetActive(hedgehogTile != null ||
+                    hedgehog.gameObject == transientFoxPrey);
                 if (hedgehogTile != null)
                 {
                     var home = Cell(hedgehogTile.column, hedgehogTile.row) +

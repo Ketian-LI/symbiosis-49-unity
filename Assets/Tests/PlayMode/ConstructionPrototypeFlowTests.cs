@@ -172,12 +172,34 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 "Construction UI/Building choices/Feedback backing/Feedback preview")
                 .GetComponent<Text>();
             Assert.That(riskPreview.text, Does.Contain("Fox risk"));
-            Object.Destroy(riskRoot);
-            yield return null;
+            var riskView = riskRoot.GetComponent<ConstructionWorldView>();
+            var liveSquirrel = SystemInfo.graphicsDeviceType ==
+                UnityEngine.Rendering.GraphicsDeviceType.Null ? null :
+                riskRoot.transform.Find("Construction low-poly world/Squirrel");
+            if (SystemInfo.graphicsDeviceType !=
+                UnityEngine.Rendering.GraphicsDeviceType.Null)
+                Assert.That(liveSquirrel, Is.Not.Null);
+            if (liveSquirrel != null)
+                Assert.That(liveSquirrel.gameObject.activeInHierarchy, Is.True);
             Assert.That(run.TrySimulateDay(out var ecology), Is.True);
             Assert.That(ecology.predatedSpecies,
                 Is.EqualTo(ConstructionPreySpecies.Squirrel));
             Assert.That(ecology.foxHuntRouteTileIds.Count, Is.GreaterThan(1));
+            if (liveSquirrel != null)
+            {
+                riskView.Sync(run, false);
+                Assert.That(liveSquirrel.gameObject.activeSelf, Is.False,
+                    "The settled population should already reflect the hunt.");
+                riskView.PlayFoxHunt(ecology.foxHuntRouteTileIds, run.BuiltTiles,
+                    ecology.predatedSpecies);
+                Assert.That(liveSquirrel.gameObject.activeInHierarchy, Is.True,
+                    "Keep the victim visible until the fox reaches it.");
+                yield return new WaitForSecondsRealtime(1.6f);
+                Assert.That(liveSquirrel.gameObject.activeSelf, Is.False,
+                    "The victim should disappear when the fox reaches its tile.");
+            }
+            Object.Destroy(riskRoot);
+            yield return null;
             var root = new GameObject("Construction fox hunt presentation test");
             var controller = root.AddComponent<ConstructionPrototypeController>();
             controller.UseRunForTesting(run);
@@ -195,11 +217,78 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 Assert.That(fox, Is.Not.Null);
                 var start = fox.transform.position;
                 root.GetComponent<ConstructionWorldView>().PlayFoxHunt(
-                    ecology.foxHuntRouteTileIds, run.BuiltTiles);
+                    ecology.foxHuntRouteTileIds, run.BuiltTiles,
+                    ecology.predatedSpecies);
+                var replayPrey = root.transform.Find(
+                    "Construction low-poly world/Fox hunt prey") ??
+                    root.transform.Find("Construction low-poly world/Squirrel");
+                Assert.That(replayPrey, Is.Not.Null,
+                    "A replay needs either the hidden original or a temporary prey visual.");
+                Assert.That(replayPrey.gameObject.activeInHierarchy, Is.True);
                 yield return new WaitForSecondsRealtime(0.5f);
                 Assert.That(Vector3.Distance(start, fox.transform.position),
                     Is.GreaterThan(0.3f));
+                yield return new WaitForSecondsRealtime(1.2f);
+                Assert.That(replayPrey.gameObject.activeSelf, Is.False);
             }
+            Object.Destroy(root);
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator HedgehogStaysVisibleUntilTheFoxReachesItsShrub()
+        {
+            var run = new ConstructionRunModel();
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            foreach (var build in new[]
+            {
+                (column: 3, row: 2, planting: GreenPlanting.Shrub),
+                (column: 3, row: 1, planting: GreenPlanting.Shrub),
+                (column: 3, row: 4, planting: GreenPlanting.Oak),
+                (column: 4, row: 3, planting: GreenPlanting.Meadow),
+                (column: 5, row: 3, planting: GreenPlanting.Meadow),
+                (column: 4, row: 2, planting: GreenPlanting.Meadow)
+            })
+            {
+                Assert.That(run.TryBuild(build.column, build.row,
+                    ConstructionCategory.Green, build.planting,
+                    out _, out _, out _), Is.True);
+                Assert.That(run.TrySimulateDay(out _), Is.True);
+            }
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            var save = run.Export();
+            save.pigeonTileId = run.At(4, 3).id;
+            Assert.That(ConstructionRunModel.TryRestore(save, out var sheltered),
+                Is.True);
+            Assert.That(sheltered.PreviewEcologyDay().predatedSpecies,
+                Is.EqualTo(ConstructionPreySpecies.Hedgehog));
+
+            var root = new GameObject("Construction hedgehog hunt visual test");
+            var controller = root.AddComponent<ConstructionPrototypeController>();
+            controller.UseRunForTesting(sheltered);
+            yield return null;
+            if (SystemInfo.graphicsDeviceType ==
+                UnityEngine.Rendering.GraphicsDeviceType.Null)
+            {
+                Object.Destroy(root);
+                yield break;
+            }
+            var view = root.GetComponent<ConstructionWorldView>();
+            var hedgehog = root.GetComponentInChildren<
+                UrbanWildlifeRooms.Animals.HedgehogDemoVisual>();
+            Assert.That(hedgehog, Is.Not.Null);
+            Assert.That(hedgehog.gameObject.activeInHierarchy, Is.True);
+            Assert.That(sheltered.TrySimulateDay(out var ecology), Is.True);
+            Assert.That(ecology.predatedSpecies,
+                Is.EqualTo(ConstructionPreySpecies.Hedgehog));
+            view.Sync(sheltered, false);
+            Assert.That(hedgehog.gameObject.activeSelf, Is.False);
+            view.PlayFoxHunt(ecology.foxHuntRouteTileIds, sheltered.BuiltTiles,
+                ecology.predatedSpecies);
+            Assert.That(hedgehog.gameObject.activeInHierarchy, Is.True);
+            yield return new WaitForSecondsRealtime(0.8f);
+            Assert.That(hedgehog.gameObject.activeSelf, Is.False);
             Object.Destroy(root);
             yield return null;
         }

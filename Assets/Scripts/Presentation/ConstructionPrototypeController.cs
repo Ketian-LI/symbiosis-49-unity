@@ -585,7 +585,8 @@ namespace UrbanWildlifeRooms.Presentation
                 ecology.predatedSpecies == ConstructionPreySpecies.Pigeon
                     ? null : pigeonRoute);
             if (ecology.predatedSpecies != ConstructionPreySpecies.None)
-                worldView?.PlayFoxHunt(ecology.foxHuntRouteTileIds, run.BuiltTiles);
+                worldView?.PlayFoxHunt(ecology.foxHuntRouteTileIds, run.BuiltTiles,
+                    ecology.predatedSpecies);
             if (human?.residents != null)
             {
                 var firstJourney = human.residents.FirstOrDefault(person =>
