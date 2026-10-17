@@ -64,8 +64,8 @@ namespace UrbanWildlifeRooms.Presentation
         private bool languageOverriddenForTesting;
         private Text titleText;
         private Text menuLabel;
-        private Image englishLanguageBackground;
-        private Image chineseLanguageBackground;
+        private Button englishLanguageButton;
+        private Button chineseLanguageButton;
         private Text englishLanguageLabel;
         private Text chineseLanguageLabel;
         private Text nextDayLabel;
@@ -78,6 +78,7 @@ namespace UrbanWildlifeRooms.Presentation
         private Text resultTitleLabel;
         private Text dayText;
         private Text scoreText;
+        private string predationRiskText;
         private Text dayReviewText;
         private Image dayReviewPanel;
         private Text storyText;
@@ -202,14 +203,14 @@ namespace UrbanWildlifeRooms.Presentation
 
         public void ToggleLanguage()
         {
-            SelectLanguage(Chinese ? InterfaceLanguage.English : InterfaceLanguage.Chinese);
+            SetLanguage(Chinese ? InterfaceLanguage.English : InterfaceLanguage.Chinese);
         }
 
-        private void SelectLanguage(InterfaceLanguage selectedLanguage)
+        private void SetLanguage(InterfaceLanguage choice)
         {
-            if (language == selectedLanguage) return;
+            if (language == choice) return;
             ClearResetConfirmation();
-            language = selectedLanguage;
+            language = choice;
             if (!languageOverriddenForTesting)
             {
                 PlayerPrefs.SetInt(LanguagePreferenceKey, (int)language);
@@ -392,6 +393,12 @@ namespace UrbanWildlifeRooms.Presentation
                             "明日首次觅食；接着建住宅。")
                         : feedbackText.text + L(" · a pigeon flock lives here",
                             " · 鸽群在此栖息");
+                if (existing.id == run.HedgehogHabitat?.id)
+                    feedbackText.text += L(" · hedgehog habitat visitor",
+                        " · 刺猬已到来（栖息访客）");
+                if (existing.id == run.FoxHabitat?.id)
+                    feedbackText.text += L(" · fox den; may hunt reachable wildlife tomorrow",
+                        " · 狐狸栖息地；明日可能捕食可达动物");
                 if (existing.category == ConstructionCategory.Residence)
                 {
                     if (!run.HasResident(existing.id))
@@ -524,6 +531,13 @@ namespace UrbanWildlifeRooms.Presentation
             feedbackText.text = openingMeal && ecology.squirrelAte
                 ? L("Day 1 settled: the squirrel ate one oak nut. Choose any building; a connected meadow may attract pigeons.",
                     "第 1 天已结算：松鼠吃到 1 份橡果。现在可自由选建筑；相连草地可能吸引鸽群。")
+                : ecology.predatedSpecies != ConstructionPreySpecies.None
+                    ? L($"Fox hunted one {PreyName(ecology.predatedSpecies, false)} " +
+                        $"at {TileCoordinate(run.BuiltTiles.ToDictionary(tile => tile.id), ecology.predationTileId)}. " +
+                        "The prey population changed; inspect tomorrow's forecast.",
+                        $"狐狸在{TileCoordinate(run.BuiltTiles.ToDictionary(tile => tile.id), ecology.predationTileId)}" +
+                        $"捕食了 1 只{PreyName(ecology.predatedSpecies, true)}。" +
+                        "动物数量已变化，请查看明日预测。")
                 : pigeonsBefore == null && run.PigeonTileId != null
                     ? L("A flock arrived. It will forage from the next day.",
                         "鸽群到来了，明天开始觅食。")
@@ -565,7 +579,13 @@ namespace UrbanWildlifeRooms.Presentation
             var newPigeonFlock = pigeonsBefore == null && run.PigeonTileId != null;
             if (newPigeonFlock) worldView?.PlayPigeonArrival();
             Refresh();
-            worldView?.PlayForaging(squirrelRoute, pigeonRoute);
+            worldView?.PlayForaging(
+                ecology.predatedSpecies == ConstructionPreySpecies.Squirrel
+                    ? null : squirrelRoute,
+                ecology.predatedSpecies == ConstructionPreySpecies.Pigeon
+                    ? null : pigeonRoute);
+            if (ecology.predatedSpecies != ConstructionPreySpecies.None)
+                worldView?.PlayFoxHunt(ecology.foxHuntRouteTileIds, run.BuiltTiles);
             if (human?.residents != null)
             {
                 var firstJourney = human.residents.FirstOrDefault(person =>
@@ -705,32 +725,16 @@ namespace UrbanWildlifeRooms.Presentation
             titleText = TextAt("Title", canvas.transform, new Vector2(-590, 409),
                 new Vector2(350, 42), "SYMBIOSIS · BUILD", 23, true, Ink,
                 TextAnchor.MiddleLeft);
-            var languageSelector = Panel("Construction language", canvas.transform,
-                new Vector2(414, 409), new Vector2(122, 42), Ink);
-            ApplySkin(languageSelector, "UI/PauseMenu/pause-menu-button-base-v01");
-            languageSelector.raycastTarget = false;
-            englishLanguageBackground = Panel("English", languageSelector.transform,
-                new Vector2(-29, 0), new Vector2(53, 30), Color.clear);
-            var englishLanguageButton = englishLanguageBackground.gameObject.AddComponent<Button>();
-            englishLanguageButton.targetGraphic = englishLanguageBackground;
-            englishLanguageButton.transition = Selectable.Transition.None;
-            englishLanguageButton.onClick.AddListener(() =>
-                SelectLanguage(InterfaceLanguage.English));
-            englishLanguageLabel = TextAt("Label", englishLanguageButton.transform,
-                Vector2.zero, new Vector2(53, 30), "EN", 15, true, Paper,
-                TextAnchor.MiddleCenter);
-            englishLanguageLabel.raycastTarget = false;
-            chineseLanguageBackground = Panel("Chinese", languageSelector.transform,
-                new Vector2(29, 0), new Vector2(53, 30), Color.clear);
-            var chineseLanguageButton = chineseLanguageBackground.gameObject.AddComponent<Button>();
-            chineseLanguageButton.targetGraphic = chineseLanguageBackground;
-            chineseLanguageButton.transition = Selectable.Transition.None;
-            chineseLanguageButton.onClick.AddListener(() =>
-                SelectLanguage(InterfaceLanguage.Chinese));
-            chineseLanguageLabel = TextAt("Label", chineseLanguageButton.transform,
-                Vector2.zero, new Vector2(53, 30), "中文", 15, true, Paper,
-                TextAnchor.MiddleCenter);
-            chineseLanguageLabel.raycastTarget = false;
+            var languageControl = NewRect("Construction language", canvas.transform,
+                new Vector2(414, 409), new Vector2(122, 42));
+            englishLanguageButton = ButtonAt("English", languageControl,
+                new Vector2(-31, 0), new Vector2(58, 40), "EN", 15,
+                Ink, Paper, () => SetLanguage(InterfaceLanguage.English));
+            chineseLanguageButton = ButtonAt("Chinese", languageControl,
+                new Vector2(31, 0), new Vector2(58, 40), "中文", 15,
+                Ink, Paper, () => SetLanguage(InterfaceLanguage.Chinese));
+            englishLanguageLabel = englishLanguageButton.GetComponentInChildren<Text>();
+            chineseLanguageLabel = chineseLanguageButton.GetComponentInChildren<Text>();
             var dayDial = Panel("Construction day dial", canvas.transform,
                 new Vector2(0, 393), new Vector2(74, 74), Color.white);
             dayDial.sprite = LoadSprite("UI/GameplayHud/day-night-dial-v02");
@@ -752,7 +756,7 @@ namespace UrbanWildlifeRooms.Presentation
                 Ink, Paper, () => OnResetPressed());
             resetLabel = reset.GetComponentInChildren<Text>();
             foreach (var header in new GameObject[] { titleText.gameObject,
-                         languageSelector.gameObject, dayDial.gameObject,
+                         languageControl.gameObject, dayDial.gameObject,
                          menuButton.gameObject, reset.gameObject })
                 caseHeaderGroups.Add(header.AddComponent<CanvasGroup>());
 
@@ -923,7 +927,9 @@ namespace UrbanWildlifeRooms.Presentation
             feedbackPanel.raycastTarget = true;
             AttachHover(feedbackPanel.gameObject,
                 () => feedbackIcon.sprite, () => L("Status", "当前提示"),
-                () => feedbackText.text, TooltipLocation.BoardInfo);
+                () => string.IsNullOrEmpty(predationRiskText)
+                    ? feedbackText.text : predationRiskText + "\n" + feedbackText.text,
+                TooltipLocation.BoardInfo);
             progressPanel = Panel("Board progress backing", side.transform,
                 new Vector2(568, 204), new Vector2(342, 132), Color.clear);
             progressPanel.raycastTarget = false;
@@ -944,10 +950,12 @@ namespace UrbanWildlifeRooms.Presentation
                 () => L("Board progress", "棋盘进度"),
                 () => run == null ? string.Empty : L(
                     $"Built {run.BuiltCount}/{run.BoardCapacity}. " +
-                    $"Animals {run.SquirrelPopulation + run.PigeonPopulation}; " +
+                    $"Squirrels {run.SquirrelPopulation}, pigeons {run.PigeonPopulation}; " +
+                    $"hedgehog {(run.HedgehogHabitat != null ? 1 : 0)}, fox {(run.FoxHabitat != null ? 1 : 0)}; " +
                     $"residents {run.ResidentPopulation}.",
                     $"已建 {run.BuiltCount}/{run.BoardCapacity} 格；" +
-                    $"动物 {run.SquirrelPopulation + run.PigeonPopulation}，" +
+                    $"松鼠 {run.SquirrelPopulation}、鸽子 {run.PigeonPopulation}，" +
+                    $"刺猬 {(run.HedgehogHabitat != null ? 1 : 0)}、狐狸 {(run.FoxHabitat != null ? 1 : 0)}，" +
                     $"居民 {run.ResidentPopulation}。"));
             nextDayButton = ButtonAt("Advance to next day", side.transform,
                 new Vector2(631, -230), new Vector2(118, 48), "Next day  →", 15,
@@ -974,8 +982,7 @@ namespace UrbanWildlifeRooms.Presentation
             selectedBuildIcon.raycastTarget = false;
             guidePanel.raycastTarget = true;
             AttachHover(guidePanel.gameObject, () => selectedBuildIcon.sprite,
-                () => SelectedBuildLabel(), () => placementGuideText.text,
-                TooltipLocation.BoardInfo);
+                () => SelectedBuildLabel(), () => placementGuideText.text);
             Panel("Action divider", side.transform, new Vector2(568, 116),
                 new Vector2(250, 2), new Color(0.45f, 0.51f, 0.36f, 0.8f))
                 .raycastTarget = false;
@@ -1254,12 +1261,12 @@ namespace UrbanWildlifeRooms.Presentation
             placementConfirmationIcon.preserveAspect = true;
             placementConfirmationIcon.raycastTarget = false;
             placementConfirmationLocation = TextAt("Confirmation location",
-                card.transform, new Vector2(36, 38), new Vector2(187, 62),
+                card.transform, new Vector2(36, 29), new Vector2(187, 76),
                 "", 17, true, Ink, TextAnchor.MiddleLeft);
             placementConfirmationLocation.raycastTarget = false;
             placementConfirmationNotice = TextAt("Confirmation notice",
-                card.transform, new Vector2(0, -30), new Vector2(280, 64),
-                "", 15, true, Ink, TextAnchor.MiddleCenter);
+                card.transform, new Vector2(0, -38), new Vector2(272, 58),
+                "", 14, false, Ink, TextAnchor.MiddleCenter);
             placementConfirmationNotice.raycastTarget = false;
             var cancel = ButtonAt("Cancel placement", card.transform,
                 new Vector2(-75, -87), new Vector2(132, 43), "", 16,
@@ -1336,16 +1343,14 @@ namespace UrbanWildlifeRooms.Presentation
             placementConfirmationNotice.text = run.TryPreviewBuildImpact(
                     pendingColumn, pendingRow, pendingCategory, pendingPlanting,
                     out var impact)
-                ? L($"Day-end meals {impact.animalMealsBefore}→{impact.animalMealsAfter}\n" +
-                    $"Commutes {impact.workCyclesBefore}→{impact.workCyclesAfter} · " +
-                    $"residents {impact.residentsBefore}→{impact.residentsAfter}\n" +
+                ? L($"Day-end meals {impact.animalMealsBefore}→{impact.animalMealsAfter}" +
+                    $" · work {impact.workCyclesBefore}→{impact.workCyclesAfter}\n" +
                     "Uses today's build.",
-                    $"日终进食 {impact.animalMealsBefore}→{impact.animalMealsAfter}\n" +
-                    $"通勤 {impact.workCyclesBefore}→{impact.workCyclesAfter} · " +
-                    $"居民 {impact.residentsBefore}→{impact.residentsAfter}\n" +
-                    "占用今日建造。")
-                : L("Forecast unavailable. Uses today's build.",
-                    "暂无法预估；仍会占用今日建造机会。");
+                    $"日终进食 {impact.animalMealsBefore}→{impact.animalMealsAfter}" +
+                    $" · 通勤 {impact.workCyclesBefore}→{impact.workCyclesAfter}\n" +
+                    "确认后使用今日建造机会。")
+                : L("Impact preview unavailable. Uses today's build.",
+                    "暂无法预览影响；确认后使用今日建造机会。");
             placementCancelLabel.text = L("Cancel", "取消");
             placementConfirmLabel.text = L("Confirm", "确认建造");
         }
@@ -1404,9 +1409,7 @@ namespace UrbanWildlifeRooms.Presentation
             if (buildPaletteOpen && suggested == ConstructionCategory.Green &&
                 selectedPlanting != GreenPlanting.Meadow)
                 return plantingButtons[GreenPlanting.Meadow].transform as RectTransform;
-            return (run.StoryStage == ConstructionStoryStage.BuildStreet
-                    ? VisibleStreetConnectionPlot() : null) ??
-                VisibleValidPlot(suggested, planting) ??
+            return VisibleValidPlot(suggested, planting) ??
                 (buildPaletteOpen ? null : buildPaletteButton.transform as RectTransform);
         }
 
@@ -1453,76 +1456,6 @@ namespace UrbanWildlifeRooms.Presentation
                 if (distance >= bestDistance) continue;
                 best = cellBackgrounds[column, row].rectTransform;
                 bestDistance = distance;
-            }
-            return best;
-        }
-
-        private RectTransform VisibleStreetConnectionPlot()
-        {
-            // Follow an actual prospective route from a stranded home to a
-            // restaurant. The nearest legal street square can lead away from
-            // the service and strand the player for several more days.
-            var tiles = run.BuiltTiles;
-            var homes = tiles.Where(tile => tile.category ==
-                ConstructionCategory.Residence &&
-                !run.ResidenceCanReachFood(tile.id));
-            var restaurants = tiles.Where(tile => tile.category ==
-                ConstructionCategory.Restaurant).ToArray();
-            RectTransform best = null;
-            var bestLength = int.MaxValue;
-            foreach (var home in homes)
-            foreach (var restaurant in restaurants)
-            {
-                var start = (home.column, home.row);
-                var goal = (restaurant.column, restaurant.row);
-                var pending = new Queue<(int column, int row)>();
-                var previous = new Dictionary<(int column, int row),
-                    (int column, int row)> { [start] = start };
-                pending.Enqueue(start);
-                while (pending.Count > 0 && !previous.ContainsKey(goal))
-                {
-                    var current = pending.Dequeue();
-                    foreach (var next in new[]
-                    {
-                        (current.column + 1, current.row),
-                        (current.column - 1, current.row),
-                        (current.column, current.row + 1),
-                        (current.column, current.row - 1)
-                    })
-                    {
-                        if (next.Item1 < run.MinCoordinate ||
-                            next.Item1 > run.MaxCoordinate ||
-                            next.Item2 < run.MinCoordinate ||
-                            next.Item2 > run.MaxCoordinate ||
-                            previous.ContainsKey(next)) continue;
-                        var tile = run.At(next.Item1, next.Item2);
-                        if (tile != null && next != goal &&
-                            tile.category != ConstructionCategory.Street)
-                            continue;
-                        previous[next] = current;
-                        pending.Enqueue(next);
-                    }
-                }
-                if (!previous.ContainsKey(goal)) continue;
-                var route = new List<(int column, int row)>();
-                for (var step = goal; step != start; step = previous[step])
-                    route.Add(step);
-                route.Reverse();
-                if (route.Count >= bestLength) continue;
-                foreach (var step in route)
-                {
-                    if (run.At(step.column, step.row) != null) continue;
-                    if (run.CheckPlacement(step.column, step.row,
-                            ConstructionCategory.Street) !=
-                        ConstructionPlacementFailure.None) break;
-                    var visibleColumn = step.column - viewMinColumn;
-                    var visibleRow = step.row - viewMinRow;
-                    if (visibleColumn < 0 || visibleColumn >= 7 ||
-                        visibleRow < 0 || visibleRow >= 7) break;
-                    best = cellBackgrounds[visibleColumn, visibleRow].rectTransform;
-                    bestLength = route.Count;
-                    break;
-                }
             }
             return best;
         }
@@ -1818,17 +1751,20 @@ namespace UrbanWildlifeRooms.Presentation
                 $"第 {column + 1} 列 · 第 {row + 1} 行");
             if (tile == null)
             {
-                if (run.IsFinished)
-                    return $"{location}\n" + L("This run has ended.",
-                        "本局已结束。");
                 if (run.StoryStage == ConstructionStoryStage.WatchSquirrelEat)
                     return $"{location}\n" + L(
-                        "First inspect the oak and end Day 1. Building starts tomorrow.",
-                        "先观察橡树并结束第 1 天；明天才能建造。");
+                        "Building starts tomorrow. Inspect the central oak, then end Day 1.",
+                        "明天开始建造。先查看中央橡树，再结束第 1 天。");
+                if (run.IsFinished)
+                    return $"{location}\n" + L("This run has ended.", "本局已结束。");
                 if (run.BuiltToday)
                     return $"{location}\n" + L(
-                        "Today's room is built. Advance to build again tomorrow.",
-                        "今天已建造；推进到明天才能继续。");
+                        "Today's room is built. Advance a day to build again.",
+                        "今天的房间已建好；推进一天后可再次建造。");
+                if (hasPendingPlacement)
+                    return $"{location}\n" + L(
+                        "Confirm or cancel the staged room first.",
+                        "请先确认或取消待建房间。");
                 var planting = selectedCategory == ConstructionCategory.Green
                     ? selectedPlanting : GreenPlanting.None;
                 var failure = run.CheckPlacement(column, row,
@@ -1880,40 +1816,6 @@ namespace UrbanWildlifeRooms.Presentation
             ? L($"{PlantingLabel(selectedPlanting)} green",
                 $"{PlantingLabel(selectedPlanting)}绿地")
             : CategoryLabel(selectedCategory);
-
-        private bool StoryBuildActionRequired()
-        {
-            if (run == null || run.IsFinished || run.BuiltToday) return false;
-            return run.StoryStage switch
-            {
-                ConstructionStoryStage.GrowGreen => !run.HasConnectedMeadow,
-                ConstructionStoryStage.WelcomeResident => run.PigeonMeadowInspected,
-                ConstructionStoryStage.BuildRestaurant or
-                    ConstructionStoryStage.BuildWorkshop or
-                    ConstructionStoryStage.BuildWasteRoom or
-                    ConstructionStoryStage.AwaitAccessProblem or
-                    ConstructionStoryStage.BuildStreet or
-                    ConstructionStoryStage.BuildSupermarket => true,
-                ConstructionStoryStage.AwaitRestaurantCrowding =>
-                    run.PreviewWasteAvailability().BlockedHomes.Count > 0 ||
-                    run.PreviewWasteAvailability().BlockedFoodServices.Count > 0,
-                _ => false
-            };
-        }
-
-        private bool TryGetStoryBuildSuggestion(out string label)
-        {
-            label = string.Empty;
-            if (!StoryBuildActionRequired()) return false;
-            var suggested = SuggestedTutorialCategory();
-            if (!run.IsUnlocked(suggested) ||
-                suggested == selectedCategory &&
-                (suggested != ConstructionCategory.Green ||
-                    selectedPlanting == GreenPlanting.Meadow)) return false;
-            label = suggested == ConstructionCategory.Green
-                ? L("Meadow green", "草地绿地") : CategoryLabel(suggested);
-            return true;
-        }
 
         private int AvailablePlotCount(ConstructionCategory category,
             GreenPlanting planting)
@@ -2004,7 +1906,14 @@ namespace UrbanWildlifeRooms.Presentation
                 ? L("FILL · 49 DAYS", "填空 · 49 天")
                 : L("ENDLESS BUILD", "无尽建造");
             menuLabel.text = L("←  Menu", "←  主菜单");
-            RefreshLanguageSelector();
+            englishLanguageLabel.text = "EN";
+            chineseLanguageLabel.text = "中文";
+            englishLanguageLabel.font = boldFont;
+            chineseLanguageLabel.font = chineseFont;
+            englishLanguageButton.targetGraphic.color =
+                new Color(1f, 1f, 1f, Chinese ? 0.55f : 1f);
+            chineseLanguageButton.targetGraphic.color =
+                new Color(1f, 1f, 1f, Chinese ? 1f : 0.55f);
             resetLabel.text = confirmReset
                 ? L("Confirm new run", "确认重新开始")
                 : L("New run", "重新开始");
@@ -2019,10 +1928,10 @@ namespace UrbanWildlifeRooms.Presentation
             reviewHeading.text = L("LAST DAY", "昨日结算");
             routeHeading.text = L("ROUTE", "路线检查");
             progressHeading.text = L("BOARD", "棋盘进度");
-            nextStepHeading.text = StoryBuildActionRequired() ||
-                run.StoryStage == ConstructionStoryStage.FreeBuild
-                ? L("CURRENT BUILD", "当前选择")
-                : L("NEXT STEP", "下一步");
+            nextStepHeading.text = !run.BuiltToday &&
+                run.StoryStage != ConstructionStoryStage.WatchSquirrelEat &&
+                !run.IsFinished
+                ? L("CURRENT BUILD", "当前建造") : L("NEXT STEP", "下一步");
             RefreshPaletteVisibility();
             resultTitleLabel.text = run.EndReason switch
             {
@@ -2065,11 +1974,15 @@ namespace UrbanWildlifeRooms.Presentation
                     $"Next: Squirrel {ecologyPreview.squirrelsFed}/" +
                     $"{ecologyPreview.squirrelsPresent} · Work " +
                     $"{humanPreview.CompletedWorkCycles}/{humanPreview.ResidentCount}" +
-                    pigeonForecast,
+                    pigeonForecast +
+                    (ecologyPreview.predatedSpecies == ConstructionPreySpecies.None
+                        ? "" : $"\nFox may hunt 1 {PreyName(ecologyPreview.predatedSpecies, false)}"),
                     $"累计进食{run.AnimalScore} · 通勤{run.HumanScore}\n" +
                     $"明日 松鼠{ecologyPreview.squirrelsFed}/{ecologyPreview.squirrelsPresent} · " +
                     $"通勤{humanPreview.CompletedWorkCycles}/{humanPreview.ResidentCount}" +
-                    pigeonForecast);
+                    pigeonForecast +
+                    (ecologyPreview.predatedSpecies == ConstructionPreySpecies.None
+                        ? "" : $"\n狐狸可能捕食 1 只{PreyName(ecologyPreview.predatedSpecies, true)}"));
             }
             animalMetricText.text = run.AnimalScore.ToString();
             humanMetricText.text = run.HumanScore.ToString();
@@ -2088,8 +2001,6 @@ namespace UrbanWildlifeRooms.Presentation
                 ? selectedPlanting : GreenPlanting.None;
             var selectedPlotCount = AvailablePlotCount(selectedCategory,
                 selectedPlantingToPlace);
-            var hasStorySuggestion = TryGetStoryBuildSuggestion(
-                out var storySuggestion);
             placementGuideText.text = run.IsFinished
                 ? L("Run ended · review the observed results.",
                     "本局已结束 · 查看实际结算结果。")
@@ -2099,19 +2010,20 @@ namespace UrbanWildlifeRooms.Presentation
                             "结束第 1 天，查看松鼠进食和日期变化。")
                         : L("Click the centre oak.", "点击中央橡树。")
                 : run.BuiltToday
-                    ? L("Built today. Advance one day to see the result.",
-                        "今日已建造。推进一天，查看结果。")
-                    : hasStorySuggestion
-                        ? L($"Selected: {SelectedBuildLabel()}. Story tip: {storySuggestion}. Open Build to switch.",
-                            $"当前：{SelectedBuildLabel()}。故事建议：{storySuggestion}；打开建造栏切换。")
+                    ? L($"Selected: {SelectedBuildLabel()}. Built today; advance to place it tomorrow.",
+                        $"已选{SelectedBuildLabel()}。今日已建造，明天可放置。")
+                    : run.StoryStage == ConstructionStoryStage.GrowGreen &&
+                      (selectedCategory != ConstructionCategory.Green ||
+                       selectedPlanting != GreenPlanting.Meadow)
+                        ? L($"Selected: {SelectedBuildLabel()}. Story tip: Meadow green.",
+                            $"已选{SelectedBuildLabel()}。故事建议：草地绿地。")
                     : selectedPlotCount == 0
                         ? L($"Selected: {SelectedBuildLabel()}. {PlacementPrerequisite(selectedCategory)}.",
                             $"已选{SelectedBuildLabel()}。{PlacementPrerequisite(selectedCategory)}。")
                         : L($"Selected: {SelectedBuildLabel()}. Preview on a + plot ({selectedPlotCount} valid).",
                             $"已选{SelectedBuildLabel()}。点击＋地块预览（可放{selectedPlotCount}处）。");
-            selectedBuildIcon.sprite = run.BuiltToday
-                ? StoryCueSprite(run) : RoomIconCatalog.GetSprite(RoomTypeFor(
-                    selectedCategory, selectedPlanting));
+            selectedBuildIcon.sprite = RoomIconCatalog.GetSprite(RoomTypeFor(
+                selectedCategory, selectedPlanting));
             plantingPanel.SetActive(selectedCategory == ConstructionCategory.Green &&
                 run.IsUnlocked(ConstructionCategory.Green));
 
@@ -2197,10 +2109,16 @@ namespace UrbanWildlifeRooms.Presentation
                 if (backlog > 0) wasteBadges[column, row].text = backlog.ToString();
                 squirrelIcons[column, row].gameObject.SetActive(tile?.id ==
                     ConstructionBoardModel.StarterOakId);
+                // Keep the count badge, but let the moving 3D squirrel be the
+                // animal the player actually sees on a rendered board.
+                squirrelIcons[column, row].color = new Color(1f, 1f, 1f,
+                    worldView != null && worldView.IsReady ? 0f : 1f);
                 squirrelCounts[column, row].text =
                     run.SquirrelPopulation.ToString();
                 pigeonIcons[column, row].gameObject.SetActive(tile != null &&
                     tile.id == run.PigeonTileId);
+                pigeonIcons[column, row].color = new Color(1f, 1f, 1f,
+                    worldView != null && worldView.IsReady ? 0f : 1f);
                 pigeonCounts[column, row].text =
                     run.PigeonPopulation.ToString();
                 var isHome = tile?.category == ConstructionCategory.Residence &&
@@ -2238,9 +2156,22 @@ namespace UrbanWildlifeRooms.Presentation
             worldView?.SetViewport(viewMinColumn, viewMinRow);
             worldView?.Sync(run, false);
             RefreshRouteInspection(humanPreview);
+            var foxForecast = run.IsFinished ? null : run.PreviewEcologyDay();
+            predationRiskText = foxForecast == null ||
+                foxForecast.predatedSpecies == ConstructionPreySpecies.None
+                ? null : L($"Tomorrow: fox may hunt one " +
+                    $"{PreyName(foxForecast.predatedSpecies, false)} at " +
+                    $"{TileCoordinate(run.BuiltTiles.ToDictionary(tile => tile.id), foxForecast.predationTileId)}.",
+                    $"明日风险：狐狸可能在" +
+                    $"{TileCoordinate(run.BuiltTiles.ToDictionary(tile => tile.id), foxForecast.predationTileId)}" +
+                    $"捕食 1 只{PreyName(foxForecast.predatedSpecies, true)}。");
             feedbackPanel.gameObject.SetActive(!hasPendingPlacement &&
-                !string.IsNullOrWhiteSpace(feedbackText.text));
-            feedbackPreviewText.text = ShortPreview(feedbackText.text, 43);
+                (!string.IsNullOrWhiteSpace(feedbackText.text) ||
+                 !string.IsNullOrEmpty(predationRiskText)));
+            feedbackPreviewText.text = string.IsNullOrEmpty(predationRiskText)
+                ? ShortPreview(feedbackText.text, 43)
+                : L($"Fox risk · 1 {PreyName(foxForecast.predatedSpecies, false)}",
+                    $"狐狸捕食风险 · 1 只{PreyName(foxForecast.predatedSpecies, true)}");
             HideTooltip();
             RefreshPendingPlacement();
             var result = run.FinalResult;
@@ -2317,6 +2248,12 @@ namespace UrbanWildlifeRooms.Presentation
             ConstructionHumanDayResult human, ConstructionDayForecast forecast)
         {
             var built = run.BuiltTiles.ToDictionary(tile => tile.id);
+            if (ecology.predatedSpecies != ConstructionPreySpecies.None)
+            {
+                var location = TileCoordinate(built, ecology.predationTileId);
+                return L($"Fox hunted one {PreyName(ecology.predatedSpecies, false)} at {location}.",
+                    $"狐狸在{location}捕食 1 只{PreyName(ecology.predatedSpecies, true)}。");
+            }
             if (forecast.blockedHomeTileIds.Count > 0)
             {
                 var location = TileCoordinate(built, forecast.blockedHomeTileIds[0]);
@@ -2350,6 +2287,15 @@ namespace UrbanWildlifeRooms.Presentation
                     $"鸽群进食 {ecology.pigeonsFed}/{ecology.pigeonsPresent}；草籽不足。");
             return L("No unmet need observed.", "未发现未满足的需求。");
         }
+
+        private static string PreyName(ConstructionPreySpecies species, bool chinese) =>
+            species switch
+            {
+                ConstructionPreySpecies.Pigeon => chinese ? "鸽子" : "pigeon",
+                ConstructionPreySpecies.Squirrel => chinese ? "松鼠" : "squirrel",
+                ConstructionPreySpecies.Hedgehog => chinese ? "刺猬" : "hedgehog",
+                _ => chinese ? "动物" : "animal"
+            };
 
         private void RefreshRouteInspection(ConstructionHumanDayResult humanPreview)
         {
@@ -2698,8 +2644,7 @@ namespace UrbanWildlifeRooms.Presentation
                     ConstructionStoryStage.GrowGreen => ConstructionCategory.Green,
                 ConstructionStoryStage.WelcomeResident =>
                     current.PigeonMeadowInspected
-                        ? ConstructionCategory.Residence
-                        : ConstructionCategory.Green,
+                        ? ConstructionCategory.Residence : ConstructionCategory.Green,
                 ConstructionStoryStage.AwaitAccessProblem =>
                     ConstructionCategory.Residence,
                 ConstructionStoryStage.BuildRestaurant or
@@ -2708,8 +2653,7 @@ namespace UrbanWildlifeRooms.Presentation
                 ConstructionStoryStage.AwaitRestaurantCrowding =>
                     current.PreviewWasteAvailability().BlockedHomes.Count > 0 ||
                     current.PreviewWasteAvailability().BlockedFoodServices.Count > 0
-                        ? ConstructionCategory.Waste
-                        : ConstructionCategory.Restaurant,
+                        ? ConstructionCategory.Waste : ConstructionCategory.Restaurant,
                 ConstructionStoryStage.BuildWorkshop => ConstructionCategory.Workshop,
                 ConstructionStoryStage.BuildWasteRoom => ConstructionCategory.Waste,
                 ConstructionStoryStage.BuildStreet => ConstructionCategory.Street,
@@ -2951,27 +2895,6 @@ namespace UrbanWildlifeRooms.Presentation
                 pair.Key.fontStyle = Chinese && pair.Value
                     ? FontStyle.Bold : FontStyle.Normal;
             }
-            // The two choices keep their own scripts and typefaces in either UI language.
-            if (englishLanguageLabel != null)
-            {
-                englishLanguageLabel.font = boldFont;
-                englishLanguageLabel.fontStyle = FontStyle.Normal;
-            }
-            if (chineseLanguageLabel != null)
-            {
-                chineseLanguageLabel.font = chineseFont;
-                chineseLanguageLabel.fontStyle = FontStyle.Bold;
-            }
-        }
-
-        private void RefreshLanguageSelector()
-        {
-            if (englishLanguageBackground == null || chineseLanguageBackground == null)
-                return;
-            englishLanguageBackground.color = Chinese ? Color.clear : Paper;
-            chineseLanguageBackground.color = Chinese ? Paper : Color.clear;
-            englishLanguageLabel.color = Chinese ? Paper : Ink;
-            chineseLanguageLabel.color = Chinese ? Ink : Paper;
         }
 
         private static RectTransform NewRect(string name, Transform parent,

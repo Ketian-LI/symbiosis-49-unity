@@ -9,6 +9,224 @@ namespace UrbanWildlifeRooms.Tests.Editor
     public sealed class ConstructionFoodModelTests
     {
         [Test]
+        public void FoxHuntFollowsOldPreyOrderButRespectsConnectedCover()
+        {
+            var board = new ConstructionBoardModel();
+            Assert.That(board.TryBuild(3, 2, ConstructionCategory.Green,
+                GreenPlanting.Shrub, out var hedge, out _, 1), Is.True);
+            Assert.That(board.TryBuild(3, 1, ConstructionCategory.Green,
+                GreenPlanting.Shrub, out var den, out _, 1), Is.True);
+            Assert.That(board.TryBuild(4, 3, ConstructionCategory.Green,
+                GreenPlanting.Meadow, out var meadow, out _, 1), Is.True);
+            var first = ConstructionFoodModel.PlanFoxHunt(board, 4, den.id,
+                meadow.id, 3, 1, hedge.id, true);
+            Assert.That(first.species, Is.EqualTo(ConstructionPreySpecies.Pigeon));
+            Assert.That(first.routeTileIds.Count, Is.EqualTo(4));
+            Assert.That(board.TryBuild(5, 3, ConstructionCategory.Green,
+                GreenPlanting.Meadow, out _, out _, 1), Is.True);
+            Assert.That(board.TryBuild(4, 2, ConstructionCategory.Green,
+                GreenPlanting.Meadow, out _, out _, 1), Is.True);
+            Assert.That(ConstructionFoodModel.PlanFoxHunt(board, 4, den.id,
+                meadow.id, 3, 1, hedge.id, true).species,
+                Is.EqualTo(ConstructionPreySpecies.Squirrel));
+            Assert.That(board.TryBuild(2, 3, ConstructionCategory.Green,
+                GreenPlanting.Oak, out _, out _, 1), Is.True);
+            Assert.That(ConstructionFoodModel.PlanFoxHunt(board, 4, den.id,
+                meadow.id, 3, 1, hedge.id, true).species,
+                Is.EqualTo(ConstructionPreySpecies.Hedgehog));
+            Assert.That(board.TryBuild(2, 2, ConstructionCategory.Green,
+                GreenPlanting.Shrub, out _, out _, 1), Is.True);
+            Assert.That(ConstructionFoodModel.PlanFoxHunt(board, 4, den.id,
+                meadow.id, 3, 1, hedge.id, true).WillHunt, Is.False);
+        }
+
+        [Test]
+        public void FoxKillMatchesPreviewAndPersistsWithoutInstantRespawn()
+        {
+            var run = new ConstructionRunModel();
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            foreach (var build in new[]
+            {
+                (column: 3, row: 2, planting: GreenPlanting.Shrub),
+                (column: 3, row: 1, planting: GreenPlanting.Shrub),
+                (column: 4, row: 3, planting: GreenPlanting.Meadow),
+                (column: 5, row: 3, planting: GreenPlanting.Meadow),
+                (column: 5, row: 2, planting: GreenPlanting.Meadow),
+                (column: 6, row: 2, planting: GreenPlanting.Oak),
+                (column: 6, row: 3, planting: GreenPlanting.Shrub)
+            })
+            {
+                Assert.That(run.TryBuild(build.column, build.row,
+                    ConstructionCategory.Green, build.planting,
+                    out _, out _, out _), Is.True);
+                Assert.That(run.TrySimulateDay(out _), Is.True);
+            }
+            Assert.That(run.CurrentDay, Is.EqualTo(9));
+            Assert.That(run.PigeonPopulation, Is.EqualTo(3));
+            var preview = run.PreviewEcologyDay();
+            Assert.That(preview.predatedSpecies,
+                Is.EqualTo(ConstructionPreySpecies.Squirrel),
+                "The flock's current forage tile is out of fox range; the fox should fall back to the squirrel.");
+            Assert.That(run.SquirrelPopulation, Is.EqualTo(1),
+                "Inspecting a forecast must not consume a prey animal.");
+            Assert.That(run.TrySimulateDay(out var actual), Is.True);
+            Assert.That(actual.predatedSpecies, Is.EqualTo(preview.predatedSpecies));
+            Assert.That(actual.foxHuntRouteTileIds,
+                Is.EqualTo(preview.foxHuntRouteTileIds));
+            Assert.That(actual.AnimalMeals, Is.EqualTo(preview.AnimalMeals));
+            Assert.That(run.SquirrelPopulation, Is.Zero);
+            Assert.That(run.PreviewEcologyDay().predatedSpecies,
+                Is.EqualTo(ConstructionPreySpecies.None),
+                "The fox needs another hungry day before hunting again.");
+            var json = JsonUtility.ToJson(run.Export());
+            Assert.That(ConstructionRunModel.TryRestore(
+                JsonUtility.FromJson<ConstructionRunSaveData>(json),
+                out var restored), Is.True, json);
+            Assert.That(restored.SquirrelPopulation, Is.Zero);
+            Assert.That(restored.LastEcologyDay.predatedSpecies,
+                Is.EqualTo(ConstructionPreySpecies.Squirrel));
+        }
+
+        [Test]
+        public void ReachablePigeonFlockLosesOneBirdToFox()
+        {
+            var run = new ConstructionRunModel();
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            foreach (var build in new[]
+            {
+                (column: 3, row: 2, planting: GreenPlanting.Shrub),
+                (column: 3, row: 1, planting: GreenPlanting.Shrub),
+                (column: 4, row: 3, planting: GreenPlanting.Meadow),
+                (column: 4, row: 2, planting: GreenPlanting.Meadow),
+                (column: 2, row: 3, planting: GreenPlanting.Meadow)
+            })
+            {
+                Assert.That(run.TryBuild(build.column, build.row,
+                    ConstructionCategory.Green, build.planting,
+                    out _, out _, out _), Is.True);
+                Assert.That(run.TrySimulateDay(out _), Is.True);
+            }
+            Assert.That(run.TrySimulateDay(out _), Is.True,
+                "The third meadow must mature and bring the fox first.");
+            Assert.That(run.FoxHabitat, Is.Not.Null);
+            Assert.That(run.TrySimulateDay(out _), Is.True,
+                "The fox's first habitat day should establish hunger, not hunt.");
+            Assert.That(run.PigeonPopulation, Is.EqualTo(3));
+            Assert.That(run.PreviewEcologyDay().predatedSpecies,
+                Is.EqualTo(ConstructionPreySpecies.Pigeon));
+            Assert.That(run.TrySimulateDay(out var ecology), Is.True);
+            Assert.That(ecology.predatedSpecies,
+                Is.EqualTo(ConstructionPreySpecies.Pigeon));
+            Assert.That(run.PigeonPopulation, Is.EqualTo(2));
+            Assert.That(ecology.pigeonsPresent, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void ShelteredFlockAndSquirrelLeaveHedgehogAsPrey()
+        {
+            var run = new ConstructionRunModel();
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            foreach (var build in new[]
+            {
+                (column: 3, row: 2, planting: GreenPlanting.Shrub),
+                (column: 3, row: 1, planting: GreenPlanting.Shrub),
+                (column: 3, row: 4, planting: GreenPlanting.Oak),
+                (column: 4, row: 3, planting: GreenPlanting.Meadow),
+                (column: 5, row: 3, planting: GreenPlanting.Meadow),
+                (column: 4, row: 2, planting: GreenPlanting.Meadow)
+            })
+            {
+                Assert.That(run.TryBuild(build.column, build.row,
+                    ConstructionCategory.Green, build.planting,
+                    out _, out _, out _), Is.True);
+                Assert.That(run.TrySimulateDay(out _), Is.True);
+            }
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            var save = run.Export();
+            save.pigeonTileId = run.At(4, 3).id;
+            Assert.That(ConstructionRunModel.TryRestore(save, out var sheltered),
+                Is.True, "A flock resting in a mature sheltered meadow is a valid state.");
+            Assert.That(sheltered.HedgehogHabitat, Is.Not.Null);
+            Assert.That(sheltered.PreviewEcologyDay().predatedSpecies,
+                Is.EqualTo(ConstructionPreySpecies.Hedgehog));
+            Assert.That(sheltered.TrySimulateDay(out var ecology), Is.True);
+            Assert.That(ecology.predatedSpecies,
+                Is.EqualTo(ConstructionPreySpecies.Hedgehog));
+            Assert.That(sheltered.HedgehogHabitat, Is.Null,
+                "A caught hedgehog must not instantly reappear on the same shrubs.");
+            Assert.That(ConstructionRunModel.TryRestore(
+                JsonUtility.FromJson<ConstructionRunSaveData>(
+                    JsonUtility.ToJson(sheltered.Export())), out var restored), Is.True);
+            Assert.That(restored.HedgehogHabitat, Is.Null);
+        }
+
+        [Test]
+        public void LastSquirrelKilledByFoxEndsEndlessRun()
+        {
+            var run = new ConstructionRunModel();
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            foreach (var build in new[]
+            {
+                (column: 3, row: 2, planting: GreenPlanting.Shrub),
+                (column: 3, row: 1, planting: GreenPlanting.Shrub),
+                (column: 4, row: 3, planting: GreenPlanting.Meadow),
+                (column: 5, row: 3, planting: GreenPlanting.Meadow),
+                (column: 5, row: 2, planting: GreenPlanting.Meadow),
+                (column: 6, row: 2, planting: GreenPlanting.Oak),
+                (column: 6, row: 3, planting: GreenPlanting.Shrub)
+            })
+            {
+                Assert.That(run.TryBuild(build.column, build.row,
+                    ConstructionCategory.Green, build.planting,
+                    out _, out _, out _), Is.True);
+                Assert.That(run.TrySimulateDay(out _), Is.True);
+            }
+            var saved = run.Export();
+            saved.mode = ConstructionGameMode.Endless;
+            saved.survival.squirrels = 1;
+            saved.survival.pigeons = 3;
+            saved.survival.foxEstablished = true;
+            saved.survival.foxHungryDays = 1;
+            Assert.That(ConstructionRunModel.TryRestore(saved, out var endless),
+                Is.True);
+            Assert.That(endless.PreviewEcologyDay().predatedSpecies,
+                Is.EqualTo(ConstructionPreySpecies.Squirrel));
+            Assert.That(endless.TrySimulateDay(out var ecology), Is.True);
+            Assert.That(ecology.predatedSpecies,
+                Is.EqualTo(ConstructionPreySpecies.Squirrel));
+            Assert.That(endless.SquirrelPopulation, Is.Zero);
+            Assert.That(endless.EndReason,
+                Is.EqualTo(ConstructionEndReason.WildlifeGone));
+            Assert.That(ConstructionRunModel.TryRestore(
+                JsonUtility.FromJson<ConstructionRunSaveData>(
+                    JsonUtility.ToJson(endless.Export())), out var restored), Is.True);
+            Assert.That(restored.EndReason,
+                Is.EqualTo(ConstructionEndReason.WildlifeGone));
+        }
+
+        [Test]
+        public void LaterWildlifeNeedsMatureConnectedShrubsAndEstablishedPigeons()
+        {
+            var board = new ConstructionBoardModel();
+            Assert.That(board.TryBuild(3, 2, ConstructionCategory.Green,
+                GreenPlanting.Shrub, out var firstShrub, out _, 2), Is.True);
+            Assert.That(board.TryBuild(3, 1, ConstructionCategory.Green,
+                GreenPlanting.Shrub, out var secondShrub, out _, 3), Is.True);
+            Assert.That(ConstructionFoodModel.HedgehogHabitat(board, 3), Is.Null,
+                "A newly placed shrub must not attract an animal immediately.");
+            Assert.That(ConstructionFoodModel.HedgehogHabitat(board, 4)?.id,
+                Is.EqualTo(firstShrub.id));
+            Assert.That(ConstructionFoodModel.FoxHabitat(board, 5, 2), Is.Null,
+                "A fox needs established prey as well as shelter.");
+            Assert.That(ConstructionFoodModel.FoxHabitat(board, 5, 3)?.id,
+                Is.EqualTo(secondShrub.id));
+            Assert.That(board.TryBuild(6, 6, ConstructionCategory.Green,
+                GreenPlanting.Shrub, out _, out _), Is.False,
+                "Unconnected empty space cannot count as built habitat.");
+        }
+
+        [Test]
         public void StarterOakFeedsExactlyOneSquirrelAndCannotSettleTwice()
         {
             var board = new ConstructionBoardModel();

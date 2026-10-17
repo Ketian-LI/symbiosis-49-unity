@@ -41,9 +41,23 @@ namespace UrbanWildlifeRooms.Core
         public string pigeonFoodTileId;
         public int pigeonsPresent;
         public List<string> pigeonFoodTileIds = new();
+        public ConstructionPreySpecies predatedSpecies;
+        public string predationTileId;
+        public List<string> foxHuntRouteTileIds = new();
         public List<ConstructionFoodChange> foodChanges = new();
         // Older saves have only the single-squirrel boolean.
-        public int AnimalMeals => Math.Max(squirrelsFed, squirrelAte ? 1 : 0) + pigeonsFed;
+        public int AnimalMeals => Math.Max(squirrelsFed, squirrelAte ? 1 : 0) +
+            pigeonsFed + (predatedSpecies == ConstructionPreySpecies.None ? 0 : 1);
+    }
+
+    public enum ConstructionPreySpecies { None, Pigeon, Squirrel, Hedgehog }
+
+    public sealed class ConstructionPredationPlan
+    {
+        public ConstructionPreySpecies species;
+        public string preyTileId;
+        public List<string> routeTileIds = new();
+        public bool WillHunt => species != ConstructionPreySpecies.None;
     }
 
     // Small deterministic ecology for the new board only. One portion feeds
@@ -87,6 +101,87 @@ namespace UrbanWildlifeRooms.Core
 
         public static int MeadowsForNextPigeon(int currentPopulation)
             => 3 + (currentPopulation - PigeonFlockSize) * 2;
+
+        // Hedgehogs currently visit suitable habitat. Foxes may take one
+        // reachable, unprotected prey when their hunger state permits it.
+        public static int MatureConnectedShrubCount(
+            ConstructionBoardModel board, int day) =>
+            MatureConnectedShrubs(board, day).Length;
+
+        public static ConstructionTileData HedgehogHabitat(
+            ConstructionBoardModel board, int day) =>
+            MatureConnectedShrubs(board, day).FirstOrDefault();
+
+        public static ConstructionTileData FoxHabitat(
+            ConstructionBoardModel board, int day, int pigeonPopulation)
+        {
+            var shrubs = MatureConnectedShrubs(board, day);
+            return shrubs.Length >= 2 && pigeonPopulation >= 3
+                ? shrubs[shrubs.Length - 1] : null;
+        }
+
+        private static ConstructionTileData[] MatureConnectedShrubs(
+            ConstructionBoardModel board, int day) =>
+            board.ConnectedGreenTiles(ConstructionBoardModel.StarterOakId)
+                .Where(tile => tile.planting == GreenPlanting.Shrub &&
+                    tile.builtDay <= day && MaturityStage(tile, day) == 2)
+                .OrderBy(tile => tile.buildIndex).ToArray();
+
+        // Daily abstraction of the old fox's prey order. A route may cross at
+        // most three green thresholds; denser same-species planting provides
+        // cover in place of the old per-frame flight/curl state.
+        public static ConstructionPredationPlan PlanFoxHunt(
+            ConstructionBoardModel board, int day, string foxTileId,
+            string pigeonTileId, int pigeons, int squirrels,
+            string hedgehogTileId, bool foxHungry)
+        {
+            var noHunt = new ConstructionPredationPlan();
+            if (!foxHungry || string.IsNullOrEmpty(foxTileId)) return noHunt;
+            foreach (var candidate in new[]
+            {
+                (species: ConstructionPreySpecies.Pigeon,
+                    tileId: pigeons > 0 ? pigeonTileId : null,
+                    planting: GreenPlanting.Meadow, coverNeeded: 2),
+                (species: ConstructionPreySpecies.Squirrel,
+                    tileId: squirrels > 0 ? ConstructionBoardModel.StarterOakId : null,
+                    planting: GreenPlanting.Oak, coverNeeded: 1),
+                (species: ConstructionPreySpecies.Hedgehog,
+                    tileId: hedgehogTileId,
+                    planting: GreenPlanting.Shrub, coverNeeded: 2)
+            })
+            {
+                if (string.IsNullOrEmpty(candidate.tileId)) continue;
+                var route = board.GreenRouteBetween(foxTileId, candidate.tileId);
+                if (route.Count == 0 || route.Count > 4) continue;
+                var prey = board.BuiltTiles.FirstOrDefault(tile =>
+                    tile.id == candidate.tileId);
+                if (prey == null || AdjacentMaturePlantings(board, prey,
+                        candidate.planting, day) >= candidate.coverNeeded)
+                    continue;
+                return new ConstructionPredationPlan
+                {
+                    species = candidate.species,
+                    preyTileId = candidate.tileId,
+                    routeTileIds = route.Select(tile => tile.id).ToList()
+                };
+            }
+            return noHunt;
+        }
+
+        private static int AdjacentMaturePlantings(
+            ConstructionBoardModel board, ConstructionTileData centre,
+            GreenPlanting planting, int day)
+        {
+            var count = 0;
+            foreach (var offset in new[] { (1, 0), (-1, 0), (0, 1), (0, -1) })
+            {
+                var tile = board.At(centre.column + offset.Item1,
+                    centre.row + offset.Item2);
+                if (tile?.planting == planting && MaturityStage(tile, day) == 2)
+                    count++;
+            }
+            return count;
+        }
 
         private readonly Dictionary<string, int> stock = new();
         public int LastSettledDay { get; private set; }

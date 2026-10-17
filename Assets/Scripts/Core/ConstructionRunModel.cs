@@ -21,6 +21,12 @@ namespace UrbanWildlifeRooms.Core
     {
         public int squirrels = 1;
         public int pigeons;
+        public int predatedSquirrels;
+        public int predatedPigeons;
+        public int hedgehogNextArrivalShrubs;
+        public bool foxEstablished;
+        public int foxHungryDays;
+        public int foxReturnDay;
         public int squirrelHungryDays;
         public int pigeonHungryDays;
         public int squirrelFedDays;
@@ -143,10 +149,23 @@ namespace UrbanWildlifeRooms.Core
         public bool HasConnectedMeadow => ConnectedMeadows().Any();
         public int SquirrelPopulation =>
             Mode == ConstructionGameMode.Endless ? survival.squirrels :
-                ConstructionFoodModel.SquirrelPopulation(board, CurrentDay);
+                Math.Max(0, ConstructionFoodModel.SquirrelPopulation(board,
+                    CurrentDay) - survival.predatedSquirrels);
         public int PigeonPopulation =>
             Mode == ConstructionGameMode.Endless ? survival.pigeons :
-                ConstructionFoodModel.PigeonPopulation(board, CurrentDay, PigeonTileId);
+                Math.Max(0, ConstructionFoodModel.PigeonPopulation(board,
+                    CurrentDay, PigeonTileId) - survival.predatedPigeons);
+        // These are habitat arrivals, not meals or score. Keep them derived
+        // from the constructed board so loading a save cannot spawn wildlife
+        // in an unbuilt legacy room.
+        public ConstructionTileData HedgehogHabitat =>
+            ConstructionFoodModel.MatureConnectedShrubCount(board, CurrentDay) >=
+                Math.Max(1, survival.hedgehogNextArrivalShrubs)
+                ? ConstructionFoodModel.HedgehogHabitat(board, CurrentDay) : null;
+        public ConstructionTileData FoxHabitat =>
+            CurrentDay < survival.foxReturnDay ? null :
+                ConstructionFoodModel.FoxHabitat(board, CurrentDay,
+                    survival.foxEstablished ? int.MaxValue : PigeonPopulation);
         public int MatureNearbyOakCount =>
             ConstructionFoodModel.MatureNearbyOakCount(board, CurrentDay);
         public int MatureConnectedMeadowCount =>
@@ -214,10 +233,34 @@ namespace UrbanWildlifeRooms.Core
             };
             return true;
         }
-        public ConstructionEcologyDayResult PreviewEcologyDay() =>
-            food.PreviewDay(CurrentDay, board, PigeonTileId,
-                Mode == ConstructionGameMode.Endless ? survival.squirrels : null,
-                Mode == ConstructionGameMode.Endless ? survival.pigeons : null);
+        public ConstructionEcologyDayResult PreviewEcologyDay()
+        {
+            var hunt = PlanPredation();
+            var result = food.PreviewDay(CurrentDay, board, PigeonTileId,
+                Math.Max(0, SquirrelPopulation -
+                    (hunt.species == ConstructionPreySpecies.Squirrel ? 1 : 0)),
+                Math.Max(0, PigeonPopulation -
+                    (hunt.species == ConstructionPreySpecies.Pigeon ? 1 : 0)));
+            MarkPredation(result, hunt);
+            return result;
+        }
+
+        private ConstructionPredationPlan PlanPredation()
+        {
+            var den = FoxHabitat;
+            return ConstructionFoodModel.PlanFoxHunt(board, CurrentDay,
+                den?.id, PigeonTileId, PigeonPopulation, SquirrelPopulation,
+                HedgehogHabitat?.id, den != null &&
+                    survival.foxEstablished && survival.foxHungryDays >= 1);
+        }
+
+        private static void MarkPredation(ConstructionEcologyDayResult ecology,
+            ConstructionPredationPlan hunt)
+        {
+            ecology.predatedSpecies = hunt.species;
+            ecology.predationTileId = hunt.preyTileId;
+            ecology.foxHuntRouteTileIds = hunt.routeTileIds.ToList();
+        }
         public IReadOnlyList<ConstructionTileData> PreviewSquirrelFoodRoute()
         {
             var target = PreviewEcologyDay().squirrelFoodTileId;
@@ -374,9 +417,13 @@ namespace UrbanWildlifeRooms.Core
                 blockedHomeTileIds = availability.BlockedHomes.OrderBy(id => id).ToList(),
                 blockedFoodTileIds = availability.BlockedFoodServices.OrderBy(id => id).ToList()
             };
+            var foxPresent = FoxHabitat != null;
+            var hunt = PlanPredation();
+            if (foxPresent) survival.foxEstablished = true;
+            ApplyPredation(hunt);
             ecology = food.SettleDay(CurrentDay, board, PigeonTileId,
-                Mode == ConstructionGameMode.Endless ? survival.squirrels : null,
-                Mode == ConstructionGameMode.Endless ? survival.pigeons : null);
+                SquirrelPopulation, PigeonPopulation);
+            MarkPredation(ecology, hunt);
             var human = ConstructionHumanModel.SettleDay(CurrentDay, board,
                 availability.BlockedHomes, availability.BlockedFoodServices,
                 DepartedHomes);
@@ -391,6 +438,7 @@ namespace UrbanWildlifeRooms.Core
                 throw new InvalidOperationException("Daily score rejected a settled ecology day.");
             if (Mode == ConstructionGameMode.Endless && !IsFinished)
                 SettleSurvival(ecology, human);
+            SettleFoxActivity(foxPresent, hunt, ecology.day);
             if (!string.IsNullOrEmpty(ecology.pigeonFoodTileId))
                 PigeonTileId = ecology.pigeonFoodTileId;
             LastEcologyDay = ecology;
@@ -398,6 +446,50 @@ namespace UrbanWildlifeRooms.Core
             LastWasteDay = wasteDay;
             LastForecast = forecast;
             return true;
+        }
+
+        private void ApplyPredation(ConstructionPredationPlan hunt)
+        {
+            switch (hunt.species)
+            {
+                case ConstructionPreySpecies.Pigeon:
+                    if (Mode == ConstructionGameMode.Endless)
+                    {
+                        survival.pigeons--;
+                        survival.pigeonFedDays = 0;
+                    }
+                    else survival.predatedPigeons++;
+                    break;
+                case ConstructionPreySpecies.Squirrel:
+                    if (Mode == ConstructionGameMode.Endless)
+                    {
+                        survival.squirrels--;
+                        survival.squirrelFedDays = 0;
+                    }
+                    else survival.predatedSquirrels++;
+                    break;
+                case ConstructionPreySpecies.Hedgehog:
+                    survival.hedgehogNextArrivalShrubs =
+                        ConstructionFoodModel.MatureConnectedShrubCount(board,
+                            CurrentDay) + 1;
+                    break;
+            }
+        }
+
+        private void SettleFoxActivity(bool foxPresent,
+            ConstructionPredationPlan hunt, int settledDay)
+        {
+            if (!foxPresent)
+            {
+                survival.foxHungryDays = 0;
+                return;
+            }
+            survival.foxHungryDays = hunt.WillHunt ? 0 :
+                survival.foxHungryDays + 1;
+            if (survival.foxHungryDays < 3) return;
+            survival.foxEstablished = false;
+            survival.foxHungryDays = 0;
+            survival.foxReturnDay = settledDay + 3;
         }
 
         // Compatibility entrypoint for existing model tests and v1 saves. The
@@ -635,6 +727,14 @@ namespace UrbanWildlifeRooms.Core
                              tile.category == ConstructionCategory.Residence)) ||
                      saved.survival.residents.Select(person => person.homeTileId)
                          .Distinct().Count() != saved.survival.residents.Count)) ||
+                (saved.survival != null &&
+                    (saved.survival.predatedSquirrels < 0 ||
+                     saved.survival.predatedPigeons < 0 ||
+                     saved.survival.hedgehogNextArrivalShrubs < 0 ||
+                     saved.survival.hedgehogNextArrivalShrubs > board.BuiltCount + 1 ||
+                     saved.survival.foxHungryDays < 0 ||
+                     saved.survival.foxHungryDays > 2 ||
+                     saved.survival.foxReturnDay < 0)) ||
                 saved.currentDay != score.Days.Count + (saved.finished ? 0 : 1))
                 return false;
 
@@ -675,7 +775,13 @@ namespace UrbanWildlifeRooms.Core
                  lastEcologyDay.pigeonsPresent < 0 ||
                  lastEcologyDay.pigeonsPresent >
                      ConstructionFoodModel.PigeonPopulation(board,
-                         lastEcologyDay.day, saved.pigeonTileId)))
+                         lastEcologyDay.day, saved.pigeonTileId) ||
+                 !Enum.IsDefined(typeof(ConstructionPreySpecies),
+                     lastEcologyDay.predatedSpecies) ||
+                 (lastEcologyDay.predatedSpecies != ConstructionPreySpecies.None &&
+                     (string.IsNullOrEmpty(lastEcologyDay.predationTileId) ||
+                      lastEcologyDay.foxHuntRouteTileIds == null ||
+                      lastEcologyDay.foxHuntRouteTileIds.Count == 0))))
                 return false;
             var lastHumanDay = saved.lastHumanDay?.day > 0
                 ? saved.lastHumanDay : null;
@@ -728,7 +834,9 @@ namespace UrbanWildlifeRooms.Core
                      ConstructionFoodModel.SquirrelPopulation(board,
                          lastForecast.day) +
                      ConstructionFoodModel.PigeonPopulation(board,
-                         lastForecast.day, saved.pigeonTileId) ||
+                         lastForecast.day, saved.pigeonTileId) +
+                     (lastEcologyDay.predatedSpecies == ConstructionPreySpecies.None
+                         ? 0 : 1) ||
                  lastForecast.completedWorkCycles < 0 ||
                  lastForecast.completedWorkCycles >
                      board.BuiltTiles.Count(tile =>
@@ -777,8 +885,7 @@ namespace UrbanWildlifeRooms.Core
             };
             run.Mode = saved.mode;
             run.EndReason = saved.endReason;
-            run.survival = saved.mode == ConstructionGameMode.Endless
-                ? saved.survival : new ConstructionSurvivalSaveData();
+            run.survival = saved.survival ?? new ConstructionSurvivalSaveData();
             return true;
         }
     }

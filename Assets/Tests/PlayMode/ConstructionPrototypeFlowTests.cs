@@ -17,6 +17,194 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
     public sealed class ConstructionPrototypeFlowTests
     {
         [UnityTest]
+        public IEnumerator ConstructionWildlifeIsVisibleAndMovesWithoutCrossRoomFood()
+        {
+            var run = new ConstructionRunModel();
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            Assert.That(run.TryBuild(4, 3, ConstructionCategory.Green,
+                GreenPlanting.Meadow, out _, out _, out _), Is.True);
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            Assert.That(run.PigeonPopulation, Is.EqualTo(2));
+
+            var root = new GameObject("Construction wildlife presentation test");
+            var controller = root.AddComponent<ConstructionPrototypeController>();
+            controller.UseRunForTesting(run);
+            yield return null;
+            if (SystemInfo.graphicsDeviceType ==
+                UnityEngine.Rendering.GraphicsDeviceType.Null)
+            {
+                Object.Destroy(root);
+                yield break;
+            }
+
+            var world = root.transform.Find("Construction low-poly world");
+            Assert.That(world, Is.Not.Null);
+            Assert.That(world.GetComponentInChildren<
+                UrbanWildlifeRooms.Animals.HedgehogDemoVisual>(), Is.Null);
+            Assert.That(world.GetComponentInChildren<
+                UrbanWildlifeRooms.Animals.FoxDemoVisual>(), Is.Null);
+            var view = root.GetComponent<ConstructionWorldView>();
+            var squirrel = world.Find("Squirrel");
+            Assert.That(squirrel, Is.Not.Null);
+            Assert.That(squirrel.gameObject.activeInHierarchy, Is.True);
+            Assert.That(System.Array.Exists(
+                squirrel.GetComponentsInChildren<Renderer>(), renderer =>
+                    renderer.enabled && renderer.gameObject.activeInHierarchy),
+                Is.True, "The construction squirrel must actually render.");
+            var birds = world.GetComponentsInChildren<
+                UrbanWildlifeRooms.Animals.PigeonDemoVisual>();
+            Assert.That(birds.Length, Is.EqualTo(2),
+                "The two arriving pigeons need two visible 3D animals, not one static icon.");
+            foreach (var bird in birds)
+                Assert.That(System.Array.Exists(
+                    bird.GetComponentsInChildren<Renderer>(), renderer =>
+                        renderer.enabled && renderer.gameObject.activeInHierarchy),
+                    Is.True, "Every displayed pigeon must actually render.");
+            var idleSquirrelStart = squirrel.position;
+            var idlePigeonStart = birds[0].transform.position;
+            yield return new WaitForSecondsRealtime(0.55f);
+            Assert.That(Vector3.Distance(idleSquirrelStart, squirrel.position),
+                Is.GreaterThan(0.03f),
+                "The squirrel should move even while no day-end route is playing.");
+            Assert.That(Vector3.Distance(idlePigeonStart, birds[0].transform.position),
+                Is.GreaterThan(0.03f),
+                "Pigeons should move even while no day-end route is playing.");
+            var squirrelRoute = run.PreviewSquirrelFoodRoute();
+            Assert.That(squirrelRoute.Count, Is.EqualTo(1),
+                "This checks visible foraging even when food is in the home room.");
+            view.PlayForaging(
+                squirrelRoute, run.PreviewPigeonFoodRoute());
+            var start = squirrel.position;
+            yield return new WaitForSecondsRealtime(0.45f);
+            Assert.That(Vector3.Distance(start, squirrel.position),
+                Is.GreaterThan(0.08f),
+                "A same-room food route should not leave the squirrel motionless.");
+            Object.Destroy(root);
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator MatureShrubsAndPigeonsBringVisibleMovingVisitors()
+        {
+            var run = new ConstructionRunModel();
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            foreach (var build in new[]
+            {
+                (column: 3, row: 2, planting: GreenPlanting.Shrub),
+                (column: 3, row: 1, planting: GreenPlanting.Shrub),
+                (column: 4, row: 3, planting: GreenPlanting.Meadow),
+                (column: 5, row: 3, planting: GreenPlanting.Meadow),
+                (column: 4, row: 2, planting: GreenPlanting.Meadow)
+            })
+            {
+                Assert.That(run.TryBuild(build.column, build.row,
+                    ConstructionCategory.Green, build.planting,
+                    out _, out _, out _), Is.True);
+                Assert.That(run.TrySimulateDay(out _), Is.True);
+            }
+            // The final meadow needs one more day to reach mature habitat.
+            Assert.That(run.TryBuild(5, 2, ConstructionCategory.Green,
+                GreenPlanting.Oak, out _, out _, out _), Is.True);
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            Assert.That(run.HedgehogHabitat, Is.Not.Null);
+            Assert.That(run.FoxHabitat, Is.Not.Null);
+            var root = new GameObject("Construction habitat visitors test");
+            var controller = root.AddComponent<ConstructionPrototypeController>();
+            controller.UseRunForTesting(run);
+            yield return null;
+            if (SystemInfo.graphicsDeviceType ==
+                UnityEngine.Rendering.GraphicsDeviceType.Null)
+            {
+                Object.Destroy(root);
+                yield break;
+            }
+            var world = root.transform.Find("Construction low-poly world");
+            Assert.That(world, Is.Not.Null);
+            var hedgehog = world.GetComponentInChildren<
+                UrbanWildlifeRooms.Animals.HedgehogDemoVisual>();
+            var fox = world.GetComponentInChildren<
+                UrbanWildlifeRooms.Animals.FoxDemoVisual>();
+            Assert.That(hedgehog, Is.Not.Null);
+            Assert.That(fox, Is.Not.Null);
+            foreach (var actor in new[] { hedgehog.transform, fox.transform })
+                Assert.That(System.Array.Exists(
+                    actor.GetComponentsInChildren<Renderer>(), renderer =>
+                        renderer.enabled && renderer.gameObject.activeInHierarchy),
+                    Is.True, "Each visitor needs an enabled 3D renderer.");
+            var hedgehogStart = hedgehog.transform.position;
+            var foxStart = fox.transform.position;
+            yield return new WaitForSecondsRealtime(0.6f);
+            Assert.That(Vector3.Distance(hedgehogStart,
+                hedgehog.transform.position), Is.GreaterThan(0.03f));
+            Assert.That(Vector3.Distance(foxStart, fox.transform.position),
+                Is.GreaterThan(0.03f));
+            Object.Destroy(root);
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator FoxHuntIsReportedAndFollowsTheSettledGreenRoute()
+        {
+            var run = new ConstructionRunModel();
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            foreach (var build in new[]
+            {
+                (column: 3, row: 2, planting: GreenPlanting.Shrub),
+                (column: 3, row: 1, planting: GreenPlanting.Shrub),
+                (column: 4, row: 3, planting: GreenPlanting.Meadow),
+                (column: 5, row: 3, planting: GreenPlanting.Meadow),
+                (column: 5, row: 2, planting: GreenPlanting.Meadow),
+                (column: 6, row: 2, planting: GreenPlanting.Oak),
+                (column: 6, row: 3, planting: GreenPlanting.Shrub)
+            })
+            {
+                Assert.That(run.TryBuild(build.column, build.row,
+                    ConstructionCategory.Green, build.planting,
+                    out _, out _, out _), Is.True);
+                Assert.That(run.TrySimulateDay(out _), Is.True);
+            }
+            var riskRoot = new GameObject("Construction fox risk preview test");
+            var riskController = riskRoot.AddComponent<ConstructionPrototypeController>();
+            riskController.UseRunForTesting(run);
+            riskController.UseLanguageForTesting(InterfaceLanguage.English);
+            yield return null;
+            var riskPreview = riskRoot.transform.Find(
+                "Construction UI/Building choices/Feedback backing/Feedback preview")
+                .GetComponent<Text>();
+            Assert.That(riskPreview.text, Does.Contain("Fox risk"));
+            Object.Destroy(riskRoot);
+            yield return null;
+            Assert.That(run.TrySimulateDay(out var ecology), Is.True);
+            Assert.That(ecology.predatedSpecies,
+                Is.EqualTo(ConstructionPreySpecies.Squirrel));
+            Assert.That(ecology.foxHuntRouteTileIds.Count, Is.GreaterThan(1));
+            var root = new GameObject("Construction fox hunt presentation test");
+            var controller = root.AddComponent<ConstructionPrototypeController>();
+            controller.UseRunForTesting(run);
+            controller.UseLanguageForTesting(InterfaceLanguage.English);
+            yield return null;
+            var review = root.transform.Find(
+                "Construction UI/Building choices/Last day review/Day review text")
+                .GetComponent<Text>();
+            Assert.That(review.text, Does.Contain("Fox hunted one squirrel"));
+            if (SystemInfo.graphicsDeviceType !=
+                UnityEngine.Rendering.GraphicsDeviceType.Null)
+            {
+                var fox = root.GetComponentInChildren<
+                    UrbanWildlifeRooms.Animals.FoxDemoVisual>();
+                Assert.That(fox, Is.Not.Null);
+                var start = fox.transform.position;
+                root.GetComponent<ConstructionWorldView>().PlayFoxHunt(
+                    ecology.foxHuntRouteTileIds, run.BuiltTiles);
+                yield return new WaitForSecondsRealtime(0.5f);
+                Assert.That(Vector3.Distance(start, fox.transform.position),
+                    Is.GreaterThan(0.3f));
+            }
+            Object.Destroy(root);
+            yield return null;
+        }
+
+        [UnityTest]
         public IEnumerator StoryTutorialPointsFromOakToMeadowAndBuildConfirmation()
         {
             var root = new GameObject("Construction tutorial focus test");
@@ -194,10 +382,14 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             Assert.That(controller.TrySelect(ConstructionCategory.Street), Is.True);
             var focus = root.GetComponentsInChildren<RectTransform>(true)
                 .Single(rect => rect.name == "Tutorial focus");
-            Assert.That(focus.parent.name, Is.EqualTo("Cell 6,3"),
-                "The street hint should start at the disconnected home.");
+            Assert.That(focus.parent.name, Is.EqualTo("Cell 5,3"),
+                "The street hint should start at a buildable link toward the disconnected home.");
+            Assert.That(focus.parent.Find("Buildable hint").gameObject.activeSelf,
+                Is.True, "Tutorial focus must not ask the player to build on an occupied tile.");
             PlaceAndAdvance(controller, 4, 2, ConstructionCategory.Street);
-            Assert.That(focus.parent.name, Is.EqualTo("Cell 6,3"));
+            Assert.That(focus.parent.name, Does.StartWith("Cell "));
+            Assert.That(focus.parent.Find("Buildable hint").gameObject.activeSelf,
+                Is.True, "Either side of the street link may be built next.");
             PlaceAndAdvance(controller, 5, 2, ConstructionCategory.Street);
             Assert.That(focus.parent.name, Is.EqualTo("Cell 5,2"));
             PlaceAndAdvance(controller, 4, 1, ConstructionCategory.Street);

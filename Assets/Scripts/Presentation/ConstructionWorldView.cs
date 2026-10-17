@@ -18,6 +18,16 @@ namespace UrbanWildlifeRooms.Presentation
         // physical tile dimension is not a Unity scene-space measurement.
         private const float Pitch = WorldScaleStandards.CellSizeMeters;
         private const float PrototypeToLegacyScale = Pitch / 4.3f;
+        private static readonly Vector3[] SquirrelOffsets =
+        {
+            new(0.60f, 0.23f, -0.70f), new(-0.56f, 0.23f, 0.48f),
+            new(0.48f, 0.23f, 0.52f), new(-0.49f, 0.23f, -0.42f)
+        };
+        private static readonly Vector3[] PigeonOffsets =
+        {
+            new(-0.54f, 0.23f, 0.45f), new(0.52f, 0.23f, -0.32f),
+            new(-0.38f, 0.23f, -0.52f), new(0.39f, 0.23f, 0.54f)
+        };
         private readonly Dictionary<string, GameObject> rooms = new();
         private readonly Dictionary<string, OakTreeStageVisual> growthVisuals = new();
         private readonly Dictionary<string, int> growthStages = new();
@@ -30,6 +40,16 @@ namespace UrbanWildlifeRooms.Presentation
         private Vector3 cameraOffset;
         private SquirrelDemoVisual squirrel;
         private PigeonDemoVisual pigeon;
+        private HedgehogDemoVisual hedgehog;
+        private FoxDemoVisual fox;
+        private SquirrelDemoVisual openingSquirrelVisual;
+        private const int MaxVisibleAnimalsPerSpecies = 8;
+        private readonly List<SquirrelDemoVisual> squirrels = new();
+        private readonly List<PigeonDemoVisual> pigeons = new();
+        private readonly Dictionary<Transform, Vector3> animalHomes = new();
+        private Transform travelingSquirrel;
+        private Transform travelingPigeon;
+        private Transform travelingFox;
         private readonly Dictionary<string, CitizenDemoVisual> residents = new();
         private CitizenDemoVisual commutingResident;
         private CitizenDemoVisual arrivingResident;
@@ -38,6 +58,7 @@ namespace UrbanWildlifeRooms.Presentation
         private Coroutine foraging;
         private Coroutine commuting;
         private Coroutine pigeonArrival;
+        private Coroutine foxHunt;
         private Coroutine residentArrival;
         private bool usingOpeningBoard;
         private GameObject caseHardware;
@@ -109,8 +130,13 @@ namespace UrbanWildlifeRooms.Presentation
                 var growth = starter.GetComponentInChildren<OakTreeStageVisual>(true);
                 if (growth != null)
                     growthVisuals[ConstructionBoardModel.StarterOakId] = growth;
-                squirrel = opening.OpeningSquirrel == null ? null :
+                openingSquirrelVisual = opening.OpeningSquirrel == null ? null :
                     opening.OpeningSquirrel.GetComponent<SquirrelDemoVisual>();
+                // The old simulation may have hidden this animal after a
+                // saved death. Construction has its own population model, so
+                // use a fresh visual from the same prefab instead of sharing
+                // the legacy animal's vitality and renderer state.
+                openingSquirrelVisual?.SetVisible(false);
             }
             else
             {
@@ -363,15 +389,30 @@ namespace UrbanWildlifeRooms.Presentation
             // A new construction run keeps this view object alive. Remove the
             // previous run's meshes before Sync creates its starter oak again.
             if (foraging != null) StopCoroutine(foraging);
+            if (foxHunt != null) StopCoroutine(foxHunt);
             if (commuting != null) StopCoroutine(commuting);
             if (pigeonArrival != null) StopCoroutine(pigeonArrival);
             if (residentArrival != null) StopCoroutine(residentArrival);
             foraging = null;
+            foxHunt = null;
+            travelingFox = null;
             commuting = null;
             pigeonArrival = null;
             residentArrival = null;
+            travelingSquirrel = null;
+            travelingPigeon = null;
             commutingResident = null;
             arrivingResident = null;
+            for (var index = 1; index < squirrels.Count; index++)
+                if (squirrels[index] != null)
+                {
+                    squirrels[index].gameObject.SetActive(false);
+                    Destroy(squirrels[index].gameObject);
+                }
+            squirrels.Clear();
+            if (squirrel != null)
+                squirrels.Add(squirrel);
+            animalHomes.Clear();
             foreach (var entry in rooms)
             {
                 if (usingOpeningBoard && entry.Key == ConstructionBoardModel.StarterOakId)
@@ -396,11 +437,25 @@ namespace UrbanWildlifeRooms.Presentation
                         growthVisuals[ConstructionBoardModel.StarterOakId] = growth;
                 }
             }
-            if (pigeon != null)
+            foreach (var bird in pigeons)
             {
-                pigeon.gameObject.SetActive(false);
-                Destroy(pigeon.gameObject);
-                pigeon = null;
+                if (bird == null) continue;
+                bird.gameObject.SetActive(false);
+                Destroy(bird.gameObject);
+            }
+            pigeons.Clear();
+            pigeon = null;
+            if (hedgehog != null)
+            {
+                hedgehog.gameObject.SetActive(false);
+                Destroy(hedgehog.gameObject);
+                hedgehog = null;
+            }
+            if (fox != null)
+            {
+                fox.gameObject.SetActive(false);
+                Destroy(fox.gameObject);
+                fox = null;
             }
             foreach (var resident in residents.Values)
             {
@@ -410,7 +465,11 @@ namespace UrbanWildlifeRooms.Presentation
             }
             residents.Clear();
             if (squirrel != null)
-                squirrel.transform.localPosition = new Vector3(0.6f, 0.23f, -0.7f);
+            {
+                squirrel.transform.position = Cell(3, 3) +
+                    new Vector3(0.6f, 0.23f, -0.7f);
+                animalHomes[squirrel.transform] = squirrel.transform.position;
+            }
         }
 
         public void PlayForaging(IReadOnlyList<ConstructionTileData> squirrelRoute,
@@ -418,6 +477,12 @@ namespace UrbanWildlifeRooms.Presentation
         {
             if (!IsReady) return;
             if (foraging != null) StopCoroutine(foraging);
+            if (foxHunt != null) StopCoroutine(foxHunt);
+            foxHunt = null;
+            travelingFox = null;
+            travelingSquirrel = null;
+            travelingPigeon = null;
+            RestoreAnimalHomes();
             foraging = StartCoroutine(Foraging(squirrelRoute, pigeonRoute));
         }
 
@@ -426,6 +491,38 @@ namespace UrbanWildlifeRooms.Presentation
             if (!IsReady || pigeon == null || !pigeon.gameObject.activeSelf) return;
             if (pigeonArrival != null) StopCoroutine(pigeonArrival);
             pigeonArrival = StartCoroutine(AnimatePigeonArrival(pigeon.transform));
+        }
+
+        public void PlayFoxHunt(IReadOnlyList<string> routeTileIds,
+            IReadOnlyList<ConstructionTileData> builtTiles)
+        {
+            if (!IsReady || fox == null || !fox.gameObject.activeInHierarchy ||
+                routeTileIds == null || routeTileIds.Count < 2) return;
+            var byId = new Dictionary<string, ConstructionTileData>();
+            foreach (var tile in builtTiles) byId[tile.id] = tile;
+            var route = new List<ConstructionTileData>();
+            foreach (var id in routeTileIds)
+                if (byId.TryGetValue(id, out var tile)) route.Add(tile);
+            if (route.Count < 2) return;
+            if (foxHunt != null) StopCoroutine(foxHunt);
+            foxHunt = StartCoroutine(AnimateFoxHunt(route));
+        }
+
+        private IEnumerator AnimateFoxHunt(IReadOnlyList<ConstructionTileData> route)
+        {
+            travelingFox = fox.transform;
+            var home = animalHomes[travelingFox];
+            for (var index = 1; index < route.Count; index++)
+                yield return MoveBetween(travelingFox, travelingFox.position,
+                    Cell(route[index].column, route[index].row) +
+                    new Vector3(0.25f, 0.23f, -0.18f), 0.32f);
+            for (var index = route.Count - 2; index >= 0; index--)
+                yield return MoveBetween(travelingFox, travelingFox.position,
+                    index == 0 ? home : Cell(route[index].column,
+                        route[index].row) + new Vector3(0.25f, 0.23f, -0.18f),
+                    0.32f);
+            travelingFox = null;
+            foxHunt = null;
         }
 
         private IEnumerator AnimatePigeonArrival(Transform actor)
@@ -628,19 +725,109 @@ namespace UrbanWildlifeRooms.Presentation
                 squirrel.Initialize(surface, HideFlags.None);
                 SetLayer(actor, 29);
             }
-            squirrel.gameObject.SetActive(run.SquirrelPopulation > 0);
+            if (squirrels.Count == 0) squirrels.Add(squirrel);
+            var squirrelCount = Mathf.Min(run.SquirrelPopulation,
+                MaxVisibleAnimalsPerSpecies);
+            while (squirrels.Count < squirrelCount)
+            {
+                var actor = NewActor($"Squirrel {squirrels.Count + 1}", world,
+                    Vector3.zero);
+                var visual = actor.AddComponent<SquirrelDemoVisual>();
+                visual.Initialize(surface, HideFlags.None);
+                SetLayer(actor, 29);
+                squirrels.Add(visual);
+            }
+            var oakTiles = System.Linq.Enumerable.ToArray(
+                System.Linq.Enumerable.OrderBy(
+                    System.Linq.Enumerable.Where(run.BuiltTiles, tile =>
+                        tile.category == ConstructionCategory.Green &&
+                        tile.planting == GreenPlanting.Oak),
+                    tile => tile.id == ConstructionBoardModel.StarterOakId ? 0 : 1));
+            if (oakTiles.Length == 0) return;
+            for (var index = 0; index < squirrels.Count; index++)
+            {
+                var visual = squirrels[index];
+                if (visual == null) continue;
+                var active = index < squirrelCount;
+                visual.gameObject.SetActive(active);
+                if (!active) continue;
+                visual.SetVisible(true);
+                var tile = oakTiles[index % oakTiles.Length];
+                var home = Cell(tile.column, tile.row) +
+                    AnimalOffset(index, false);
+                animalHomes[visual.transform] = home;
+                if (visual.transform != travelingSquirrel)
+                    visual.transform.position = home;
+            }
             var pigeonTile = run.BuiltTiles == null ? null :
                 System.Linq.Enumerable.FirstOrDefault(run.BuiltTiles,
                     tile => tile.id == run.PigeonTileId);
-            if (pigeonTile != null && pigeon == null)
+            var pigeonCount = pigeonTile == null ? 0 : Mathf.Min(
+                run.PigeonPopulation, MaxVisibleAnimalsPerSpecies);
+            while (pigeons.Count < pigeonCount)
             {
-                var actor = NewActor("Pigeon flock", world,
-                    Cell(pigeonTile.column, pigeonTile.row) + new Vector3(-0.5f, 0.23f, 0.5f));
-                pigeon = actor.AddComponent<PigeonDemoVisual>();
-                pigeon.Initialize(surface, HideFlags.None);
+                var actor = NewActor(pigeons.Count == 0 ? "Pigeon flock" :
+                    $"Pigeon {pigeons.Count + 1}", world, Vector3.zero);
+                var visual = actor.AddComponent<PigeonDemoVisual>();
+                visual.Initialize(surface, HideFlags.None);
+                SetLayer(actor, 29);
+                pigeons.Add(visual);
+                if (pigeon == null) pigeon = visual;
+            }
+            for (var index = 0; index < pigeons.Count; index++)
+            {
+                var visual = pigeons[index];
+                if (visual == null) continue;
+                var active = index < pigeonCount;
+                visual.gameObject.SetActive(active);
+                if (!active) continue;
+                visual.SetVisible(true);
+                var home = Cell(pigeonTile.column, pigeonTile.row) +
+                    AnimalOffset(index, true);
+                animalHomes[visual.transform] = home;
+                if (visual.transform != travelingPigeon &&
+                    (visual != pigeon || pigeonArrival == null))
+                    visual.transform.position = home;
+            }
+            var hedgehogTile = run.HedgehogHabitat;
+            if (hedgehogTile != null && hedgehog == null)
+            {
+                var actor = NewActor("Hedgehog visitor", world, Vector3.zero);
+                hedgehog = actor.AddComponent<HedgehogDemoVisual>();
+                hedgehog.Initialize(surface, HideFlags.None);
                 SetLayer(actor, 29);
             }
-            if (pigeon != null) pigeon.gameObject.SetActive(run.PigeonPopulation > 0);
+            if (hedgehog != null)
+            {
+                hedgehog.gameObject.SetActive(hedgehogTile != null);
+                if (hedgehogTile != null)
+                {
+                    var home = Cell(hedgehogTile.column, hedgehogTile.row) +
+                        new Vector3(-0.48f, 0.23f, 0.42f);
+                    animalHomes[hedgehog.transform] = home;
+                    hedgehog.transform.position = home;
+                }
+            }
+            var foxTile = run.FoxHabitat;
+            if (foxTile != null && fox == null)
+            {
+                var actor = NewActor("Fox visitor", world, Vector3.zero);
+                fox = actor.AddComponent<FoxDemoVisual>();
+                fox.Initialize(surface, HideFlags.None);
+                SetLayer(actor, 29);
+            }
+            if (fox != null)
+            {
+                fox.gameObject.SetActive(foxTile != null);
+                if (foxTile != null)
+                {
+                    var home = Cell(foxTile.column, foxTile.row) +
+                        new Vector3(0.46f, 0.23f, -0.36f);
+                    animalHomes[fox.transform] = home;
+                    if (fox.transform != travelingFox)
+                        fox.transform.position = home;
+                }
+            }
             foreach (var home in run.BuiltTiles)
             {
                 if (home.category != ConstructionCategory.Residence) continue;
@@ -663,11 +850,73 @@ namespace UrbanWildlifeRooms.Presentation
         {
             // Route animation is illustrative; meal outcomes come exclusively
             // from the model and are never inferred from visual position.
-            if (squirrelRoute?.Count > 1 && squirrel != null)
-                yield return Travel(squirrel.transform, squirrelRoute, 0.65f);
-            if (pigeonRoute?.Count > 1 && pigeon != null)
-                yield return Travel(pigeon.transform, pigeonRoute, 0.85f);
+            if (squirrelRoute?.Count > 0 && squirrel != null &&
+                squirrel.gameObject.activeInHierarchy)
+            {
+                travelingSquirrel = squirrel.transform;
+                yield return TravelAnimal(squirrel.transform, squirrelRoute, 0.65f);
+                travelingSquirrel = null;
+            }
+            if (pigeonRoute?.Count > 0 && pigeon != null &&
+                pigeon.gameObject.activeInHierarchy)
+            {
+                travelingPigeon = pigeon.transform;
+                yield return TravelAnimal(pigeon.transform, pigeonRoute, 0.85f);
+                travelingPigeon = null;
+            }
             foraging = null;
+        }
+
+        private IEnumerator TravelAnimal(Transform actor,
+            IReadOnlyList<ConstructionTileData> route, float pace)
+        {
+            if (!animalHomes.TryGetValue(actor, out var home)) yield break;
+            // A food source in the home tile is still a visible short forage,
+            // rather than an invisible one-node route.
+            if (route.Count == 1)
+            {
+                yield return MoveBetween(actor, actor.position,
+                    home + new Vector3(-0.52f, 0f, 0.43f), pace);
+                yield return MoveBetween(actor, actor.position, home, pace);
+                yield break;
+            }
+            for (var index = 1; index < route.Count; index++)
+            {
+                var target = Cell(route[index].column, route[index].row) +
+                    AnimalOffset(0, actor == travelingPigeon);
+                yield return MoveBetween(actor, actor.position, target, pace);
+            }
+            yield return MoveBetween(actor, actor.position, home, pace);
+        }
+
+        private static IEnumerator MoveBetween(Transform actor, Vector3 from,
+            Vector3 to, float duration)
+        {
+            var elapsed = 0f;
+            while (elapsed < duration && actor != null && actor.gameObject.activeInHierarchy)
+            {
+                elapsed += Mathf.Min(Time.unscaledDeltaTime, 0.05f);
+                actor.position = Vector3.Lerp(from, to,
+                    Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration)));
+                yield return null;
+            }
+            if (actor != null && actor.gameObject.activeInHierarchy)
+                actor.position = to;
+        }
+
+        private void RestoreAnimalHomes()
+        {
+            foreach (var entry in animalHomes)
+                if (entry.Key != null && entry.Key.gameObject.activeInHierarchy &&
+                    (pigeonArrival == null || pigeon == null ||
+                     entry.Key != pigeon.transform))
+                    entry.Key.position = entry.Value;
+        }
+
+        private static Vector3 AnimalOffset(int index, bool bird)
+        {
+            var positions = bird ? PigeonOffsets : SquirrelOffsets;
+            return positions[index % positions.Length];
         }
 
         private IEnumerator Commute(CitizenDemoVisual resident,
@@ -702,19 +951,53 @@ namespace UrbanWildlifeRooms.Presentation
         private void Update()
         {
             var time = Time.unscaledTime;
-            squirrel?.ApplyPose(foraging != null ? SquirrelDemoState.Hop :
-                SquirrelDemoState.Idle, time);
-            pigeon?.ApplyPose(pigeonArrival != null ? PigeonDemoState.Flutter :
-                foraging != null ? PigeonDemoState.Walk :
-                    PigeonDemoState.Idle, time);
+            for (var index = 0; index < squirrels.Count; index++)
+            {
+                var visual = squirrels[index];
+                if (visual == null || !visual.gameObject.activeInHierarchy) continue;
+                Wander(visual.transform, index, time,
+                    visual.transform == travelingSquirrel);
+                visual.ApplyPose(SquirrelDemoState.Hop, time + index * 0.23f);
+            }
+            for (var index = 0; index < pigeons.Count; index++)
+            {
+                var visual = pigeons[index];
+                if (visual == null || !visual.gameObject.activeInHierarchy) continue;
+                var arriving = visual == pigeon && pigeonArrival != null;
+                Wander(visual.transform, index + 5, time,
+                    arriving || visual.transform == travelingPigeon);
+                visual.ApplyPose(arriving ? PigeonDemoState.Flutter :
+                    PigeonDemoState.Walk, time + index * 0.19f);
+            }
+            if (hedgehog != null && hedgehog.gameObject.activeInHierarchy)
+            {
+                Wander(hedgehog.transform, 11, time, false);
+                hedgehog.ApplyPose(HedgehogDemoState.Waddle, time);
+            }
+            if (fox != null && fox.gameObject.activeInHierarchy)
+            {
+                Wander(fox.transform, 13, time, fox.transform == travelingFox);
+                fox.ApplyPose(FoxDemoState.Trot, time);
+            }
             foreach (var resident in residents.Values)
                 resident?.ApplyPose(resident == commutingResident ||
                     resident == arrivingResident ? CitizenDemoState.Walk :
                     CitizenDemoState.Idle, time);
         }
 
+        private void Wander(Transform actor, int index, float time, bool busy)
+        {
+            if (busy || !animalHomes.TryGetValue(actor, out var home)) return;
+            var phase = time * (index < 5 ? 1.35f : 0.92f) + index * 1.7f;
+            actor.position = home + new Vector3(
+                Mathf.Sin(phase) * 0.38f, 0f,
+                Mathf.Sin(phase * 0.63f + index) * 0.29f);
+        }
+
         private void OnDestroy()
         {
+            if (openingSquirrelVisual != null)
+                openingSquirrelVisual.SetVisible(true);
             if (caseHardware != null) Destroy(caseHardware);
             if (surface != null) Destroy(surface);
             if (tabletopMaterial != null) Destroy(tabletopMaterial);
