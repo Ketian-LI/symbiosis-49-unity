@@ -586,7 +586,8 @@ namespace UrbanWildlifeRooms.Presentation
                     run.GreenFoodRouteTo(ConstructionBoardModel.StarterOakId,
                         target)).ToArray(),
                 ecology.pigeonMealTileIds.Select(target =>
-                    run.GreenFoodRouteTo(run.PigeonTileId, target)).ToArray());
+                    run.GreenFoodRouteTo(run.PigeonTileId, target)).ToArray(),
+                run);
             if (ecology.predatedSpecies != ConstructionPreySpecies.None)
                 worldView?.PlayFoxHunt(ecology.foxHuntRouteTileIds, run.BuiltTiles,
                     ecology.predatedSpecies);

@@ -126,18 +126,16 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 .GetComponentsInChildren<UrbanWildlifeRooms.Animals.SquirrelDemoVisual>();
             Assert.That(squirrels.Length, Is.EqualTo(2));
             var view = root.GetComponent<ConstructionWorldView>();
-            var firstStart = squirrels[0].transform.position;
-            var secondStart = squirrels[1].transform.position;
-            view.PlayForaging(routes, null);
+            view.PlayForaging(routes, null, run);
             var firstImmediate = squirrels[0].transform.position;
             var secondImmediate = squirrels[1].transform.position;
             yield return new WaitForSecondsRealtime(0.35f);
-            Assert.That(Mathf.Max(Vector3.Distance(firstStart, firstImmediate),
-                Vector3.Distance(firstStart, squirrels[0].transform.position)),
+            Assert.That(Vector3.Distance(firstImmediate,
+                squirrels[0].transform.position),
                 Is.GreaterThan(0.08f));
-            Assert.That(Mathf.Max(Vector3.Distance(secondStart, secondImmediate),
-                Vector3.Distance(secondStart, squirrels[1].transform.position)),
-                Is.GreaterThan(0.08f));
+            Assert.That(Vector3.Distance(secondImmediate,
+                squirrels[1].transform.position), Is.GreaterThan(0.08f),
+                "A squirrel eating in its own oak must visibly forage in-room.");
             Object.Destroy(root);
             yield return null;
         }

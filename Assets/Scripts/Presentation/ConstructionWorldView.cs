@@ -47,6 +47,7 @@ namespace UrbanWildlifeRooms.Presentation
         private readonly List<SquirrelDemoVisual> squirrels = new();
         private readonly List<PigeonDemoVisual> pigeons = new();
         private readonly Dictionary<Transform, Vector3> animalHomes = new();
+        private readonly Dictionary<Transform, string> animalHomeTiles = new();
         private readonly HashSet<Transform> travelingAnimals = new();
         private readonly List<Coroutine> foragingTrips = new();
         private Transform travelingFox;
@@ -411,6 +412,7 @@ namespace UrbanWildlifeRooms.Presentation
             if (squirrel != null)
                 squirrels.Add(squirrel);
             animalHomes.Clear();
+            animalHomeTiles.Clear();
             foreach (var entry in rooms)
             {
                 if (usingOpeningBoard && entry.Key == ConstructionBoardModel.StarterOakId)
@@ -480,7 +482,8 @@ namespace UrbanWildlifeRooms.Presentation
 
         public void PlayForaging(
             IReadOnlyList<IReadOnlyList<ConstructionTileData>> squirrelRoutes,
-            IReadOnlyList<IReadOnlyList<ConstructionTileData>> pigeonRoutes)
+            IReadOnlyList<IReadOnlyList<ConstructionTileData>> pigeonRoutes,
+            ConstructionRunModel run = null)
         {
             if (!IsReady) return;
             StopForaging();
@@ -489,8 +492,8 @@ namespace UrbanWildlifeRooms.Presentation
             foxHunt = null;
             travelingFox = null;
             foxContactUntil = 0f;
-            StartForagingTrips(squirrels, squirrelRoutes, false);
-            StartForagingTrips(pigeons, pigeonRoutes, true);
+            StartForagingTrips(squirrels, squirrelRoutes, false, run);
+            StartForagingTrips(pigeons, pigeonRoutes, true, run);
         }
 
         public void PlayPigeonArrival()
@@ -850,7 +853,11 @@ namespace UrbanWildlifeRooms.Presentation
                 System.Linq.Enumerable.OrderBy(
                     System.Linq.Enumerable.Where(run.BuiltTiles, tile =>
                         tile.category == ConstructionCategory.Green &&
-                        tile.planting == GreenPlanting.Oak),
+                        tile.planting == GreenPlanting.Oak &&
+                        Mathf.Abs(tile.column - ConstructionBoardModel.StarterColumn) +
+                        Mathf.Abs(tile.row - ConstructionBoardModel.StarterRow) <= 1 &&
+                        run.GreenFoodRouteTo(ConstructionBoardModel.StarterOakId,
+                            tile.id).Count > 0),
                     tile => tile.id == ConstructionBoardModel.StarterOakId ? 0 : 1));
             if (oakTiles.Length == 0) return;
             for (var index = 0; index < squirrels.Count; index++)
@@ -867,6 +874,7 @@ namespace UrbanWildlifeRooms.Presentation
                 var home = Cell(tile.column, tile.row) +
                     AnimalOffset(index, false);
                 animalHomes[visual.transform] = home;
+                animalHomeTiles[visual.transform] = tile.id;
                 if (!travelingAnimals.Contains(visual.transform))
                     visual.transform.position = home;
             }
@@ -898,6 +906,7 @@ namespace UrbanWildlifeRooms.Presentation
                 var home = Cell(pigeonTile.column, pigeonTile.row) +
                     AnimalOffset(index, true);
                 animalHomes[visual.transform] = home;
+                animalHomeTiles[visual.transform] = pigeonTile.id;
                 if (!travelingAnimals.Contains(visual.transform) &&
                     (visual != pigeon || pigeonArrival == null))
                     visual.transform.position = home;
@@ -960,7 +969,8 @@ namespace UrbanWildlifeRooms.Presentation
         }
 
         private void StartForagingTrips<T>(IReadOnlyList<T> actors,
-            IReadOnlyList<IReadOnlyList<ConstructionTileData>> routes, bool bird)
+            IReadOnlyList<IReadOnlyList<ConstructionTileData>> routes, bool bird,
+            ConstructionRunModel run)
             where T : MonoBehaviour
         {
             if (routes == null) return;
@@ -970,6 +980,11 @@ namespace UrbanWildlifeRooms.Presentation
                 var route = routes[index];
                 if (actor == null || !actor.gameObject.activeInHierarchy ||
                     route == null || route.Count == 0) continue;
+                if (run != null && animalHomeTiles.TryGetValue(actor.transform,
+                        out var homeTileId))
+                    route = run.GreenFoodRouteTo(homeTileId,
+                        route[route.Count - 1].id);
+                if (route.Count == 0) continue;
                 travelingAnimals.Add(actor.transform);
                 foragingTrips.Add(StartCoroutine(ForagingTrip(actor.transform,
                     route, index, bird)));
