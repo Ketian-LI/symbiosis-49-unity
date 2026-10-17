@@ -116,6 +116,11 @@ namespace UrbanWildlifeRooms.Tests.Editor
             Assert.That(categories.Sum(run.CategoryLimit),
                 Is.GreaterThan(ConstructionBoardModel.Capacity),
                 "Caps must leave room to choose a composition, not prescribe one.");
+            Assert.That(run.CategoryLimit(ConstructionCategory.Green) +
+                run.CategoryLimit(ConstructionCategory.Residence) +
+                run.CategoryLimit(ConstructionCategory.Square),
+                Is.GreaterThan(ConstructionBoardModel.Capacity),
+                "The three adjacency-only types must not exhaust before the board is full.");
             Assert.That(run.CategoryBuiltCount(ConstructionCategory.Green), Is.EqualTo(1),
                 "The starting oak counts as a green room.");
             Assert.That(run.TrySimulateDay(out _), Is.True);

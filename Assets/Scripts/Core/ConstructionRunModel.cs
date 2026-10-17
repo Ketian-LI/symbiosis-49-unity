@@ -131,8 +131,9 @@ namespace UrbanWildlifeRooms.Core
             (CurrentDay == 1 || BuiltToday);
         public bool IsFull => board.IsFull;
         public IReadOnlyList<ConstructionTileData> BuiltTiles => board.BuiltTiles;
-        // Fill-mode limits are deliberately not a fixed recipe: their total
-        // exceeds 49, so players still decide which neighbourhood to build.
+        // Fill-mode limits are deliberately not a fixed recipe. Green, Home
+        // and Square alone total 50: after day one's oak lesson, at least one
+        // adjacency-only type stays available until the 49th cell is built.
         // The starter oak counts toward the Green limit.
         public int CategoryLimit(ConstructionCategory category) =>
             Mode == ConstructionGameMode.Endless ? int.MaxValue : category switch
