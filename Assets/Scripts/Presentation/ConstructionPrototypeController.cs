@@ -52,6 +52,7 @@ namespace UrbanWildlifeRooms.Presentation
         private readonly GameObject[,] residentMarkers = new GameObject[7, 7];
         private readonly GameObject[,] foodNeedMarkers = new GameObject[7, 7];
         private readonly GameObject[,] workNeedMarkers = new GameObject[7, 7];
+        private readonly GameObject[,] foxRiskMarkers = new GameObject[7, 7];
 
         private ConstructionRunModel run;
         private ConstructionRunStore store;
@@ -79,6 +80,8 @@ namespace UrbanWildlifeRooms.Presentation
         private Text dayText;
         private Text scoreText;
         private string predationRiskText;
+        private string predationRiskTileId;
+        private string focusedPredationTileId;
         private Text dayReviewText;
         private Image dayReviewPanel;
         private Text storyText;
@@ -915,6 +918,7 @@ namespace UrbanWildlifeRooms.Presentation
             feedbackText = TextAt("Feedback", feedbackPanel.transform,
                 new Vector2(0, -6), new Vector2(250, 94), "", 17, false,
                 Ink, TextAnchor.MiddleLeft);
+            feedbackText.raycastTarget = false;
             feedbackText.gameObject.AddComponent<CanvasGroup>().alpha = 0f;
             var feedbackIcon = Panel("Feedback icon", feedbackPanel.transform,
                 new Vector2(-107, -8), new Vector2(35, 35), Color.white);
@@ -929,8 +933,14 @@ namespace UrbanWildlifeRooms.Presentation
             AttachHover(feedbackPanel.gameObject,
                 () => feedbackIcon.sprite, () => L("Status", "当前提示"),
                 () => string.IsNullOrEmpty(predationRiskText)
-                    ? feedbackText.text : predationRiskText + "\n" + feedbackText.text,
+                    ? feedbackText.text : predationRiskText + "\n" +
+                        L("Click to locate this room.", "点击定位该房间。") +
+                        "\n" + feedbackText.text,
                 TooltipLocation.BoardInfo);
+            var feedbackClick = new EventTrigger.Entry
+                { eventID = EventTriggerType.PointerClick };
+            feedbackClick.callback.AddListener(_ => FocusPredationRisk());
+            feedbackPanel.GetComponent<EventTrigger>().triggers.Add(feedbackClick);
             progressPanel = Panel("Board progress backing", side.transform,
                 new Vector2(568, 204), new Vector2(342, 132), Color.clear);
             progressPanel.raycastTarget = false;
@@ -1244,6 +1254,17 @@ namespace UrbanWildlifeRooms.Presentation
                     new Vector2(20, 20), "W", 13, true, Color.white,
                     TextAnchor.MiddleCenter).raycastTarget = false;
                 workNeedMarkers[column, row] = workNeed.gameObject;
+                var foxRisk = Panel("Fox risk", button.transform,
+                    new Vector2(-30, 29), new Vector2(24, 24),
+                    new Color(0.67f, 0.30f, 0.23f));
+                foxRisk.raycastTarget = false;
+                var foxRiskIcon = Panel("Fox risk icon", foxRisk.transform,
+                    Vector2.zero, new Vector2(19, 19), Color.white);
+                foxRiskIcon.sprite = LoadSprite("UI/GameplayHud/population-fox-v02");
+                foxRiskIcon.preserveAspect = true;
+                foxRiskIcon.raycastTarget = false;
+                foxRiskMarkers[column, row] = foxRisk.gameObject;
+                foxRisk.gameObject.SetActive(false);
             }
         }
 
@@ -1776,7 +1797,8 @@ namespace UrbanWildlifeRooms.Presentation
                     : PlacementMessage(failure));
             }
             if (tile.category == ConstructionCategory.Green)
-                return L($"{location}\nGrowth {run.GreenGrowthStage(tile.id)}/2" +
+                return (tile.id == predationRiskTileId ? predationRiskText + "\n" : "") +
+                    L($"{location}\nGrowth {run.GreenGrowthStage(tile.id)}/2" +
                     $" · food {run.FoodStock(tile.id)}/{run.FoodCapacity(tile.planting)}",
                     $"{location}\n生长 {run.GreenGrowthStage(tile.id)}/2" +
                     $" · 食物 {run.FoodStock(tile.id)}/{run.FoodCapacity(tile.planting)}");
@@ -1955,6 +1977,18 @@ namespace UrbanWildlifeRooms.Presentation
             if (run == null || dayText == null) return;
             RefreshStaticLabels();
             var humanPreview = run.PreviewHumanDay();
+            var foxForecast = run.IsFinished ? null : run.PreviewEcologyDay();
+            predationRiskTileId = foxForecast?.predatedSpecies ==
+                ConstructionPreySpecies.None ? null : foxForecast?.predationTileId;
+            predationRiskText = string.IsNullOrEmpty(predationRiskTileId)
+                ? null : L($"Tomorrow: fox may hunt one " +
+                    $"{PreyName(foxForecast.predatedSpecies, false)} at " +
+                    $"{TileCoordinate(run.BuiltTiles.ToDictionary(tile => tile.id), predationRiskTileId)}.",
+                    $"明日风险：狐狸可能在" +
+                    $"{TileCoordinate(run.BuiltTiles.ToDictionary(tile => tile.id), predationRiskTileId)}" +
+                    $"捕食 1 只{PreyName(foxForecast.predatedSpecies, true)}。");
+            if (focusedPredationTileId != predationRiskTileId)
+                focusedPredationTileId = null;
             dayText.text = run.CurrentDay.ToString();
             if (run.IsFinished)
                 scoreText.text = L(
@@ -1964,7 +1998,7 @@ namespace UrbanWildlifeRooms.Presentation
                     "本局已结束 · 请查看最终得分");
             else
             {
-                var ecologyPreview = run.PreviewEcologyDay();
+                var ecologyPreview = foxForecast;
                 var pigeonForecast = ecologyPreview.pigeonsPresent == 0
                     ? string.Empty
                     : L($"\nPigeons {ecologyPreview.pigeonsFed}/" +
@@ -2071,6 +2105,11 @@ namespace UrbanWildlifeRooms.Presentation
                 var worldColumn = viewMinColumn + column;
                 var worldRow = viewMinRow + row;
                 var tile = run.At(worldColumn, worldRow);
+                foxRiskMarkers[column, row].SetActive(tile != null &&
+                    tile.id == predationRiskTileId);
+                foxRiskMarkers[column, row].transform.localScale =
+                    tile != null && tile.id == focusedPredationTileId
+                        ? Vector3.one * 1.28f : Vector3.one;
                 var canPlaceHere = tile == null && mayBuild &&
                     run.CheckPlacement(worldColumn, worldRow, selectedCategory,
                         plantingToPlace) == ConstructionPlacementFailure.None;
@@ -2157,22 +2196,16 @@ namespace UrbanWildlifeRooms.Presentation
             worldView?.SetViewport(viewMinColumn, viewMinRow);
             worldView?.Sync(run, false);
             RefreshRouteInspection(humanPreview);
-            var foxForecast = run.IsFinished ? null : run.PreviewEcologyDay();
-            predationRiskText = foxForecast == null ||
-                foxForecast.predatedSpecies == ConstructionPreySpecies.None
-                ? null : L($"Tomorrow: fox may hunt one " +
-                    $"{PreyName(foxForecast.predatedSpecies, false)} at " +
-                    $"{TileCoordinate(run.BuiltTiles.ToDictionary(tile => tile.id), foxForecast.predationTileId)}.",
-                    $"明日风险：狐狸可能在" +
-                    $"{TileCoordinate(run.BuiltTiles.ToDictionary(tile => tile.id), foxForecast.predationTileId)}" +
-                    $"捕食 1 只{PreyName(foxForecast.predatedSpecies, true)}。");
             feedbackPanel.gameObject.SetActive(!hasPendingPlacement &&
                 (!string.IsNullOrWhiteSpace(feedbackText.text) ||
                  !string.IsNullOrEmpty(predationRiskText)));
             feedbackPreviewText.text = string.IsNullOrEmpty(predationRiskText)
                 ? ShortPreview(feedbackText.text, 43)
-                : L($"Fox risk · 1 {PreyName(foxForecast.predatedSpecies, false)}",
-                    $"狐狸捕食风险 · 1 只{PreyName(foxForecast.predatedSpecies, true)}");
+                : focusedPredationTileId == predationRiskTileId
+                    ? L($"At {TileCoordinate(run.BuiltTiles.ToDictionary(tile => tile.id), predationRiskTileId)} · fox risk",
+                        $"第 {TileCoordinate(run.BuiltTiles.ToDictionary(tile => tile.id), predationRiskTileId)} 格 · 狐狸风险")
+                    : L($"Fox risk · 1 {PreyName(foxForecast.predatedSpecies, false)}",
+                        $"狐狸捕食风险 · 1 只{PreyName(foxForecast.predatedSpecies, true)}");
             HideTooltip();
             RefreshPendingPlacement();
             var result = run.FinalResult;
@@ -2481,6 +2514,25 @@ namespace UrbanWildlifeRooms.Presentation
         private Vector2 BoardPoint(ConstructionTileData tile) =>
             new((tile.column - viewMinColumn - 3) * BoardCellSpacing,
                 (3 - tile.row + viewMinRow) * BoardCellSpacing);
+
+        public bool FocusPredationRisk()
+        {
+            if (run == null || hasPendingPlacement ||
+                string.IsNullOrEmpty(predationRiskTileId)) return false;
+            var tile = run.BuiltTiles.FirstOrDefault(item =>
+                item.id == predationRiskTileId);
+            if (tile == null) return false;
+            focusedPredationTileId = predationRiskTileId;
+            if (run.Mode == ConstructionGameMode.Endless)
+            {
+                viewMinColumn = Mathf.Clamp(tile.column - 3,
+                    run.MinCoordinate, run.MaxCoordinate - 6);
+                viewMinRow = Mathf.Clamp(tile.row - 3,
+                    run.MinCoordinate, run.MaxCoordinate - 6);
+            }
+            Refresh();
+            return true;
+        }
 
         public bool Pan(int columns, int rows)
         {

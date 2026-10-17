@@ -172,6 +172,30 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 "Construction UI/Building choices/Feedback backing/Feedback preview")
                 .GetComponent<Text>();
             Assert.That(riskPreview.text, Does.Contain("Fox risk"));
+            var forecast = run.PreviewEcologyDay();
+            var riskTile = run.BuiltTiles.First(tile =>
+                tile.id == forecast.predationTileId);
+            var riskCell = riskRoot.GetComponentsInChildren<Transform>(true)
+                .First(item => item.name ==
+                    $"Cell {riskTile.column + 1},{riskTile.row + 1}");
+            Assert.That(riskCell.Find("Fox risk").gameObject.activeSelf, Is.True,
+                "The fox warning must identify the actual threatened room.");
+            Assert.That(riskRoot.GetComponentsInChildren<Transform>(true)
+                .Count(item => item.name == "Fox risk" && item.gameObject.activeSelf),
+                Is.EqualTo(1));
+            var feedbackPanel = riskRoot.transform.Find(
+                "Construction UI/Building choices/Feedback backing");
+            feedbackPanel.GetComponent<EventTrigger>().OnPointerClick(
+                new PointerEventData(EventSystem.current));
+            var focusedText = riskRoot.transform.Find(
+                "Construction UI/Building choices/Feedback backing/Feedback")
+                .GetComponent<Text>();
+            Assert.That(riskCell.Find("Fox risk").localScale.x,
+                Is.GreaterThan(1f));
+            Assert.That(riskPreview.text, Does.Contain(
+                $"{riskTile.column + 1},{riskTile.row + 1}"));
+            Assert.That(focusedText.raycastTarget, Is.False,
+                "The feedback label must not block clicks on its backing.");
             var riskView = riskRoot.GetComponent<ConstructionWorldView>();
             var liveSquirrel = SystemInfo.graphicsDeviceType ==
                 UnityEngine.Rendering.GraphicsDeviceType.Null ? null :
@@ -209,6 +233,12 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 "Construction UI/Building choices/Last day review/Day review text")
                 .GetComponent<Text>();
             Assert.That(review.text, Does.Contain("Fox hunted one squirrel"));
+            var nextForecast = run.PreviewEcologyDay();
+            var activeWarnings = root.GetComponentsInChildren<Transform>(true)
+                .Count(item => item.name == "Fox risk" && item.gameObject.activeSelf);
+            Assert.That(activeWarnings, Is.EqualTo(
+                nextForecast.predatedSpecies == ConstructionPreySpecies.None ? 0 : 1),
+                "An obsolete fox warning must clear after the next day settles.");
             if (SystemInfo.graphicsDeviceType !=
                 UnityEngine.Rendering.GraphicsDeviceType.Null)
             {
