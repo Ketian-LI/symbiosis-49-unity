@@ -1137,10 +1137,17 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 "Building choices/Build Green/Build limit badge/Built and limit")
                 .GetComponent<Text>();
             Assert.That(badge.text, Is.EqualTo("24/24"));
+            var guide = canvas.Find("Building choices/Next step backing/Placement guide")
+                .GetComponent<Text>();
+            Assert.That(guide.text, Does.Contain("limit 24/24"));
             Assert.That(controller.TrySelect(ConstructionCategory.Green), Is.False);
             var feedback = canvas.Find("Building choices/Feedback backing/Feedback")
                 .GetComponent<Text>();
             Assert.That(feedback.text, Does.Contain("limit reached"));
+            var visiblePreview = canvas.Find(
+                "Building choices/Feedback backing/Feedback preview")
+                .GetComponent<Text>();
+            Assert.That(visiblePreview.text, Does.Contain("limit reached"));
             Assert.That(controller.TrySelect(ConstructionCategory.Residence), Is.True);
             var next = positions[run.CategoryLimit(ConstructionCategory.Green) - 1];
             Assert.That(controller.TryPlace(next.column, next.row), Is.True);

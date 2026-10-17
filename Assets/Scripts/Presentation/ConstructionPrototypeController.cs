@@ -262,6 +262,7 @@ namespace UrbanWildlifeRooms.Presentation
                         $"({run.CategoryBuiltCount(category)}/{run.CategoryLimit(category)}). Choose another type.",
                         $"{CategoryLabel(category)}已达上限" +
                         $"（{run.CategoryBuiltCount(category)}/{run.CategoryLimit(category)}），请选择其他建筑。");
+                Refresh();
                 return false;
             }
             if (!CanSelectCategory(category))
@@ -2073,6 +2074,11 @@ namespace UrbanWildlifeRooms.Presentation
                         ? L("End Day 1 to see the squirrel eat and the date change.",
                             "结束第 1 天，查看松鼠进食和日期变化。")
                         : L("Click the centre oak.", "点击中央橡树。")
+                : run.IsCategoryAtLimit(selectedCategory)
+                    ? L($"{CategoryLabel(selectedCategory)} limit " +
+                            $"{run.CategoryBuiltCount(selectedCategory)}/{run.CategoryLimit(selectedCategory)}. Choose another type.",
+                        $"{CategoryLabel(selectedCategory)}已达上限 " +
+                            $"{run.CategoryBuiltCount(selectedCategory)}/{run.CategoryLimit(selectedCategory)}，请选择其他建筑。")
                 : run.BuiltToday
                     ? L($"Selected: {SelectedBuildLabel()}. Built today; advance to place it tomorrow.",
                         $"已选{SelectedBuildLabel()}。今日已建造，明天可放置。")
@@ -2123,8 +2129,11 @@ namespace UrbanWildlifeRooms.Presentation
             }
             if (paletteNotice != null)
                 paletteNotice.text = run.Mode == ConstructionGameMode.Fill
-                    ? L($"Selected: {SelectedBuildLabel()}\nBadges: built / limit",
-                        $"已选：{SelectedBuildLabel()}\n角标：已建 / 上限")
+                    ? run.IsCategoryAtLimit(selectedCategory)
+                        ? L("Selected type full · choose another\nBadges: built / limit",
+                            "所选类型已满 · 请改选\n角标：已建 / 上限")
+                        : L($"Selected: {SelectedBuildLabel()}\nBadges: built / limit",
+                            $"已选：{SelectedBuildLabel()}\n角标：已建 / 上限")
                     : L($"Selected: {SelectedBuildLabel()}",
                         $"已选：{SelectedBuildLabel()}");
             foreach (var pair in plantingButtons)
