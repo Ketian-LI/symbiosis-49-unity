@@ -50,6 +50,7 @@ namespace UrbanWildlifeRooms.Presentation
         private Transform travelingSquirrel;
         private Transform travelingPigeon;
         private Transform travelingFox;
+        private float foxContactUntil;
         private GameObject transientFoxPrey;
         private bool transientFoxPreyIsGhost;
         private readonly Dictionary<string, CitizenDemoVisual> residents = new();
@@ -399,6 +400,7 @@ namespace UrbanWildlifeRooms.Presentation
             foraging = null;
             foxHunt = null;
             travelingFox = null;
+            foxContactUntil = 0f;
             commuting = null;
             pigeonArrival = null;
             residentArrival = null;
@@ -484,6 +486,7 @@ namespace UrbanWildlifeRooms.Presentation
             HideTransientFoxPrey();
             foxHunt = null;
             travelingFox = null;
+            foxContactUntil = 0f;
             travelingSquirrel = null;
             travelingPigeon = null;
             RestoreAnimalHomes();
@@ -598,11 +601,19 @@ namespace UrbanWildlifeRooms.Presentation
         {
             travelingFox = fox.transform;
             var home = animalHomes[travelingFox];
+            var preyPosition = transientFoxPrey == null
+                ? Cell(route[route.Count - 1].column,
+                    route[route.Count - 1].row) +
+                  new Vector3(0.55f, 0.23f, -0.5f)
+                : transientFoxPrey.transform.position;
             for (var index = 1; index < route.Count; index++)
                 yield return MoveBetween(travelingFox, travelingFox.position,
-                    Cell(route[index].column, route[index].row) +
-                    new Vector3(0.25f, 0.23f, -0.18f), 0.32f);
+                    index == route.Count - 1 ? preyPosition :
+                        Cell(route[index].column, route[index].row) +
+                        new Vector3(0.25f, 0.23f, -0.18f), 0.32f);
             HideTransientFoxPrey();
+            foxContactUntil = Time.unscaledTime + 0.2f;
+            yield return new WaitForSecondsRealtime(0.2f);
             for (var index = route.Count - 2; index >= 0; index--)
                 yield return MoveBetween(travelingFox, travelingFox.position,
                     index == 0 ? home : Cell(route[index].column,
@@ -1048,8 +1059,11 @@ namespace UrbanWildlifeRooms.Presentation
                 var visual = squirrels[index];
                 if (visual == null || !visual.gameObject.activeInHierarchy) continue;
                 Wander(visual.transform, index, time,
-                    visual.transform == travelingSquirrel);
-                visual.ApplyPose(SquirrelDemoState.Hop, time + index * 0.23f);
+                    visual.transform == travelingSquirrel ||
+                    visual.gameObject == transientFoxPrey);
+                visual.ApplyPose(visual.gameObject == transientFoxPrey
+                    ? SquirrelDemoState.Alert : SquirrelDemoState.Hop,
+                    time + index * 0.23f);
             }
             for (var index = 0; index < pigeons.Count; index++)
             {
@@ -1057,19 +1071,24 @@ namespace UrbanWildlifeRooms.Presentation
                 if (visual == null || !visual.gameObject.activeInHierarchy) continue;
                 var arriving = visual == pigeon && pigeonArrival != null;
                 Wander(visual.transform, index + 5, time,
-                    arriving || visual.transform == travelingPigeon);
-                visual.ApplyPose(arriving ? PigeonDemoState.Flutter :
+                    arriving || visual.transform == travelingPigeon ||
+                    visual.gameObject == transientFoxPrey);
+                visual.ApplyPose(arriving || visual.gameObject == transientFoxPrey
+                    ? PigeonDemoState.Flutter :
                     PigeonDemoState.Walk, time + index * 0.19f);
             }
             if (hedgehog != null && hedgehog.gameObject.activeInHierarchy)
             {
-                Wander(hedgehog.transform, 11, time, false);
-                hedgehog.ApplyPose(HedgehogDemoState.Waddle, time);
+                Wander(hedgehog.transform, 11, time,
+                    hedgehog.gameObject == transientFoxPrey);
+                hedgehog.ApplyPose(hedgehog.gameObject == transientFoxPrey
+                    ? HedgehogDemoState.Curl : HedgehogDemoState.Waddle, time);
             }
             if (fox != null && fox.gameObject.activeInHierarchy)
             {
                 Wander(fox.transform, 13, time, fox.transform == travelingFox);
-                fox.ApplyPose(FoxDemoState.Trot, time);
+                fox.ApplyPose(time < foxContactUntil ? FoxDemoState.Sniff :
+                    FoxDemoState.Trot, time);
             }
             foreach (var resident in residents.Values)
                 resident?.ApplyPose(resident == commutingResident ||
