@@ -141,6 +141,69 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator PigeonRetracesConnectedMeadowsAfterForaging()
+        {
+            var run = new ConstructionRunModel();
+            Assert.That(run.TrySimulateDay(out _), Is.True);
+            foreach (var position in new[] { (4, 3), (4, 2), (5, 2), (5, 1) })
+            {
+                Assert.That(run.TryBuild(position.Item1, position.Item2,
+                    ConstructionCategory.Green, GreenPlanting.Meadow,
+                    out _, out _, out _), Is.True);
+                Assert.That(run.TrySimulateDay(out _), Is.True);
+            }
+            // The flock can shift its home meadow after eating. Choose the
+            // farthest connected source so the return has a real corner.
+            var route = run.BuiltTiles.Where(tile =>
+                    tile.planting == GreenPlanting.Meadow)
+                .Select(tile => run.GreenFoodRouteTo(run.PigeonTileId, tile.id))
+                .OrderByDescending(candidate => candidate.Count).First();
+            Assert.That(route.Count, Is.GreaterThanOrEqualTo(3));
+
+            var root = new GameObject("Pigeon return route presentation test");
+            var controller = root.AddComponent<ConstructionPrototypeController>();
+            controller.UseRunForTesting(run);
+            yield return null;
+            if (SystemInfo.graphicsDeviceType ==
+                UnityEngine.Rendering.GraphicsDeviceType.Null)
+            {
+                Object.Destroy(root);
+                yield break;
+            }
+            var bird = root.transform.Find("Construction low-poly world")
+                .GetComponentInChildren<UrbanWildlifeRooms.Animals.PigeonDemoVisual>();
+            Assert.That(bird, Is.Not.Null);
+            var offset = new Vector3(-0.54f, 0.23f, 0.45f);
+            var foodTile = route[route.Count - 1];
+            var intermediateTile = route[route.Count - 2];
+            var foodPosition = new Vector3(
+                (foodTile.column - 3) * WorldScaleStandards.CellSizeMeters,
+                0f, (3 - foodTile.row) * WorldScaleStandards.CellSizeMeters) + offset;
+            var intermediate = new Vector3(
+                (intermediateTile.column - 3) * WorldScaleStandards.CellSizeMeters,
+                0f, (3 - intermediateTile.row) * WorldScaleStandards.CellSizeMeters) +
+                offset;
+            root.GetComponent<ConstructionWorldView>().PlayForaging(null,
+                new System.Collections.Generic.IReadOnlyList<ConstructionTileData>[]
+                    { route }, run);
+            var deadline = Time.realtimeSinceStartup + 8f;
+            while (Time.realtimeSinceStartup < deadline &&
+                   Vector3.Distance(bird.transform.position, foodPosition) > 0.3f)
+                yield return null;
+            Assert.That(Vector3.Distance(bird.transform.position, foodPosition),
+                Is.LessThan(0.3f), "The pigeon must reach its food tile.");
+            deadline = Time.realtimeSinceStartup + 4f;
+            while (Time.realtimeSinceStartup < deadline &&
+                   Vector3.Distance(bird.transform.position, intermediate) > 0.4f)
+                yield return null;
+            Assert.That(Vector3.Distance(bird.transform.position, intermediate),
+                Is.LessThan(0.4f),
+                "The return trip must pass through the connected meadow, not a wall.");
+            Object.Destroy(root);
+            yield return null;
+        }
+
+        [UnityTest]
         public IEnumerator MatureShrubsAndPigeonsBringVisibleMovingVisitors()
         {
             var run = new ConstructionRunModel();

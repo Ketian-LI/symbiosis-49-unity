@@ -1021,7 +1021,15 @@ namespace UrbanWildlifeRooms.Presentation
                     AnimalOffset(visualIndex, bird);
                 yield return MoveBetween(actor, actor.position, target, pace);
             }
-            yield return MoveBetween(actor, actor.position, home, pace);
+            // Retrace the same connected green thresholds on the way home.
+            // A direct line from the food tile can cut across closed rooms.
+            for (var index = route.Count - 2; index >= 0; index--)
+            {
+                var target = index == 0 ? home :
+                    Cell(route[index].column, route[index].row) +
+                    AnimalOffset(visualIndex, bird);
+                yield return MoveBetween(actor, actor.position, target, pace);
+            }
         }
 
         private static IEnumerator MoveBetween(Transform actor, Vector3 from,
