@@ -886,7 +886,7 @@ namespace UrbanWildlifeRooms.Presentation
             ApplySkin(paletteBackdrop, "UI/PauseMenu/pause-menu-settings-panel-v01");
             paletteBackdrop.raycastTarget = true;
             paletteNotice = TextAt("Palette notice", paletteBackdrop.transform,
-                new Vector2(0, 170), new Vector2(320, 48), "", 15, true,
+                new Vector2(0, 148), new Vector2(320, 30), "", 17, true,
                 Ink, TextAnchor.MiddleCenter);
             paletteNotice.raycastTarget = false;
             BuildCategoryButtons(side.transform);
@@ -1556,18 +1556,18 @@ namespace UrbanWildlifeRooms.Presentation
                     () => CategoryHoverDetails(category),
                     TooltipLocation.LeftLeaf);
                 var label = button.GetComponentInChildren<Text>();
-                label.rectTransform.anchoredPosition = new Vector2(0, 0);
-                label.rectTransform.sizeDelta = new Vector2(64, 38);
+                label.rectTransform.anchoredPosition = new Vector2(-2, 0);
+                label.rectTransform.sizeDelta = new Vector2(54, 38);
                 var status = TextAt("Unlock status", button.transform,
                     new Vector2(19, -13), new Vector2(90, 17), "", 11,
                     false, Paper, TextAnchor.MiddleLeft);
                 status.raycastTarget = false;
                 status.gameObject.AddComponent<CanvasGroup>().alpha = 0f;
                 var countBacking = Panel("Build limit badge", button.transform,
-                    new Vector2(57, -18), new Vector2(40, 18), Ink);
+                    new Vector2(52, -17), new Vector2(50, 22), Ink);
                 countBacking.raycastTarget = false;
                 var count = TextAt("Built and limit", countBacking.transform,
-                    Vector2.zero, new Vector2(40, 18), "–", 11, true,
+                    Vector2.zero, new Vector2(50, 22), "–", 13, true,
                     Paper, TextAnchor.MiddleCenter);
                 count.raycastTarget = false;
                 categoryCountLabels.Add(category, count);
@@ -2130,12 +2130,9 @@ namespace UrbanWildlifeRooms.Presentation
             if (paletteNotice != null)
                 paletteNotice.text = run.Mode == ConstructionGameMode.Fill
                     ? run.IsCategoryAtLimit(selectedCategory)
-                        ? L("Selected type full · choose another\nBadges: built / limit",
-                            "所选类型已满 · 请改选\n角标：已建 / 上限")
-                        : L($"Selected: {SelectedBuildLabel()}\nBadges: built / limit",
-                            $"已选：{SelectedBuildLabel()}\n角标：已建 / 上限")
-                    : L($"Selected: {SelectedBuildLabel()}",
-                        $"已选：{SelectedBuildLabel()}");
+                        ? L("Type full · choose another", "该类已满，请改选")
+                        : L("Badges: built / limit", "数字：已建 / 上限")
+                    : L("Choose a building", "选择建筑");
             foreach (var pair in plantingButtons)
                 pair.Value.GetComponent<Image>().color = pair.Key == selectedPlanting
                     ? new Color(0.73f, 0.96f, 0.88f) : Color.white;
