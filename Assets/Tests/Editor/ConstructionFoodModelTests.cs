@@ -222,8 +222,11 @@ namespace UrbanWildlifeRooms.Tests.Editor
             Assert.That(ConstructionFoodModel.FoxHabitat(board, 5, 3)?.id,
                 Is.EqualTo(secondShrub.id));
             Assert.That(board.TryBuild(6, 6, ConstructionCategory.Green,
-                GreenPlanting.Shrub, out _, out _), Is.False,
-                "Unconnected empty space cannot count as built habitat.");
+                GreenPlanting.Shrub, out var isolated, out _), Is.True);
+            Assert.That(board.ConnectedGreenCount(isolated.id), Is.EqualTo(1));
+            Assert.That(ConstructionFoodModel.HedgehogHabitat(board, 6)?.id,
+                Is.EqualTo(firstShrub.id),
+                "A remote green room is buildable but not part of this habitat.");
         }
 
         [Test]

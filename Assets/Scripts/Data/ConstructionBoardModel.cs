@@ -115,8 +115,10 @@ namespace UrbanWildlifeRooms.Data
                 (category != ConstructionCategory.Green && planting != GreenPlanting.None) ||
                 !Enum.IsDefined(typeof(GreenPlanting), planting))
                 return ConstructionPlacementFailure.InvalidPlanting;
-            if (!Neighbours(column, row).Any()) return ConstructionPlacementFailure.Disconnected;
-
+            // Location is the player's choice. Ecological connectivity and
+            // human service access are outcomes, not a blanket build gate.
+            // Service buildings, waste rooms and streets still need their
+            // functional neighbours below.
             return category switch
             {
                 ConstructionCategory.Street => Neighbours(column, row).Any(tile =>

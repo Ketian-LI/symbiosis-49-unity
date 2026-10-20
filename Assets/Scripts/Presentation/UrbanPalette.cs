@@ -12,6 +12,11 @@ namespace UrbanWildlifeRooms.Presentation
         public static readonly Color BoardSlot = Hex("A9A595");
         public static readonly Color BoardSlotAlternate = Hex("A5A293");
         public static readonly Color BoardSlotTop = Hex("C9C6B8");
+        // The construction modes unfold onto one continuous printed field.
+        // Keep this separate from the legacy simulation's pale vacant slots.
+        public static readonly Color ConstructionGrid = Hex("DDD5B7");
+        public static readonly Color ConstructionGround = Hex("6F8068");
+        public static readonly Color ConstructionGroundAlternate = Hex("70816A");
         // The assembled-board reference uses a charcoal-navy frame; the brighter
         // blue from the isolated room concepts is reserved for later skins.
         public static readonly Color Boundary = Hex("263653");

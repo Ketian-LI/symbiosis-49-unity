@@ -131,21 +131,21 @@ namespace UrbanWildlifeRooms.Core
             (CurrentDay == 1 || BuiltToday);
         public bool IsFull => board.IsFull;
         public IReadOnlyList<ConstructionTileData> BuiltTiles => board.BuiltTiles;
-        // Fill-mode limits are deliberately not a fixed recipe. Green, Home
-        // and Square alone total 50: after day one's oak lesson, at least one
-        // adjacency-only type stays available until the 49th cell is built.
+        // Fill-mode category caps total 80, allowing multiple ways to fill
+        // the 49-cell board. Green, Residence and Square total only 44, so
+        // a completed board must also include functional room types.
         // The starter oak counts toward the Green limit.
         public int CategoryLimit(ConstructionCategory category) =>
             Mode == ConstructionGameMode.Endless ? int.MaxValue : category switch
             {
-                ConstructionCategory.Green => 24,
-                ConstructionCategory.Residence => 14,
-                ConstructionCategory.Workshop => 8,
-                ConstructionCategory.Restaurant => 6,
+                ConstructionCategory.Green => 21,
+                ConstructionCategory.Residence => 12,
+                ConstructionCategory.Workshop => 7,
+                ConstructionCategory.Restaurant => 5,
                 ConstructionCategory.Supermarket => 5,
-                ConstructionCategory.Waste => 8,
-                ConstructionCategory.Street => 14,
-                ConstructionCategory.Square => 12,
+                ConstructionCategory.Waste => 7,
+                ConstructionCategory.Street => 12,
+                ConstructionCategory.Square => 11,
                 _ => throw new ArgumentOutOfRangeException(nameof(category))
             };
         public int CategoryBuiltCount(ConstructionCategory category) =>
@@ -194,6 +194,8 @@ namespace UrbanWildlifeRooms.Core
         public int MatureConnectedMeadowCount =>
             ConstructionFoodModel.MatureConnectedMeadowCount(board,
                 CurrentDay, PigeonTileId);
+        public int MatureConnectedShrubCount =>
+            ConstructionFoodModel.MatureConnectedShrubCount(board, CurrentDay);
         public string FirstResidentHomeTileId => board.FirstResidence?.id;
         public bool FirstResidentHasRestaurantAccess =>
             board.FirstResidenceCanReachService(ConstructionCategory.Restaurant);

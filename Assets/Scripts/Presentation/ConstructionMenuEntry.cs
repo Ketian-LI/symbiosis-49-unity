@@ -19,6 +19,8 @@ namespace UrbanWildlifeRooms.Presentation
         private readonly List<(Renderer target, bool enabled)> hiddenRenderers = new();
         private readonly List<(Collider target, bool enabled)> hiddenColliders = new();
         private readonly List<(Transform slot, Vector3 scale)> originalSlotScales = new();
+        private readonly List<(Transform face, Vector3 scale)> originalFaceScales = new();
+        private readonly List<(Renderer target, Color color)> originalSlotColors = new();
         private GameRuntimeController runtime;
         private RoomView oak;
         private SquirrelDemoAgent squirrel;
@@ -41,6 +43,8 @@ namespace UrbanWildlifeRooms.Presentation
         private Transform westLid;
         private Transform eastLid;
         private Material caseMaterial;
+        private Material lidPrintMaterial;
+        private readonly List<Material> interiorPrintMaterials = new();
         private Coroutine lidMotion;
         private float lidOpenAmount;
 
@@ -131,20 +135,49 @@ namespace UrbanWildlifeRooms.Presentation
                     break;
                 }
 
-            // Reveal the original navy board through its existing 49 cream
-            // slots. This keeps the menu and gameplay board identical without
-            // spawning a second, differently scaled wall grid.
+            // The construction surface is printed sage with fine ivory joints.
+            // Recolour the existing board instead of substituting a 2D image,
+            // so the opening and playable board remain the same object.
             paperBoard = foundation.Find("Paper Board")?.GetComponent<Renderer>();
             if (paperBoard != null)
-                UrbanVisualFactory.ApplyColor(paperBoard, UrbanPalette.Boundary);
+                UrbanVisualFactory.ApplyColor(paperBoard,
+                    UrbanPalette.ConstructionGrid);
             var slots = foundation.Find("49 Fixed Cell Slots");
             if (slots != null)
+            {
+                var slotIndex = 0;
                 foreach (Transform slot in slots)
                 {
                     originalSlotScales.Add((slot, slot.localScale));
-                    var size = WorldScaleStandards.CellSizeMeters - 0.28f;
+                    var size = WorldScaleStandards.CellSizeMeters - 0.07f;
                     slot.localScale = new Vector3(size, slot.localScale.y, size);
+                    var original = (slotIndex / 7 + slotIndex % 7) % 2 == 0
+                        ? UrbanPalette.BoardSlot : UrbanPalette.BoardSlotAlternate;
+                    var ground = (slotIndex / 7 + slotIndex % 7) % 2 == 0
+                        ? UrbanPalette.ConstructionGround :
+                            UrbanPalette.ConstructionGroundAlternate;
+                    var slotRenderer = slot.GetComponent<Renderer>();
+                    if (slotRenderer != null)
+                    {
+                        originalSlotColors.Add((slotRenderer, original));
+                        UrbanVisualFactory.ApplyColor(slotRenderer, ground);
+                    }
+                    var face = slot.Find("Pastel plot face");
+                    if (face != null)
+                    {
+                        originalFaceScales.Add((face, face.localScale));
+                        face.localScale = new Vector3(1f, face.localScale.y, 1f);
+                        var faceRenderer = face.GetComponent<Renderer>();
+                        if (faceRenderer != null)
+                        {
+                            originalSlotColors.Add((faceRenderer,
+                                UrbanPalette.BoardSlotTop));
+                            UrbanVisualFactory.ApplyColor(faceRenderer, ground);
+                        }
+                    }
+                    slotIndex++;
                 }
+            }
 
             foreach (var room in GetComponentsInChildren<RoomView>(true))
             {
@@ -201,6 +234,13 @@ namespace UrbanWildlifeRooms.Presentation
             foreach (var entry in originalSlotScales)
                 if (entry.slot != null) entry.slot.localScale = entry.scale;
             originalSlotScales.Clear();
+            foreach (var entry in originalFaceScales)
+                if (entry.face != null) entry.face.localScale = entry.scale;
+            originalFaceScales.Clear();
+            foreach (var entry in originalSlotColors)
+                if (entry.target != null)
+                    UrbanVisualFactory.ApplyColor(entry.target, entry.color);
+            originalSlotColors.Clear();
             if (openingTree != null)
             {
                 openingTree.localScale = openingTreeScale;
@@ -247,6 +287,7 @@ namespace UrbanWildlifeRooms.Presentation
         public void ExitConstruction()
         {
             constructionActive = false;
+            SetInteriorPrintsVisible(true);
             BeginClosing();
             if (foundation != null) foundation.localPosition = Vector3.zero;
             if (tabletop != null)
@@ -285,6 +326,21 @@ namespace UrbanWildlifeRooms.Presentation
         {
             if (!previewing || caseShell == null) return;
             AnimateLidTo(0f);
+        }
+
+        public void SetInteriorPrintsVisible(bool visible)
+        {
+            if (caseShell == null) return;
+            foreach (var path in new[]
+                     {
+                         "West lid hinge/Printed city inside lid",
+                         "East lid hinge/Printed oak inside lid"
+                     })
+            {
+                var print = caseShell.transform.Find(path);
+                if (print != null && print.TryGetComponent<Renderer>(out var renderer))
+                    renderer.enabled = visible;
+            }
         }
 
         private void AnimateLidTo(float target)
@@ -327,6 +383,19 @@ namespace UrbanWildlifeRooms.Presentation
             const float halfCover = (boardWidth + 1.25f) * 0.5f;
             const float lidHeight = 2.8f;
             caseMaterial = UrbanVisualFactory.CreateSurfaceMaterial();
+            var lidPrint = Resources.Load<Texture2D>(
+                "UI/ConstructionCase/lid-city-oak-v01");
+            if (lidPrint != null)
+            {
+                var shader = Shader.Find("Universal Render Pipeline/Unlit") ??
+                    Shader.Find("Unlit/Texture") ?? Shader.Find("Standard");
+                lidPrintMaterial = new Material(shader);
+                lidPrintMaterial.mainTexture = lidPrint;
+                if (lidPrintMaterial.HasProperty("_BaseMap"))
+                    lidPrintMaterial.SetTexture("_BaseMap", lidPrint);
+                if (lidPrintMaterial.HasProperty("_BaseColor"))
+                    lidPrintMaterial.SetColor("_BaseColor", Color.white);
+            }
             caseShell = new GameObject("Two-part folding board case");
             caseShell.transform.SetParent(foundation, false);
 
@@ -370,6 +439,13 @@ namespace UrbanWildlifeRooms.Presentation
                     new Vector3(panelCentre, 0.146f, 0f),
                     new Vector3(halfCover - 0.78f, 0.018f,
                         boardWidth + 0.45f), UrbanPalette.Boundary);
+                AddPrintedLidFace(hinge, panelCentre,
+                    halfCover - 0.80f, boardWidth + 0.43f, side < 0f);
+                // The underside is what the player sees while the physical
+                // lid opens. Print the same paper artwork used by the UI leaf
+                // so the image does not pop in only after the scene switch.
+                AddPrintedInteriorFace(hinge, panelCentre,
+                    halfCover - 0.80f, boardWidth + 0.43f, side < 0f);
                 foreach (var hingeZ in new[] { -6f, 0f, 6f })
                     CaseBox("Visible brass hinge", hinge,
                         new Vector3(0f, 0.10f, hingeZ),
@@ -382,6 +458,74 @@ namespace UrbanWildlifeRooms.Presentation
                     UrbanPalette.BoardFrameBrass);
             }
             SetLidOpenAmount(0f);
+        }
+
+        private void AddPrintedLidFace(Transform hinge, float centre,
+            float width, float depth, bool cityHalf)
+        {
+            if (lidPrintMaterial == null) return;
+            var print = new GameObject(cityHalf ? "Printed city lid" :
+                "Printed oak lid", typeof(MeshFilter), typeof(MeshRenderer));
+            print.transform.SetParent(hinge, false);
+            print.transform.localPosition = new Vector3(centre, 0.158f, 0f);
+            print.layer = 29;
+            var halfWidth = width * 0.5f;
+            var halfDepth = depth * 0.5f;
+            var leftU = cityHalf ? 0f : 0.5f;
+            var rightU = cityHalf ? 0.5f : 1f;
+            var mesh = new Mesh { name = "Printed case lid half" };
+            mesh.vertices = new[]
+            {
+                new Vector3(-halfWidth, 0f, -halfDepth),
+                new Vector3(halfWidth, 0f, -halfDepth),
+                new Vector3(halfWidth, 0f, halfDepth),
+                new Vector3(-halfWidth, 0f, halfDepth)
+            };
+            mesh.uv = new[]
+            {
+                new Vector2(leftU, 0f), new Vector2(rightU, 0f),
+                new Vector2(rightU, 1f), new Vector2(leftU, 1f)
+            };
+            mesh.triangles = new[] { 0, 2, 1, 0, 3, 2 };
+            mesh.RecalculateNormals();
+            print.GetComponent<MeshFilter>().sharedMesh = mesh;
+            var renderer = print.GetComponent<MeshRenderer>();
+            renderer.sharedMaterial = lidPrintMaterial;
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+        }
+
+        private void AddPrintedInteriorFace(Transform hinge, float centre,
+            float width, float depth, bool cityHalf)
+        {
+            var texture = Resources.Load<Texture2D>(cityHalf
+                ? "UI/ConstructionCase/interior-city-v01"
+                : "UI/ConstructionCase/interior-oak-v01");
+            if (texture == null) return;
+            var shader = Shader.Find("Universal Render Pipeline/Unlit") ??
+                Shader.Find("Unlit/Texture") ?? Shader.Find("Standard");
+            var material = new Material(shader) { mainTexture = texture };
+            if (material.HasProperty("_BaseMap"))
+                material.SetTexture("_BaseMap", texture);
+            if (material.HasProperty("_BaseColor"))
+                material.SetColor("_BaseColor", Color.white);
+            if (material.HasProperty("_Cull"))
+                material.SetInt("_Cull", 0);
+            interiorPrintMaterials.Add(material);
+
+            var print = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            print.name = cityHalf ? "Printed city inside lid" :
+                "Printed oak inside lid";
+            print.transform.SetParent(hinge, false);
+            print.transform.localPosition = new Vector3(centre, -0.112f, 0f);
+            print.transform.localScale = new Vector3(width, 0.018f, depth);
+            print.layer = 29;
+            var collider = print.GetComponent<Collider>();
+            if (collider != null) collider.enabled = false;
+            var renderer = print.GetComponent<MeshRenderer>();
+            renderer.sharedMaterial = material;
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
         }
 
         private void CaseBox(string name, Transform parent, Vector3 position,
@@ -398,6 +542,9 @@ namespace UrbanWildlifeRooms.Presentation
         private void OnDestroy()
         {
             if (caseMaterial != null) Destroy(caseMaterial);
+            if (lidPrintMaterial != null) Destroy(lidPrintMaterial);
+            foreach (var material in interiorPrintMaterials)
+                if (material != null) Destroy(material);
         }
 
     }
@@ -479,7 +626,8 @@ namespace UrbanWildlifeRooms.Presentation
                 typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
             iconObject.transform.SetParent(root.transform, false);
             var icon = iconObject.GetComponent<Image>();
-            icon.sprite = RoomIconCatalog.GetSprite(UrbanWildlifeRooms.Data.RoomType.CentralPark);
+            icon.sprite = ConstructionIconCatalog.GetControl(
+                ConstructionControlIcon.FillMode);
             icon.preserveAspect = true;
             icon.raycastTarget = false;
             var iconRect = icon.rectTransform;
@@ -711,6 +859,9 @@ namespace UrbanWildlifeRooms.Presentation
             {
                 var main = SceneManager.GetSceneByName("Main");
                 SceneManager.SetActiveScene(main);
+                // The physical leaves must already be printed when the UI
+                // pages disappear with the additive construction scene.
+                sharedBoard.SetInteriorPrintsVisible(true);
                 var construction = SceneManager.GetSceneByName("ConstructionPrototype");
                 if (construction.isLoaded)
                 {

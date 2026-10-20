@@ -264,6 +264,10 @@ namespace UrbanWildlifeRooms.Presentation
         public void SetViewport(int minColumn, int minRow)
         {
             if (!IsReady || boardCamera == null) return;
+            // Refresh() runs in the same frame that Initialize starts the
+            // entrance camera move. Do not teleport the camera (or tabletop)
+            // to its final viewport before that move has rendered a frame.
+            if (usingOpeningBoard && entranceCameraMotion != null) return;
             var centre = Cell(minColumn + 3, minRow + 3);
             boardCamera.transform.position = cameraOffset +
                 new Vector3(centre.x, 0f, centre.z);
@@ -312,8 +316,10 @@ namespace UrbanWildlifeRooms.Presentation
             Box("Paper Board", boardBase.transform,
                 new Vector3(0f, -0.18f, 0f),
                 new Vector3(mapSize + 1.25f, 0.28f, mapSize + 1.25f),
-                UrbanPalette.Boundary);
-            var slotSize = Pitch - 0.28f;
+                UrbanPalette.ConstructionGrid);
+            // Thin ivory joints between near-flush green plots read as a
+            // single printed game field, not 49 raised empty buttons.
+            var slotSize = Pitch - 0.07f;
             for (var row = 0; row < 7; row++)
             for (var column = 0; column < 7; column++)
             {
@@ -321,11 +327,14 @@ namespace UrbanWildlifeRooms.Presentation
                     Cell(column, row) + new Vector3(0f, -0.025f, 0f),
                     new Vector3(slotSize, 0.08f, slotSize),
                     (column + row) % 2 == 0
-                        ? UrbanPalette.BoardSlot : UrbanPalette.BoardSlotAlternate);
+                        ? UrbanPalette.ConstructionGround :
+                            UrbanPalette.ConstructionGroundAlternate);
                 var face = Box("Pastel plot face", slot.transform,
                     new Vector3(0f, 0.54f, 0f),
-                    new Vector3(0.94f, 0.20f, 0.94f),
-                    UrbanPalette.BoardSlotTop);
+                    new Vector3(1f, 0.20f, 1f),
+                    (column + row) % 2 == 0
+                        ? UrbanPalette.ConstructionGround :
+                            UrbanPalette.ConstructionGroundAlternate);
                 UrbanVisualFactory.SetInkStrength(face.GetComponent<Renderer>(), 0f);
             }
             var rimOffset = mapSize * 0.5f + 0.34f;
@@ -854,6 +863,7 @@ namespace UrbanWildlifeRooms.Presentation
                     System.Linq.Enumerable.Where(run.BuiltTiles, tile =>
                         tile.category == ConstructionCategory.Green &&
                         tile.planting == GreenPlanting.Oak &&
+                        run.GreenGrowthStage(tile.id) == 2 &&
                         Mathf.Abs(tile.column - ConstructionBoardModel.StarterColumn) +
                         Mathf.Abs(tile.row - ConstructionBoardModel.StarterRow) <= 1 &&
                         run.GreenFoodRouteTo(ConstructionBoardModel.StarterOakId,

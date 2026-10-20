@@ -1,0 +1,9 @@
+# Construction UI icons v01
+
+The 27 transparent PNGs in `Assets/Resources/UI/ConstructionIcons/` were generated with the built-in image generation tool on 2026-10-17 for the clean, navy/ivory/sage UI exploration. They are AI-generated interface assets, not empirical research findings or replacements for authored 3D rooms and animals. The prompt direction was: one isolated transparent pictogram per file, navy `#23354B` outline, ivory `#F3EFE4` fill, restrained sage `#748C68` or teal accent, no words or button background.
+
+`ConstructionIconCatalog` maps 10 build/planting icons, five character icons, three status icons, and nine controls. The construction UI uses these for the build palette, planting choices, placement preview and confirmation, story cues, the fallback 2D cell display, badges, feedback, and menu/game controls. The 3D board, room interiors, and animated animal models are unchanged. The hedgehog pictogram is imported but currently reserved: the construction screen does not yet have a dedicated hedgehog UI badge.
+
+The textures are imported as 512 px maximum-size sprites without mipmaps. The catalog trims the generated transparent padding when constructing UI sprites; number badges, status colours, selected outlines, and text remain separate UI elements. These are candidate assets: check each at the final screen scale and under both language settings before treating the visual pass as approved.
+
+Validation in this branch: `ConstructionIconCatalogTests` (27 resources; 1 passed), `ConstructionIconPresentationTests` (new UI bindings and non-blocking button icon; 1 passed), `ConstructionPrototypeFlowTests` (26 passed), and `ConstructionSceneNavigationTests` (2 passed). `MainMenuLiveSceneTests` had 2 passed and 2 intentionally skipped because those cases cover retired legacy entrances. Batch-mode tests verify loading and hierarchy, not the final on-screen appearance.

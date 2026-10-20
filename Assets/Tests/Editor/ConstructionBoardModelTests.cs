@@ -111,16 +111,24 @@ namespace UrbanWildlifeRooms.Tests.Editor
             var run = new ConstructionRunModel();
             var categories = Enum.GetValues(typeof(ConstructionCategory))
                 .Cast<ConstructionCategory>().ToArray();
+            Assert.That(run.CategoryLimit(ConstructionCategory.Green), Is.EqualTo(21));
+            Assert.That(run.CategoryLimit(ConstructionCategory.Residence), Is.EqualTo(12));
+            Assert.That(run.CategoryLimit(ConstructionCategory.Workshop), Is.EqualTo(7));
+            Assert.That(run.CategoryLimit(ConstructionCategory.Restaurant), Is.EqualTo(5));
+            Assert.That(run.CategoryLimit(ConstructionCategory.Supermarket), Is.EqualTo(5));
+            Assert.That(run.CategoryLimit(ConstructionCategory.Waste), Is.EqualTo(7));
+            Assert.That(run.CategoryLimit(ConstructionCategory.Street), Is.EqualTo(12));
+            Assert.That(run.CategoryLimit(ConstructionCategory.Square), Is.EqualTo(11));
             Assert.That(categories.All(category => run.CategoryLimit(category) > 0 &&
                 run.CategoryLimit(category) < ConstructionBoardModel.Capacity), Is.True);
             Assert.That(categories.Sum(run.CategoryLimit),
-                Is.GreaterThan(ConstructionBoardModel.Capacity),
+                Is.EqualTo(80).And.GreaterThan(ConstructionBoardModel.Capacity),
                 "Caps must leave room to choose a composition, not prescribe one.");
             Assert.That(run.CategoryLimit(ConstructionCategory.Green) +
                 run.CategoryLimit(ConstructionCategory.Residence) +
                 run.CategoryLimit(ConstructionCategory.Square),
-                Is.GreaterThan(ConstructionBoardModel.Capacity),
-                "The three adjacency-only types must not exhaust before the board is full.");
+                Is.EqualTo(44).And.LessThan(ConstructionBoardModel.Capacity),
+                "A full board now requires at least five functional rooms.");
             Assert.That(run.CategoryBuiltCount(ConstructionCategory.Green), Is.EqualTo(1),
                 "The starting oak counts as a green room.");
             Assert.That(run.TrySimulateDay(out _), Is.True);
@@ -256,19 +264,30 @@ namespace UrbanWildlifeRooms.Tests.Editor
         }
 
         [Test]
-        public void PlacementUsesFourNeighboursAndRequiresAnchoredStreet()
+        public void OpenPlotsArePlayerChosenButServiceAndStreetLinksStillMatter()
         {
             var board = new ConstructionBoardModel();
             Assert.That(board.CheckPlacement(6, 6, ConstructionCategory.Green,
-                GreenPlanting.Oak), Is.EqualTo(ConstructionPlacementFailure.Disconnected));
-            Assert.That(board.CheckPlacement(4, 4, ConstructionCategory.Green,
-                GreenPlanting.Oak), Is.EqualTo(ConstructionPlacementFailure.Disconnected));
+                GreenPlanting.Oak), Is.EqualTo(ConstructionPlacementFailure.None));
+            Assert.That(board.CheckPlacement(0, 0, ConstructionCategory.Residence),
+                Is.EqualTo(ConstructionPlacementFailure.None));
+            Assert.That(board.CheckPlacement(6, 0, ConstructionCategory.Square),
+                Is.EqualTo(ConstructionPlacementFailure.None));
             Assert.That(board.CheckPlacement(4, 3, ConstructionCategory.Street),
                 Is.EqualTo(ConstructionPlacementFailure.StreetNeedsHomeConnection));
             Assert.That(board.CheckPlacement(4, 3, ConstructionCategory.Workshop),
                 Is.EqualTo(ConstructionPlacementFailure.NeedsHomeOrConnectedStreet));
             Assert.That(board.CheckPlacement(4, 3, ConstructionCategory.Waste),
                 Is.EqualTo(ConstructionPlacementFailure.NeedsHomeOrRestaurant));
+
+            var isolatedMeadow = Build(board, 6, 6, ConstructionCategory.Green,
+                GreenPlanting.Meadow);
+            Assert.That(board.GreenRouteBetween(ConstructionBoardModel.StarterOakId,
+                isolatedMeadow.id), Is.Empty,
+                "A freely placed meadow does not magically join the oak habitat.");
+            Build(board, 0, 0, ConstructionCategory.Residence);
+            Assert.That(board.CheckPlacement(1, 0, ConstructionCategory.Restaurant),
+                Is.EqualTo(ConstructionPlacementFailure.None));
 
             Build(board, 3, 2, ConstructionCategory.Residence);
             Build(board, 3, 1, ConstructionCategory.Street);
@@ -277,9 +296,12 @@ namespace UrbanWildlifeRooms.Tests.Editor
             Build(board, 4, 1, ConstructionCategory.Supermarket);
             Build(board, 4, 2, ConstructionCategory.Waste);
 
-            Assert.That(board.BuiltCount, Is.EqualTo(7));
+            Assert.That(board.BuiltCount, Is.EqualTo(9));
             Assert.That(board.CheckPlacement(5, 1, ConstructionCategory.Street),
                 Is.EqualTo(ConstructionPlacementFailure.StreetNeedsHomeConnection));
+            Assert.That(ConstructionBoardModel.TryRestore(board.Export(),
+                out var restored), Is.True);
+            Assert.That(restored.At(6, 6)?.id, Is.EqualTo(isolatedMeadow.id));
         }
 
         [Test]
@@ -394,7 +416,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
             Assert.That(restored.At(4, 3).planting, Is.EqualTo(GreenPlanting.Oak));
             Assert.That(restored.At(0, 0), Is.Null);
 
-            saved.tiles[1].column = 6;
+            saved.tiles[1].column = 7;
             Assert.That(ConstructionBoardModel.TryRestore(saved, out _), Is.False);
             saved.tiles[1].column = 4;
             saved.tiles[0].planting = GreenPlanting.Meadow;
@@ -898,9 +920,24 @@ namespace UrbanWildlifeRooms.Tests.Editor
         {
             if (!run.IsCategoryAtLimit(ConstructionCategory.Green))
                 return (ConstructionCategory.Green, GreenPlanting.Meadow);
-            return !run.IsCategoryAtLimit(ConstructionCategory.Residence)
-                ? (ConstructionCategory.Residence, GreenPlanting.None)
-                : (ConstructionCategory.Square, GreenPlanting.None);
+            if (!run.IsCategoryAtLimit(ConstructionCategory.Residence))
+                return (ConstructionCategory.Residence, GreenPlanting.None);
+            // Green, residences and squares can occupy only 44 cells under the
+            // 80-room allocation. Add five functional rooms near the homes
+            // before completing the board with squares.
+            foreach (var category in new[]
+                     {
+                         ConstructionCategory.Workshop,
+                         ConstructionCategory.Restaurant,
+                         ConstructionCategory.Supermarket,
+                         ConstructionCategory.Waste,
+                         ConstructionCategory.Street
+                     })
+            {
+                if (run.CategoryBuiltCount(category) == 0)
+                    return (category, GreenPlanting.None);
+            }
+            return (ConstructionCategory.Square, GreenPlanting.None);
         }
     }
 }

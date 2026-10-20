@@ -205,14 +205,37 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             if (SystemInfo.graphicsDeviceType !=
                 UnityEngine.Rendering.GraphicsDeviceType.Null)
             {
-                Assert.That(live.GetComponent<ConstructionWorldView>().BoardFoundation,
+                var constructionWorld = live.GetComponent<ConstructionWorldView>();
+                Assert.That(constructionWorld.BoardFoundation,
                     Is.SameAs(originalFoundation),
                     "Fill should display the same physical board as its opening.");
-                Assert.That(live.GetComponent<ConstructionWorldView>().UsesOpeningBoard,
-                    Is.True);
+                Assert.That(constructionWorld.UsesOpeningBoard, Is.True);
+                if (constructionWorld.IsEntranceCameraMoving)
+                {
+                    var position = boardCamera.GetComponent<Camera>().transform.position;
+                    constructionWorld.SetViewport(0, 0);
+                    Assert.That(Vector3.Distance(position,
+                        boardCamera.GetComponent<Camera>().transform.position),
+                        Is.LessThan(0.0001f),
+                        "Refreshing the viewport must not snap the entrance camera.");
+                }
                 Assert.That(live.transform.Find("Construction UI/Left board-case cover"),
                     Is.Null,
                     "The already-visible board must not acquire a closing lid on entry.");
+                var constructionUi = live.transform.Find("Construction UI");
+                Assert.That(constructionUi.Find("Observation frame").localScale.x,
+                    Is.EqualTo(1f).Within(0.01f),
+                    "The physical lid already unfolded; the UI leaf must not fold twice.");
+                for (var frame = 0; frame < 120 && !live.IsBoardCaseOpen; frame++)
+                    yield return null;
+                Assert.That(live.IsBoardCaseOpen, Is.True);
+                Assert.That(constructionUi.Find("Observation frame")
+                    .GetComponent<CanvasGroup>().alpha, Is.EqualTo(1f).Within(0.01f));
+                Assert.That(constructionUi.Find("7 by 7 construction board")
+                    .GetComponent<CanvasGroup>().alpha, Is.EqualTo(1f).Within(0.01f));
+                Assert.That(opening.CaseShell.Find("West lid hinge/Printed city inside lid")
+                    .GetComponent<Renderer>().enabled, Is.False,
+                    "The physical print should hand off to the matching UI page.");
             }
             Assert.That(live.transform.Find("Construction UI/Return to main menu"),
                 Is.Not.Null);
@@ -245,6 +268,11 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             yield return new WaitForSecondsRealtime(1.2f);
             Assert.That(opening.IsCaseClosed, Is.True,
                 "Returning to the menu must close the same two lid halves.");
+            if (SystemInfo.graphicsDeviceType !=
+                UnityEngine.Rendering.GraphicsDeviceType.Null)
+                Assert.That(opening.CaseShell.Find("West lid hinge/Printed city inside lid")
+                    .GetComponent<Renderer>().enabled, Is.True,
+                    "The printed lid must return before the UI pages disappear.");
             Assert.That(System.Array.FindAll(
                 generated.GetComponentsInChildren<RoomView>(true),
                 room => room.VisualRoot.gameObject.activeInHierarchy).Length,

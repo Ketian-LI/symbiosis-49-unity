@@ -83,6 +83,22 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 Is.Not.Null);
             Assert.That(preview.CaseShell.Find("East lid hinge/Navy lid half"),
                 Is.Not.Null);
+            Assert.That(preview.CaseShell.Find("West lid hinge/Printed city lid"),
+                Is.Not.Null, "The shut left lid needs the approved city artwork.");
+            Assert.That(preview.CaseShell.Find("East lid hinge/Printed oak lid"),
+                Is.Not.Null, "The shut right lid needs the approved oak artwork.");
+            var cityInside = preview.CaseShell.Find(
+                "West lid hinge/Printed city inside lid");
+            var oakInside = preview.CaseShell.Find(
+                "East lid hinge/Printed oak inside lid");
+            Assert.That(cityInside, Is.Not.Null,
+                "The opening animation must reveal printed city paper, not bare navy.");
+            Assert.That(oakInside, Is.Not.Null,
+                "The opening animation must reveal printed oak paper, not bare navy.");
+            Assert.That(cityInside.GetComponent<Renderer>().sharedMaterial.mainTexture,
+                Is.Not.Null);
+            Assert.That(oakInside.GetComponent<Renderer>().sharedMaterial.mainTexture,
+                Is.Not.Null);
             Assert.That(foundation, Is.Not.Null);
             Assert.That(foundation.gameObject.activeInHierarchy, Is.True);
             Assert.That(oak.VisualRoot.position.x, Is.EqualTo(0f).Within(0.01f));

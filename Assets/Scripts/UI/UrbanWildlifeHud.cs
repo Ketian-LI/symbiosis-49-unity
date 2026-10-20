@@ -3694,7 +3694,14 @@ namespace UrbanWildlifeRooms.UI
             var icon = CreateImage(
                 backing.Transform,
                 "Control Pictogram",
-                MainMenuVisualCatalog.GetSprite(iconVisual));
+                iconVisual switch
+                {
+                    MainMenuVisual.SettingsIcon => ConstructionIconCatalog.GetControl(
+                        ConstructionControlIcon.Settings),
+                    MainMenuVisual.LanguageIcon => ConstructionIconCatalog.GetControl(
+                        ConstructionControlIcon.Language),
+                    _ => MainMenuVisualCatalog.GetSprite(iconVisual)
+                });
             icon.preserveAspect = true;
             SetRect(icon.rectTransform, 18f, 18f, 56f, 56f);
 
@@ -3743,7 +3750,10 @@ namespace UrbanWildlifeRooms.UI
             var feedback = panel.AddComponent<MainMenuModeCardFeedback>();
             feedback.Initialize(rounded);
 
-            var icon = CreateImage(panel.transform, "Mode Pictogram", MainMenuVisualCatalog.GetSprite(iconVisual));
+            var icon = CreateImage(panel.transform, "Mode Pictogram",
+                iconVisual == MainMenuVisual.SandboxIcon
+                    ? ConstructionIconCatalog.GetControl(ConstructionControlIcon.EndlessMode)
+                    : MainMenuVisualCatalog.GetSprite(iconVisual));
             icon.preserveAspect = true;
             SetRect(icon.rectTransform, 22f, 13f, 68f, 68f);
 

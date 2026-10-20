@@ -232,6 +232,26 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             var controller = root.AddComponent<ConstructionPrototypeController>();
             controller.UseRunForTesting(run);
             yield return null;
+            var habitatDeadline = Time.realtimeSinceStartup + 3f;
+            while (!controller.IsBoardCaseOpen &&
+                Time.realtimeSinceStartup < habitatDeadline)
+                yield return null;
+            Assert.That(controller.IsBoardCaseOpen, Is.True);
+            var habitatCanvas = root.transform.Find("Construction UI");
+            var shrubTooltip = habitatCanvas.Find("Context tooltip/Tooltip details")
+                .GetComponent<Text>();
+            var shrubHover = habitatCanvas.Find("7 by 7 construction board/Cell 4,3")
+                .GetComponent<EventTrigger>();
+            var shrubPointer = new PointerEventData(EventSystem.current);
+            shrubHover.OnPointerEnter(shrubPointer);
+            Assert.That(shrubTooltip.text, Does.Contain("hedgehog and fox habitat"));
+            shrubHover.OnPointerExit(shrubPointer);
+            controller.UseLanguageForTesting(InterfaceLanguage.Chinese);
+            shrubHover.OnPointerEnter(shrubPointer);
+            Assert.That(shrubTooltip.text, Does.Contain("刺猬与狐狸栖地"));
+            Assert.That(shrubTooltip.preferredHeight,
+                Is.LessThanOrEqualTo(shrubTooltip.rectTransform.rect.height + 1f));
+            shrubHover.OnPointerExit(shrubPointer);
             if (SystemInfo.graphicsDeviceType ==
                 UnityEngine.Rendering.GraphicsDeviceType.Null)
             {
@@ -295,8 +315,9 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             var riskIcon = riskRoot.transform.Find(
                 "Construction UI/Building choices/Feedback backing/Feedback icon")
                 .GetComponent<Image>();
-            Assert.That(riskIcon.sprite, Is.Not.Null);
-            Assert.That(riskIcon.sprite.texture.name, Does.Contain("population-fox"));
+            Assert.That(riskIcon.sprite, Is.SameAs(
+                UrbanWildlifeRooms.UI.ConstructionIconCatalog.GetStatus(
+                    UrbanWildlifeRooms.UI.ConstructionStatusIcon.RiskAlert)));
             var forecast = run.PreviewEcologyDay();
             var riskTile = run.BuiltTiles.First(tile =>
                 tile.id == forecast.predationTileId);
@@ -449,7 +470,7 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator StoryTutorialPointsFromOakToMeadowAndBuildConfirmation()
+        public IEnumerator StoryTutorialSuggestsBuildTypeWithoutChoosingAPlot()
         {
             var root = new GameObject("Construction tutorial focus test");
             var controller = root.AddComponent<ConstructionPrototypeController>();
@@ -478,9 +499,14 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             var canvas = root.transform.Find("Construction UI");
             canvas.Find("Building choices/Green planting/Plant Meadow")
                 .GetComponent<Button>().onClick.Invoke();
-            Assert.That(focus.parent.name, Does.StartWith("Cell "));
-            Assert.That(focus.parent.Find("Buildable hint").gameObject.activeSelf,
-                Is.True);
+            Assert.That(focus.gameObject.activeSelf, Is.False,
+                "The tutorial must not single out a mandatory building plot.");
+            Assert.That(canvas.Find("7 by 7 construction board/Cell 1,1/Buildable hint")
+                .gameObject.activeSelf, Is.True,
+                "The distant meadow is a valid player choice.");
+            Assert.That(canvas.Find("7 by 7 construction board/Cell 5,4/Buildable hint")
+                .gameObject.activeSelf, Is.True,
+                "The adjacent meadow remains a valid player choice.");
 
             Assert.That(controller.RequestPlacement(4, 3), Is.True);
             Assert.That(focus.parent.name, Is.EqualTo("Confirm placement"));
@@ -514,11 +540,61 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             Assert.That(focus.parent.name, Is.EqualTo("Build Residence"));
             canvas.Find("Building choices/Build Residence")
                 .GetComponent<Button>().onClick.Invoke();
-            Assert.That(focus.parent.name, Does.StartWith("Cell "));
+            Assert.That(focus.gameObject.activeSelf, Is.False);
+            Assert.That(canvas.Find("7 by 7 construction board/Cell 7,7/Buildable hint")
+                .gameObject.activeSelf, Is.True);
             Assert.That(controller.RequestPlacement(3, 2), Is.True);
             Assert.That(focus.parent.name, Is.EqualTo("Confirm placement"));
             Assert.That(controller.ConfirmPendingPlacement(), Is.True);
             Assert.That(focus.parent.name, Is.EqualTo("Advance to next day"));
+            Object.Destroy(root);
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator DistantTutorialMeadowCanBeBuiltAndConnectedLater()
+        {
+            var root = new GameObject("Free tutorial placement test");
+            var controller = root.AddComponent<ConstructionPrototypeController>();
+            controller.UseRunForTesting(new ConstructionRunModel());
+            yield return null;
+            Assert.That(controller.AdvanceDay(), Is.True);
+            Assert.That(controller.TrySelect(ConstructionCategory.Green,
+                GreenPlanting.Meadow), Is.True);
+            Assert.That(controller.RequestPlacement(0, 0), Is.True);
+            Assert.That(controller.ConfirmPendingPlacement(), Is.True);
+            Assert.That(controller.BuiltCount, Is.EqualTo(2));
+            Assert.That(controller.AdvanceDay(), Is.True);
+            Assert.That(controller.Stage, Is.EqualTo(ConstructionStoryStage.GrowGreen),
+                "An isolated meadow should not prematurely attract pigeons.");
+            var habitatDeadline = Time.realtimeSinceStartup + 3f;
+            while (!controller.IsBoardCaseOpen &&
+                Time.realtimeSinceStartup < habitatDeadline)
+                yield return null;
+            Assert.That(controller.IsBoardCaseOpen, Is.True);
+            var canvas = root.transform.Find("Construction UI");
+            var habitatTooltip = canvas.Find("Context tooltip/Tooltip details")
+                .GetComponent<Text>();
+            var pointer = new PointerEventData(EventSystem.current);
+            var isolatedMeadow = canvas.Find("7 by 7 construction board/Cell 1,1")
+                .GetComponent<EventTrigger>();
+            isolatedMeadow.OnPointerEnter(pointer);
+            Assert.That(habitatTooltip.text, Does.Contain("Isolated green"));
+            isolatedMeadow.OnPointerExit(pointer);
+            Assert.That(controller.RequestPlacement(4, 3), Is.True);
+            Assert.That(controller.ConfirmPendingPlacement(), Is.True);
+            Assert.That(controller.AdvanceDay(), Is.True);
+            Assert.That(controller.Stage, Is.EqualTo(
+                ConstructionStoryStage.WelcomeResident),
+                "A later connected meadow must still progress the story.");
+            var connectedMeadow = canvas.Find("7 by 7 construction board/Cell 5,4")
+                .GetComponent<EventTrigger>();
+            connectedMeadow.OnPointerEnter(pointer);
+            Assert.That(habitatTooltip.text, Does.Contain("Grass seeds"),
+                "Pigeons can arrive when a young meadow first produces seeds.");
+            Assert.That(habitatTooltip.preferredHeight,
+                Is.LessThanOrEqualTo(habitatTooltip.rectTransform.rect.height + 1f));
+            connectedMeadow.OnPointerExit(pointer);
             Object.Destroy(root);
             yield return null;
         }
@@ -555,19 +631,19 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             var guide = canvas.Find("Building choices/Next step backing/Placement guide")
                 .GetComponent<Text>();
             Assert.That(heading.text, Is.EqualTo("CURRENT BUILD"));
-            Assert.That(guide.text, Does.Contain("Story tip: Meadow green"),
-                "The story suggestion must be distinguished from the current Oak selection.");
+            Assert.That(guide.text, Does.Contain("Pigeons need grass seeds"),
+                "The story should explain why meadow is suggested without replacing the current Oak selection.");
             Assert.That(guide.preferredHeight,
                 Is.LessThanOrEqualTo(guide.rectTransform.rect.height + 1f));
             controller.ToggleLanguage();
-            Assert.That(guide.text, Does.Contain("故事建议：草地绿地"));
+            Assert.That(guide.text, Does.Contain("鸽子需要草籽"));
             Assert.That(guide.preferredHeight,
                 Is.LessThanOrEqualTo(guide.rectTransform.rect.height + 1f));
             controller.ToggleLanguage();
 
             Assert.That(controller.TrySelect(ConstructionCategory.Green,
                 GreenPlanting.Meadow), Is.True);
-            Assert.That(guide.text, Does.Not.Contain("Story tip"));
+            Assert.That(guide.text, Does.Not.Contain("Pigeons need grass seeds"));
             emptyPlot.OnPointerEnter(pointer);
             Assert.That(tooltipDetails.text, Does.Contain("Click to preview"));
             emptyPlot.OnPointerExit(pointer);
@@ -609,37 +685,44 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             AssertStoryPresentationFits(controller);
             Assert.That(controller.AdvanceDay(), Is.True);
             AssertStoryPresentationFits(controller);
+            var canvas = root.transform.Find("Construction UI");
+            var storyPreview = canvas.Find("Building choices/Story cue backing/Story preview")
+                .GetComponent<Text>();
+            Assert.That(storyPreview.text, Does.Contain("松鼠"));
+            Assert.That(storyPreview.text, Does.Contain("草籽"),
+                "The meadow beat should grow from the squirrel's food story.");
 
             PlaceAndAdvance(controller, 4, 3, ConstructionCategory.Green,
                 GreenPlanting.Meadow);
             Assert.That(controller.Stage, Is.EqualTo(
                 ConstructionStoryStage.WelcomeResident));
+            Assert.That(storyPreview.text, Does.Contain("鸽群"));
+            Assert.That(storyPreview.text, Does.Contain("草籽"));
             Assert.That(controller.TryPlace(4, 3), Is.False);
+            Assert.That(storyPreview.text, Does.Contain("访客"));
             AssertStoryPresentationFits(controller);
             PlaceAndAdvance(controller, 3, 2, ConstructionCategory.Residence);
+            Assert.That(storyPreview.text, Does.Contain("饭吃"));
             PlaceAndAdvance(controller, 3, 1, ConstructionCategory.Restaurant);
             PlaceAndAdvance(controller, 2, 2, ConstructionCategory.Workshop);
+            Assert.That(storyPreview.text, Does.Contain("垃圾"));
             PlaceAndAdvance(controller, 2, 1, ConstructionCategory.Waste);
             PlaceAndAdvance(controller, 5, 3, ConstructionCategory.Residence);
             Assert.That(controller.Stage, Is.EqualTo(
                 ConstructionStoryStage.BuildStreet));
+            Assert.That(storyPreview.text, Does.Contain("第二户"));
             Assert.That(controller.TrySelect(ConstructionCategory.Street), Is.True);
             var focus = root.GetComponentsInChildren<RectTransform>(true)
                 .Single(rect => rect.name == "Tutorial focus");
-            Assert.That(focus.parent.name, Is.EqualTo("Cell 5,3"),
-                "The street hint should start at a buildable link toward the disconnected home.");
-            Assert.That(focus.parent.Find("Buildable hint").gameObject.activeSelf,
-                Is.True, "Tutorial focus must not ask the player to build on an occupied tile.");
+            Assert.That(focus.gameObject.activeSelf, Is.False,
+                "Street routing should be chosen by the player, not a single frame.");
             PlaceAndAdvance(controller, 4, 2, ConstructionCategory.Street);
-            Assert.That(focus.parent.name, Does.StartWith("Cell "));
-            Assert.That(focus.parent.Find("Buildable hint").gameObject.activeSelf,
-                Is.True, "Either side of the street link may be built next.");
+            Assert.That(focus.gameObject.activeSelf, Is.False);
             PlaceAndAdvance(controller, 5, 2, ConstructionCategory.Street);
-            Assert.That(focus.parent.name, Is.EqualTo("Cell 5,2"));
+            Assert.That(focus.gameObject.activeSelf, Is.False);
             PlaceAndAdvance(controller, 4, 1, ConstructionCategory.Street);
             Assert.That(controller.Stage, Is.EqualTo(
                 ConstructionStoryStage.AwaitRestaurantCrowding));
-            var canvas = root.transform.Find("Construction UI");
             Assert.That(canvas.Find("Building choices/Story cue backing/Story pictogram")
                 .GetComponent<Image>().sprite, Is.EqualTo(canvas.Find(
                     "Building choices/Build Waste/Building icon")
@@ -649,6 +732,11 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             PlaceAndAdvance(controller, 5, 1, ConstructionCategory.Supermarket);
             Assert.That(controller.Stage, Is.EqualTo(
                 ConstructionStoryStage.FreeBuild));
+            Assert.That(canvas.Find("Building choices/Story cue backing/Story preview")
+                .GetComponent<Text>().text, Does.Contain("由你决定"));
+            Assert.That(canvas.Find("Building choices/Next step backing/Placement guide")
+                .GetComponent<Text>().text, Does.Contain("今天还能自行选建一格"));
+            Assert.That(focus.gameObject.activeSelf, Is.False);
             AssertStoryPresentationFits(controller);
             Object.Destroy(root);
             yield return null;
@@ -735,7 +823,7 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             Assert.That(controller.TryPlace(4, 3), Is.True,
                 "A residence is allowed before the pigeon lesson.");
             Assert.That(canvas.Find("Building choices/Story cue backing/Story instruction")
-                .GetComponent<Text>().text, Does.Contain("resident arrived early"),
+                .GetComponent<Text>().text, Does.Contain("People arrived before the pigeons"),
                 "The story should acknowledge a player-led build order.");
             Assert.That(controller.TrySelect(ConstructionCategory.Square), Is.True,
                 "Players may already choose tomorrow's building.");
@@ -830,6 +918,12 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             var canvas = root.transform.Find("Construction UI");
             var left = canvas.Find("Observation frame").GetComponent<RectTransform>();
             var right = canvas.Find("Action frame").GetComponent<RectTransform>();
+            Assert.That(left.rect.height, Is.EqualTo(right.rect.height));
+            Assert.That(left.rect.height, Is.EqualTo(760f));
+            Assert.That(left.Find("Printed leaf paper").GetComponent<Image>().sprite,
+                Is.Not.Null, "The city print should be a real leaf texture.");
+            Assert.That(right.Find("Printed leaf paper").GetComponent<Image>().sprite,
+                Is.Not.Null, "The oak print should be a real leaf texture.");
             var sharedInformation = canvas.Find("Building choices")
                 .GetComponent<CanvasGroup>();
             if (SystemInfo.graphicsDeviceType !=
@@ -840,6 +934,8 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 Assert.That(right.localScale.x, Is.EqualTo(0f).Within(0.01f));
                 Assert.That(canvas.Find("Left board-case cover").gameObject.activeSelf,
                     Is.True);
+                Assert.That(canvas.Find("Left board-case cover/City cover print")
+                    .GetComponent<Image>().sprite, Is.Not.Null);
                 Assert.That(root.GetComponent<ConstructionWorldView>()
                     .BoardFoundation.Find("Folding board-case hardware"),
                     Is.Not.Null, "The original 3D board gains a physical tray and hinges.");
@@ -995,7 +1091,7 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 "Text must remain inside the opaque part of the left paper leaf.");
             Assert.That(category.text, Is.EqualTo("绿地"));
             Assert.That(canvas.Find("Building choices/Build Green/Build limit badge/Built and limit")
-                .GetComponent<Text>().text, Is.EqualTo("1/24"));
+                .GetComponent<Text>().text, Is.EqualTo("1/21"));
             Assert.That(category.font.name, Does.Contain("NotoSansSC"));
             Assert.That(canvas.Find("Paper background").GetComponent<Image>().sprite,
                 Is.Not.Null);
@@ -1024,10 +1120,13 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                     "Unbuilt plots must be visible in the 3D board render.");
                 Assert.That(world.Find("Board base/Empty plot 1,1")
                     .localScale.x, Is.LessThan(WorldScaleStandards.CellSizeMeters),
-                    "Vacant cells should expose the original navy board backing.");
+                    "Vacant cells should leave a fine ivory grid joint.");
+                Assert.That(world.Find("Board base/Empty plot 1,1")
+                    .localScale.x, Is.GreaterThan(WorldScaleStandards.CellSizeMeters - 0.1f),
+                    "The green field must not look like widely spaced raised tiles.");
                 Assert.That(world.Find(
                     "Board base/Empty plot 1,1/Pastel plot face"), Is.Not.Null,
-                    "Vacant plots should use the lighter face while keeping the navy frame.");
+                    "Vacant plots keep the 3D face while matching the sage field.");
                 Assert.That(world.GetComponentsInChildren<Transform>(true)
                     .Any(item => item.name == "Low-poly Mature Tree"), Is.True,
                     "The construction oak must reuse the original faceted tree kit.");
@@ -1060,7 +1159,7 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             Assert.That(controller.Language, Is.EqualTo(InterfaceLanguage.English));
             Assert.That(category.text, Is.EqualTo("Green"));
             Assert.That(category.font.name, Does.Contain("Nunito"));
-            Assert.That(story.text, Does.Contain("residence"));
+            Assert.That(story.text, Does.Contain("home"));
             Assert.That(englishButton.targetGraphic.color.a,
                 Is.GreaterThan(chineseButton.targetGraphic.color.a));
             englishButton.onClick.Invoke();
@@ -1136,10 +1235,10 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             var badge = canvas.Find(
                 "Building choices/Build Green/Build limit badge/Built and limit")
                 .GetComponent<Text>();
-            Assert.That(badge.text, Is.EqualTo("24/24"));
+            Assert.That(badge.text, Is.EqualTo("21/21"));
             var guide = canvas.Find("Building choices/Next step backing/Placement guide")
                 .GetComponent<Text>();
-            Assert.That(guide.text, Does.Contain("limit 24/24"));
+            Assert.That(guide.text, Does.Contain("limit 21/21"));
             Assert.That(controller.TrySelect(ConstructionCategory.Green), Is.False);
             var feedback = canvas.Find("Building choices/Feedback backing/Feedback")
                 .GetComponent<Text>();
@@ -1166,19 +1265,30 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                     .Select(row => (column, row)))
                 .Where(position => position.column != 3 || position.row != 3)
                 .OrderBy(position => Mathf.Abs(position.column - 3) +
-                    Mathf.Abs(position.row - 3));
-            foreach (var position in positions)
+                    Mathf.Abs(position.row - 3)).ToArray();
+            var requiredServices = new[]
             {
-                var category = !run.IsCategoryAtLimit(ConstructionCategory.Green)
-                    ? ConstructionCategory.Green
-                    : !run.IsCategoryAtLimit(ConstructionCategory.Residence)
-                        ? ConstructionCategory.Residence : ConstructionCategory.Square;
+                ConstructionCategory.Workshop, ConstructionCategory.Restaurant,
+                ConstructionCategory.Supermarket, ConstructionCategory.Waste,
+                ConstructionCategory.Street
+            };
+            for (var index = 0; index < positions.Length; index++)
+            {
+                var position = positions[index];
+                var category = index < 20 ? ConstructionCategory.Green
+                    : index < 32 ? ConstructionCategory.Residence
+                    : index < 37 ? requiredServices[index - 32]
+                    : ConstructionCategory.Square;
                 Assert.That(run.TryBuild(position.column, position.row,
                     category, category == ConstructionCategory.Green
                         ? GreenPlanting.Meadow : GreenPlanting.None,
                     out _, out var failure, out _), Is.True, failure.ToString());
                 Assert.That(run.TrySimulateDay(out _), Is.True);
             }
+            Assert.That(run.BuiltCount, Is.EqualTo(49));
+            Assert.That(run.CategoryBuiltCount(ConstructionCategory.Green), Is.EqualTo(21));
+            Assert.That(run.CategoryBuiltCount(ConstructionCategory.Residence), Is.EqualTo(12));
+            Assert.That(run.CategoryBuiltCount(ConstructionCategory.Square), Is.EqualTo(11));
             var root = new GameObject("Construction result test");
             var controller = root.AddComponent<ConstructionPrototypeController>();
             controller.UseRunForTesting(run);
@@ -1321,6 +1431,29 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             PlaceAndAdvance(controller, 5, 1, ConstructionCategory.Supermarket);
             Assert.That(controller.Stage, Is.EqualTo(
                 ConstructionStoryStage.FreeBuild));
+            var freeStory = root.transform.Find(
+                "Construction UI/Building choices/Story cue backing");
+            Assert.That(freeStory.Find("Story preview").GetComponent<Text>().text,
+                Does.Contain("choose any room"));
+            Assert.That(freeStory.Find("Story pictogram").GetComponent<Image>().sprite,
+                Is.SameAs(UrbanWildlifeRooms.UI.ConstructionIconCatalog.GetControl(
+                    UrbanWildlifeRooms.UI.ConstructionControlIcon.FillMode)),
+                "Free-build guidance must not picture the last tutorial room.");
+            var freeGuide = root.transform.Find(
+                "Construction UI/Building choices/Next step backing");
+            Assert.That(freeGuide.Find("Next step heading").GetComponent<Text>().text,
+                Is.EqualTo("TODAY"));
+            Assert.That(freeGuide.Find("Placement guide").GetComponent<Text>().text,
+                Does.Contain("one room of your choice"));
+            Assert.That(root.GetComponentsInChildren<RectTransform>(true)
+                .Single(rect => rect.name == "Tutorial focus").gameObject.activeSelf,
+                Is.False);
+            Assert.That(BuildableAt(root, 5, 4), Is.False,
+                "The last tutorial selection must not auto-mark free-build plots.");
+            Assert.That(controller.RequestPlacement(5, 4), Is.False);
+            Assert.That(controller.TryPlace(5, 4), Is.False);
+            Assert.That(controller.HasPendingPlacement, Is.False);
+            Assert.That(controller.BuiltCount, Is.EqualTo(12));
 
             var positions = Enumerable.Range(0, 7)
                 .SelectMany(column => Enumerable.Range(0, 7)
@@ -1472,8 +1605,8 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             Assert.That(controller.AdvanceDay(), Is.True);
             Assert.That(BuildableAt(root, 4, 3), Is.True,
                 "An orthogonal green cell should be suggested.");
-            Assert.That(BuildableAt(root, 4, 2), Is.False,
-                "A diagonal cell should not be suggested.");
+            Assert.That(BuildableAt(root, 4, 2), Is.True,
+                "A distant empty cell is a valid green placement.");
             Assert.That(controller.TrySelect(ConstructionCategory.Green,
                 GreenPlanting.Meadow), Is.True);
             Assert.That(controller.TryPlace(4, 3), Is.True);
@@ -1484,7 +1617,8 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             Assert.That(controller.TryPlace(4, 3), Is.False);
             Assert.That(controller.TrySelect(ConstructionCategory.Residence), Is.True);
             Assert.That(BuildableAt(root, 3, 2), Is.True);
-            Assert.That(BuildableAt(root, 6, 6), Is.False);
+            Assert.That(BuildableAt(root, 6, 6), Is.True,
+                "A residence may be placed away from the starter oak.");
             Assert.That(controller.TryPlace(3, 2), Is.True);
             Assert.That(controller.AdvanceDay(), Is.True);
             Assert.That(controller.TrySelect(ConstructionCategory.Restaurant), Is.True);
