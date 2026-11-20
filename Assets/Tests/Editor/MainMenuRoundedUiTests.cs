@@ -1,5 +1,6 @@
 using System.Linq;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -27,7 +28,27 @@ namespace UrbanWildlifeRooms.Tests.Editor
                 var wordmark = rects.Single(rect => rect.name == "SYMBIOSIS 49 Wordmark");
                 Assert.That(wordmark.localScale, Is.EqualTo(Vector3.one),
                     "The title must not be compressed vertically.");
-                Assert.That(wordmark.GetComponent<Image>().preserveAspect, Is.True);
+                Assert.That(wordmark.GetComponent<Image>().sprite, Is.Not.Null,
+                    "The title is a separate high-resolution artwork component.");
+                Assert.That(wordmark.GetComponent<Image>().raycastTarget, Is.False);
+
+                foreach (var name in new[] { "Sandbox Mode Entrance", "Research Mode Entrance" })
+                {
+                    var card = rects.Single(rect => rect.name == name);
+                    var plaque = card.GetComponentsInChildren<Image>(true)
+                        .Single(image => image.name == "Mode plaque artwork");
+                    Assert.That(plaque.sprite, Is.Not.Null, name);
+                    Assert.That(plaque.raycastTarget, Is.False, name);
+                }
+
+                foreach (var name in new[] { "Desktop Settings", "Desktop Language", "Desktop Exit" })
+                {
+                    var control = rects.Single(rect => rect.name == name);
+                    var baseImage = control.Find("Paper Button Backing").GetComponent<Image>();
+                    Assert.That(baseImage.sprite, Is.Not.Null, name);
+                    Assert.That(baseImage.transform.Find("Control Pictogram")
+                        .GetComponent<Image>().sprite, Is.Not.Null, name);
+                }
 
                 foreach (var name in new[] { "Sandbox Mode Entrance", "Research Mode Entrance" })
                 {
@@ -47,6 +68,25 @@ namespace UrbanWildlifeRooms.Tests.Editor
             finally
             {
                 EditorSceneManager.CloseScene(scene, true);
+            }
+        }
+
+        [Test]
+        public void ReferenceArtworkImportsWithoutDestructiveScalingOrCompression()
+        {
+            foreach (var path in new[]
+            {
+                "Assets/Resources/UI/ConstructionMainMenu/menu-title-lockup-v01.png",
+                "Assets/Resources/UI/ConstructionMainMenu/menu-mode-plaque-v02.png",
+                "Assets/Resources/UI/GameplayHud/gameplay-tabletop-backdrop-v01.png",
+                "Assets/Resources/UI/ConstructionCase/lid-city-oak-v01.png"
+            })
+            {
+                var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+                Assert.That(importer, Is.Not.Null, path);
+                Assert.That(importer.npotScale, Is.EqualTo(TextureImporterNPOTScale.None), path);
+                Assert.That(importer.textureCompression,
+                    Is.EqualTo(TextureImporterCompression.Uncompressed), path);
             }
         }
     }

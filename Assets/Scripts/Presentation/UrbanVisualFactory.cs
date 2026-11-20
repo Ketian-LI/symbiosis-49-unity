@@ -7,6 +7,7 @@ namespace UrbanWildlifeRooms.Presentation
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
         private static readonly int ColorId = Shader.PropertyToID("_Color");
         private static readonly int InkStrengthId = Shader.PropertyToID("_InkStrength");
+        private static readonly int ShadowStrengthId = Shader.PropertyToID("_ShadowStrength");
 
         public static Material CreateSurfaceMaterial()
         {
@@ -103,6 +104,16 @@ namespace UrbanWildlifeRooms.Presentation
             var block = new MaterialPropertyBlock();
             renderer.GetPropertyBlock(block);
             block.SetFloat(InkStrengthId, strength);
+            renderer.SetPropertyBlock(block);
+        }
+
+        public static void SetShadowStrength(Renderer renderer, float strength)
+        {
+            if (renderer == null || renderer.sharedMaterial == null ||
+                !renderer.sharedMaterial.HasProperty(ShadowStrengthId)) return;
+            var block = new MaterialPropertyBlock();
+            renderer.GetPropertyBlock(block);
+            block.SetFloat(ShadowStrengthId, Mathf.Clamp01(strength));
             renderer.SetPropertyBlock(block);
         }
     }

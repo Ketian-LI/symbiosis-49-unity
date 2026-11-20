@@ -25,6 +25,7 @@ namespace UrbanWildlifeRooms.Core
         public string tileId;
         public int cleared;
         public int produced;
+        public int foraged;
         public int remaining;
     }
 
@@ -44,24 +45,26 @@ namespace UrbanWildlifeRooms.Core
         public IReadOnlyCollection<string> BlockedHomes { get; }
         public IReadOnlyCollection<string> BlockedFoodServices { get; }
         public IReadOnlyDictionary<string, int> Cleared { get; }
+        public IReadOnlyDictionary<string, int> CollectedByRoom { get; }
 
         public ConstructionWasteAvailability(Dictionary<string, int> backlog,
             HashSet<string> blockedHomes, HashSet<string> blockedFoodServices,
-            Dictionary<string, int> cleared)
+            Dictionary<string, int> cleared, Dictionary<string, int> collectedByRoom)
         {
             BacklogAfterCleanup = backlog;
             BlockedHomes = blockedHomes;
             BlockedFoodServices = blockedFoodServices;
             Cleared = cleared;
+            CollectedByRoom = collectedByRoom;
         }
     }
 
-    // Provisional values: each room clears two portions/day within Manhattan
-    // distance two; three uncollected portions disrupt a home or food service.
+    // Legacy runs clear two portions/day and close rooms at three portions.
+    // Finite hand runs clear every nearby portion without closing rooms.
     public sealed class ConstructionWasteModel
     {
         public const int CleanupCapacity = 2;
-        public const int CleanupRadius = 2;
+        public const int CleanupRadius = 1;
         public const int DisruptionThreshold = 3;
 
         private readonly Dictionary<string, int> backlog = new();
@@ -70,7 +73,7 @@ namespace UrbanWildlifeRooms.Core
             backlog.TryGetValue(tileId, out var amount) ? amount : 0;
 
         public ConstructionWasteAvailability PreviewAfterCleanup(
-            ConstructionBoardModel board)
+            ConstructionBoardModel board, bool clearAllNearby = false)
         {
             if (board == null) throw new ArgumentNullException(nameof(board));
             var built = board.BuiltTiles;
@@ -80,14 +83,31 @@ namespace UrbanWildlifeRooms.Core
             var remaining = sources.ToDictionary(tile => tile.id,
                 tile => Backlog(tile.id));
             var cleared = sources.ToDictionary(tile => tile.id, _ => 0);
+            var collectedByRoom = built.Where(tile =>
+                tile.category == ConstructionCategory.Waste)
+                .ToDictionary(tile => tile.id, _ => 0);
             foreach (var room in built.Where(tile =>
                          tile.category == ConstructionCategory.Waste)
                          .OrderBy(tile => tile.buildIndex))
             {
+                var covered = CoveredSources(room, built, sources);
+                if (clearAllNearby)
+                {
+                    foreach (var source in sources.Where(tile =>
+                                 remaining[tile.id] > 0 &&
+                                 covered.Contains(tile.id)))
+                    {
+                        var amount = remaining[source.id];
+                        remaining[source.id] = 0;
+                        cleared[source.id] += amount;
+                        collectedByRoom[room.id] += amount;
+                    }
+                    continue;
+                }
                 for (var portion = 0; portion < CleanupCapacity; portion++)
                 {
                     var source = sources.Where(tile => remaining[tile.id] > 0 &&
-                            Distance(tile, room) <= CleanupRadius)
+                            covered.Contains(tile.id))
                         .OrderByDescending(tile => remaining[tile.id])
                         .ThenBy(tile => Distance(tile, room))
                         .ThenBy(tile => tile.buildIndex)
@@ -95,21 +115,27 @@ namespace UrbanWildlifeRooms.Core
                     if (source == null) break;
                     remaining[source.id]--;
                     cleared[source.id]++;
+                    collectedByRoom[room.id]++;
                 }
             }
             return new ConstructionWasteAvailability(remaining,
-                sources.Where(tile => tile.category == ConstructionCategory.Residence &&
+                sources.Where(tile => !clearAllNearby &&
+                    tile.category == ConstructionCategory.Residence &&
                     remaining[tile.id] >= DisruptionThreshold)
                     .Select(tile => tile.id).ToHashSet(),
-                sources.Where(tile => tile.category is
-                    ConstructionCategory.Restaurant or ConstructionCategory.Supermarket &&
+                sources.Where(tile => !clearAllNearby &&
+                    (tile.category is ConstructionCategory.Restaurant or
+                        ConstructionCategory.Supermarket) &&
                     remaining[tile.id] >= DisruptionThreshold)
-                    .Select(tile => tile.id).ToHashSet(), cleared);
+                    .Select(tile => tile.id).ToHashSet(), cleared,
+                collectedByRoom);
         }
 
         public ConstructionWasteDayResult SettleDay(int day,
             ConstructionBoardModel board, ConstructionHumanDayResult human,
-            ConstructionWasteAvailability preview)
+            ConstructionWasteAvailability preview,
+            IReadOnlyDictionary<string, int> supermarketForaged = null,
+            bool clearAllNearby = false)
         {
             if (board == null) throw new ArgumentNullException(nameof(board));
             if (human == null) throw new ArgumentNullException(nameof(human));
@@ -117,23 +143,41 @@ namespace UrbanWildlifeRooms.Core
             if (day <= LastSettledDay || human.day != day)
                 throw new InvalidOperationException("Waste was already settled for this day.");
             var result = new ConstructionWasteDayResult { day = day };
-            foreach (var tile in board.BuiltTiles.Where(tile => tile.category is
-                         ConstructionCategory.Residence or ConstructionCategory.Restaurant or
-                         ConstructionCategory.Supermarket))
+            var built = board.BuiltTiles;
+            var wasteRooms = clearAllNearby ? built.Where(tile =>
+                tile.category == ConstructionCategory.Waste).ToArray() :
+                Array.Empty<ConstructionTileData>();
+            var sources = built.Where(tile => tile.category is
+                ConstructionCategory.Residence or ConstructionCategory.Restaurant or
+                ConstructionCategory.Supermarket).ToArray();
+            var covered = new HashSet<string>();
+            foreach (var room in wasteRooms)
+                covered.UnionWith(CoveredSources(room, built, sources));
+            foreach (var tile in sources)
             {
                 var produced = tile.category == ConstructionCategory.Residence
                     ? human.residents.Count(person => person.homeTileId == tile.id)
                     : human.residents.Count(person => person.mealTileId == tile.id);
+                var eaten = supermarketForaged != null &&
+                    supermarketForaged.TryGetValue(tile.id, out var portions)
+                    ? portions : 0;
+                if (eaten < 0 || eaten > produced ||
+                    eaten > 0 && tile.category != ConstructionCategory.Supermarket)
+                    throw new InvalidOperationException("Invalid urban forage amount.");
                 var cleaned = preview.BacklogAfterCleanup.TryGetValue(tile.id,
                     out var afterCleanup) ? afterCleanup : 0;
-                var remaining = cleaned + produced;
+                var remaining = cleaned + produced - eaten;
+                var newlyCleared = clearAllNearby && covered.Contains(tile.id)
+                    ? remaining : 0;
+                remaining -= newlyCleared;
                 backlog[tile.id] = remaining;
                 result.changes.Add(new ConstructionWasteChange
                 {
                     tileId = tile.id,
                     cleared = preview.Cleared.TryGetValue(tile.id,
-                        out var cleared) ? cleared : 0,
+                        out var cleared) ? cleared + newlyCleared : newlyCleared,
                     produced = produced,
+                    foraged = eaten,
                     remaining = remaining
                 });
             }
@@ -190,9 +234,43 @@ namespace UrbanWildlifeRooms.Core
             return waste;
         }
 
-        private static int Distance(ConstructionTileData first,
+        private static long Distance(ConstructionTileData first,
             ConstructionTileData second) =>
-            Math.Abs(first.column - second.column) +
-            Math.Abs(first.row - second.row);
+            ConstructionBoardModel.GridDistance(first.column, first.row,
+                second.column, second.row);
+
+        // A waste room serves its surrounding eight plots and any source
+        // reached through a continuous shared-edge chain of street plots.
+        private static HashSet<string> CoveredSources(ConstructionTileData room,
+            IReadOnlyList<ConstructionTileData> built,
+            IReadOnlyList<ConstructionTileData> sources)
+        {
+            var covered = sources.Where(source =>
+                Distance(room, source) <= CleanupRadius)
+                .Select(source => source.id).ToHashSet();
+            var streets = built.Where(tile =>
+                tile.category == ConstructionCategory.Street).ToArray();
+            var visited = new HashSet<string>();
+            var pending = new Queue<ConstructionTileData>();
+            foreach (var street in streets.Where(tile =>
+                         SharesEdge(room, tile)))
+                if (visited.Add(street.id)) pending.Enqueue(street);
+            while (pending.Count > 0)
+            {
+                var current = pending.Dequeue();
+                foreach (var source in sources.Where(tile =>
+                             SharesEdge(current, tile)))
+                    covered.Add(source.id);
+                foreach (var street in streets.Where(tile =>
+                             SharesEdge(current, tile)))
+                    if (visited.Add(street.id)) pending.Enqueue(street);
+            }
+            return covered;
+        }
+
+        private static bool SharesEdge(ConstructionTileData first,
+            ConstructionTileData second) =>
+            ConstructionBoardModel.AreCardinalNeighbours(first.column,
+                first.row, second.column, second.row);
     }
 }

@@ -151,6 +151,7 @@ namespace UrbanWildlifeRooms.UI
             label.alignment = alignment;
             label.color = color;
             label.raycastTarget = false;
+            LegacyTextTmpBridge.Attach(label);
             return label;
         }
 
@@ -311,6 +312,7 @@ namespace UrbanWildlifeRooms.UI
             label.alignment = TextAnchor.MiddleCenter;
             label.color = WarmPaper;
             label.raycastTarget = false;
+            LegacyTextTmpBridge.Attach(label);
 
             var badge = new Badge(root, roomId);
             UpdateBadgePosition(badge);

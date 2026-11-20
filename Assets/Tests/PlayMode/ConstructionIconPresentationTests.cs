@@ -28,12 +28,24 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 Assert.That(At($"Building choices/Build {category}/Building icon")
                     ?.sprite, Is.SameAs(ConstructionIconCatalog.GetBuild(category)),
                     $"The {category} choice must show its own icon.");
-            Assert.That(At("Building choices/Green planting/Plant Oak/Plant icon")?.sprite,
-                Is.SameAs(ConstructionIconCatalog.GetBuild(
-                    ConstructionCategory.Green, GreenPlanting.Oak)));
-            Assert.That(At("Building choices/Story cue backing/Animal meals metric/Icon")?.sprite,
-                Is.SameAs(ConstructionIconCatalog.GetStatus(
-                    ConstructionStatusIcon.AnimalFood)));
+            Assert.That(root.transform.Find(
+                "Construction UI/Building choices/Green planting"), Is.Null,
+                "Green vegetation is no longer a second palette choice.");
+            const string leftIcons = "UI/ConstructionCase/LeftPanelIcons/";
+            foreach (var name in new[]
+                     { "oak_print", "animal_score", "resident_score", "route_success" })
+                Assert.That(Resources.Load<Sprite>(leftIcons + name), Is.Not.Null,
+                    $"The {name} icon must import as a transparent UI sprite.");
+            Assert.That(At("Building choices/Story cue backing/Story pictogram")?.sprite,
+                Is.SameAs(Resources.Load<Sprite>(leftIcons + "oak_print")));
+            Assert.That(At("Building choices/Story cue backing/Animal score metric/Icon")?.sprite,
+                Is.SameAs(Resources.Load<Sprite>(leftIcons + "animal_score")));
+            Assert.That(At("Building choices/Story cue backing/Work cycles metric/Icon")?.sprite,
+                Is.SameAs(Resources.Load<Sprite>(leftIcons + "resident_score")));
+            Assert.That(At("Route inspection/Route success icon")?.sprite,
+                Is.SameAs(Resources.Load<Sprite>(leftIcons + "route_success")));
+            Assert.That(At("Route inspection/Route success icon")?.raycastTarget,
+                Is.False);
             Assert.That(At("Building choices/Open build palette/Action icon")?.sprite,
                 Is.SameAs(ConstructionIconCatalog.GetControl(
                     ConstructionControlIcon.Build)));

@@ -14,14 +14,22 @@ namespace UrbanWildlifeRooms.Presentation
         public static readonly Color BoardSlotTop = Hex("C9C6B8");
         // The construction modes unfold onto one continuous printed field.
         // Keep this separate from the legacy simulation's pale vacant slots.
-        public static readonly Color ConstructionGrid = Hex("DDD5B7");
-        public static readonly Color ConstructionGround = Hex("6F8068");
-        public static readonly Color ConstructionGroundAlternate = Hex("70816A");
+        public static readonly Color ConstructionGrid = Hex("E4D5B7");
+        public static readonly Color ConstructionGround = Hex("70826E");
+        public static readonly Color ConstructionGroundAlternate = Hex("72836F");
+        public static readonly Color ConstructionFrameNavy = Hex("1B303B");
+        public static readonly Color ConstructionFrameShade = Hex("13242D");
+        public static readonly Color ConstructionIvory = Hex("E9D9B5");
+        public static readonly Color ConstructionBrass = Hex("C6A363");
         // The assembled-board reference uses a charcoal-navy frame; the brighter
         // blue from the isolated room concepts is reserved for later skins.
         public static readonly Color Boundary = Hex("263653");
         public static readonly Color BoardFrameWood = Hex("755E49");
         public static readonly Color BoardFrameBrass = Hex("C4A36B");
+        // Closed-case edges are much darker and less blue than the game grid.
+        public static readonly Color CaseWall = Hex("1B1E23");
+        public static readonly Color CaseUnderside = Hex("111416");
+        public static readonly Color CaseFrontLip = Hex("695540");
         // Light in the scene lifts this warm cream toward the reference threshold.
         public static readonly Color Doorframe = Hex("C8AB82");
         public static readonly Color Wall = Hex("24324C");
@@ -77,6 +85,26 @@ namespace UrbanWildlifeRooms.Presentation
                 RoomType.EcologicalBuffer => Hex("789064"),
                 RoomType.CommunitySquare => Hex("B49F7B"),
                 _ => Color.gray
+            };
+        }
+
+        // Construction rooms keep their distinct interiors, but the exposed
+        // ground uses the same muted ink and paper palette as the board.
+        public static Color ForConstructionRoom(RoomType type)
+        {
+            return type switch
+            {
+                RoomType.CentralPark => Hex("789363"),
+                RoomType.OakHabitat => Hex("738C58"),
+                RoomType.ShrubHabitat => Hex("849464"),
+                RoomType.Residence => Hex("9186A2"),
+                RoomType.Office => Hex("688486"),
+                RoomType.Canteen => Hex("A78060"),
+                RoomType.Supermarket => Hex("C4A76F"),
+                RoomType.Garage => Hex("657780"),
+                RoomType.CommunitySquare => Hex("B2A17D"),
+                RoomType.Trash => Hex("A76554"),
+                _ => ForRoom(type)
             };
         }
 

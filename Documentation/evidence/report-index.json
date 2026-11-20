@@ -1,0 +1,51 @@
+[
+  {
+    "batch": "scoring-and-storage",
+    "total": 58,
+    "passed": 58,
+    "failed": 0,
+    "file": "scoring-and-storage.xml"
+  },
+  {
+    "batch": "result-interactions",
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "file": "result-interactions.xml"
+  },
+  {
+    "batch": "goal-restart",
+    "total": 8,
+    "passed": 8,
+    "failed": 0,
+    "file": "goal-restart.xml"
+  },
+  {
+    "batch": "goal-restart-before-fix",
+    "total": 2,
+    "passed": 1,
+    "failed": 1,
+    "file": "goal-restart-before-fix.xml"
+  },
+  {
+    "batch": "story-model",
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "file": "story-model.xml"
+  },
+  {
+    "batch": "story-interface",
+    "total": 9,
+    "passed": 9,
+    "failed": 0,
+    "file": "story-interface.xml"
+  },
+  {
+    "batch": "story-final-render",
+    "total": 1,
+    "passed": 1,
+    "failed": 0,
+    "file": "story-final-render.xml"
+  }
+]

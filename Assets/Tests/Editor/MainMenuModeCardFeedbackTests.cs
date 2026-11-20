@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 using UrbanWildlifeRooms.UI;
 
 namespace UrbanWildlifeRooms.Tests.Editor
@@ -8,7 +9,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
     public sealed class MainMenuModeCardFeedbackTests
     {
         [Test]
-        public void HoverAndSelectionTintRoundedCardBlueThenRestoreTransparency()
+        public void HoverAndSelectionTintTheSinglePlaqueWithoutAnotherBorder()
         {
             var root = new GameObject("Mode Card Feedback Test", typeof(RectTransform),
                 typeof(CanvasRenderer), typeof(RoundedPanelGraphic));
@@ -16,40 +17,43 @@ namespace UrbanWildlifeRooms.Tests.Editor
             try
             {
                 var artwork = root.GetComponent<RoundedPanelGraphic>();
+                var plaqueObject = new GameObject("Plaque artwork", typeof(RectTransform),
+                    typeof(CanvasRenderer), typeof(Image));
+                plaqueObject.transform.SetParent(root.transform, false);
+                var plaque = plaqueObject.GetComponent<Image>();
                 var feedback = root.AddComponent<MainMenuModeCardFeedback>();
-                feedback.Initialize(artwork);
+                feedback.Initialize(artwork, plaque);
 
-                var restingColor = artwork.color;
-                var restingBorder = artwork.BorderColor;
-                Assert.That(artwork.color.a, Is.LessThan(0.5f));
+                var restingColor = plaque.color;
+                Assert.That(artwork.BorderWidth, Is.Zero);
+                Assert.That(artwork.color.a, Is.LessThan(0.01f));
                 feedback.OnPointerEnter(null);
-                Assert.That(artwork.color.b, Is.GreaterThan(restingColor.b));
-                Assert.That(artwork.color.a, Is.GreaterThan(0.5f));
-                Assert.That(artwork.color.a, Is.LessThan(0.8f));
-                Assert.That(artwork.BorderColor.b, Is.GreaterThan(restingBorder.b));
+                Assert.That(plaque.color, Is.Not.EqualTo(restingColor));
+                Assert.That(artwork.BorderWidth, Is.Zero);
                 feedback.OnPointerExit(null);
-                Assert.That(artwork.color, Is.EqualTo(restingColor));
+                Assert.That(plaque.color, Is.EqualTo(restingColor));
                 feedback.OnSelect((BaseEventData)null);
-                Assert.That(artwork.color.b, Is.GreaterThan(restingColor.b));
+                Assert.That(plaque.color, Is.Not.EqualTo(restingColor));
                 feedback.OnPointerEnter(null);
                 feedback.OnPointerExit(null);
-                Assert.That(artwork.color.b, Is.GreaterThan(restingColor.b),
+                Assert.That(plaque.color, Is.Not.EqualTo(restingColor),
                     "Keyboard selection survives mouse exit.");
                 feedback.OnDeselect((BaseEventData)null);
-                Assert.That(artwork.color, Is.EqualTo(restingColor));
+                Assert.That(plaque.color, Is.EqualTo(restingColor));
                 feedback.OnPointerEnter(null);
                 feedback.OnSelect((BaseEventData)null);
                 feedback.OnDeselect((BaseEventData)null);
-                Assert.That(artwork.color.b, Is.GreaterThan(restingColor.b),
+                Assert.That(plaque.color, Is.Not.EqualTo(restingColor),
                     "Mouse hover survives keyboard deselection.");
                 feedback.OnPointerExit(null);
-                Assert.That(artwork.color, Is.EqualTo(restingColor));
+                Assert.That(plaque.color, Is.EqualTo(restingColor));
 
                 feedback.OnPointerEnter(null);
                 feedback.OnPointerDown(null);
-                Assert.That(artwork.color.a, Is.GreaterThan(0.6f));
+                Assert.That(plaque.color.b, Is.LessThan(restingColor.b));
                 feedback.OnPointerUp(null);
-                Assert.That(artwork.color.a, Is.LessThan(0.6f));
+                Assert.That(plaque.color.b, Is.GreaterThan(restingColor.b * 0.85f));
+                Assert.That(artwork.BorderWidth, Is.Zero);
             }
             finally
             {

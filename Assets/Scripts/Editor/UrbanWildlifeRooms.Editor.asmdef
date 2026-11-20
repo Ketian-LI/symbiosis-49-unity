@@ -2,7 +2,8 @@
   "name": "UrbanWildlifeRooms.Editor",
   "rootNamespace": "UrbanWildlifeRooms.Editor",
   "references": [
-    "UrbanWildlifeRooms.Runtime"
+    "UrbanWildlifeRooms.Runtime",
+    "Unity.TextMeshPro"
   ],
   "includePlatforms": [
     "Editor"
@@ -16,4 +17,3 @@
   "versionDefines": [],
   "noEngineReferences": false
 }
-

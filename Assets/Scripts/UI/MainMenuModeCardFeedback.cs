@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace UrbanWildlifeRooms.UI
 {
@@ -12,20 +13,20 @@ namespace UrbanWildlifeRooms.UI
         IDeselectHandler
     {
         private RoundedPanelGraphic artwork;
+        private Image plaque;
         private RectTransform visualTarget;
         private bool pointerInside;
         private bool selected;
         private bool pressed;
 
-        private static readonly Color RestingTint = new(0.10f, 0.17f, 0.19f, 0.94f);
-        private static readonly Color HighlightTint = new(0.16f, 0.39f, 0.43f, 0.97f);
-        private static readonly Color PressedTint = new(0.12f, 0.32f, 0.36f, 0.99f);
-        private static readonly Color RestingBorder = new(0.97f, 0.92f, 0.80f, 0.92f);
-        private static readonly Color HighlightBorder = new(0.66f, 0.95f, 1f, 0.95f);
+        private static readonly Color HitAreaTint = new(0f, 0f, 0f, 0.001f);
+        private static readonly Color HighlightTint = new(1f, 0.98f, 0.90f, 1f);
+        private static readonly Color PressedTint = new(0.83f, 0.86f, 0.88f, 1f);
 
-        public void Initialize(RoundedPanelGraphic targetArtwork)
+        public void Initialize(RoundedPanelGraphic targetArtwork, Image plaqueArtwork)
         {
             artwork = targetArtwork;
+            plaque = plaqueArtwork;
             visualTarget = targetArtwork != null ? targetArtwork.rectTransform : null;
             Apply();
         }
@@ -80,13 +81,18 @@ namespace UrbanWildlifeRooms.UI
             var showHighlight = pointerInside || selected;
             if (artwork != null)
             {
-                artwork.color = pressed ? PressedTint : showHighlight ? HighlightTint : RestingTint;
-                artwork.BorderColor = showHighlight || pressed ? HighlightBorder : RestingBorder;
+                // The illustrated plaque already owns its brass rim. Keep the
+                // Button graphic as a transparent hit area, never a second rim.
+                artwork.BorderWidth = 0f;
+                artwork.color = HitAreaTint;
             }
+            if (plaque != null)
+                plaque.color = pressed ? PressedTint :
+                    showHighlight ? HighlightTint : Color.white;
 
             if (visualTarget != null)
             {
-                var scale = pressed ? 0.985f : showHighlight ? 1.012f : 1f;
+                var scale = pressed ? 0.98f : showHighlight ? 1.025f : 1f;
                 visualTarget.localScale = new Vector3(scale, scale, 1f);
             }
         }

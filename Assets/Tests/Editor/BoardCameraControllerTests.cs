@@ -27,17 +27,21 @@ namespace UrbanWildlifeRooms.Tests.Editor
                 controller.SetMenuViewImmediate();
 
                 Assert.That(controller.IsMenuView, Is.True);
-                Assert.That(camera.orthographicSize, Is.EqualTo(gameplaySize * 1.18f).Within(0.001f));
-                Assert.That(Vector3.Angle(cameraObject.transform.forward, Vector3.down), Is.EqualTo(16f).Within(0.01f));
+                var aspectCorrection = Mathf.Max(1f, (16f / 9f) / camera.aspect);
+                Assert.That(camera.orthographicSize,
+                    Is.EqualTo(gameplaySize * 1.34f * aspectCorrection).Within(0.001f));
+                Assert.That(Vector3.Angle(cameraObject.transform.forward, Vector3.down), Is.EqualTo(22f).Within(0.01f));
                 var menuFocus = cameraObject.transform.position + cameraObject.transform.forward *
                     (cameraObject.transform.position.y / -cameraObject.transform.forward.y);
-                Assert.That(menuFocus.magnitude, Is.LessThan(0.01f));
+                Assert.That(menuFocus.x, Is.EqualTo(0f).Within(0.01f));
+                Assert.That(menuFocus.magnitude,
+                    Is.EqualTo(1.5f / Mathf.Cos(22f * Mathf.Deg2Rad)).Within(0.01f));
                 Assert.That(camera.orthographic, Is.False);
                 var nearWidth = camera.WorldToViewportPoint(new Vector3(10f, 0f, -10f)).x -
                     camera.WorldToViewportPoint(new Vector3(-10f, 0f, -10f)).x;
                 var farWidth = camera.WorldToViewportPoint(new Vector3(10f, 0f, 10f)).x -
                     camera.WorldToViewportPoint(new Vector3(-10f, 0f, 10f)).x;
-                Assert.That(farWidth, Is.LessThan(nearWidth * 0.94f),
+                Assert.That(farWidth, Is.LessThan(nearWidth * 0.95f),
                     "The distant menu rooms must appear narrower than the near rooms.");
 
                 controller.SetGameplayViewImmediate();
@@ -115,7 +119,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
                 alignment.AlignNow();
                 Assert.That(Vector3.Angle(backdrop.transform.up, -cameraObject.transform.forward), Is.LessThan(0.01f));
                 Assert.That(Vector3.Dot(backdrop.transform.position - cameraObject.transform.position,
-                    cameraObject.transform.forward), Is.EqualTo(90f).Within(0.01f));
+                    cameraObject.transform.forward), Is.EqualTo(220f).Within(0.01f));
                 Assert.That(backdrop.transform.localScale.x, Is.GreaterThan(1f));
 
                 controller.SetGameplayViewImmediate();

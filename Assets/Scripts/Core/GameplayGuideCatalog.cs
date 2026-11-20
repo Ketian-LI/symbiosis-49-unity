@@ -50,14 +50,14 @@ namespace UrbanWildlifeRooms.Core
             if (index == 0)
             {
                 return chinese
-                    ? new GameplayGuidePage("你在经营什么？",
+                    ? new GameplayGuidePage("这座城里，谁在生活？",
                         mode == GameMode.Research
-                            ? "这是一张 7×7、由 49 间单格房组成的城市生态地图。移动房间，连接动物与食物，同时保住居民三段通勤。居民少于 3 人或累计 3 次动物死亡，本局结束。"
-                            : "这是一张 7×7、由 49 间单格房组成的城市生态地图。移动房间，连接动物与食物，同时保住居民三段通勤。居民少于 3 人，或动物种群持续过低，都会结束本局。")
-                    : new GameplayGuidePage("What are you managing?",
+                            ? "动物与居民都住在这张 7×7 的城市生态地图里，共有 49 间单格房。调整房间，让动物找得到食物，也让居民走得完上班、吃饭、回家的路。居民少于 3 人或累计 3 次动物死亡，本局结束。"
+                            : "动物与居民都住在这张 7×7 的城市生态地图里，共有 49 间单格房。调整房间，让动物找得到食物，也让居民走得完上班、吃饭、回家的路。居民少于 3 人，或动物种群持续过低，本局结束。")
+                    : new GameplayGuidePage("Who lives in this city?",
                         mode == GameMode.Research
-                            ? "This 7×7 city ecosystem has 49 single-cell rooms. Connect wildlife to food while preserving residents' work–meal–home routes. The run ends below three residents or after three animal deaths."
-                            : "This 7×7 city ecosystem has 49 single-cell rooms. Connect wildlife to food while preserving residents' work–meal–home routes. The run ends below three residents or when wildlife stays too low.");
+                            ? "Animals and residents share this 7×7 city of 49 single-cell rooms. Move rooms so wildlife can reach food and residents can get to work, eat and return home. The run ends below three residents or after three animal deaths."
+                            : "Animals and residents share this 7×7 city of 49 single-cell rooms. Move rooms so wildlife can reach food and residents can get to work, eat and return home. The run ends below three residents or when wildlife stays too low.");
             }
             if (index == 1)
             {

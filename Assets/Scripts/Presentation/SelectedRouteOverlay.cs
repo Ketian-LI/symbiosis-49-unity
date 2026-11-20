@@ -121,6 +121,7 @@ namespace UrbanWildlifeRooms.Presentation
             statusText.alignment = TextAnchor.MiddleCenter;
             statusText.color = new Color(0.98f, 0.95f, 0.83f);
             statusText.raycastTarget = false;
+            UrbanWildlifeRooms.UI.LegacyTextTmpBridge.Attach(statusText);
             statusCard.SetActive(false);
         }
 

@@ -83,7 +83,7 @@ namespace UrbanWildlifeRooms.UI
             resultAudioSource.loop = false;
             resultAudioSource.spatialBlend = 0f;
             resultAudioSource.ignoreListenerPause = true;
-            resultAudioSource.volume = 0.72f;
+            resultAudioSource.volume = 0.72f * SymbiosisAudioDirector.EffectsVolume;
             animalEndClip = CreateAnimalEndClip();
             resourceEndClip = CreateResourceEndClip();
             newRecordClip = CreateNewRecordClip();
@@ -149,8 +149,8 @@ namespace UrbanWildlifeRooms.UI
             resourceValue = BuildSummaryCard(card.transform, "Workforce Summary", ResultsVisual.SummaryResidents, -210f);
             residentValue = BuildSummaryCard(card.transform, "Resident Summary", ResultsVisual.SummaryResidents, 0f);
             ecologyValue = BuildSummaryCard(card.transform, "Ecology Summary", ResultsVisual.SummaryEcology, 210f);
-            ecologyValue.fontSize = 13;
-            SetTopCenter(ecologyValue.rectTransform, 0f, 49f, 176f, 56f);
+            ecologyValue.fontSize = 15;
+            SetTopCenter(ecologyValue.rectTransform, 0f, 64f, 176f, 42f);
             var ecologyPanel = ecologyValue.transform.parent.GetComponent<Image>();
             var deathDetailsButton = ecologyPanel.gameObject.AddComponent<Button>();
             deathDetailsButton.targetGraphic = ecologyPanel;
@@ -431,8 +431,8 @@ namespace UrbanWildlifeRooms.UI
                 ? $"居民 {data.finalResidents}/{ResidentPopulationController.MinimumRequiredResidents}\n到达 {data.arrivals} · 离开 {data.departures}"
                 : $"Residents {data.finalResidents}/{ResidentPopulationController.MinimumRequiredResidents}\nArrived {data.arrivals} · Left {data.departures}";
             ecologyValue.text = chinese
-                ? $"死亡 {data.TotalAnimalDeaths}\n植树 {data.treesPlanted} · 砍伐 {data.treesFelled}\n点击查看死因"
-                : $"Deaths {data.TotalAnimalDeaths}\nPlanted {data.treesPlanted} · Felled {data.treesFelled}\nClick for causes";
+                ? $"死亡 {data.TotalAnimalDeaths} · 植树 {data.treesPlanted}\n砍树 {data.treesFelled} · 查看死因"
+                : $"Deaths {data.TotalAnimalDeaths} · planted {data.treesPlanted}\nFelled {data.treesFelled} · see causes";
             deathDetailsTitle.text = chinese ? "各类动物死亡原因" : "Deaths by species and cause";
             deathDetailsText.text = string.Join("\n",
                 data.BreakdownOf(WildlifeSpecies.Pigeon).LocalizedLine(chinese),
@@ -619,6 +619,7 @@ namespace UrbanWildlifeRooms.UI
             yield return FadeReveal(summaryReveal, 0.15f);
             if (runtime.CurrentResults != null && runtime.CurrentResults.isNewRecord)
             {
+                resultAudioSource.volume = 0.72f * SymbiosisAudioDirector.EffectsVolume;
                 resultAudioSource.PlayOneShot(newRecordClip, 0.62f);
             }
 
@@ -640,6 +641,7 @@ namespace UrbanWildlifeRooms.UI
                 RunEndReason.WildlifePopulationCollapse
                 ? animalEndClip
                 : resourceEndClip;
+            resultAudioSource.volume = 0.72f * SymbiosisAudioDirector.EffectsVolume;
             resultAudioSource.PlayOneShot(clip);
         }
 
@@ -858,6 +860,7 @@ namespace UrbanWildlifeRooms.UI
             text.horizontalOverflow = HorizontalWrapMode.Overflow;
             text.verticalOverflow = VerticalWrapMode.Overflow;
             text.raycastTarget = false;
+            LegacyTextTmpBridge.Attach(text);
             return text;
         }
 

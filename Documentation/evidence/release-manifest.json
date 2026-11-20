@@ -1,0 +1,26 @@
+{
+  "date": "2026-11-19",
+  "unity": "6000.3.4f1",
+  "scoringVersion": 13,
+  "windows": {
+    "built": true,
+    "smoke": {
+      "startupValidated": true,
+      "exitCode": -1,
+      "quitNaturally": false,
+      "gameSaveFilesChanged": 0,
+      "termination": "Test process stopped after startup check"
+    }
+  },
+  "macOS": {
+    "kind": "Unity source project",
+    "appBuilt": false,
+    "macRuntimeTested": false,
+    "sourceFilesVerified": 1447
+  },
+  "checks": {
+    "editModePreviouslyPassed": 58,
+    "storyChecksPassed": 5,
+    "playModePassed": 9
+  }
+}

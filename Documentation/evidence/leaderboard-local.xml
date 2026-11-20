@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+	<testcase name="one IP keeps only its best final number; IP is not returned" time="0.033067" classname="test" file="C:\Users\23902\Documents\ChatGPT\毕设\work\github-archive-20261120\repository-local\Services\leaderboard\test.mjs"/>
+	<testcase name="mode, scoring version and board rules have separate boards" time="0.003471" classname="test" file="C:\Users\23902\Documents\ChatGPT\毕设\work\github-archive-20261120\repository-local\Services\leaderboard\test.mjs"/>
+	<testcase name="a lower score can rename the same IP across modes without lowering its best score" time="0.003219" classname="test" file="C:\Users\23902\Documents\ChatGPT\毕设\work\github-archive-20261120\repository-local\Services\leaderboard\test.mjs"/>
+	<testcase name="old score submissions keep a previously chosen name; invalid names are rejected" time="0.004120" classname="test" file="C:\Users\23902\Documents\ChatGPT\毕设\work\github-archive-20261120\repository-local\Services\leaderboard\test.mjs"/>
+	<testcase name="invalid submissions and unauthorized resets do not alter scores" time="0.002144" classname="test" file="C:\Users\23902\Documents\ChatGPT\毕设\work\github-archive-20261120\repository-local\Services\leaderboard\test.mjs"/>
+	<testcase name="only approved website origins receive read CORS headers" time="0.000965" classname="test" file="C:\Users\23902\Documents\ChatGPT\毕设\work\github-archive-20261120\repository-local\Services\leaderboard\test.mjs"/>
+	<!-- tests 6 -->
+	<!-- suites 0 -->
+	<!-- pass 6 -->
+	<!-- fail 0 -->
+	<!-- cancelled 0 -->
+	<!-- skipped 0 -->
+	<!-- todo 0 -->
+	<!-- duration_ms 174.0669 -->
+</testsuites>

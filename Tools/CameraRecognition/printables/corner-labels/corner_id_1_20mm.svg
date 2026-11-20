@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="20mm" height="20mm" viewBox="0 0 20 20" shape-rendering="crispEdges">
+  <title>ArUco DICT_4X4_100 ID 1</title>
+  <rect width="20" height="20" fill="#fff"/>
+  <rect x="2.5" y="2.5" width="2.5" height="2.5" fill="#000"/>
+  <rect x="5" y="2.5" width="2.5" height="2.5" fill="#000"/>
+  <rect x="7.5" y="2.5" width="2.5" height="2.5" fill="#000"/>
+  <rect x="10" y="2.5" width="2.5" height="2.5" fill="#000"/>
+  <rect x="12.5" y="2.5" width="2.5" height="2.5" fill="#000"/>
+  <rect x="15" y="2.5" width="2.5" height="2.5" fill="#000"/>
+  <rect x="2.5" y="5" width="2.5" height="2.5" fill="#000"/>
+  <rect x="5" y="5" width="2.5" height="2.5" fill="#000"/>
+  <rect x="7.5" y="5" width="2.5" height="2.5" fill="#000"/>
+  <rect x="10" y="5" width="2.5" height="2.5" fill="#000"/>
+  <rect x="12.5" y="5" width="2.5" height="2.5" fill="#000"/>
+  <rect x="15" y="5" width="2.5" height="2.5" fill="#000"/>
+  <rect x="2.5" y="7.5" width="2.5" height="2.5" fill="#000"/>
+  <rect x="15" y="7.5" width="2.5" height="2.5" fill="#000"/>
+  <rect x="2.5" y="10" width="2.5" height="2.5" fill="#000"/>
+  <rect x="7.5" y="10" width="2.5" height="2.5" fill="#000"/>
+  <rect x="10" y="10" width="2.5" height="2.5" fill="#000"/>
+  <rect x="15" y="10" width="2.5" height="2.5" fill="#000"/>
+  <rect x="2.5" y="12.5" width="2.5" height="2.5" fill="#000"/>
+  <rect x="7.5" y="12.5" width="2.5" height="2.5" fill="#000"/>
+  <rect x="12.5" y="12.5" width="2.5" height="2.5" fill="#000"/>
+  <rect x="15" y="12.5" width="2.5" height="2.5" fill="#000"/>
+  <rect x="2.5" y="15" width="2.5" height="2.5" fill="#000"/>
+  <rect x="5" y="15" width="2.5" height="2.5" fill="#000"/>
+  <rect x="7.5" y="15" width="2.5" height="2.5" fill="#000"/>
+  <rect x="10" y="15" width="2.5" height="2.5" fill="#000"/>
+  <rect x="12.5" y="15" width="2.5" height="2.5" fill="#000"/>
+  <rect x="15" y="15" width="2.5" height="2.5" fill="#000"/>
+</svg>

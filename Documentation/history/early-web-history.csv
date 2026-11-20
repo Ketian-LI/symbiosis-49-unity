@@ -1,0 +1,64 @@
+commit,author_date,subject
+8eed0a56abad62e360fa46ff50e127a606d5f6ab,2026-07-22T12:55:07+01:00,Build urban pigeon simulation
+394ff833d78a4faf1124f81ea892c215b16332b2,2026-07-23T11:11:09+01:00,Replace pigeon shapes with typographic flock
+44b22104b896b6c8c6f8cb00088e71fd163599ab,2026-07-23T11:25:58+01:00,Turn feeding into spatial throws
+e2275f3f3a100a2d36e77ecc69e9d42886e2b6b2,2026-07-23T14:16:16+01:00,Model individual pigeon lineages
+0eb4974149033992b4ca7ba9a914662262da1d6a,2026-07-23T14:34:15+01:00,Add individual pigeon feeding boldness
+db424362f057ab7a1a269263652f4c991be7ff39,2026-07-23T14:43:13+01:00,Add city circle and hunger cycle
+292917c061cfaa0f33efb6d22b470e36af306fe6,2026-07-23T14:47:58+01:00,Build typographic city skyline
+0337b29a1addc0ec65bfbfd456f6833b9437742e,2026-07-23T14:54:11+01:00,Animate feeding flight and landing
+f9683545ea645c40b7d76b14d7773f61cb376e95,2026-07-23T15:03:01+01:00,Restrict pigeon flight to feeding
+6400d1f20249015597ab77ccaa446288062a4dff,2026-07-23T15:26:30+01:00,Stabilize idle pigeon motion
+775d8cc5b3713061e25a80e85573215f6380b9e3,2026-07-23T15:39:31+01:00,Remove finite feeding inventory
+7c022ff8f58cb57cf29f9192d2744d758c4794e2,2026-07-23T15:47:09+01:00,Try feeding pigeons in distance order
+c7cb6cb73c63d16a4029da91cd781572ab9958c9,2026-07-23T16:02:04+01:00,Protect wild pigeons and animate splitting
+e18cf70bcbb751f1af7fbc253e5869bb380e244e,2026-07-23T16:08:41+01:00,Make city pigeons always accept food
+dbaf07b2975215ae9e06bedc6620ddeaa636e984,2026-07-23T16:16:23+01:00,Allow food on every click
+9a0f34fc0b1967b8ecb49a5280bc868bb4a744b9,2026-07-23T16:36:59+01:00,Expand inherited pigeon styles
+8a4de40e087323a0490e1b606bc228aa576e5e8d,2026-07-23T16:45:26+01:00,Keep newborn pigeons in the city
+a25255e61366ffa1c2120e9f00dad117a6b45d8e,2026-07-23T16:56:59+01:00,Animate nearby city pigeons toward food
+96ad3a125badce29ce3ec215a8d7d499e60a1758,2026-07-24T11:54:38+01:00,Shape the typographic skyline from reference
+8f8a2bf2b09157b308486f2652d1fcee69f0e4d6,2026-07-24T12:04:49+01:00,Restart when pigeon styles collapse
+2d3b4ba0c95fe304aab6f6370d3e7f292386a2e2,2026-07-24T12:37:09+01:00,Classify pigeon diversity by eight colors
+d571d61b9f8db57db26dd188de71a2761ab6ef9d,2026-07-24T12:52:46+01:00,Prompt before restarting low-diversity flocks
+2052c671ed9426e94810ba829745ff3f050c247b,2026-07-25T18:05:09+01:00,Add live presence-based feeding limits
+e11e256d76d9a744c4ca3aaa6026ecda81cb32b4,2026-07-25T21:29:44+01:00,Redesign the simulation as a park plaza
+eae3aaa85bc68bd5ee65ef54c873f7d0d3d55e41,2026-07-25T23:46:16+01:00,Rebuild simulation around selected park skyline
+08231bea4bb4c84b0c935097a24958edc034199d,2026-07-26T00:36:40+01:00,Replace word agents with animated pigeon sprites
+357670c3eea4b4475a7fce2bdeb8516055ca0905,2026-07-26T00:56:58+01:00,Add multi-frame pigeon flight transitions
+4f4251f54b5617a4d648125acb19bfd916c8e9a4,2026-07-26T11:24:09+01:00,Eliminate pigeon animation flicker
+516d678f9c3f6e4ce603bd20e090c8f7dea276e1,2026-07-26T11:36:06+01:00,Differentiate wild and city pigeon builds
+5b73bfbcaa4fa472e398404476f71b23e35fa409,2026-07-26T12:06:05+01:00,Add bilingual tutorial and controls
+a3b2901ccc5a323bdd2e267601dce199fd90577a,2026-07-26T12:15:33+01:00,Let visitors choose language in tutorial
+0a3260017a28dcfb321a33b1694ff2edf5720ba1,2026-07-26T12:29:49+01:00,Keep live pigeons fully opaque
+c73dcf97da17e6b2496e9a5c161c31456fd0236e,2026-07-26T13:13:07+01:00,Add protected host favorite pigeon
+fac24a15c0f57c485b13722afcdc6e83d3d5b582,2026-07-26T13:37:39+01:00,Add optional cloud-saved accounts
+ffb69e640bd827eff77ed9ed4f894353c0f320a1,2026-07-26T14:21:39+01:00,Raise diversity restart threshold to seven
+ade5e2aa8285473739d8a3951323424cc868ca43,2026-07-26T23:17:58+01:00,Add rare pigeon accessory collection
+1faa65de6756cfaae3cf0ae96a53b0a36297c879,2026-07-27T00:19:55+01:00,Refine expandable accessory wardrobe
+e9dc3b20a35bb06d361245f593014ae913a0f2cf,2026-07-27T11:07:37+01:00,Guarantee an opening accessory carrier
+3b92f80a0dabf37130150b0f1143f26b8dd07234,2026-07-30T18:16:36+01:00,Add pigeon outfit accessories
+e5b0b3d4d96248424e2ec566d1daf944539e14db,2026-08-09T11:53:41+01:00,Keep only pigeon outfit accessories
+d27b35bfa31e14a55040f1fd49377af914903f75,2026-08-09T12:03:49+01:00,Add pigeon color field guide
+26d2e627e08a549c321c22f963f241d357fcbddc,2026-08-09T12:13:45+01:00,Reshape the opening pigeon stage
+a295b5656e17b46c33ae018a1ee43cc523c602bf,2026-08-09T12:17:39+01:00,Name the unlocked animal species
+77885fa51b89c1e45fac9715efdb692902441366,2026-08-09T14:31:10+01:00,Add four-species wildlife stage
+be5383dbf8f80133f1c558658aded57b3c85d93e,2026-08-09T18:22:03+01:00,Redesign simulation around urban wildlife systems
+132d98596afd4d7be3b4259047a6f7e18aec4621,2026-08-09T18:27:45+01:00,Allow wildlife turnover at city capacity
+435ce303ea665c19dacf62c20de1ed6c818af85d,2026-08-09T19:06:37+01:00,Rework simulation around species survival
+a49c320d6e03f47127979419a33cdf2ca9762495,2026-08-09T19:42:28+01:00,Fix wildlife sprite performance and proportions
+bb26328a7cf27daec87344c83123d5309e727956,2026-08-09T19:59:38+01:00,Align stray dog sprite frames
+9107b3a4db085fa8886ae1bbe1700eb8c5aaf4d5,2026-08-09T20:03:36+01:00,Load aligned dog frames separately
+307131f9faa91c15952510e4e2dfc3689368be57,2026-08-09T20:18:08+01:00,Isolate cat and swan sprite frames
+b7ec9ec8f19ccb3d055dae6d28f3b274fb1f6d27,2026-08-09T20:29:03+01:00,Clean pigeon and swan sprite artifacts
+3139d9d21ff94e51878025c72cf56c5fab6f90a6,2026-08-09T20:50:26+01:00,Simplify feeding and deepen ecosystem choices
+bee453b364a217740b214ebb8b60e20335f4ff40,2026-08-09T21:04:51+01:00,Add locked meters and extreme overflow events
+7a4c28a75a9fb9f9f9bd73db7c9b300163fd51d8,2026-08-09T21:28:12+01:00,Hide decision outcome directions
+51d9cb828842abfc779aad2cd9cf249a5653db31,2026-08-10T00:02:41+01:00,Adapt simulation for mobile and desktop
+92d4bd176f9888503154bcefa17aafbf7f748c2a,2026-08-10T14:14:43+01:00,Balance population carrying capacity
+f19a5ba0e1f33ca4bd81c02324e582163d9aa526,2026-08-10T14:17:55+01:00,Show precise shared condition changes
+fc57931ae3da0b4269c2cd57872fdfc2c097a205,2026-08-10T18:52:18+01:00,Ground simulation feedback in research
+df67d170d3a7bb86bbdb9e3485508bed474fa733,2026-09-07T19:10:38+01:00,Distinguish web demo from Unity version
+e574a8882a2e98b5b9b9b7b0a5812345e0465f3a,2026-09-07T19:52:02+01:00,Organize web demo as submission evidence
+87fd843442c35eec7d51116b0dd0512caa7daff4,2026-09-07T20:12:59+01:00,Align submission plan with final project brief
+8b482de5ecf40b9a89b22c0ad4b053335558bde8,2026-09-07T20:38:43+01:00,Apply case study evidence patterns

@@ -27,9 +27,32 @@ namespace UrbanWildlifeRooms.Core
         private PhysicalBoardValidationResult pendingValidation;
         private bool hasObservation;
         private float lastObservationTime;
+        private bool recognitionSuspended;
 
-        public bool CameraAvailable => cameraTexture != null;
-        public string ActiveCameraName => cameraTexture?.deviceName ?? string.Empty;
+        public bool CameraAvailable => !recognitionSuspended && cameraTexture != null &&
+            cameraTexture.isPlaying;
+        public string ActiveCameraName => recognitionSuspended
+            ? string.Empty : cameraTexture?.deviceName ?? string.Empty;
+        public bool RecognitionSuspended => recognitionSuspended;
+
+        public void SetRecognitionSuspended(bool suspended)
+        {
+            if (recognitionSuspended == suspended) return;
+            recognitionSuspended = suspended;
+            hasObservation = false;
+            pendingObservation.Clear();
+            pendingSignature = string.Empty;
+            stability.Reset();
+            if (suspended)
+            {
+                if (cameraTexture != null && cameraTexture.isPlaying)
+                    cameraTexture.Stop();
+                if (runtime != null)
+                    runtime.ClearCameraRecognitionFeedback();
+            }
+            else if (Application.isPlaying && BuildVariantSettings.UsesCameraRecognition)
+                StartCamera();
+        }
 
         public void Initialize(
             GameRuntimeController runtimeController,
@@ -42,7 +65,8 @@ namespace UrbanWildlifeRooms.Core
             appliedSignature = PhysicalBoardRecognitionModel.Signature(layout.ExportLayout());
             runtime.CameraRecalibrationRequested += HandleCalibrationRequested;
             layout.LayoutConfirmed += HandleLayoutConfirmed;
-            if (Application.isPlaying && BuildVariantSettings.UsesCameraRecognition)
+            if (Application.isPlaying && BuildVariantSettings.UsesCameraRecognition &&
+                !recognitionSuspended)
             {
                 StartCamera();
             }
@@ -66,7 +90,7 @@ namespace UrbanWildlifeRooms.Core
 
         private void Update()
         {
-            if (!BuildVariantSettings.UsesCameraRecognition || runtime == null)
+            if (recognitionSuspended || !BuildVariantSettings.UsesCameraRecognition || runtime == null)
             {
                 return;
             }
@@ -132,6 +156,7 @@ namespace UrbanWildlifeRooms.Core
 
         public void SubmitObservation(IEnumerable<RoomPlacementData> observation)
         {
+            if (recognitionSuspended) return;
             pendingObservation.Clear();
             pendingObservation.AddRange(ClonePlacements(observation));
             pendingValidation = PhysicalBoardRecognitionModel.Validate(pendingObservation);
@@ -164,6 +189,11 @@ namespace UrbanWildlifeRooms.Core
             IEnumerable<PhysicalRoomImageObservation> observations,
             out PhysicalProjectionError error)
         {
+            if (recognitionSuspended)
+            {
+                error = PhysicalProjectionError.UnavailableInEndless;
+                return false;
+            }
             if (!PhysicalBoardProjectionModel.TryMap(calibration, observations,
                     out var placements, out error))
             {
@@ -188,6 +218,7 @@ namespace UrbanWildlifeRooms.Core
 
         private void HandleCalibrationRequested()
         {
+            if (recognitionSuspended) return;
             stability.Reset();
             hasObservation = false;
             StartCamera();
@@ -204,6 +235,7 @@ namespace UrbanWildlifeRooms.Core
 
         private void StartCamera()
         {
+            if (recognitionSuspended) return;
             if (cameraTexture != null)
             {
                 if (!cameraTexture.isPlaying)

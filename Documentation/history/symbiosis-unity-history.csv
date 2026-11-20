@@ -1,0 +1,60 @@
+commit,author_date,subject
+aeca20ab64a41fbfdc36031663db6c1d94acd5c1,2026-09-22T02:22:50+01:00,Initial Unity project import
+d72ff33deee3542c1e7159be470b77de064c22da,2026-09-22T02:23:41+01:00,Exclude generated backups and caches
+393530e6e58f826f59047c424e9ac2bbf9453c40,2026-09-22T08:29:11+01:00,Fix onboarding spotlight and layout tray
+d3e81bf4c524eaf8565bb0be7ee04a680d8cbd53,2026-09-22T08:49:51+01:00,Add precise drag snapping and room swaps
+ac21cccab7b26c6dd20023bd148a1f62f8281c4f,2026-09-22T09:17:19+01:00,Keep mode choices visible beside resume
+79082525921f3b03863ffa4c0dea10d8cbae9143,2026-09-22T10:34:23+01:00,Rebuild research setup interface
+2fc461866dc0e6143a9607ed986112e7e9535bc3,2026-09-22T11:57:32+01:00,Rebuild end-run results interface
+8f923581d0190d12e9581e7feb00cab2b7f5bec4,2026-09-22T13:02:50+01:00,Rebuild main menu mode selection UI
+cc1cec9c927082726890ce5d039a8f6840d26b00,2026-09-22T14:58:47+01:00,Require explicit feeding mode before placement
+2a35a5c6dc6cf6460b7fd8cbbfb792024a081e6d,2026-09-22T15:18:11+01:00,Add sandbox restart confirmation
+cd9524edb1b942bf37ae84599a5ca0c6645ba54b,2026-09-22T15:45:17+01:00,Add angled menu camera transition
+6663d4eb82d8dbb6c0192796b18d55c139c66187,2026-09-22T16:07:44+01:00,Fix tray hit areas and modal layering
+41c61e98964310f1eb376c8c82fca813e1b957e8,2026-09-22T17:22:52+01:00,Upgrade in-game HUD visuals
+1cceda7ebe33c699cc9f7206f536a812930d40d3,2026-09-22T18:24:17+01:00,Build room interiors and reduce fox population
+775728709dd323ecda1ec4d1795b2d0d7b177b13,2026-09-22T19:37:21+01:00,Refresh main menu background and responsive layout
+bfe9d42a6668d7b0c27c737de5359b6fd94e4ab5,2026-09-22T20:11:00+01:00,Refine garage traffic lane and fox den prototype visuals
+e6f039b62bc19eea961371537375604cbf17bbd6,2026-09-22T20:33:23+01:00,Unify park and oak trees with faceted low-poly growth visuals
+be5a024c90a9bc62b235366bf8320669fd5777b2,2026-09-22T20:53:29+01:00,Clarify central park paths and tree composition
+7991eb028a5512c969e97177e60b47d2f1785e0c,2026-09-22T21:48:45+01:00,Add low-poly everyday room furnishings
+05b4b1c68a4b7a21ca824ed4f7f898bd4e51a031,2026-09-22T22:03:17+01:00,Keep supermarket furnishing clear of doors
+df7bc0f0cc89544d7696d4460c56222947466438,2026-09-22T22:22:02+01:00,Expand low-poly wildlife habitat furnishings
+19bdec627c612b683f8078993c09f851b39866f0,2026-09-22T22:40:46+01:00,Match wildlife shrubs to faceted tree art style
+91132b46ea57828dd5e0f23b96b570f4169a946d,2026-09-22T22:54:40+01:00,Differentiate shrub habitat cover islands
+1aab10c69940c471d45aa5306ed4fb330df6eb89,2026-09-22T23:10:27+01:00,Refine wildlife habitat art to match approved references
+b17a3972c57d48b0d6ce864299e579055be0c947,2026-09-22T23:36:24+01:00,Increase shrub cover within four-door clearance
+965b996f517e5fdfe0d8e25cee6db68d50732b13,2026-09-23T01:12:01+01:00,Apply sampled wildlife room palette and improve top-down details
+969e7f76626252f4ef5c8519374e03c8a8f2d0e1,2026-09-23T01:31:01+01:00,Compensate wildlife room palette for gameplay lighting
+f6a9de8bf8edcf9c73d058a79f31fd038d4de561,2026-09-23T09:53:17+01:00,"Refine board palette, door trim and shrub visuals"
+f967e001270f6322414c47c9359d5932d453b2af,2026-09-29T16:18:56+01:00,Sync local design docs and animal references
+fdabafca34ab11a32ae3b3283426b688c3badd87,2026-10-05T18:08:05+01:00,Sync current Unity snapshot and bilingual GDD
+5c0b7091339bde74d46dc87f212e340addb8f963,2026-10-06T13:20:31+01:00,Sync October 6 gameplay and research guide
+b8d83d36aebce2070b24665a33f0b663e2a0f08f,2026-10-06T17:03:05+01:00,Fix standalone animation sampling and clear planning forecasts
+7a3691212c01596eb32e4325724be75aecd932cf,2026-10-09T22:04:46+01:00,Add isolated progressive construction prototype
+44e11b4e3ce1c8d5d852e01b71386c054a56ed92,2026-10-09T22:17:11+01:00,Connect waste backlog to construction daily routines
+c1c81dc93c918f61f15fa59d154253a79795d7c2,2026-10-09T23:46:20+01:00,Show construction resident and animal route previews
+c5891d86b4e0d9ba53e79cb87f6a6d159a9c0ad0,2026-10-10T01:16:50+01:00,Compare construction forecasts with daily outcomes
+5a29a99c24a72abb824f881c60d4601d35e33f54,2026-10-10T11:14:19+01:00,Limit construction to one cell daily and show final rate scores
+0624c8c496a2d48fac0f426ad14cf8c9d582da6f,2026-10-10T11:57:39+01:00,Compare mixed construction strategies at 49 cells
+936ea1ba65c43a4d5e1dfa2cebb8726fc7bc0d5b,2026-10-10T14:38:38+01:00,Grow squirrel and pigeon populations with mature habitat
+7f4af3e0978ac9975257c6f9e96c7ddb6479e1c5,2026-10-10T14:50:00+01:00,Explain habitat growth and next-day animal needs
+734b5b7e6e15236ab6684783ed05540b8e3e112a,2026-10-10T18:06:21+01:00,Add construction menu entry and safe return
+2940e2236abdf82593eeea5191941928631a22bc,2026-10-10T18:27:33+01:00,Rebind construction entry to live menu and verify standalone flow
+dd142c80b0842ef04914c8a47c81921f6de2d6bc,2026-10-10T18:41:11+01:00,Verify mixed construction completion and durable new run
+d27bbec81e2d4b95a62085fbc6bc20a9a955f208,2026-10-10T19:24:12+01:00,Guide legal construction and connected street tutorial
+2e6ebc1db10733f9aebf8342784e1f1762705a92,2026-10-16T13:27:27+01:00,Update progressive construction flow and language selector
+8b2971e966c4a76118b78abee97e2ba1be8082b5,2026-10-16T17:19:21+01:00,Unify explicit language selection across menus
+495546bc723719a18cac2d40e8d31a5f4c3286c0,2026-10-17T01:51:22+01:00,Add construction fox predation and align tutorial feedback
+a5d7d54fdc27b5a29b53f608312680742d081ffc,2026-10-17T03:49:41+01:00,Keep fox prey visible through the hunt animation
+dae54dd4ced124479f64e8d21bd857665ed133d2,2026-10-17T05:48:46+01:00,Polish fox contact pose and target movement
+17e12166e043ca10ba4a5acaec3eb0571ae07c11,2026-10-17T07:18:54+01:00,Highlight forecast fox risk on the threatened room
+d5f918bf196d02174d79704d6bdaf4fbb623ae81,2026-10-17T11:30:02+01:00,Clarify forecast fox risk on the board
+40c7cbe2816f581c7c6b4f01a36eb2151ff59959,2026-10-17T15:06:30+01:00,Animate each settled animal meal and resident commute
+1f42417f19bba81e878576f81930a8d9dfb056ed,2026-10-17T15:13:05+01:00,Align squirrel forage visuals with displayed home tiles
+13c186fabee894eb377a047c421a910eebabe548,2026-10-17T15:32:18+01:00,Retrace green forage routes on return
+ac5c6a0aaff4587205e2d7790153f61d891b367e,2026-10-17T16:13:14+01:00,Cap building categories in 49-cell fill mode
+28544c3820ccf12fe25fd46af64bd2049186526f,2026-10-17T16:50:37+01:00,Document and guard 49-cell category limit balance
+d5121b81443e6ad8ad27f3aa98e08825b296dc90,2026-10-17T16:56:31+01:00,Clarify selected type when construction cap is reached
+0e541f8985d62525d8f841f1b28a50f890a0da46,2026-10-17T22:10:45+01:00,Improve construction limit badge legibility
+d5a8cc7ec03f95993370fe5626156aa61f959690,2026-10-20T11:00:37+01:00,Sync construction box visuals and 80-room category caps

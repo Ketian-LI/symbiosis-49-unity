@@ -5,9 +5,11 @@ namespace UrbanWildlifeRooms.Presentation
 {
     public sealed class BoardCameraController : MonoBehaviour
     {
-        private const float MenuTiltFromTopDownDegrees = 16f;
-        private const float MenuCameraHeight = 55f;
-        private const float MenuOverviewScale = 1.18f;
+        // Give the closed case a gentle tabletop perspective.
+        private const float MenuTiltFromTopDownDegrees = 22f;
+        private const float MenuCameraHeight = 112f;
+        private const float MenuOverviewScale = 1.34f;
+        private const float MenuScreenUpOffsetMeters = 1.5f;
 
         public event System.Action OverviewRestored;
         public event System.Action FollowingStopped;
@@ -19,6 +21,7 @@ namespace UrbanWildlifeRooms.Presentation
         private Vector3 menuPosition;
         private Quaternion menuRotation;
         private float menuSize;
+        private float menuFramingAspect;
         private Vector3 targetPosition;
         private Quaternion targetRotation;
         private float targetSize;
@@ -72,8 +75,44 @@ namespace UrbanWildlifeRooms.Presentation
                 overviewEuler.z);
             var menuForward = menuRotation * Vector3.forward;
             var menuDistance = MenuCameraHeight / Mathf.Max(0.001f, -menuForward.y);
-            menuPosition = focusPoint - menuForward * menuDistance;
-            menuSize = overviewSize * MenuOverviewScale;
+            // Keep the physical lid inside the camera frustum when the menu
+            // camera moves back to reduce perspective distortion.
+            controlledCamera.farClipPlane = Mathf.Max(
+                controlledCamera.farClipPlane, menuDistance + 180f);
+            menuPosition = focusPoint - menuForward * menuDistance -
+                menuRotation * Vector3.up * MenuScreenUpOffsetMeters;
+            // The UI canvas expands on narrower viewports. Keep the closed case
+            // between its title and controls without making it tiny at 16:9.
+            var aspectCorrection = Mathf.Max(1f,
+                (16f / 9f) / Mathf.Max(0.001f, controlledCamera.aspect));
+            menuSize = overviewSize * MenuOverviewScale * aspectCorrection;
+            menuFramingAspect = controlledCamera.aspect;
+        }
+
+        private void RefreshMenuFramingIfNeeded()
+        {
+            if (controlledCamera == null ||
+                Mathf.Abs(controlledCamera.aspect - menuFramingAspect) < 0.0001f)
+                return;
+
+            ConfigureMenuView();
+            if (viewTransitionActive)
+            {
+                // A resize while returning to the menu changes that
+                // transition's destination, not its current camera position.
+                if (transitionEndsAtMenu)
+                {
+                    transitionEndPosition = menuPosition;
+                    transitionEndRotation = menuRotation;
+                    transitionEndSize = menuSize;
+                }
+            }
+            else if (menuView)
+            {
+                targetPosition = menuPosition;
+                targetRotation = menuRotation;
+                targetSize = menuSize;
+            }
         }
 
         private static float PerspectiveFieldOfView(Camera camera, float halfHeightAtGround)
@@ -91,6 +130,7 @@ namespace UrbanWildlifeRooms.Presentation
                 return;
             }
 
+            RefreshMenuFramingIfNeeded();
             if (viewTransitionActive)
             {
                 UpdateViewTransition();
@@ -129,6 +169,7 @@ namespace UrbanWildlifeRooms.Presentation
                 return;
             }
 
+            RefreshMenuFramingIfNeeded();
             viewTransitionActive = false;
             focused = false;
             followTarget = null;
@@ -175,6 +216,7 @@ namespace UrbanWildlifeRooms.Presentation
 
         public void BeginMenuViewTransition(float durationSeconds)
         {
+            RefreshMenuFramingIfNeeded();
             BeginViewTransition(
                 menuPosition,
                 menuRotation,

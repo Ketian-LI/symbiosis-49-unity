@@ -32,7 +32,9 @@ namespace UrbanWildlifeRooms.Editor
             PlayerSettings.companyName = "Urban Wildlife Rooms";
             PlayerSettings.defaultScreenWidth = 1920;
             PlayerSettings.defaultScreenHeight = 1080;
-            PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
+            PlayerSettings.fullScreenMode = FullScreenMode.FullScreenWindow;
+            PlayerSettings.resizableWindow = true;
+            PlayerSettings.allowFullscreenSwitch = true;
             PlayerSettings.colorSpace = ColorSpace.Linear;
             QualitySettings.vSyncCount = 1;
 

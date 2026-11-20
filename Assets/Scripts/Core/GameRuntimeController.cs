@@ -536,6 +536,16 @@ namespace UrbanWildlifeRooms.Core
             StateChanged?.Invoke();
         }
 
+        public void RefreshLanguageFromPreference()
+        {
+            if (languageOverriddenForTesting) return;
+            var savedLanguage = (InterfaceLanguage)Mathf.Clamp(PlayerPrefs.GetInt(
+                LanguageKey, (int)InterfaceLanguage.English), 0, 1);
+            if (Language == savedLanguage) return;
+            Language = savedLanguage;
+            StateChanged?.Invoke();
+        }
+
         public void UseLanguageForTesting(InterfaceLanguage selectedLanguage)
         {
             languageOverriddenForTesting = true;

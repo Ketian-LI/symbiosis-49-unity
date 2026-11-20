@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UrbanWildlifeRooms.Animals;
@@ -25,6 +26,8 @@ namespace UrbanWildlifeRooms.Presentation
         private RoomView oak;
         private SquirrelDemoAgent squirrel;
         private Transform foundation;
+        private Transform boundaryCover;
+        private bool boundaryWasActive;
         private Renderer paperBoard;
         private Transform tabletop;
         private Vector3 oakPosition;
@@ -35,18 +38,27 @@ namespace UrbanWildlifeRooms.Presentation
         private Transform openingTree;
         private Vector3 openingTreeScale;
         private Vector3 openingTreePosition;
+        private Transform openingIllustratedPlot;
+        private Vector3 openingIllustratedPlotScale;
         private bool previewing;
         private bool constructionActive;
         private BoardCameraController boardCamera;
         private TabletopBackdropAlignment tabletopAlignment;
         private GameObject caseShell;
+        private GameObject boardFinish;
+        private GameObject openingOakMount;
         private Transform westLid;
         private Transform eastLid;
+        private Transform frontCaseEdge;
         private Material caseMaterial;
+        private Material contactShadowMaterial;
+        private Texture2D contactShadowTexture;
         private Material lidPrintMaterial;
         private readonly List<Material> interiorPrintMaterials = new();
         private Coroutine lidMotion;
         private float lidOpenAmount;
+        private bool oakWasActive;
+        private bool squirrelWasActive;
 
         public bool IsPreviewing => previewing;
         public bool IsCaseClosed => caseShell != null && caseShell.activeInHierarchy &&
@@ -100,6 +112,7 @@ namespace UrbanWildlifeRooms.Presentation
                 if (previewing && oak?.VisualRoot != null &&
                     (oak.VisualRoot.position - openingOakWorldPosition).sqrMagnitude > 0.0001f)
                     oak.SetPresentationWorldPosition(openingOakWorldPosition);
+                UpdateOpeningPlotHeight();
                 return;
             }
             if (runtime.AtDesktop && !previewing) ShowOpening();
@@ -113,6 +126,8 @@ namespace UrbanWildlifeRooms.Presentation
 
             oakPosition = oak.VisualRoot.position;
             squirrelPosition = squirrel.transform.position;
+            oakWasActive = oak.VisualRoot.gameObject.activeSelf;
+            squirrelWasActive = squirrel.gameObject.activeSelf;
             var shift = -new Vector3(oakPosition.x, 0f, oakPosition.z);
             openingOakWorldPosition = oak.VisualRoot.position + shift;
             oak.SetPresentationWorldPosition(openingOakWorldPosition);
@@ -139,9 +154,15 @@ namespace UrbanWildlifeRooms.Presentation
             // Recolour the existing board instead of substituting a 2D image,
             // so the opening and playable board remain the same object.
             paperBoard = foundation.Find("Paper Board")?.GetComponent<Renderer>();
+            boundaryCover = foundation.Find("Automatic Boundary Cover Layer");
+            boundaryWasActive = boundaryCover != null &&
+                boundaryCover.gameObject.activeSelf;
             if (paperBoard != null)
+            {
                 UrbanVisualFactory.ApplyColor(paperBoard,
                     UrbanPalette.ConstructionGrid);
+                UrbanVisualFactory.SetShadowStrength(paperBoard, 0f);
+            }
             var slots = foundation.Find("49 Fixed Cell Slots");
             if (slots != null)
             {
@@ -161,6 +182,7 @@ namespace UrbanWildlifeRooms.Presentation
                     {
                         originalSlotColors.Add((slotRenderer, original));
                         UrbanVisualFactory.ApplyColor(slotRenderer, ground);
+                        UrbanVisualFactory.SetShadowStrength(slotRenderer, 0f);
                     }
                     var face = slot.Find("Pastel plot face");
                     if (face != null)
@@ -173,6 +195,7 @@ namespace UrbanWildlifeRooms.Presentation
                             originalSlotColors.Add((faceRenderer,
                                 UrbanPalette.BoardSlotTop));
                             UrbanVisualFactory.ApplyColor(faceRenderer, ground);
+                            UrbanVisualFactory.SetShadowStrength(faceRenderer, 0f);
                         }
                     }
                     slotIndex++;
@@ -219,6 +242,10 @@ namespace UrbanWildlifeRooms.Presentation
             Physics.SyncTransforms();
             previewing = true;
             BuildCaseShell();
+            boardFinish = ConstructionBoardFinishVisual.Build(foundation,
+                7f * WorldScaleStandards.CellSizeMeters, caseMaterial);
+            openingOakMount = ConstructionPlotFrameVisual.BuildMount(
+                oak.VisualRoot, caseMaterial);
             caseShell.SetActive(true);
             SetLidOpenAmount(0f);
         }
@@ -229,8 +256,17 @@ namespace UrbanWildlifeRooms.Presentation
             if (lidMotion != null) StopCoroutine(lidMotion);
             lidMotion = null;
             if (caseShell != null) caseShell.SetActive(false);
+            if (boardFinish != null) Destroy(boardFinish);
+            if (openingOakMount != null) Destroy(openingOakMount);
+            boardFinish = null;
+            openingOakMount = null;
+            if (boundaryCover != null)
+                boundaryCover.gameObject.SetActive(boundaryWasActive);
             if (paperBoard != null)
+            {
                 UrbanVisualFactory.ApplyColor(paperBoard, UrbanPalette.Board);
+                UrbanVisualFactory.SetShadowStrength(paperBoard, 1f);
+            }
             foreach (var entry in originalSlotScales)
                 if (entry.slot != null) entry.slot.localScale = entry.scale;
             originalSlotScales.Clear();
@@ -239,7 +275,10 @@ namespace UrbanWildlifeRooms.Presentation
             originalFaceScales.Clear();
             foreach (var entry in originalSlotColors)
                 if (entry.target != null)
+                {
                     UrbanVisualFactory.ApplyColor(entry.target, entry.color);
+                    UrbanVisualFactory.SetShadowStrength(entry.target, 1f);
+                }
             originalSlotColors.Clear();
             if (openingTree != null)
             {
@@ -247,9 +286,15 @@ namespace UrbanWildlifeRooms.Presentation
                 openingTree.localPosition = openingTreePosition;
                 openingTree = null;
             }
+            if (oak?.VisualRoot != null)
+                ConstructionIllustratedVisualStyle.RestoreRoom(
+                    oak.VisualRoot.gameObject);
+            openingIllustratedPlot = null;
             oak.SetPresentationWorldPosition(null);
             oak.VisualRoot.position = oakPosition;
             squirrel.transform.position = squirrelPosition;
+            oak.VisualRoot.gameObject.SetActive(oakWasActive);
+            squirrel.gameObject.SetActive(squirrelWasActive);
             foreach (var entry in hiddenRooms)
                 if (entry.target != null) entry.target.SetActive(entry.active);
             foreach (var entry in hiddenActors)
@@ -269,11 +314,23 @@ namespace UrbanWildlifeRooms.Presentation
         public void EnterConstruction()
         {
             constructionActive = true;
-            SetLidOpenAmount(1f);
+            // The construction scene can now arrive while the case is still
+            // unfolding. Let that same physical lid finish its motion.
+            if (lidMotion == null) SetLidOpenAmount(1f);
+            // The larger ivory mount belongs to the menu's sparse oak preview.
+            // Gameplay reuses the oak itself, but not that presentation frame.
+            if (openingOakMount != null) openingOakMount.SetActive(false);
             if (oak != null) oak.enabled = false;
             if (squirrel != null) squirrel.enabled = false;
             if (boardCamera != null) boardCamera.enabled = false;
-            if (tabletopAlignment != null) tabletopAlignment.enabled = false;
+            // The photographed desk must stay camera-facing during the move.
+            // Moving its distant perspective plane into the gameplay plane
+            // here makes it pass visibly through the board.
+            if (tabletopAlignment != null)
+            {
+                tabletopAlignment.enabled = true;
+                tabletopAlignment.AlignNow();
+            }
         }
 
         public void PrepareConstruction()
@@ -281,12 +338,46 @@ namespace UrbanWildlifeRooms.Presentation
             // Hold the same centre-oak preview throughout the camera fade.
             // LateUpdate must not restore the legacy room arrangement midway.
             if (!previewing) ShowOpening();
-            if (previewing) constructionActive = true;
+            if (!previewing) return;
+            constructionActive = true;
+            // The gameplay scene replaces the old 3D oak with an illustrated
+            // plot. Make that change under the closed lid, then reveal the
+            // very same plot during the opening instead of swapping it after
+            // the scene load.
+            if (openingIllustratedPlot == null && oak?.VisualRoot != null)
+            {
+                ConstructionIllustratedVisualStyle.ApplyStarterOak(
+                    oak.VisualRoot.gameObject);
+                openingIllustratedPlot = oak.VisualRoot.Find(
+                    "Illustrated construction plot");
+                if (openingIllustratedPlot != null)
+                {
+                    openingIllustratedPlotScale =
+                        openingIllustratedPlot.localScale;
+                    UpdateOpeningPlotHeight();
+                    SetLidOpenAmount(lidOpenAmount);
+                }
+            }
+        }
+
+        private void UpdateOpeningPlotHeight()
+        {
+            if (openingIllustratedPlot == null || oak?.VisualRoot == null ||
+                boardCamera == null) return;
+            // The illustrated tile normally sits above all 3D room meshes.
+            // In perspective it stays on its physical cell. The final view
+            // is orthographic, where height no longer shifts or scales it.
+            // Switching the height in that same frame avoids a visible climb.
+            var gameplayView = BoardCamera != null && BoardCamera.orthographic;
+            var centre = oak.VisualRoot.position;
+            openingIllustratedPlot.position = centre + Vector3.up *
+                (gameplayView ? 5f : 0.20f);
         }
 
         public void ExitConstruction()
         {
             constructionActive = false;
+            if (openingOakMount != null) openingOakMount.SetActive(true);
             SetInteriorPrintsVisible(true);
             BeginClosing();
             if (foundation != null) foundation.localPosition = Vector3.zero;
@@ -352,11 +443,11 @@ namespace UrbanWildlifeRooms.Presentation
         private IEnumerator MoveLid(float target)
         {
             var from = lidOpenAmount;
-            var duration = 1.15f * Mathf.Abs(target - from);
+            var duration = 1.75f * Mathf.Abs(target - from);
             var elapsed = 0f;
             while (elapsed < duration)
             {
-                elapsed += Time.unscaledDeltaTime;
+                elapsed += Mathf.Min(Time.unscaledDeltaTime, 1f / 30f);
                 var progress = Mathf.SmoothStep(0f, 1f,
                     Mathf.Clamp01(elapsed / duration));
                 SetLidOpenAmount(Mathf.Lerp(from, target, progress));
@@ -369,11 +460,36 @@ namespace UrbanWildlifeRooms.Presentation
         private void SetLidOpenAmount(float amount)
         {
             lidOpenAmount = Mathf.Clamp01(amount);
-            var angle = 178f * lidOpenAmount;
+            var angle = 180f * lidOpenAmount;
             if (westLid != null)
                 westLid.localRotation = Quaternion.Euler(0f, 0f, angle);
             if (eastLid != null)
                 eastLid.localRotation = Quaternion.Euler(0f, 0f, -angle);
+            // Let the starter oak grow into view as soon as the leaves clear
+            // the centre. Waiting until the final 2% left an empty board in
+            // the opening shot and made the oak pop in at the scene handoff.
+            var oakReveal = Mathf.SmoothStep(0f, 1f,
+                Mathf.Clamp01((lidOpenAmount - 0.42f) / 0.36f));
+            if (previewing && oak?.VisualRoot != null)
+                oak.VisualRoot.gameObject.SetActive(oakWasActive &&
+                    oakReveal > 0.001f);
+            if (previewing && openingTree != null)
+                openingTree.localScale = openingTreeScale *
+                    (1.55f * oakReveal);
+            if (previewing && openingIllustratedPlot != null)
+                openingIllustratedPlot.localScale =
+                    openingIllustratedPlotScale * oakReveal;
+            if (previewing && squirrel != null)
+                squirrel.gameObject.SetActive(squirrelWasActive &&
+                    oakReveal >= 0.95f);
+            // The gameplay board already has its own deep-blue/wood perimeter.
+            // Showing that perimeter under the closed lid made a second hard
+            // frame where the reference has only a soft tabletop shadow.
+            if (previewing && boundaryCover != null)
+                boundaryCover.gameObject.SetActive(boundaryWasActive &&
+                    lidOpenAmount > 0.05f);
+            if (previewing && frontCaseEdge != null)
+                frontCaseEdge.gameObject.SetActive(lidOpenAmount > 0.05f);
         }
 
         private void BuildCaseShell()
@@ -381,7 +497,9 @@ namespace UrbanWildlifeRooms.Presentation
             if (caseShell != null) return;
             const float boardWidth = 7f * WorldScaleStandards.CellSizeMeters;
             const float halfCover = (boardWidth + 1.25f) * 0.5f;
-            const float lidHeight = 2.8f;
+            // Only a slim physical edge belongs below the printed lid. The
+            // apparent extra depth in the reference is a shadow on the desk.
+            const float lidHeight = 0.24f;
             caseMaterial = UrbanVisualFactory.CreateSurfaceMaterial();
             var lidPrint = Resources.Load<Texture2D>(
                 "UI/ConstructionCase/lid-city-oak-v01");
@@ -398,6 +516,7 @@ namespace UrbanWildlifeRooms.Presentation
             }
             caseShell = new GameObject("Two-part folding board case");
             caseShell.transform.SetParent(foundation, false);
+            BuildContactShadow(boardWidth, halfCover);
 
             // The walls turn the existing board into a shallow physical box.
             // They remain outside the plots so the open board stays playable.
@@ -405,12 +524,13 @@ namespace UrbanWildlifeRooms.Presentation
             {
                 CaseBox("Long wooden case wall", caseShell.transform,
                     new Vector3(side * (halfCover + 0.08f), lidHeight * 0.5f, 0f),
-                    new Vector3(0.22f, lidHeight, boardWidth + 1.4f),
-                    UrbanPalette.BoardFrameWood);
-                CaseBox("Short wooden case wall", caseShell.transform,
+                    new Vector3(0.22f, lidHeight, boardWidth + 0.75f),
+                    UrbanPalette.CaseWall);
+                CaseBox(side < 0f ? "Slim front case edge" :
+                        "Rear wooden case wall", caseShell.transform,
                     new Vector3(0f, lidHeight * 0.5f, side * (halfCover + 0.08f)),
                     new Vector3(boardWidth + 1.4f, lidHeight, 0.22f),
-                    UrbanPalette.BoardFrameWood);
+                    UrbanPalette.CaseWall);
                 CaseBox("Brass upper rim", caseShell.transform,
                     new Vector3(side * (halfCover + 0.08f), lidHeight, 0f),
                     new Vector3(0.25f, 0.055f, boardWidth + 1.4f),
@@ -418,19 +538,22 @@ namespace UrbanWildlifeRooms.Presentation
                 var hinge = new GameObject(side < 0f ? "West lid hinge" :
                     "East lid hinge").transform;
                 hinge.SetParent(caseShell.transform, false);
+                // The open underside print is 0.122 m above its hinge.
+                // Put it at the board rim's 0.15 m top, so the page and
+                // board meet in one plane instead of forming a dark gutter.
                 hinge.localPosition = new Vector3(side * halfCover,
-                    lidHeight + 0.07f, 0f);
+                    0.15f - 0.122f, 0f);
                 if (side < 0f) westLid = hinge;
                 else eastLid = hinge;
                 var panelCentre = -side * halfCover * 0.5f;
                 CaseBox("Navy lid half", hinge,
                     new Vector3(panelCentre, 0f, 0f),
                     new Vector3(halfCover - 0.045f, 0.18f,
-                        boardWidth + 1.25f), UrbanPalette.Boundary);
+                        boardWidth + 0.75f), UrbanPalette.Boundary);
                 CaseBox("Wood lid inset", hinge,
                     new Vector3(panelCentre, 0.105f, 0f),
                     new Vector3(halfCover - 0.37f, 0.04f,
-                        boardWidth + 0.88f), UrbanPalette.BoardFrameWood);
+                        boardWidth + 0.65f), UrbanPalette.BoardFrameWood);
                 CaseBox("Brass lid outline", hinge,
                     new Vector3(panelCentre, 0.132f, 0f),
                     new Vector3(halfCover - 0.62f, 0.015f,
@@ -446,10 +569,16 @@ namespace UrbanWildlifeRooms.Presentation
                 // so the image does not pop in only after the scene switch.
                 AddPrintedInteriorFace(hinge, panelCentre,
                     halfCover - 0.80f, boardWidth + 0.43f, side < 0f);
+                // A narrow binding rotates with the leaf. It bridges the
+                // board rim when open and hides beneath the cover when shut.
+                CaseBox("Continuous bookbinding", hinge,
+                    new Vector3(0f, -0.15f, 0f),
+                    new Vector3(0.46f, 0.035f, boardWidth + 0.65f),
+                    UrbanPalette.BoardFrameWood);
                 foreach (var hingeZ in new[] { -6f, 0f, 6f })
                     CaseBox("Visible brass hinge", hinge,
-                        new Vector3(0f, 0.10f, hingeZ),
-                        new Vector3(0.43f, 0.18f, 0.74f),
+                        new Vector3(0f, -0.18f, hingeZ),
+                        new Vector3(0.43f, 0.04f, 0.74f),
                         UrbanPalette.BoardFrameBrass);
                 CaseBox("Front clasp half", hinge,
                     new Vector3(-side * (halfCover - 0.30f), 0.16f,
@@ -457,7 +586,84 @@ namespace UrbanWildlifeRooms.Presentation
                     new Vector3(0.38f, 0.07f, 0.62f),
                     UrbanPalette.BoardFrameBrass);
             }
+            frontCaseEdge = caseShell.transform.Find("Slim front case edge");
             SetLidOpenAmount(0f);
+        }
+
+        private void BuildContactShadow(float boardWidth, float halfCover)
+        {
+            // The photographed tabletop cannot receive Unity shadows: its
+            // plane is camera-facing and far behind the actual board. A soft
+            // transparent footprint supplies the contact shadow without
+            // inventing a second solid frame under the box.
+            const int resolution = 256;
+            // Leave enough transparent margin for the full feather; clipping
+            // the quad inside the fade made its far edge look like a new rim.
+            var shadowSize = boardWidth + 6.0f;
+            contactShadowTexture = new Texture2D(resolution, resolution,
+                TextureFormat.RGBA32, false)
+            {
+                name = "Folding case soft contact shadow",
+                wrapMode = TextureWrapMode.Clamp,
+                filterMode = FilterMode.Bilinear,
+                hideFlags = HideFlags.HideAndDontSave
+            };
+            for (var y = 0; y < resolution; y++)
+            {
+                for (var x = 0; x < resolution; x++)
+                {
+                    var worldX = (x / (resolution - 1f) - 0.5f) * shadowSize;
+                    var worldZ = (y / (resolution - 1f) - 0.5f) * shadowSize;
+                    var outsideX = Mathf.Max(0f, Mathf.Abs(worldX) - halfCover);
+                    var outsideZ = Mathf.Max(0f, Mathf.Abs(worldZ) - halfCover);
+                    var distance = Mathf.Sqrt(outsideX * outsideX +
+                        outsideZ * outsideZ);
+                    var fade = 1f - Mathf.SmoothStep(0f, 1f,
+                        Mathf.Clamp01(distance / 1.65f));
+                    contactShadowTexture.SetPixel(x, y,
+                        new Color(0.085f, 0.075f, 0.065f, 0.24f * fade));
+                }
+            }
+            contactShadowTexture.Apply(false, false);
+            var shader = Shader.Find("Universal Render Pipeline/Unlit") ??
+                Shader.Find("Unlit/Transparent");
+            contactShadowMaterial = new Material(shader)
+            {
+                name = "Tabletop contact shadow - no extra frame",
+                mainTexture = contactShadowTexture,
+                renderQueue = (int)RenderQueue.Transparent,
+                hideFlags = HideFlags.HideAndDontSave
+            };
+            if (contactShadowMaterial.HasProperty("_BaseMap"))
+                contactShadowMaterial.SetTexture("_BaseMap", contactShadowTexture);
+            if (contactShadowMaterial.HasProperty("_BaseColor"))
+                contactShadowMaterial.SetColor("_BaseColor", Color.white);
+            if (contactShadowMaterial.HasProperty("_Surface"))
+                contactShadowMaterial.SetFloat("_Surface", 1f);
+            if (contactShadowMaterial.HasProperty("_Blend"))
+                contactShadowMaterial.SetFloat("_Blend", 0f);
+            if (contactShadowMaterial.HasProperty("_SrcBlend"))
+                contactShadowMaterial.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
+            if (contactShadowMaterial.HasProperty("_DstBlend"))
+                contactShadowMaterial.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
+            if (contactShadowMaterial.HasProperty("_ZWrite"))
+                contactShadowMaterial.SetFloat("_ZWrite", 0f);
+            contactShadowMaterial.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            contactShadowMaterial.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+
+            var shadow = GameObject.CreatePrimitive(PrimitiveType.Plane);
+            shadow.name = "Soft tabletop contact shadow";
+            shadow.transform.SetParent(caseShell.transform, false);
+            shadow.transform.localPosition = new Vector3(0.24f, -0.40f, -0.50f);
+            shadow.transform.localScale = new Vector3(shadowSize / 10f, 1f,
+                shadowSize / 10f);
+            shadow.layer = 29;
+            var renderer = shadow.GetComponent<MeshRenderer>();
+            renderer.sharedMaterial = contactShadowMaterial;
+            renderer.shadowCastingMode = ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+            var collider = shadow.GetComponent<Collider>();
+            if (collider != null) collider.enabled = false;
         }
 
         private void AddPrintedLidFace(Transform hinge, float centre,
@@ -513,15 +719,33 @@ namespace UrbanWildlifeRooms.Presentation
                 material.SetInt("_Cull", 0);
             interiorPrintMaterials.Add(material);
 
-            var print = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            print.name = cityHalf ? "Printed city inside lid" :
-                "Printed oak inside lid";
+            var print = new GameObject(cityHalf ? "Printed city inside lid" :
+                "Printed oak inside lid", typeof(MeshFilter), typeof(MeshRenderer));
             print.transform.SetParent(hinge, false);
-            print.transform.localPosition = new Vector3(centre, -0.112f, 0f);
-            print.transform.localScale = new Vector3(width, 0.018f, depth);
+            // The face is on the underside while shut. After the hinge's
+            // half-turn, local +X points toward screen left on both leaves.
+            // Reverse U here so the printed page has the same orientation as
+            // the screen-space panel that fades over it after the camera move.
+            print.transform.localPosition = new Vector3(centre, -0.122f, 0f);
             print.layer = 29;
-            var collider = print.GetComponent<Collider>();
-            if (collider != null) collider.enabled = false;
+            var halfWidth = width * 0.5f;
+            var halfDepth = depth * 0.5f;
+            var mesh = new Mesh { name = "Printed case interior page" };
+            mesh.vertices = new[]
+            {
+                new Vector3(-halfWidth, 0f, -halfDepth),
+                new Vector3(halfWidth, 0f, -halfDepth),
+                new Vector3(halfWidth, 0f, halfDepth),
+                new Vector3(-halfWidth, 0f, halfDepth)
+            };
+            mesh.uv = new[]
+            {
+                new Vector2(1f, 0f), new Vector2(0f, 0f),
+                new Vector2(0f, 1f), new Vector2(1f, 1f)
+            };
+            mesh.triangles = new[] { 0, 1, 2, 0, 2, 3 };
+            mesh.RecalculateNormals();
+            print.GetComponent<MeshFilter>().sharedMesh = mesh;
             var renderer = print.GetComponent<MeshRenderer>();
             renderer.sharedMaterial = material;
             renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
@@ -542,6 +766,8 @@ namespace UrbanWildlifeRooms.Presentation
         private void OnDestroy()
         {
             if (caseMaterial != null) Destroy(caseMaterial);
+            if (contactShadowMaterial != null) Destroy(contactShadowMaterial);
+            if (contactShadowTexture != null) Destroy(contactShadowTexture);
             if (lidPrintMaterial != null) Destroy(lidPrintMaterial);
             foreach (var material in interiorPrintMaterials)
                 if (material != null) Destroy(material);
@@ -552,7 +778,30 @@ namespace UrbanWildlifeRooms.Presentation
     public static class ConstructionLaunchContext
     {
         private static ConstructionGameMode? pending;
-        public static void Select(ConstructionGameMode mode) => pending = mode;
+        private static ConstructionRunModel preparedRun;
+        private static ConstructionRunStore preparedStore;
+        public static void Select(ConstructionGameMode mode)
+        {
+            pending = mode;
+            preparedRun = null;
+            preparedStore = null;
+        }
+        public static void PrepareRestart(ConstructionRunModel run,
+            ConstructionRunStore store)
+        {
+            pending = run.Mode;
+            preparedRun = run;
+            preparedStore = store;
+        }
+        public static bool TakePreparedRestart(out ConstructionRunModel run,
+            out ConstructionRunStore store)
+        {
+            run = preparedRun;
+            store = preparedStore;
+            preparedRun = null;
+            preparedStore = null;
+            return run != null;
+        }
         public static ConstructionGameMode Take()
         {
             var mode = pending ?? ConstructionGameMode.Fill;
@@ -563,64 +812,136 @@ namespace UrbanWildlifeRooms.Presentation
 
     // Lives on the Main scene root, not in the legacy HUD implementation.
     // The two modes keep their own scenes and their own save files.
-    public sealed class ConstructionMenuEntry : MonoBehaviour
+    public sealed partial class ConstructionMenuEntry : MonoBehaviour
     {
         private const string ConstructionScene = "ConstructionPrototype";
         private GameRuntimeController runtime;
         private Transform menu;
         private Button entrance;
+        private Button boardGameEntrance;
         private Text caption;
+        private Text modeCaption;
+        private Text boardGameCaption;
+        private Text boardGameModeCaption;
         private InterfaceLanguage shownLanguage;
         private bool entering;
+        private bool saveStateOverriddenForTesting;
+        private ConstructionSavedRunStatus fillSaveStatus;
+        private ConstructionSavedRunStatus endlessSaveStatus;
+        private ConstructionSavedRunStatus boardGameSaveStatus;
+        private GameObject saveWarningOverlay;
+        private Text saveWarningTitle;
+        private Text saveWarningBody;
+        private Text saveWarningDismissLabel;
+        private Text saveWarningArchiveLabel;
+        private Button saveWarningArchive;
+        private ConstructionGameMode warningMode;
+        private ConstructionSavedRunStatus warningStatus;
+        private bool warningArchiveFailed;
+
+        public ConstructionSavedRunStatus SavedStatus(ConstructionGameMode mode) =>
+            mode switch
+            {
+                ConstructionGameMode.Endless => endlessSaveStatus,
+                ConstructionGameMode.BoardGame => boardGameSaveStatus,
+                _ => fillSaveStatus
+            };
+
+        public void UseSaveStatesForTesting(ConstructionSavedRunStatus fill,
+            ConstructionSavedRunStatus endless)
+            => UseSaveStatesForTesting(fill, endless, ConstructionSavedRunStatus.None);
+
+        public void UseSaveStatesForTesting(ConstructionSavedRunStatus fill,
+            ConstructionSavedRunStatus endless,
+            ConstructionSavedRunStatus boardGame)
+        {
+            saveStateOverriddenForTesting = true;
+            fillSaveStatus = fill;
+            endlessSaveStatus = endless;
+            boardGameSaveStatus = boardGame;
+            if (caption != null) UpdateCaption();
+        }
+
+        private void RefreshSaveStates()
+        {
+            if (!saveStateOverriddenForTesting)
+            {
+                fillSaveStatus = new ConstructionRunStore(ConstructionRunStore.PathFor(
+                    ConstructionGameMode.Fill)).StatusFor(ConstructionGameMode.Fill);
+                endlessSaveStatus = new ConstructionRunStore(ConstructionRunStore.PathFor(
+                    ConstructionGameMode.Endless)).StatusFor(ConstructionGameMode.Endless);
+                boardGameSaveStatus = new ConstructionRunStore(ConstructionRunStore.PathFor(
+                    ConstructionGameMode.BoardGame)).StatusFor(ConstructionGameMode.BoardGame);
+            }
+            if (caption != null) UpdateCaption();
+        }
 
         private void LateUpdate()
         {
             // A player build can contain a stale editor preview, which the
             // bootstrap destroys before creating its live HUD. Bind only to
             // an active desktop menu, and rebind if that hierarchy is replaced.
-            if (entrance == null || runtime == null || menu == null)
-            {
-                var liveRuntime = GetComponentInChildren<GameRuntimeController>(true);
-                var hud = GetComponentInChildren<UrbanWildlifeHud>(true);
-                var liveMenu = hud?.transform.Find("Main Menu");
-                if (liveRuntime == null || liveMenu == null ||
-                    !liveRuntime.AtDesktop || !liveMenu.gameObject.activeInHierarchy)
-                    return;
-                runtime = liveRuntime;
-                menu = liveMenu;
-                CreateEntrance();
-            }
+            if (!EnsureDesktopMenu()) return;
+            SymbiosisAudioDirector.Ensure();
             if (shownLanguage != runtime.Language) UpdateCaption();
             var endlessSetup = menu.Find("Endless Difficulty Overlay");
             var researchSetup = menu.Find("Research Setup Overlay");
             var visible = runtime.AtDesktop && !runtime.SettingsOpen &&
                 menu.gameObject.activeInHierarchy &&
+                (saveWarningOverlay == null || !saveWarningOverlay.activeSelf) &&
                 (endlessSetup == null || !endlessSetup.gameObject.activeSelf) &&
                 (researchSetup == null || !researchSetup.gameObject.activeSelf);
             if (entrance.gameObject.activeSelf != visible)
                 entrance.gameObject.SetActive(visible);
+            // The physical-board detector launches a Windows command script.
+            // Keep this mode out of macOS builds until the detector is ported.
+            var boardGameVisible = visible &&
+                Application.platform != RuntimePlatform.OSXPlayer;
+            if (boardGameEntrance.gameObject.activeSelf != boardGameVisible)
+                boardGameEntrance.gameObject.SetActive(boardGameVisible);
+            if (localRankingsEntrance != null &&
+                localRankingsEntrance.gameObject.activeSelf != visible)
+                localRankingsEntrance.gameObject.SetActive(visible);
+        }
+
+        private bool EnsureDesktopMenu()
+        {
+            if (entrance != null && boardGameEntrance != null &&
+                localRankingsEntrance != null &&
+                runtime != null && menu != null) return true;
+            var liveRuntime = GetComponentInChildren<GameRuntimeController>(true);
+            var hud = GetComponentInChildren<UrbanWildlifeHud>(true);
+            var liveMenu = hud?.transform.Find("Main Menu");
+            if (liveRuntime == null || liveMenu == null ||
+                !liveRuntime.AtDesktop || !liveMenu.gameObject.activeInHierarchy)
+                return false;
+            runtime = liveRuntime;
+            menu = liveMenu;
+            CreateEntrance();
+            return entrance != null && boardGameEntrance != null;
         }
 
         private void CreateEntrance()
         {
+            saveWarningOverlay = null;
             var root = new GameObject("Construction Mode Entrance",
                 typeof(RectTransform), typeof(CanvasRenderer),
                 typeof(RoundedPanelGraphic), typeof(Button));
             root.transform.SetParent(menu, false);
             var rect = root.GetComponent<RectTransform>();
-            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.55f);
-            rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.sizeDelta = new Vector2(570f, 94f);
-            rect.anchoredPosition = new Vector2(0f, 25f);
+            ConstructionMainMenuLayout.Place(rect,
+                ConstructionMainMenuLayout.FillModeForPlatform);
 
             var backing = root.GetComponent<RoundedPanelGraphic>();
-            backing.CornerRadius = 26f;
-            backing.BorderWidth = 2.5f;
+            backing.CornerRadius = 10f;
+            backing.BorderWidth = 0f;
             entrance = root.GetComponent<Button>();
             entrance.targetGraphic = backing;
             entrance.transition = Selectable.Transition.None;
             entrance.onClick.AddListener(EnterConstruction);
-            root.AddComponent<MainMenuModeCardFeedback>().Initialize(backing);
+            ConstructionMainMenuLayout.AddPlaqueShadow(root.transform);
+            var plaque = ConstructionMainMenuLayout.AddPlaqueArtwork(root.transform);
+            root.AddComponent<MainMenuModeCardFeedback>().Initialize(backing, plaque);
 
             var iconObject = new GameObject("Construction pictogram",
                 typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
@@ -633,53 +954,96 @@ namespace UrbanWildlifeRooms.Presentation
             var iconRect = icon.rectTransform;
             iconRect.anchorMin = iconRect.anchorMax = new Vector2(0f, 0.5f);
             iconRect.pivot = new Vector2(0f, 0.5f);
-            iconRect.anchoredPosition = new Vector2(22f, 0f);
-            iconRect.sizeDelta = new Vector2(68f, 68f);
+            iconRect.anchoredPosition = new Vector2(11f, 0f);
+            iconRect.sizeDelta = new Vector2(44f, 44f);
 
             var labelObject = new GameObject("Construction Entry Label",
                 typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
             labelObject.transform.SetParent(root.transform, false);
             caption = labelObject.GetComponent<Text>();
             caption.alignment = TextAnchor.MiddleLeft;
-            caption.fontSize = 32;
             caption.color = new Color(0.98f, 0.94f, 0.84f);
             caption.raycastTarget = false;
             var labelRect = caption.rectTransform;
             labelRect.anchorMin = Vector2.zero;
             labelRect.anchorMax = Vector2.one;
-            labelRect.offsetMin = new Vector2(108f, 12f);
-            labelRect.offsetMax = new Vector2(-82f, -12f);
+            labelRect.offsetMin = new Vector2(62f, 36f);
+            labelRect.offsetMax = new Vector2(-8f, -10f);
 
-            var arrowObject = new GameObject("Enter arrow",
+            var modeObject = new GameObject("Construction Mode Label",
                 typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
-            arrowObject.transform.SetParent(root.transform, false);
-            var arrow = arrowObject.GetComponent<Text>();
-            arrow.font = Resources.Load<Font>("Fonts/Nunito-Bold");
-            arrow.fontSize = 46;
-            arrow.color = new Color(0.98f, 0.94f, 0.84f);
-            arrow.alignment = TextAnchor.MiddleCenter;
-            arrow.raycastTarget = false;
-            arrow.text = "›";
-            var arrowRect = arrow.rectTransform;
-            arrowRect.anchorMin = arrowRect.anchorMax = new Vector2(1f, 0.5f);
-            arrowRect.pivot = new Vector2(1f, 0.5f);
-            arrowRect.anchoredPosition = new Vector2(-22f, 0f);
-            arrowRect.sizeDelta = new Vector2(42f, 70f);
+            modeObject.transform.SetParent(root.transform, false);
+            modeCaption = modeObject.GetComponent<Text>();
+            modeCaption.alignment = TextAnchor.MiddleLeft;
+            modeCaption.color = new Color(0.98f, 0.94f, 0.84f, 0.90f);
+            modeCaption.raycastTarget = false;
+            var modeRect = modeCaption.rectTransform;
+            modeRect.anchorMin = Vector2.zero;
+            modeRect.anchorMax = Vector2.one;
+            modeRect.offsetMin = new Vector2(62f, 12f);
+            modeRect.offsetMax = new Vector2(-8f, -39f);
 
-            // Keep the new entry below existing setup overlays in raycast order.
+            // Both construction variants share the same plaque, icon scale,
+            // typography and alignment. The board-game card has its own save.
+            var boardRoot = Instantiate(root, menu);
+            boardRoot.name = "Board Game Mode Entrance";
+            ConstructionMainMenuLayout.Place(
+                boardRoot.GetComponent<RectTransform>(),
+                ConstructionMainMenuLayout.BoardGameMode);
+            boardRoot.GetComponent<MainMenuModeCardFeedback>().Initialize(
+                boardRoot.GetComponent<RoundedPanelGraphic>(),
+                boardRoot.transform.Find("Mode plaque artwork")
+                    .GetComponent<Image>());
+            boardGameEntrance = boardRoot.GetComponent<Button>();
+            boardGameEntrance.onClick.RemoveAllListeners();
+            boardGameEntrance.onClick.AddListener(EnterBoardGameConstruction);
+            var boardIcon = boardRoot.transform.Find("Construction pictogram")
+                ?.GetComponent<Image>();
+            if (boardIcon != null)
+                boardIcon.sprite = PauseMenuVisualCatalog.GetSprite(
+                    PauseMenuVisual.CameraRecalibrateIcon);
+            var boardAction = boardRoot.transform.Find("Construction Entry Label");
+            boardGameCaption = boardAction.GetComponent<Text>();
+            boardAction.name = "Board Game Entry Label";
+            var boardSubtitle = boardRoot.transform.Find("Construction Mode Label");
+            boardGameModeCaption = boardSubtitle.GetComponent<Text>();
+            boardSubtitle.name = "Board Game Mode Label";
+
+            // Keep both new entries below existing setup overlays in raycast order.
             var setup = menu.Find("Endless Difficulty Overlay");
-            if (setup != null) root.transform.SetSiblingIndex(setup.GetSiblingIndex());
-            UpdateCaption();
+            if (setup != null)
+            {
+                root.transform.SetSiblingIndex(setup.GetSiblingIndex());
+                boardRoot.transform.SetSiblingIndex(setup.GetSiblingIndex());
+            }
+            CreateLocalRankingsEntrance();
+            RefreshSaveStates();
+            LegacyTextTmpBridge.Attach(caption);
+            LegacyTextTmpBridge.Attach(modeCaption);
+            LegacyTextTmpBridge.Attach(boardGameCaption);
+            LegacyTextTmpBridge.Attach(boardGameModeCaption);
         }
 
         private void UpdateCaption()
         {
             shownLanguage = runtime.Language;
             var chinese = shownLanguage == InterfaceLanguage.Chinese;
-            caption.font = Resources.Load<Font>(chinese
-                ? "Fonts/NotoSansSC-Regular" : "Fonts/Nunito-Bold");
-            caption.text = chinese
-                ? "填空模式 · 49 天" : "Fill Mode · 49 Days";
+            ConstructionMainMenuLayout.ApplyModeFont(caption, chinese, 19);
+            ConstructionMainMenuLayout.ApplyModeFont(modeCaption, chinese, 15);
+            ConstructionMainMenuLayout.ApplyModeFont(boardGameCaption,
+                chinese, 19);
+            ConstructionMainMenuLayout.ApplyModeFont(boardGameModeCaption,
+                chinese, 15);
+            caption.text = ConstructionMainMenuLayout.ActionLabel(fillSaveStatus,
+                chinese);
+            modeCaption.text = ConstructionMainMenuLayout.ModeLabel(
+                ConstructionGameMode.Fill, chinese);
+            boardGameCaption.text = ConstructionMainMenuLayout.ActionLabel(
+                boardGameSaveStatus, chinese);
+            boardGameModeCaption.text = ConstructionMainMenuLayout.ModeLabel(
+                ConstructionGameMode.BoardGame, chinese);
+            UpdateLocalRankingsLanguage();
+            UpdateSaveWarningCopy();
         }
 
         public void EnterConstruction()
@@ -692,9 +1056,27 @@ namespace UrbanWildlifeRooms.Presentation
             EnterMode(ConstructionGameMode.Endless);
         }
 
+        public void EnterBoardGameConstruction()
+        {
+            EnterMode(ConstructionGameMode.BoardGame);
+        }
+
         private void EnterMode(ConstructionGameMode mode)
         {
             if (entering || ConstructionSceneTransition.IsActive) return;
+            if (mode == ConstructionGameMode.BoardGame &&
+                Application.platform == RuntimePlatform.OSXPlayer) return;
+            // The Endless card is created by the HUD and can receive a click
+            // before this component's first LateUpdate has built the Fill card.
+            if (!EnsureDesktopMenu()) return;
+            RefreshSaveStates();
+            var status = SavedStatus(mode);
+            if (status == ConstructionSavedRunStatus.Corrupt ||
+                status == ConstructionSavedRunStatus.Unavailable)
+            {
+                ShowSaveWarning(mode, status);
+                return;
+            }
             if (!Application.CanStreamedLevelBeLoaded(ConstructionScene))
             {
                 Debug.LogError("The construction scene is not in build settings.", this);
@@ -703,13 +1085,214 @@ namespace UrbanWildlifeRooms.Presentation
             ConstructionLaunchContext.Select(mode);
             entering = true;
             entrance.interactable = false;
+            boardGameEntrance.interactable = false;
             if (!ConstructionSceneTransition.Enter(menu,
                     GetComponentInChildren<BoardCameraController>(true),
                     ConstructionScene))
             {
                 entering = false;
                 entrance.interactable = true;
+                boardGameEntrance.interactable = true;
             }
+            else if (mode == ConstructionGameMode.Endless ||
+                     mode == ConstructionGameMode.BoardGame)
+                FindFirstObjectByType<PhysicalBoardCameraController>()?
+                    .SetRecognitionSuspended(true);
+        }
+
+        private void ShowSaveWarning(ConstructionGameMode mode,
+            ConstructionSavedRunStatus status)
+        {
+            warningMode = mode;
+            warningStatus = status;
+            warningArchiveFailed = false;
+            if (saveWarningOverlay == null)
+                CreateSaveWarning();
+            saveWarningOverlay.transform.SetAsLastSibling();
+            saveWarningOverlay.SetActive(true);
+            UpdateSaveWarningCopy();
+        }
+
+        private void CreateSaveWarning()
+        {
+            saveWarningOverlay = new GameObject("Construction Save Warning",
+                typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            saveWarningOverlay.transform.SetParent(menu, false);
+            var shade = saveWarningOverlay.GetComponent<Image>();
+            shade.color = new Color(0.02f, 0.04f, 0.06f, 0.78f);
+            shade.raycastTarget = true;
+            var shadeRect = shade.rectTransform;
+            shadeRect.anchorMin = Vector2.zero;
+            shadeRect.anchorMax = Vector2.one;
+            shadeRect.offsetMin = shadeRect.offsetMax = Vector2.zero;
+
+            var border = new GameObject("Gold border", typeof(RectTransform),
+                typeof(CanvasRenderer), typeof(Image));
+            border.transform.SetParent(saveWarningOverlay.transform, false);
+            var borderImage = border.GetComponent<Image>();
+            borderImage.color = new Color(0.78f, 0.61f, 0.34f);
+            var borderRect = borderImage.rectTransform;
+            borderRect.anchorMin = borderRect.anchorMax = new Vector2(0.5f, 0.5f);
+            borderRect.sizeDelta = new Vector2(670f, 308f);
+            borderRect.anchoredPosition = Vector2.zero;
+
+            var panel = new GameObject("Parchment", typeof(RectTransform),
+                typeof(CanvasRenderer), typeof(Image));
+            panel.transform.SetParent(border.transform, false);
+            var panelImage = panel.GetComponent<Image>();
+            panelImage.color = new Color(0.96f, 0.91f, 0.79f);
+            var panelRect = panelImage.rectTransform;
+            panelRect.anchorMin = Vector2.zero;
+            panelRect.anchorMax = Vector2.one;
+            panelRect.offsetMin = new Vector2(5f, 5f);
+            panelRect.offsetMax = new Vector2(-5f, -5f);
+
+            var header = new GameObject("Navy heading", typeof(RectTransform),
+                typeof(CanvasRenderer), typeof(Image));
+            header.transform.SetParent(panel.transform, false);
+            var headerImage = header.GetComponent<Image>();
+            headerImage.color = new Color(0.11f, 0.18f, 0.23f);
+            var headerRect = headerImage.rectTransform;
+            headerRect.anchorMin = new Vector2(0f, 1f);
+            headerRect.anchorMax = new Vector2(1f, 1f);
+            headerRect.pivot = new Vector2(0.5f, 1f);
+            headerRect.sizeDelta = new Vector2(0f, 63f);
+            headerRect.anchoredPosition = Vector2.zero;
+            saveWarningTitle = CreateSaveWarningText(header.transform,
+                "Save warning title", new Vector2(18f, 6f),
+                new Vector2(-18f, -6f), TextAnchor.MiddleCenter,
+                new Color(0.98f, 0.94f, 0.84f), 26);
+
+            saveWarningBody = CreateSaveWarningText(panel.transform,
+                "Save warning explanation", new Vector2(34f, 90f),
+                new Vector2(-34f, -81f), TextAnchor.UpperLeft,
+                new Color(0.11f, 0.18f, 0.23f), 22);
+            saveWarningBody.lineSpacing = 1.15f;
+
+            saveWarningDismissLabel = CreateSaveWarningButton(panel.transform,
+                "Dismiss save warning", new Vector2(-118f, 30f),
+                () => saveWarningOverlay.SetActive(false), out _);
+            saveWarningArchiveLabel = CreateSaveWarningButton(panel.transform,
+                "Archive save and start", new Vector2(118f, 30f),
+                ArchiveInvalidSaveAndStart, out saveWarningArchive);
+        }
+
+        private static Text CreateSaveWarningText(Transform parent, string name,
+            Vector2 insetMin, Vector2 insetMax, TextAnchor alignment,
+            Color color, int fontSize)
+        {
+            var item = new GameObject(name, typeof(RectTransform),
+                typeof(CanvasRenderer), typeof(Text));
+            item.transform.SetParent(parent, false);
+            var label = item.GetComponent<Text>();
+            label.alignment = alignment;
+            label.color = color;
+            label.fontSize = fontSize;
+            label.horizontalOverflow = HorizontalWrapMode.Wrap;
+            label.verticalOverflow = VerticalWrapMode.Truncate;
+            label.raycastTarget = false;
+            var rect = label.rectTransform;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = insetMin;
+            rect.offsetMax = insetMax;
+            return label;
+        }
+
+        private static Text CreateSaveWarningButton(Transform parent, string name,
+            Vector2 position, UnityEngine.Events.UnityAction onClick,
+            out Button button)
+        {
+            var item = new GameObject(name, typeof(RectTransform),
+                typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            item.transform.SetParent(parent, false);
+            var rect = item.GetComponent<RectTransform>();
+            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0f);
+            rect.sizeDelta = new Vector2(205f, 49f);
+            rect.anchoredPosition = position;
+            var image = item.GetComponent<Image>();
+            image.color = new Color(0.11f, 0.18f, 0.23f);
+            button = item.GetComponent<Button>();
+            button.targetGraphic = image;
+            button.onClick.AddListener(onClick);
+            return CreateSaveWarningText(item.transform, "Button label",
+                new Vector2(8f, 0f), new Vector2(-8f, 0f),
+                TextAnchor.MiddleCenter, new Color(0.98f, 0.94f, 0.84f), 19);
+        }
+
+        private void UpdateSaveWarningCopy()
+        {
+            if (saveWarningOverlay == null) return;
+            var chinese = shownLanguage == InterfaceLanguage.Chinese;
+            ConstructionMainMenuLayout.ApplyModeFont(saveWarningTitle, chinese, 26);
+            ConstructionMainMenuLayout.ApplyModeFont(saveWarningBody, chinese, 22);
+            ConstructionMainMenuLayout.ApplyModeFont(saveWarningDismissLabel,
+                chinese, 19);
+            ConstructionMainMenuLayout.ApplyModeFont(saveWarningArchiveLabel,
+                chinese, 19);
+            saveWarningBody.horizontalOverflow = HorizontalWrapMode.Wrap;
+            saveWarningBody.verticalOverflow = VerticalWrapMode.Truncate;
+            var corrupt = warningStatus == ConstructionSavedRunStatus.Corrupt;
+            saveWarningTitle.text = chinese
+                ? corrupt ? "存档异常" : "暂时无法读取存档"
+                : corrupt ? "Save cannot be loaded" : "Save unavailable";
+            saveWarningBody.text = warningArchiveFailed
+                ? chinese
+                    ? "归档失败，原存档没有更改。请检查文件权限后重试。"
+                    : "Archiving failed. The original save is unchanged. Check file access and try again."
+                : corrupt
+                    ? chinese
+                        ? "此模式的存档无法载入。选择“归档并重开”会将原文件保存在同一文件夹，再开始新游戏。"
+                        : "This mode's save cannot be loaded. Archive the original file beside the save, then start a new game."
+                    : chinese
+                        ? "目前无法读取此模式的存档。文件没有更改。请检查文件权限后重试。"
+                        : "This mode's save cannot be read now. The file is unchanged. Check file access and try again.";
+            saveWarningDismissLabel.text = chinese ? "返回" : "Back";
+            saveWarningArchiveLabel.text = chinese
+                ? "归档并重开" : "Archive & Start";
+            saveWarningArchive.gameObject.SetActive(corrupt);
+            var dismissRect = saveWarningDismissLabel.transform.parent
+                .GetComponent<RectTransform>();
+            dismissRect.anchoredPosition = corrupt
+                ? new Vector2(-118f, 30f) : new Vector2(0f, 30f);
+            LegacyTextTmpBridge.Attach(saveWarningTitle);
+            LegacyTextTmpBridge.Attach(saveWarningBody);
+            LegacyTextTmpBridge.Attach(saveWarningDismissLabel);
+            LegacyTextTmpBridge.Attach(saveWarningArchiveLabel);
+        }
+
+        private void ArchiveInvalidSaveAndStart()
+        {
+            var store = new ConstructionRunStore(
+                ConstructionRunStore.PathFor(warningMode));
+            if (store.TryArchiveInvalid(warningMode, out _))
+            {
+                saveWarningOverlay.SetActive(false);
+                RefreshSaveStates();
+                EnterMode(warningMode);
+                return;
+            }
+            // If the file was repaired externally while this dialog was open,
+            // show the updated menu status and let the player decide again.
+            RefreshSaveStates();
+            var currentStatus = SavedStatus(warningMode);
+            if (currentStatus != ConstructionSavedRunStatus.Corrupt &&
+                currentStatus != ConstructionSavedRunStatus.Unavailable)
+            {
+                saveWarningOverlay.SetActive(false);
+                return;
+            }
+            warningStatus = currentStatus;
+            warningArchiveFailed = true;
+            UpdateSaveWarningCopy();
+        }
+
+        internal void RestoreEntranceAfterReturn()
+        {
+            entering = false;
+            if (entrance != null) entrance.interactable = true;
+            if (boardGameEntrance != null) boardGameEntrance.interactable = true;
+            RefreshSaveStates();
         }
     }
 
@@ -718,29 +1301,56 @@ namespace UrbanWildlifeRooms.Presentation
     internal sealed class ConstructionSceneTransition : MonoBehaviour
     {
         private const float CameraDuration = 1.8f;
-        private const float MenuFadeDuration = 0.55f;
+        private const float MenuFadeDuration = 0.85f;
         private const float TabletopFadeDuration = 0.32f;
         private static ConstructionSceneTransition active;
+        private bool entering;
+        private bool reloading;
+        private bool returnQueued;
+        private bool reloadQueued;
         public static bool IsActive => active != null;
 
         private CanvasGroup tabletop;
         private readonly List<CanvasGroup> menuGroups = new();
         private readonly List<float> originalAlphas = new();
+        private readonly List<bool> originalRaycastBlocks = new();
 
         public static bool Enter(Transform menu, BoardCameraController camera,
             string scene)
         {
             if (active != null) return false;
             var bridge = Create();
+            bridge.entering = true;
             bridge.StartCoroutine(bridge.EnterRoutine(menu, camera, scene));
             return true;
         }
 
         public static bool ReturnToMenu()
         {
-            if (active != null) return false;
+            if (active != null)
+            {
+                if (active.entering || active.reloading)
+                    active.returnQueued = true;
+                return true;
+            }
             var bridge = Create();
             bridge.StartCoroutine(bridge.ReturnRoutine());
+            return true;
+        }
+
+        public static bool ReloadPreparedRun(ConstructionRunModel run,
+            ConstructionRunStore store)
+        {
+            if (run == null) return false;
+            ConstructionLaunchContext.PrepareRestart(run, store);
+            if (active != null)
+            {
+                active.reloadQueued = true;
+                return true;
+            }
+            var bridge = Create();
+            bridge.reloading = true;
+            bridge.StartCoroutine(bridge.ReloadPreparedRoutine());
             return true;
         }
 
@@ -756,8 +1366,7 @@ namespace UrbanWildlifeRooms.Presentation
             var scaler = root.GetComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1600f, 900f);
-            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-            scaler.matchWidthOrHeight = 0.5f;
+            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
             var imageObject = new GameObject("Matching tabletop", typeof(RectTransform),
                 typeof(CanvasRenderer), typeof(RawImage), typeof(CanvasGroup));
             imageObject.transform.SetParent(root.transform, false);
@@ -781,6 +1390,7 @@ namespace UrbanWildlifeRooms.Presentation
         {
             menuGroups.Clear();
             originalAlphas.Clear();
+            originalRaycastBlocks.Clear();
             foreach (Transform child in menu)
             {
                 if (!child.gameObject.activeInHierarchy) continue;
@@ -789,6 +1399,7 @@ namespace UrbanWildlifeRooms.Presentation
                     group = child.gameObject.AddComponent<CanvasGroup>();
                 menuGroups.Add(group);
                 originalAlphas.Add(group.alpha);
+                originalRaycastBlocks.Add(group.blocksRaycasts);
             }
         }
 
@@ -796,37 +1407,80 @@ namespace UrbanWildlifeRooms.Presentation
         {
             for (var i = 0; i < menuGroups.Count; i++)
                 if (menuGroups[i] != null)
+                {
                     menuGroups[i].alpha = originalAlphas[i] * fraction;
+                    // A fading menu can already be visible while another
+                    // scene transition owns the input. Do not expose a button
+                    // that appears clickable but silently ignores its click.
+                    menuGroups[i].blocksRaycasts = fraction >= 0.999f &&
+                        originalRaycastBlocks[i];
+                }
         }
 
         private IEnumerator EnterRoutine(Transform menu,
             BoardCameraController camera, string scene)
         {
+            SymbiosisAudioDirector.SetTransitionDucking(true);
+            SymbiosisAudioDirector.Play(SymbiosisSound.CaseOpen);
             var sharedBoard = FindFirstObjectByType<ConstructionOpeningBoardPreview>();
             sharedBoard?.PrepareConstruction();
             if (sharedBoard != null && sharedBoard.IsPreviewing)
             {
                 sharedBoard.BeginOpening();
                 CaptureMenu(menu);
-                camera?.BeginGameplayViewTransition(CameraDuration);
+                // Read the next scene while the physical lids are moving.
+                // Start its camera move after the menu fades, while the lids
+                // are still unfolding around the board.
+                var load = SceneManager.LoadSceneAsync(scene,
+                    LoadSceneMode.Additive);
+                if (load != null) load.allowSceneActivation = false;
                 var elapsedShared = 0f;
-                while (elapsedShared < CameraDuration)
+                while (sharedBoard != null &&
+                       elapsedShared < MenuFadeDuration)
                 {
-                    elapsedShared += Time.unscaledDeltaTime;
+                    // A scene reload can destroy the old menu while this
+                    // transition object survives. Stop before using stale UI.
+                    if (menu == null || sharedBoard == null)
+                    {
+                        if (load != null) load.allowSceneActivation = true;
+                        Finish();
+                        yield break;
+                    }
+                    elapsedShared += Mathf.Min(Time.unscaledDeltaTime,
+                        1f / 30f);
                     SetMenuVisibility(1f - Mathf.SmoothStep(0f, 1f,
                         Mathf.Clamp01(elapsedShared / MenuFadeDuration)));
                     yield return null;
                 }
+                if (menu == null || sharedBoard == null)
+                {
+                    if (load != null) load.allowSceneActivation = true;
+                    Finish();
+                    yield break;
+                }
                 // Keep the actual board and tabletop visible on both sides of
                 // the additive load. A full-screen tabletop image here used to
                 // interrupt the camera move before the case leaves opened.
+                // Restore stored menu alphas before disabling its HUD. The
+                // return transition captures these values for its fade-in;
+                // leaving them at zero makes the menu stay invisible.
                 SetMenuVisibility(1f);
                 sharedBoard.EnterConstruction();
                 var menuHud = menu.GetComponentInParent<UrbanWildlifeHud>();
                 if (menuHud != null) menuHud.gameObject.SetActive(false);
-                var load = SceneManager.LoadSceneAsync(scene, LoadSceneMode.Additive);
+                if (load == null)
+                    load = SceneManager.LoadSceneAsync(scene,
+                        LoadSceneMode.Additive);
+                else load.allowSceneActivation = true;
                 while (!load.isDone) yield return null;
                 SceneManager.SetActiveScene(SceneManager.GetSceneByName(scene));
+                // The interactive paper leaves take over only after both the
+                // physical lids and camera reach their final poses.
+                var world = FindFirstObjectByType<ConstructionWorldView>();
+                while ((world != null && world.UsesOpeningBoard &&
+                        world.IsEntranceCameraMoving) ||
+                       (sharedBoard != null && !sharedBoard.IsCaseOpen))
+                    yield return null;
                 Finish();
                 yield break;
             }
@@ -852,8 +1506,34 @@ namespace UrbanWildlifeRooms.Presentation
             Finish();
         }
 
+        private IEnumerator ReloadPreparedRoutine()
+        {
+            var main = SceneManager.GetSceneByName("Main");
+            var construction = SceneManager.GetSceneByName("ConstructionPrototype");
+            if (main.isLoaded && construction.isLoaded)
+            {
+                SceneManager.SetActiveScene(main);
+                var unload = SceneManager.UnloadSceneAsync(construction);
+                while (!unload.isDone) yield return null;
+                var load = SceneManager.LoadSceneAsync("ConstructionPrototype",
+                    LoadSceneMode.Additive);
+                while (!load.isDone) yield return null;
+                SceneManager.SetActiveScene(
+                    SceneManager.GetSceneByName("ConstructionPrototype"));
+            }
+            else
+            {
+                var load = SceneManager.LoadSceneAsync("ConstructionPrototype",
+                    LoadSceneMode.Single);
+                while (!load.isDone) yield return null;
+            }
+            Finish();
+        }
+
         private IEnumerator ReturnRoutine()
         {
+            SymbiosisAudioDirector.SetTransitionDucking(true);
+            SymbiosisAudioDirector.Play(SymbiosisSound.CaseClose);
             var sharedBoard = FindFirstObjectByType<ConstructionOpeningBoardPreview>();
             if (sharedBoard != null && SceneManager.GetSceneByName("Main").isLoaded)
             {
@@ -868,7 +1548,16 @@ namespace UrbanWildlifeRooms.Presentation
                     var unload = SceneManager.UnloadSceneAsync(construction);
                     while (!unload.isDone) yield return null;
                 }
+                if (sharedBoard == null)
+                {
+                    Finish();
+                    yield break;
+                }
                 sharedBoard.ExitConstruction();
+                // The Main runtime survives the additive construction scene.
+                // Read the language chosen there before its menu becomes visible.
+                FindFirstObjectByType<GameRuntimeController>(FindObjectsInactive.Include)?
+                    .RefreshLanguageFromPreference();
                 var sharedHud = sharedBoard.GetComponentInChildren<UrbanWildlifeHud>(true);
                 if (sharedHud != null)
                 {
@@ -885,12 +1574,22 @@ namespace UrbanWildlifeRooms.Presentation
                 var elapsedShared = 0f;
                 while (elapsedShared < CameraDuration)
                 {
+                    if (sharedBoard == null)
+                    {
+                        Finish();
+                        yield break;
+                    }
                     elapsedShared += Time.unscaledDeltaTime;
                     SetMenuVisibility(Mathf.SmoothStep(0f, 1f,
                         Mathf.Clamp01(elapsedShared / MenuFadeDuration)));
                     yield return null;
                 }
                 SetMenuVisibility(1f);
+                if (sharedBoard != null)
+                    sharedBoard.GetComponentInParent<ConstructionMenuEntry>()?
+                        .RestoreEntranceAfterReturn();
+                FindFirstObjectByType<PhysicalBoardCameraController>()?
+                    .SetRecognitionSuspended(false);
                 Finish();
                 yield break;
             }
@@ -949,8 +1648,22 @@ namespace UrbanWildlifeRooms.Presentation
 
         private void Finish()
         {
+            var constructionLoaded =
+                SceneManager.GetSceneByName("ConstructionPrototype").isLoaded;
+            var returnAfterOpening = (entering || reloading) &&
+                returnQueued && constructionLoaded;
+            var reloadAfterOpening = reloadQueued && constructionLoaded &&
+                !returnAfterOpening;
+            SymbiosisAudioDirector.SetTransitionDucking(false);
             active = null;
             Destroy(gameObject);
+            if (returnAfterOpening) ReturnToMenu();
+            else if (reloadAfterOpening)
+            {
+                var bridge = Create();
+                bridge.reloading = true;
+                bridge.StartCoroutine(bridge.ReloadPreparedRoutine());
+            }
         }
 
         private void OnDestroy()

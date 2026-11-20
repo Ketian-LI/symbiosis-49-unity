@@ -9,6 +9,28 @@ namespace UrbanWildlifeRooms.Tests.Editor
     public sealed class PhysicalBoardProjectionModelTests
     {
         [Test]
+        public void EndlessSuspensionRejectsPhysicalCameraObservations()
+        {
+            var root = new GameObject("Endless camera isolation test");
+            try
+            {
+                var camera = root.AddComponent<PhysicalBoardCameraController>();
+                camera.SetRecognitionSuspended(true);
+                Assert.That(camera.RecognitionSuspended, Is.True);
+                Assert.That(camera.CameraAvailable, Is.False);
+                Assert.That(camera.ActiveCameraName, Is.Empty);
+                Assert.That(camera.SubmitImageObservations(default, null,
+                    out var error), Is.False);
+                Assert.That(error, Is.EqualTo(
+                    PhysicalProjectionError.UnavailableInEndless));
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+            }
+        }
+
+        [Test]
         public void PerspectiveCalibrationRoundTripsBoardCoordinates()
         {
             Assert.That(PhysicalBoardImageCalibration.TryCreate(

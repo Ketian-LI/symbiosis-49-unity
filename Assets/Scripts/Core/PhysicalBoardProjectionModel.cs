@@ -161,7 +161,8 @@ namespace UrbanWildlifeRooms.Core
         DuplicateRoom,
         OutsideBoard,
         CellBoundary,
-        RotationUnclear
+        RotationUnclear,
+        UnavailableInEndless
     }
 
     public static class PhysicalBoardProjectionModel

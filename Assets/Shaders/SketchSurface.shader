@@ -6,6 +6,7 @@ Shader "Symbiosis/Sketch Surface"
         _InkColor ("Ink Color", Color) = (0.10, 0.14, 0.19, 1)
         _InkStrength ("Ink Strength", Range(0, 1)) = 0
         _InkWidthPixels ("Ink Width In Pixels", Range(0.5, 3)) = 1.25
+        _ShadowStrength ("Shadow Strength", Range(0, 1)) = 1
         _PaperGrain ("Paper Grain", Range(0, 0.12)) = 0.025
         _GrainFrequency ("Grain Frequency", Range(4, 80)) = 38
     }
@@ -36,6 +37,7 @@ Shader "Symbiosis/Sketch Surface"
                 half4 _InkColor;
                 half _InkStrength;
                 half _InkWidthPixels;
+                half _ShadowStrength;
                 half _PaperGrain;
                 half _GrainFrequency;
             CBUFFER_END
@@ -79,8 +81,10 @@ Shader "Symbiosis/Sketch Surface"
             {
                 Light mainLight = GetMainLight(input.shadowCoord);
                 float lightFacing = saturate(dot(normalize(input.normalWS), mainLight.direction));
+                float shadow = lerp(1.0, mainLight.shadowAttenuation,
+                                    _ShadowStrength);
                 float paperLight = (0.84 + 0.16 * lightFacing) *
-                                   lerp(0.78, 1.0, mainLight.shadowAttenuation);
+                                   lerp(0.78, 1.0, shadow);
 
                 // Fine, stable world-space variation softens otherwise flat low-poly faces.
                 float grain = Hash21(floor(input.positionWS.xz * _GrainFrequency));

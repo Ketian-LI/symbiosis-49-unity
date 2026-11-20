@@ -30,3 +30,20 @@ Assets/_Recovery.meta
 __pycache__/
 *.py[cod]
 sysinfo.txt
+
+# Archive additions: source and evidence are tracked; machine caches and player data are not.
+!Documentation/images/
+!Documentation/images/**
+**/.venv/
+**/node_modules/
+**/SYMBIOSIS49-ArtCamera/
+**/_internal/
+.env
+.env.*
+!.env.example
+.dev.vars
+*.exe
+*.dll
+*.pyd
+*.zip
+*.bundle

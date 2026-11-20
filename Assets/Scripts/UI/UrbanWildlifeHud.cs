@@ -146,6 +146,7 @@ namespace UrbanWildlifeRooms.UI
         private Text volumeLabel;
         private Image muteIcon;
         private Text muteLabel;
+        private Text displayModeLabel;
         private Text cameraCalibrationLabel;
         private Text backLabel;
         private GameObject desktopSandboxCard;
@@ -154,7 +155,9 @@ namespace UrbanWildlifeRooms.UI
         private RectTransform desktopResearchCardRect;
         private RectTransform desktopBestRecordRect;
         private Text desktopSandboxLabel;
+        private Text desktopSandboxModeLabel;
         private Text desktopResearchLabel;
+        private ConstructionMenuEntry constructionMenuEntry;
         private Text desktopBestRecordLabel;
         private Text desktopSettingsLabel;
         private Text desktopLanguageLabel;
@@ -1075,6 +1078,8 @@ namespace UrbanWildlifeRooms.UI
             UpdateRoomHoverLabel();
             UpdateFoodBadgeHover();
             UpdateCameraRecognitionFeedbackAnimation();
+            if (settingsPanel != null && settingsPanel.activeInHierarchy && runtime != null)
+                RefreshDisplayModeLabel(runtime.Language == InterfaceLanguage.Chinese);
         }
 
         private void RefreshFoodBadgeTargets()
@@ -2583,9 +2588,14 @@ namespace UrbanWildlifeRooms.UI
             trayRoomIcon.gameObject.SetActive(false);
             editStatus = CreateText(toolbar.Transform, "Layout Status", "布局编辑", 16, TextAnchor.MiddleLeft, WarmPaper, FontStyle.Bold);
             SetRect(editStatus.rectTransform, 80f, 12f, 276f, 50f);
-            rotateEditButton = CreateButton(toolbar.Transform, "Rotate Selected", "↻", 25, () => layoutEditor?.RotateSelected());
+            rotateEditButton = CreateButton(toolbar.Transform, "Rotate Selected", string.Empty,
+                25, () => layoutEditor?.RotateSelected());
             StyleCompactPaperButton(rotateEditButton);
             SetRect(rotateEditButton.GetComponent<RectTransform>(), 378f, 12f, 62f, 50f);
+            var rotateIcon = CreateImage(rotateEditButton.transform, "Rotate Pictogram",
+                ConstructionIconCatalog.GetControl(ConstructionControlIcon.Restart));
+            rotateIcon.preserveAspect = true;
+            SetCenter(rotateIcon.rectTransform, 35f, 35f);
             var cancelButton = CreateButton(toolbar.Transform, "Cancel Layout", "×", 28, () => layoutEditor?.CancelEditing());
             StyleCompactPaperButton(cancelButton);
             SetRect(cancelButton.GetComponent<RectTransform>(), 450f, 12f, 62f, 50f);
@@ -2984,7 +2994,7 @@ namespace UrbanWildlifeRooms.UI
             settingsPanel = settings.GameObject;
             var cameraSettings = BuildVariantSettings.UsesCameraRecognition;
             var settingsWidth = cameraSettings ? 700f : 640f;
-            SetCenter(settings.RectTransform, settingsWidth, cameraSettings ? 580f : 500f);
+            SetCenter(settings.RectTransform, settingsWidth, cameraSettings ? 656f : 576f);
             settingsTitle = CreateText(settings.Transform, "Settings Title", "设置", 26, TextAnchor.MiddleCenter, Graphite, FontStyle.Bold);
             SetTopCenter(settingsTitle.rectTransform, 0f, 36f, 240f, 42f);
             volumeLabel = CreateText(settings.Transform, "Volume Label", "游戏音量", 21, TextAnchor.MiddleLeft, Graphite, FontStyle.Bold);
@@ -3001,13 +3011,23 @@ namespace UrbanWildlifeRooms.UI
                 runtime.ToggleMute,
                 out muteIcon);
             BuildSettingsLanguageSelector(settings.Transform);
+            displayModeLabel = BuildSettingsAction(
+                settings.Transform,
+                "Toggle Fullscreen",
+                PauseMenuVisual.SettingsIcon,
+                354f,
+                DisplayModeController.Toggle,
+                out _);
+            // Screen mode cannot change the physical desktop from Editor Play Mode.
+            displayModeLabel.GetComponentInParent<Button>().interactable =
+                DisplayModeController.IsAvailable;
             if (cameraSettings)
             {
                 cameraCalibrationLabel = BuildSettingsAction(
                     settings.Transform,
                     "Recalibrate Camera",
                     PauseMenuVisual.CameraRecalibrateIcon,
-                    354f,
+                    430f,
                     runtime.RequestCameraRecalibration,
                     out _);
             }
@@ -3015,7 +3035,7 @@ namespace UrbanWildlifeRooms.UI
                 settings.Transform,
                 "Back",
                 PauseMenuVisual.BackIcon,
-                cameraSettings ? 430f : 354f,
+                cameraSettings ? 506f : 430f,
                 runtime.CloseSettings,
                 out _);
         }
@@ -3252,20 +3272,22 @@ namespace UrbanWildlifeRooms.UI
                 overlay.Transform,
                 "Desktop Settings",
                 MainMenuVisual.SettingsIcon,
-                -170f,
+                ConstructionMainMenuLayout.Settings,
                 runtime.OpenSettings);
             desktopLanguageLabel = BuildDesktopControl(
                 overlay.Transform,
                 "Desktop Language",
                 MainMenuVisual.LanguageIcon,
-                0f,
+                ConstructionMainMenuLayout.Language,
                 runtime.OpenSettings);
             desktopExitLabel = BuildDesktopControl(
                 overlay.Transform,
                 "Desktop Exit",
                 MainMenuVisual.ExitIcon,
-                170f,
+                ConstructionMainMenuLayout.Exit,
                 runtime.ExitApplication);
+
+            BuildDesktopFooterRules(overlay.Transform);
 
             BuildSandboxDifficultyOverlay();
         }
@@ -3648,39 +3670,47 @@ namespace UrbanWildlifeRooms.UI
         private void BuildDesktopTitle(Transform parent)
         {
             var title = CreateEmpty("Desktop Title", parent);
-            ConfigureResponsiveMenuElement(title, new Vector2(0.5f, 0.55f), 590f, 105f);
-            title.anchoredPosition = new Vector2(0f, 155f);
-
-            var wordmark = CreateImage(
-                title,
-                "SYMBIOSIS 49 Wordmark",
-                MainMenuVisualCatalog.GetSprite(MainMenuVisual.TitleWordmark));
+            ConstructionMainMenuLayout.Place(title,
+                ConstructionMainMenuLayout.Wordmark);
+            var wordmark = CreateImage(title, "SYMBIOSIS 49 Wordmark",
+                ConstructionMainMenuLayout.TitleArtwork);
             wordmark.preserveAspect = true;
-            Stretch(wordmark.rectTransform);
-            // Preserve the source wordmark's width-to-height ratio. Stretch sets
-            // the available area; Image.preserveAspect fits the cropped sprite.
-            wordmark.rectTransform.localScale = Vector3.one;
             wordmark.raycastTarget = false;
+            SetTopCenter(wordmark.rectTransform, 0f, 0f, 560f, 115f);
+        }
+
+        private void BuildDesktopFooterRules(Transform parent)
+        {
+            foreach (var area in new[]
+            {
+                new Rect(576f, 971f, 74f, 2f),
+                new Rect(772f, 971f, 48f, 2f),
+                new Rect(936f, 971f, 48f, 2f),
+                new Rect(1100f, 971f, 48f, 2f),
+                new Rect(1264f, 971f, 80f, 2f)
+            })
+            {
+                var rule = CreateImage(parent, "Menu footer rule", null);
+                rule.color = new Color(0.10f, 0.19f, 0.24f, 0.62f);
+                rule.raycastTarget = false;
+                ConstructionMainMenuLayout.Place(rule.rectTransform, area);
+            }
         }
 
         private Text BuildDesktopControl(
             Transform parent,
             string name,
             MainMenuVisual iconVisual,
-            float x,
+            Rect referenceRect,
             UnityEngine.Events.UnityAction action)
         {
             var root = CreateEmpty(name, parent);
-            ConfigureResponsiveMenuElement(
-                root,
-                new Vector2(0.5f + (x / 1920f), 0.085f),
-                140f,
-                132f);
+            ConstructionMainMenuLayout.Place(root, referenceRect);
 
             var backing = CreatePanel("Paper Button Backing", root, Color.white);
-            backing.Image.sprite = MainMenuVisualCatalog.GetSprite(MainMenuVisual.BottomButtonBase);
+            backing.Image.sprite = ConstructionMainMenuLayout.RoundControlBase;
             backing.Image.preserveAspect = true;
-            SetTopCenter(backing.RectTransform, 0f, 0f, 92f, 92f);
+            SetTopCenter(backing.RectTransform, 0f, 0f, 74f, 74f);
 
             var button = backing.GameObject.AddComponent<Button>();
             button.targetGraphic = backing.Image;
@@ -3694,16 +3724,9 @@ namespace UrbanWildlifeRooms.UI
             var icon = CreateImage(
                 backing.Transform,
                 "Control Pictogram",
-                iconVisual switch
-                {
-                    MainMenuVisual.SettingsIcon => ConstructionIconCatalog.GetControl(
-                        ConstructionControlIcon.Settings),
-                    MainMenuVisual.LanguageIcon => ConstructionIconCatalog.GetControl(
-                        ConstructionControlIcon.Language),
-                    _ => MainMenuVisualCatalog.GetSprite(iconVisual)
-                });
+                ConstructionMainMenuLayout.FooterIcon(iconVisual));
             icon.preserveAspect = true;
-            SetRect(icon.rectTransform, 18f, 18f, 56f, 56f);
+            SetRect(icon.rectTransform, 14f, 14f, 46f, 46f);
 
             var label = CreateText(
                 root,
@@ -3713,7 +3736,7 @@ namespace UrbanWildlifeRooms.UI
                 TextAnchor.MiddleCenter,
                 Graphite,
                 FontStyle.Bold);
-            SetTopCenter(label.rectTransform, 0f, 80f, 140f, 34f);
+            SetTopCenter(label.rectTransform, 0f, 75f, 112f, 30f);
             return label;
         }
 
@@ -3740,43 +3763,54 @@ namespace UrbanWildlifeRooms.UI
         {
             var panel = NewUiObject(name, parent, typeof(CanvasRenderer), typeof(RoundedPanelGraphic));
             var rounded = panel.GetComponent<RoundedPanelGraphic>();
-            rounded.CornerRadius = 26f;
-            rounded.BorderWidth = 2.5f;
+            rounded.CornerRadius = 10f;
+            rounded.BorderWidth = 0f;
             var button = panel.AddComponent<Button>();
             button.targetGraphic = rounded;
             button.transition = Selectable.Transition.None;
             button.onClick.AddListener(action);
 
+            ConstructionMainMenuLayout.AddPlaqueShadow(panel.transform);
+            var plaque = ConstructionMainMenuLayout.AddPlaqueArtwork(panel.transform);
             var feedback = panel.AddComponent<MainMenuModeCardFeedback>();
-            feedback.Initialize(rounded);
+            feedback.Initialize(rounded, plaque);
 
             var icon = CreateImage(panel.transform, "Mode Pictogram",
                 iconVisual == MainMenuVisual.SandboxIcon
                     ? ConstructionIconCatalog.GetControl(ConstructionControlIcon.EndlessMode)
                     : MainMenuVisualCatalog.GetSprite(iconVisual));
             icon.preserveAspect = true;
-            SetRect(icon.rectTransform, 22f, 13f, 68f, 68f);
+            icon.raycastTarget = false;
+            SetRect(icon.rectTransform, 11f, 17f, 44f, 44f);
 
             label = CreateText(
                 panel.transform,
                 "Live Mode Label",
                 string.Empty,
-                32,
+                27,
                 TextAnchor.MiddleLeft,
                 WarmPaper,
                 FontStyle.Bold);
             label.resizeTextForBestFit = false;
-            SetRect(label.rectTransform, 108f, 12f, 380f, 70f);
-
-            var arrow = CreateText(panel.transform, "Enter Arrow", "›", 46,
-                TextAnchor.MiddleCenter, WarmPaper, FontStyle.Normal);
-            SetRect(arrow.rectTransform, 506f, 12f, 42f, 70f);
+            label.raycastTarget = false;
+            if (iconVisual == MainMenuVisual.SandboxIcon)
+            {
+                SetRect(label.rectTransform, 62f, 36f, 166f, 32f);
+                desktopSandboxModeLabel = CreateText(panel.transform,
+                    "Endless Mode Subtitle", string.Empty, 15,
+                    TextAnchor.MiddleLeft, WarmPaper, FontStyle.Bold);
+                desktopSandboxModeLabel.color = new Color(
+                    WarmPaper.r, WarmPaper.g, WarmPaper.b, 0.90f);
+                SetRect(desktopSandboxModeLabel.rectTransform,
+                    62f, 12f, 166f, 27f);
+            }
+            else SetRect(label.rectTransform, 62f, 16f, 166f, 46f);
             return button;
         }
 
         private static void SetModeCardLabel(Text label, string caption, int preferredFontSize)
         {
-            if (label == null || (label.text == caption && label.fontSize <= preferredFontSize))
+            if (label == null)
             {
                 return;
             }
@@ -3784,11 +3818,6 @@ namespace UrbanWildlifeRooms.UI
             label.text = caption;
             label.resizeTextForBestFit = false;
             label.fontSize = preferredFontSize;
-            var availableWidth = label.rectTransform.rect.width - 16f;
-            while (label.fontSize > 26 && label.preferredWidth > availableWidth)
-            {
-                label.fontSize -= 2;
-            }
         }
 
         private void HandleSandboxEntry()
@@ -4103,9 +4132,9 @@ namespace UrbanWildlifeRooms.UI
 
             if (showSandbox)
             {
-                ConfigureResponsiveMenuElement(desktopSandboxCardRect,
-                    new Vector2(0.5f, 0.55f), 570f, 94f);
-                desktopSandboxCardRect.anchoredPosition = new Vector2(0f, -95f);
+                ConstructionMainMenuLayout.Place(desktopSandboxCardRect,
+                    ConstructionMainMenuLayout.EndlessModeForPlatform,
+                    resetScale: false);
             }
             ConfigureResponsiveMenuElement(desktopBestRecordRect, new Vector2(0.5f, 0.255f), 390f, 80f);
         }
@@ -4409,19 +4438,36 @@ namespace UrbanWildlifeRooms.UI
                 runtime.Muted ? PauseMenuVisual.RestoreSoundIcon : PauseMenuVisual.MuteIcon);
             settingsLanguageLabel.text = chinese ? "语言" : "Language";
             RefreshSettingsLanguageSelector(chinese);
+            RefreshDisplayModeLabel(chinese);
             if (cameraCalibrationLabel != null)
             {
                 cameraCalibrationLabel.text = chinese ? "重新校准摄像头" : "Recalibrate Camera";
             }
             backLabel.text = chinese ? "返回" : "Back";
             var continuing = runtime.HasResumableRun;
-            var sandboxCaption = chinese ? "无尽建造" : "Endless Build";
+            constructionMenuEntry ??= transform.root.GetComponentInChildren<
+                ConstructionMenuEntry>(true);
+            var endlessSaveStatus = constructionMenuEntry == null
+                ? ConstructionSavedRunStatus.None
+                : constructionMenuEntry.SavedStatus(ConstructionGameMode.Endless);
+            var sandboxCaption = ConstructionMainMenuLayout.ActionLabel(
+                endlessSaveStatus, chinese);
             var researchCaption = continuing && runtime.Mode == GameMode.Research
                 ? (chinese ? "继续限时模式" : "Continue Timed")
                 : (chinese ? "限时模式" : "Timed Mode");
-            SetModeCardLabel(desktopSandboxLabel, sandboxCaption, 32);
-            SetModeCardLabel(desktopResearchLabel, researchCaption,
-                continuing && runtime.Mode == GameMode.Research ? (chinese ? 56 : 46) : (chinese ? 64 : 54));
+            SetModeCardLabel(desktopSandboxLabel, sandboxCaption, 19);
+            ConstructionMainMenuLayout.ApplyModeFont(desktopSandboxLabel,
+                chinese, 19);
+            if (desktopSandboxModeLabel != null)
+            {
+                desktopSandboxModeLabel.text = ConstructionMainMenuLayout.ModeLabel(
+                    ConstructionGameMode.Endless, chinese);
+                ConstructionMainMenuLayout.ApplyModeFont(desktopSandboxModeLabel,
+                    chinese, 15);
+            }
+            // Keep all menu plaques on one readable type scale instead of
+            // shrinking a large headline into a narrow 166-pixel label.
+            SetModeCardLabel(desktopResearchLabel, researchCaption, 19);
             desktopSettingsLabel.text = chinese ? "设置" : "Settings";
             desktopLanguageLabel.text = chinese ? "语言" : "Language";
             desktopExitLabel.text = chinese ? "退出" : "Exit";
@@ -4641,6 +4687,17 @@ namespace UrbanWildlifeRooms.UI
             settingsChineseLabel.color = chinese ? Graphite : WarmPaper;
         }
 
+        private void RefreshDisplayModeLabel(bool chinese)
+        {
+            if (displayModeLabel == null) return;
+            var label = !DisplayModeController.IsAvailable
+                ? chinese ? "全屏（仅运行版）" : "Fullscreen (build only)"
+                : DisplayModeController.IsFullscreen
+                    ? chinese ? "全屏：开（F11）" : "Fullscreen: On (F11)"
+                    : chinese ? "全屏：关（F11）" : "Fullscreen: Off (F11)";
+            if (displayModeLabel.text != label) displayModeLabel.text = label;
+        }
+
         private Button CreateButton(
             Transform parent,
             string name,
@@ -4826,6 +4883,7 @@ namespace UrbanWildlifeRooms.UI
             text.horizontalOverflow = HorizontalWrapMode.Overflow;
             text.verticalOverflow = VerticalWrapMode.Overflow;
             text.raycastTarget = false;
+            LegacyTextTmpBridge.Attach(text);
             return text;
         }
 

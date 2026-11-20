@@ -258,6 +258,7 @@ namespace UrbanWildlifeRooms.UI
             text.raycastTarget = false;
             text.horizontalOverflow = HorizontalWrapMode.Overflow;
             text.verticalOverflow = VerticalWrapMode.Overflow;
+            LegacyTextTmpBridge.Attach(text);
             return text;
         }
     }

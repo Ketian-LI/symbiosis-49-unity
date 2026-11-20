@@ -15,6 +15,221 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
     public sealed class MainMenuLiveSceneTests
     {
         [UnityTest]
+        public IEnumerator EndlessEntryWaitsForDesktopMenuBinding()
+        {
+            var probe = new GameObject("Unbound construction menu entry test");
+            try
+            {
+                var entry = probe.AddComponent<ConstructionMenuEntry>();
+                Assert.DoesNotThrow(() => entry.EnterEndlessConstruction(),
+                    "A click before the menu has been bound must not access a missing Fill card.");
+            }
+            finally
+            {
+                Object.Destroy(probe);
+            }
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator DesktopLeaderboardOpensModeSeparatedLocalScores()
+        {
+            yield return SceneManager.LoadSceneAsync("Main", LoadSceneMode.Single);
+            var bootstrap = Object.FindFirstObjectByType<UrbanWildlifeBootstrap>();
+            var generated = bootstrap.transform.Find(
+                UrbanWildlifeBootstrap.GeneratedRootName);
+            var runtime = generated.GetComponentInChildren<GameRuntimeController>(true);
+            var hud = generated.GetComponentInChildren<UrbanWildlifeHud>(true);
+            var menu = hud.transform.Find("Main Menu");
+            for (var frame = 0; frame < 120 &&
+                 menu.Find("Desktop Leaderboard") == null; frame++)
+                yield return null;
+
+            var leaderboard = menu.Find("Desktop Leaderboard");
+            Assert.That(leaderboard, Is.Not.Null);
+            var language = menu.Find("Desktop Language")
+                .GetComponent<RectTransform>();
+            var rankings = leaderboard.GetComponent<RectTransform>();
+            var exit = menu.Find("Desktop Exit").GetComponent<RectTransform>();
+            Assert.That(rankings.anchoredPosition.x,
+                Is.GreaterThan(language.anchoredPosition.x));
+            Assert.That(rankings.anchoredPosition.x,
+                Is.LessThan(exit.anchoredPosition.x));
+            Assert.That(rankings.anchoredPosition.y,
+                Is.EqualTo(language.anchoredPosition.y).Within(0.01f));
+            Assert.That(leaderboard.Find("Paper Button Backing/Control Pictogram")
+                .GetComponent<Image>().sprite, Is.Not.Null);
+
+            runtime.UseLanguageForTesting(InterfaceLanguage.Chinese);
+            yield return null;
+            Assert.That(leaderboard.Find("Live Control Label")
+                .GetComponent<Text>().text, Is.EqualTo("排行榜"));
+            leaderboard.Find("Paper Button Backing")
+                .GetComponent<Button>().onClick.Invoke();
+            var overlay = menu.Find("Main Menu Local Rankings");
+            Assert.That(overlay, Is.Not.Null);
+            Assert.That(overlay.gameObject.activeSelf, Is.True);
+            var paper = overlay.Find("Gold edge/Ranking paper");
+            Assert.That(paper.Find("Ranking title").GetComponent<Text>().text,
+                Is.EqualTo("本地排行榜"));
+            Assert.That(paper.Find("Rankings header Days")
+                .GetComponent<Text>().text, Is.EqualTo("奖项"));
+            paper.Find("Rankings BoardGame").GetComponent<Button>()
+                .onClick.Invoke();
+            Assert.That(paper.Find("Rankings BoardGame/Mode label")
+                .GetComponent<Text>().text, Is.EqualTo("桌游"));
+            Assert.That(paper.Find("Rankings header Days")
+                .GetComponent<Text>().text, Is.EqualTo("均衡"));
+            paper.Find("Close local rankings").GetComponent<Button>()
+                .onClick.Invoke();
+            Assert.That(overlay.gameObject.activeSelf, Is.False);
+
+            runtime.UseLanguageForTesting(InterfaceLanguage.English);
+            yield return null;
+            Assert.That(leaderboard.Find("Live Control Label")
+                .GetComponent<Text>().text, Is.EqualTo("Rankings"));
+        }
+
+        [UnityTest]
+        public IEnumerator ModeCardsShowIndependentSaveActionsWithMatchingFonts()
+        {
+            yield return SceneManager.LoadSceneAsync("Main", LoadSceneMode.Single);
+            var bootstrap = Object.FindFirstObjectByType<UrbanWildlifeBootstrap>();
+            var generated = bootstrap.transform.Find(UrbanWildlifeBootstrap.GeneratedRootName);
+            var runtime = generated.GetComponentInChildren<GameRuntimeController>(true);
+            var hud = generated.GetComponentInChildren<UrbanWildlifeHud>(true);
+            var entry = bootstrap.GetComponent<ConstructionMenuEntry>();
+            var menu = hud.transform.Find("Main Menu");
+            for (var frame = 0; frame < 120 &&
+                 menu.Find("Construction Mode Entrance") == null; frame++)
+                yield return null;
+
+            Assert.That(menu.Find("Construction Mode Entrance"), Is.Not.Null);
+            var fill = menu.Find("Construction Mode Entrance");
+            var endless = menu.Find("Sandbox Mode Entrance");
+            var boardGame = menu.Find("Board Game Mode Entrance");
+            Assert.That(boardGame, Is.Not.Null);
+            var fillAction = fill.Find("Construction Entry Label").GetComponent<Text>();
+            var fillMode = fill.Find("Construction Mode Label").GetComponent<Text>();
+            var endlessAction = endless.Find("Live Mode Label").GetComponent<Text>();
+            var endlessMode = endless.Find("Endless Mode Subtitle").GetComponent<Text>();
+            var boardAction = boardGame.Find("Board Game Entry Label").GetComponent<Text>();
+            var boardMode = boardGame.Find("Board Game Mode Label").GetComponent<Text>();
+
+            entry.UseSaveStatesForTesting(ConstructionSavedRunStatus.InProgress,
+                ConstructionSavedRunStatus.None, ConstructionSavedRunStatus.Finished);
+            runtime.UseLanguageForTesting(InterfaceLanguage.Chinese);
+            yield return null;
+            Assert.That(fillAction.text, Is.EqualTo("继续游戏"));
+            Assert.That(fillMode.text, Is.EqualTo("填空模式"));
+            Assert.That(endlessAction.text, Is.EqualTo("开始游戏"));
+            Assert.That(endlessMode.text, Is.EqualTo("无尽模式"));
+            Assert.That(boardAction.text, Is.EqualTo("查看结果"));
+            Assert.That(boardMode.text, Is.EqualTo("桌游模式"));
+            var chineseFont = Resources.Load<Font>("Fonts/NotoSansSC-Regular");
+            Assert.That(fillAction.font, Is.SameAs(chineseFont));
+            Assert.That(endlessAction.font, Is.SameAs(chineseFont));
+            Assert.That(fillMode.font, Is.SameAs(chineseFont));
+            Assert.That(endlessMode.font, Is.SameAs(chineseFont));
+            Assert.That(boardAction.font, Is.SameAs(chineseFont));
+            Assert.That(boardMode.font, Is.SameAs(chineseFont));
+            Assert.That(fillAction.preferredWidth,
+                Is.LessThanOrEqualTo(fillAction.rectTransform.rect.width));
+            Assert.That(endlessAction.preferredWidth,
+                Is.LessThanOrEqualTo(endlessAction.rectTransform.rect.width));
+            Assert.That(fillMode.preferredWidth,
+                Is.LessThanOrEqualTo(fillMode.rectTransform.rect.width));
+            Assert.That(endlessMode.preferredWidth,
+                Is.LessThanOrEqualTo(endlessMode.rectTransform.rect.width));
+            Assert.That(boardAction.preferredWidth,
+                Is.LessThanOrEqualTo(boardAction.rectTransform.rect.width));
+            Assert.That(boardMode.preferredWidth,
+                Is.LessThanOrEqualTo(boardMode.rectTransform.rect.width));
+
+            entry.UseSaveStatesForTesting(ConstructionSavedRunStatus.None,
+                ConstructionSavedRunStatus.Finished, ConstructionSavedRunStatus.InProgress);
+            runtime.UseLanguageForTesting(InterfaceLanguage.English);
+            yield return null;
+            Assert.That(fillAction.text, Is.EqualTo("Start Game"));
+            Assert.That(fillMode.text, Is.EqualTo("Fill Mode"));
+            Assert.That(endlessAction.text, Is.EqualTo("View Results"));
+            Assert.That(endlessMode.text, Is.EqualTo("Endless Mode"));
+            Assert.That(boardAction.text, Is.EqualTo("Continue Game"));
+            Assert.That(boardMode.text, Is.EqualTo("Board Game"));
+            var englishFont = Resources.Load<Font>("Fonts/Nunito-Bold");
+            Assert.That(fillAction.font, Is.SameAs(englishFont));
+            Assert.That(endlessAction.font, Is.SameAs(englishFont));
+            Assert.That(fillMode.font, Is.SameAs(englishFont));
+            Assert.That(endlessMode.font, Is.SameAs(englishFont));
+            Assert.That(boardAction.font, Is.SameAs(englishFont));
+            Assert.That(boardMode.font, Is.SameAs(englishFont));
+            Assert.That(fillAction.fontSize, Is.EqualTo(endlessAction.fontSize));
+            Assert.That(fillAction.fontSize, Is.EqualTo(boardAction.fontSize));
+            Assert.That(fillMode.fontSize, Is.EqualTo(endlessMode.fontSize));
+            Assert.That(fillMode.fontSize, Is.EqualTo(boardMode.fontSize));
+            Assert.That(fillAction.preferredWidth,
+                Is.LessThanOrEqualTo(fillAction.rectTransform.rect.width));
+            Assert.That(endlessAction.preferredWidth,
+                Is.LessThanOrEqualTo(endlessAction.rectTransform.rect.width));
+            Assert.That(fillMode.preferredWidth,
+                Is.LessThanOrEqualTo(fillMode.rectTransform.rect.width));
+            Assert.That(endlessMode.preferredWidth,
+                Is.LessThanOrEqualTo(endlessMode.rectTransform.rect.width));
+            Assert.That(boardAction.preferredWidth,
+                Is.LessThanOrEqualTo(boardAction.rectTransform.rect.width));
+            Assert.That(boardMode.preferredWidth,
+                Is.LessThanOrEqualTo(boardMode.rectTransform.rect.width));
+            Assert.That(fill.GetComponent<RectTransform>().sizeDelta,
+                Is.EqualTo(endless.GetComponent<RectTransform>().sizeDelta));
+            Assert.That(boardGame.GetComponent<RectTransform>().sizeDelta,
+                Is.EqualTo(fill.GetComponent<RectTransform>().sizeDelta));
+            Assert.That(boardGame.GetComponent<RectTransform>().anchoredPosition.y,
+                Is.EqualTo(fill.GetComponent<RectTransform>().anchoredPosition.y)
+                    .Within(0.01f));
+            Assert.That(fillAction.horizontalOverflow,
+                Is.EqualTo(endlessAction.horizontalOverflow));
+            Assert.That(fillAction.verticalOverflow,
+                Is.EqualTo(endlessAction.verticalOverflow));
+        }
+
+        [UnityTest]
+        public IEnumerator AllVisibleModeCardsKeepHoverScaleThroughMenuRefresh()
+        {
+            yield return SceneManager.LoadSceneAsync("Main", LoadSceneMode.Single);
+            var bootstrap = Object.FindFirstObjectByType<UrbanWildlifeBootstrap>();
+            var generated = bootstrap.transform.Find(
+                UrbanWildlifeBootstrap.GeneratedRootName);
+            var runtime = generated.GetComponentInChildren<GameRuntimeController>(true);
+            var hud = generated.GetComponentInChildren<UrbanWildlifeHud>(true);
+            var menu = hud.transform.Find("Main Menu");
+            for (var frame = 0; frame < 120 &&
+                 menu.Find("Construction Mode Entrance") == null; frame++)
+                yield return null;
+
+            foreach (var name in new[]
+                     {
+                         "Construction Mode Entrance",
+                         "Sandbox Mode Entrance",
+                         "Board Game Mode Entrance"
+                     })
+            {
+                var card = menu.Find(name);
+                Assert.That(card, Is.Not.Null, name);
+                var feedback = card.GetComponent<MainMenuModeCardFeedback>();
+                Assert.That(feedback, Is.Not.Null, name);
+                feedback.OnPointerEnter(null);
+                yield return null; // Runtime refreshes the desktop menu each frame.
+                runtime.UseLanguageForTesting(InterfaceLanguage.Chinese);
+                Assert.That(card.localScale.x, Is.EqualTo(1.025f).Within(0.001f),
+                    name + " must stay enlarged while hovered.");
+                feedback.OnPointerExit(null);
+                yield return null;
+                Assert.That(card.localScale.x, Is.EqualTo(1f).Within(0.001f),
+                    name + " must return to its resting size.");
+            }
+        }
+
+        [UnityTest]
         public IEnumerator DesktopLanguageOpensExplicitChoicesWithoutChangingPreference()
         {
             const string preferenceKey = "symbiosis49.language";
@@ -112,10 +327,11 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             var openingTreePosition = matureTree.localPosition;
             Assert.That(openingTreePosition.x, Is.EqualTo(-0.24f).Within(0.001f));
             Assert.That(System.Array.FindAll(generated.GetComponentsInChildren<RoomView>(true),
-                room => room.VisualRoot.gameObject.activeInHierarchy).Length, Is.EqualTo(1));
+                room => room.VisualRoot.gameObject.activeInHierarchy).Length, Is.Zero,
+                "The closed lid must conceal the starter room until the case opens.");
             Assert.That(System.Array.FindAll(squirrels,
-                animal => System.Array.Exists(animal.GetComponentsInChildren<Renderer>(true),
-                    renderer => renderer.enabled)).Length, Is.EqualTo(1));
+                animal => animal.gameObject.activeInHierarchy).Length, Is.Zero,
+                "The squirrel must not show through the closed lid.");
             Assert.That(System.Array.FindAll(
                 generated.GetComponentsInChildren<PigeonDemoAgent>(true),
                 animal => animal.gameObject.activeInHierarchy).Length, Is.Zero,

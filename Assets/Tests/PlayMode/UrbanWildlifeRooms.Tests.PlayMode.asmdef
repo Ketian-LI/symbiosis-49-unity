@@ -2,7 +2,8 @@
   "name": "UrbanWildlifeRooms.Tests.PlayMode",
   "rootNamespace": "UrbanWildlifeRooms.Tests.PlayMode",
   "references": [
-    "UrbanWildlifeRooms.Runtime"
+    "UrbanWildlifeRooms.Runtime",
+    "Unity.TextMeshPro"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

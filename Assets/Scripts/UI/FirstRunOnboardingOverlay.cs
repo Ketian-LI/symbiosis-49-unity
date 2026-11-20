@@ -527,20 +527,20 @@ namespace UrbanWildlifeRooms.UI
                     return phase switch
                     {
                         OnboardingPromptPhase.HumanHome => chinese
-                            ? "橡树旁出现第一间人类住宅。点击它，看看这块板是什么。"
-                            : "A human home appears beside the oak. Select it to learn what this tile is.",
+                            ? "橡树旁，有一位新邻居想安家。点击刚出现的住宅，看看他会住在哪里。"
+                            : "Someone wants to settle beside the oak. Select the new home to see where they will live.",
                         OnboardingPromptPhase.HumanResident => chinese
-                            ? "住宅里来了一位居民。点击他，认识需要安排日常路线的人。"
-                            : "A resident arrives at the home. Select them to meet the person who needs a daily route.",
+                            ? "新邻居搬来了！点击他，看看他每天要走哪些路。"
+                            : "The new neighbour has arrived. Select them to see where their day will take them.",
                         OnboardingPromptPhase.HumanResidentMet => chinese
-                            ? "这位居民每天需要从家出发，去工作、吃饭，再回家。下一步看看目的地。"
-                            : "This resident needs to leave home, work, eat, then return home each day. Next, see the destinations.",
+                            ? "每天从家出门，上班、吃饭，再回家。接下来看看这位邻居要去哪里。"
+                            : "Each day they leave home, work, eat and return. Next, see where they need to go.",
                         OnboardingPromptPhase.HumanWork => chinese
-                            ? "第一处目的地出现了：点击工作房，看看它的作用。"
-                            : "The first destination appears. Select the workplace to see its role.",
+                            ? "上班的地方出现了。点击工作房，看看这里能提供什么。"
+                            : "A workplace has appeared. Select it to see what it offers.",
                         _ => chinese
-                            ? "还有吃饭的地方。点击餐饮房，完成这条日常需求链。"
-                            : "There is also a place to eat. Select the food shop to complete the daily needs chain."
+                            ? "还差一顿饭。点击餐饮房，看看居民能去哪里吃饭。"
+                            : "They still need a meal. Select the dining room to see where they can eat."
                     };
                 }
                 if (phase == OnboardingPromptPhase.OakNextDay)
@@ -550,8 +550,8 @@ namespace UrbanWildlifeRooms.UI
                 return phase == OnboardingPromptPhase.OakMet
                     ? chinese ? "松鼠停在橡树旁。点击它所在的房间，看看这是什么地方。"
                         : "The squirrel stops beside the oak. Select the room around it to learn what this place is."
-                    : chinese ? "这棵橡树是松鼠目前唯一的家。点击松鼠，看看故事从哪里开始。"
-                        : "One oak. One squirrel. This tree is its whole world. Select the squirrel to begin.";
+                    : chinese ? "人类还没搬来，松鼠已经住在橡树旁。点击它，看看故事从哪里开始。"
+                        : "Before anyone moves in, a squirrel lives beside the oak. Select it to begin.";
             }
             if (value == OnboardingStep.PracticeLayout)
             {
@@ -696,6 +696,7 @@ namespace UrbanWildlifeRooms.UI
             text.alignment = alignment;
             text.color = new Color(0.94f, 0.90f, 0.80f, 1f);
             text.raycastTarget = false;
+            LegacyTextTmpBridge.Attach(text);
             return text;
         }
 
