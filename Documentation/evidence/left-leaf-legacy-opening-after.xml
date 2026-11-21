@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="3" result="Failed(Child)" total="3" passed="1" failed="2" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-21 11:25:39Z" end-time="2026-11-21 11:25:59Z" duration="19.9645804">
+  <test-suite type="TestSuite" id="1247" name="城市共栖房间" fullname="城市共栖房间" runstate="Runnable" testcasecount="202" result="Failed" site="Child" start-time="2026-11-21 11:25:39Z" end-time="2026-11-21 11:25:59Z" duration="19.964580" total="3" passed="1" failed="2" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="1243" name="UrbanWildlifeRooms.Tests.PlayMode.dll" fullname="[workspace]/work/result-review-20261119/project/Library/ScriptAssemblies/UrbanWildlifeRooms.Tests.PlayMode.dll" runstate="Runnable" testcasecount="202" result="Failed" site="Child" start-time="2026-11-21 11:25:39Z" end-time="2026-11-21 11:25:59Z" duration="19.953957" total="3" passed="1" failed="2" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="27908" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestSuite" id="1244" name="UrbanWildlifeRooms" fullname="UrbanWildlifeRooms" runstate="Runnable" testcasecount="202" result="Failed" site="Child" start-time="2026-11-21 11:25:39Z" end-time="2026-11-21 11:25:59Z" duration="19.951434" total="3" passed="1" failed="2" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-suite type="TestSuite" id="1245" name="Tests" fullname="UrbanWildlifeRooms.Tests" runstate="Runnable" testcasecount="202" result="Failed" site="Child" start-time="2026-11-21 11:25:39Z" end-time="2026-11-21 11:25:59Z" duration="19.949160" total="3" passed="1" failed="2" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[One or more child tests had errors]]></message>
+          </failure>
+          <test-suite type="TestSuite" id="1246" name="PlayMode" fullname="UrbanWildlifeRooms.Tests.PlayMode" runstate="Runnable" testcasecount="202" result="Failed" site="Child" start-time="2026-11-21 11:25:39Z" end-time="2026-11-21 11:25:59Z" duration="19.947031" total="3" passed="1" failed="2" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <failure>
+              <message><![CDATA[One or more child tests had errors]]></message>
+            </failure>
+            <test-suite type="TestFixture" id="1070" name="ConstructionPrototypeFlowTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionPrototypeFlowTests" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionPrototypeFlowTests" runstate="Runnable" testcasecount="71" result="Failed" site="Child" start-time="2026-11-21 11:25:39Z" end-time="2026-11-21 11:25:43Z" duration="3.344337" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <failure>
+                <message><![CDATA[One or more child tests had errors]]></message>
+              </failure>
+              <test-case id="1111" name="BoardCaseOpensIntoTwoInformationLeaves" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionPrototypeFlowTests.BoardCaseOpensIntoTwoInformationLeaves" methodname="BoardCaseOpensIntoTwoInformationLeaves" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionPrototypeFlowTests" runstate="Runnable" seed="2069452712" result="Failed" start-time="2026-11-21 11:25:39Z" end-time="2026-11-21 11:25:43Z" duration="3.321031" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[  Expected: True
+  But was:  False
+]]></message>
+                  <stack-trace><![CDATA[at UrbanWildlifeRooms.Tests.PlayMode.ConstructionPrototypeFlowTests+<BoardCaseOpensIntoTwoInformationLeaves>d__42.MoveNext () [0x00348] in [workspace]\work\result-review-20261119\project\Assets\Tests\PlayMode\ConstructionPrototypeFlowTests.cs:2655
+at UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0003a] in .\Library\PackageCache\com.unity.test-framework@0b7a23ab2e1d\UnityEngine.TestRunner\NUnitExtensions\Attributes\TestEnumerator.cs:44
+]]></stack-trace>
+                </failure>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1152" name="ConstructionSceneNavigationTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionSceneNavigationTests" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionSceneNavigationTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-11-21 11:25:43Z" end-time="2026-11-21 11:25:58Z" duration="15.559981" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1157" name="LegacyMenuCanEnterConstructionAndConstructionCanReturn" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionSceneNavigationTests.LegacyMenuCanEnterConstructionAndConstructionCanReturn" methodname="LegacyMenuCanEnterConstructionAndConstructionCanReturn" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionSceneNavigationTests" runstate="Runnable" seed="870789753" result="Passed" start-time="2026-11-21 11:25:43Z" end-time="2026-11-21 11:25:58Z" duration="15.552626" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1188" name="MainMenuLiveSceneTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.MainMenuLiveSceneTests" classname="UrbanWildlifeRooms.Tests.PlayMode.MainMenuLiveSceneTests" runstate="Runnable" testcasecount="8" result="Failed" site="Child" start-time="2026-11-21 11:25:58Z" end-time="2026-11-21 11:25:59Z" duration="1.035784" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <failure>
+                <message><![CDATA[One or more child tests had errors]]></message>
+              </failure>
+              <test-case id="1194" name="DesktopShowsOnlyCentralOakAndSquirrelOnOriginalBoard" fullname="UrbanWildlifeRooms.Tests.PlayMode.MainMenuLiveSceneTests.DesktopShowsOnlyCentralOakAndSquirrelOnOriginalBoard" methodname="DesktopShowsOnlyCentralOakAndSquirrelOnOriginalBoard" classname="UrbanWildlifeRooms.Tests.PlayMode.MainMenuLiveSceneTests" runstate="Runnable" seed="1967528859" result="Failed" start-time="2026-11-21 11:25:58Z" end-time="2026-11-21 11:25:59Z" duration="1.020887" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[  Returning to the older mode must restore its original tree scale.
+  Expected: 0.0f +/- 0.00100000005f
+  But was:  1.54999995f
+]]></message>
+                  <stack-trace><![CDATA[at UrbanWildlifeRooms.Tests.PlayMode.MainMenuLiveSceneTests+<DesktopShowsOnlyCentralOakAndSquirrelOnOriginalBoard>d__5.MoveNext () [0x00457] in [workspace]\work\result-review-20261119\project\Assets\Tests\PlayMode\MainMenuLiveSceneTests.cs:346
+at UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0003a] in .\Library\PackageCache\com.unity.test-framework@0b7a23ab2e1d\UnityEngine.TestRunner\NUnitExtensions\Attributes\TestEnumerator.cs:44
+]]></stack-trace>
+                </failure>
+                <output><![CDATA[[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+Saving results to: [user]/AppData/LocalLow/Urban Wildlife Rooms/城市共栖房间\TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

@@ -142,3 +142,11 @@ Two documentation skills informed the README, project-report and navigation edit
 controls and evidence have separate owners. Earlier dated entries and their limitations remain intact. Sources and review
 decisions are in the [documentation review](DOCUMENTATION_REVIEW_2026-11-21.md), with runtime scope in the
 [score-index record](../Docs/SCORE_INDEX_2026-11-21.md).
+
+## 21 November: matching the inside leaves
+
+The user identified a visual mismatch between the left journal/goal leaf and the right score/card leaf. Both interiors now
+reuse the right-side oak paper. A shared resource path also supplies the opening world, addressing transition continuity.
+The left journal uses a transparent background, horizontal brass rules and the right-side heading/body scale. Goal content
+keeps a reading-paper backing. The [visual record](../Docs/LEFT_LEAF_STYLE_2026-11-21.md) links actual bilingual captures and
+separate interface/opening checks. The exterior lid and gameplay rules remain outside this visual change.

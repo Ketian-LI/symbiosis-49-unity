@@ -1838,11 +1838,11 @@ namespace UrbanWildlifeRooms.Presentation
             var leftFrame = BuildCaseLeaf(canvas.transform, "Observation frame",
                 new Vector2(-CaseLeafCenter,
                     openingTourBoardTarget.anchoredPosition.y),
-                "UI/ConstructionCase/interior-city-v01");
+                ConstructionCasePaper.InteriorPrint);
             var rightFrame = BuildCaseLeaf(canvas.transform, "Action frame",
                 new Vector2(CaseLeafCenter,
                     openingTourBoardTarget.anchoredPosition.y),
-                "UI/ConstructionCase/interior-oak-v01");
+                ConstructionCasePaper.InteriorPrint);
             leftCaseLeaf = leftFrame.rectTransform;
             rightCaseLeaf = rightFrame.rectTransform;
             leftCaseLeafInk = leftFrame.gameObject.AddComponent<CanvasGroup>();

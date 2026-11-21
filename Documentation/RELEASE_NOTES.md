@@ -1,3 +1,11 @@
+# Matching inside leaves
+
+The left journal and goal leaf uses the right-side oak paper, heading scale and brass rules. The opening scene reads the same
+interior artwork. See the [visual record](../Docs/LEFT_LEAF_STYLE_2026-11-21.md) for actual captures and verification scope.
+This is a source update; existing executable downloads retain their original build contents.
+
+---
+
 # Score-index source revision
 
 Inspect the last settled day's contributors with the score index. The interface highlights related rooms and visible residents

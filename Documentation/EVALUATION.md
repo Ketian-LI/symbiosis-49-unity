@@ -57,3 +57,12 @@ The [test source](../Assets/Tests/PlayMode/ConstructionScoreIndexPresentationTes
 room targets, unchanged saved state and topmost pointer targets. The [capture](images/score-index-zh.png) is a Unity-rendered
 fixture. The new batches overlap earlier reports and do not add a new unique-test total. The 72-run score calibration remains
 the separate [skill-guided diagnostic record](../Docs/SKILL_GUIDED_UI_2026-11-21.md); this read-only interface revision changes no scoring formula.
+
+## Left-leaf visual revision
+
+The [visual record](../Docs/LEFT_LEAF_STYLE_2026-11-21.md) covers 21/21 interface checks and a separate 1/1 live navigation check.
+The checks include real SDF text, preserved goal/score controls and shared printed paper in the opening scene and live UI.
+The exported [interface](evidence/left-leaf-final.xml) and [opening](evidence/left-leaf-opening.xml) reports retain their
+own scope; they overlap earlier exports. Two older opening tests failed both before and after this visual change; the
+[baseline](evidence/left-leaf-baseline-opening.xml) and [initial revision](evidence/left-leaf-legacy-opening-after.xml) reports
+retain those failures. The captures are synthetic fixtures and do not establish a participant preference.

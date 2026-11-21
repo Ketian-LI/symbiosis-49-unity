@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="1" result="Passed" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-21 11:37:59Z" end-time="2026-11-21 11:38:15Z" duration="15.9310809">
+  <test-suite type="TestSuite" id="1247" name="城市共栖房间" fullname="城市共栖房间" runstate="Runnable" testcasecount="202" result="Passed" start-time="2026-11-21 11:37:59Z" end-time="2026-11-21 11:38:15Z" duration="15.931081" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <test-suite type="Assembly" id="1243" name="UrbanWildlifeRooms.Tests.PlayMode.dll" fullname="[workspace]/work/result-review-20261119/project/Library/ScriptAssemblies/UrbanWildlifeRooms.Tests.PlayMode.dll" runstate="Runnable" testcasecount="202" result="Passed" start-time="2026-11-21 11:37:59Z" end-time="2026-11-21 11:38:15Z" duration="15.917509" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="4416" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <test-suite type="TestSuite" id="1244" name="UrbanWildlifeRooms" fullname="UrbanWildlifeRooms" runstate="Runnable" testcasecount="202" result="Passed" start-time="2026-11-21 11:37:59Z" end-time="2026-11-21 11:38:15Z" duration="15.914232" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1245" name="Tests" fullname="UrbanWildlifeRooms.Tests" runstate="Runnable" testcasecount="202" result="Passed" start-time="2026-11-21 11:37:59Z" end-time="2026-11-21 11:38:15Z" duration="15.911615" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestSuite" id="1246" name="PlayMode" fullname="UrbanWildlifeRooms.Tests.PlayMode" runstate="Runnable" testcasecount="202" result="Passed" start-time="2026-11-21 11:37:59Z" end-time="2026-11-21 11:38:15Z" duration="15.908616" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1152" name="ConstructionSceneNavigationTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionSceneNavigationTests" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionSceneNavigationTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-11-21 11:37:59Z" end-time="2026-11-21 11:38:15Z" duration="15.902148" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1157" name="LegacyMenuCanEnterConstructionAndConstructionCanReturn" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionSceneNavigationTests.LegacyMenuCanEnterConstructionAndConstructionCanReturn" methodname="LegacyMenuCanEnterConstructionAndConstructionCanReturn" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionSceneNavigationTests" runstate="Runnable" seed="1426827907" result="Passed" start-time="2026-11-21 11:37:59Z" end-time="2026-11-21 11:38:15Z" duration="15.886195" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+Saving results to: [user]/AppData/LocalLow/Urban Wildlife Rooms/城市共栖房间\TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

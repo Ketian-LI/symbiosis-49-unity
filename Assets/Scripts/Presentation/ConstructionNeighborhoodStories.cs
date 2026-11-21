@@ -137,7 +137,7 @@ namespace UrbanWildlifeRooms.Presentation
                             day, tile.category, street ? "Traffic by the green" : "Too close to home",
                             street ? "车流靠近了绿地" : "垃圾间离住宅太近",
                             street ? "Traffic now runs beside the green, where animals search for food."
-                                : "The waste room is right beside a home. Its neighbours pay for the disturbance.",
+                                : "The waste room disturbs the home next door.",
                             street ? "动物觅食的地方紧挨着车流。这次共边搭配会扣分。"
                                 : "垃圾间贴着住宅，打扰了旁边的住户。这次搭配会扣分。",
                             $"{edges} poor pairing{(edges == 1 ? "" : "s")}: build score {points * edges}.",

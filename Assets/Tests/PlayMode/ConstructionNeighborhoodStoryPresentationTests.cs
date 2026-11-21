@@ -168,6 +168,8 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                         Assert.That(reason.gameObject.activeInHierarchy, Is.True);
                         AssertSdfFits(reason);
                         Assert.That(reason.color.r, Is.GreaterThan(reason.color.g));
+                        foreach (var name in new[] { "Story title", "Story paragraph", "Story trigger" })
+                            AssertSdfFits(paper.Find(name).GetComponent<Text>());
                         yield return Capture(root, Path.Combine(Path.GetDirectoryName(capture),
                             language == InterfaceLanguage.Chinese ? "penalty-readable-zh.png" : "penalty-readable-en.png"));
                     }

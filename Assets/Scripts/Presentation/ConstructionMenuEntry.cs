@@ -704,9 +704,7 @@ namespace UrbanWildlifeRooms.Presentation
         private void AddPrintedInteriorFace(Transform hinge, float centre,
             float width, float depth, bool cityHalf)
         {
-            var texture = Resources.Load<Texture2D>(cityHalf
-                ? "UI/ConstructionCase/interior-city-v01"
-                : "UI/ConstructionCase/interior-oak-v01");
+            var texture = Resources.Load<Texture2D>(ConstructionCasePaper.InteriorPrint);
             if (texture == null) return;
             var shader = Shader.Find("Universal Render Pipeline/Unlit") ??
                 Shader.Find("Unlit/Texture") ?? Shader.Find("Standard");

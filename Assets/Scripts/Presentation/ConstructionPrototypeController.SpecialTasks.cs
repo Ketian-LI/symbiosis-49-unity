@@ -65,42 +65,44 @@ namespace UrbanWildlifeRooms.Presentation
             if (run?.UsesSpecialTasks != true) return;
             BuildNeighborhoodStories(parent);
             goalOverviewBackdrop = Panel("Goal progress paper", parent,
-                new Vector2(-CaseLeafCenter, -BoardCellSpacing - 8f),
-                new Vector2(310f, 232f), ReadingPaper);
+                new Vector2(-CaseLeafCenter - 10f, -BoardCellSpacing - 8f),
+                new Vector2(288f, 232f), ReadingPaper);
             goalOverviewBackdrop.raycastTarget = false;
             parent = goalOverviewBackdrop.transform;
+            Panel("Goal heading rule", parent, new Vector2(0f, 115f),
+                new Vector2(272f, 1f), HandQuietBrass).raycastTarget = false;
             var heading = TextAt("Goal progress heading", parent,
-                new Vector2(-70f, 96f), new Vector2(140f, 28f),
-                L("Goals", "目标牌进度"), 17, true, HeadingInk,
+                new Vector2(-62f, 94f), new Vector2(140f, 38f),
+                L("Goals", "目标牌进度"), 23, true, HeadingInk,
                 TextAnchor.MiddleLeft);
             heading.raycastTarget = false;
             goalOverviewHeading = heading;
             goalOverviewRoot = NewRect("Goal progress overview", parent,
-                new Vector2(0f, -2f), new Vector2(282f, 174f));
+                new Vector2(0f, -2f), new Vector2(264f, 174f));
             goalOverviewCount = TextAt("Goals completed", parent,
-                new Vector2(101f, 96f), new Vector2(88f, 28f), "", 16,
+                new Vector2(88f, 94f), new Vector2(88f, 28f), "", 16,
                 true, HeadingInk, TextAnchor.MiddleRight);
             goalOverviewCount.raycastTarget = false;
             for (var slot = 0; slot < 3; slot++)
             {
                 var row = NewRect($"Goal progress row {slot + 1}",
                     goalOverviewRoot, new Vector2(0f, 44f - 58f * slot),
-                    new Vector2(282f, 56f));
+                    new Vector2(264f, 56f));
                 goalOverviewIcons[slot] = Panel("Goal icon", row,
-                    new Vector2(-121f, 7f), new Vector2(30f, 30f),
+                    new Vector2(-115f, 7f), new Vector2(30f, 30f),
                     Color.white);
                 goalOverviewIcons[slot].preserveAspect = true;
                 goalOverviewIcons[slot].raycastTarget = false;
                 goalOverviewTitles[slot] = TextAt("Goal title", row,
-                    new Vector2(-13f, 15f), new Vector2(166f, 28f), "", 17,
+                    new Vector2(-16f, 15f), new Vector2(160f, 28f), "", 17,
                     true, Ink, TextAnchor.MiddleLeft);
                 goalOverviewTitles[slot].raycastTarget = false;
                 goalOverviewStates[slot] = TextAt("Goal state", row,
-                    new Vector2(-13f, -14f), new Vector2(166f, 26f), "", 16,
+                    new Vector2(-16f, -14f), new Vector2(160f, 26f), "", 16,
                     false, HeadingInk, TextAnchor.MiddleLeft);
                 goalOverviewStates[slot].raycastTarget = false;
                 goalOverviewProgress[slot] = TextAt("Goal count", row,
-                    new Vector2(111f, 12f), new Vector2(60f, 28f), "", 17,
+                    new Vector2(102f, 12f), new Vector2(60f, 28f), "", 17,
                     true, Ink, TextAnchor.MiddleRight);
                 goalOverviewProgress[slot].raycastTarget = false;
                 var track = Panel("Goal progress track", row,

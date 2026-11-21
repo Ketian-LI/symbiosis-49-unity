@@ -1,7 +1,7 @@
 {
   "prepared_on": "2026-11-21",
-  "source_base_commit": "be87d40ff81d07032a5a61e5d9b6a57a202e4291",
-  "note": "Read-only contributor-index source revision; source roots only, no new executable build.",
+  "source_base_commit": "0bf2520ded689f97abb298c1108a7f5dc200876e",
+  "note": "Matched left/right inside-paper presentation and opening continuity; source roots only, no new executable build.",
   "files": [
     {
       "path": "Assets/_Recovery/0 (1).unity",
@@ -4269,6 +4269,16 @@
       "sha256": "3163b746f80cce74c065045ec4b881febf874a1d3550f45b9d2497233203a899"
     },
     {
+      "path": "Assets/Scripts/Presentation/ConstructionCasePaper.cs",
+      "bytes": 264,
+      "sha256": "1445933bdcd4e0605a8071e68ff638595aba247085e19a5dd789568dda79d6f8"
+    },
+    {
+      "path": "Assets/Scripts/Presentation/ConstructionCasePaper.cs.meta",
+      "bytes": 59,
+      "sha256": "6ab71b095d1d9878c77c5e21b909c392786d19a6a9b2f6d69f6bac4f7e3dabe8"
+    },
+    {
       "path": "Assets/Scripts/Presentation/ConstructionIllustratedVisualStyle.cs",
       "bytes": 16559,
       "sha256": "879e1620d512a65abc9d1fbaf9961df045f49d9e3638784e1456fa02b47ca954"
@@ -4300,8 +4310,8 @@
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionMenuEntry.cs",
-      "bytes": 82227,
-      "sha256": "c4e2f5609443434218e8479a373e212a344b8a55dacead7fec46c91ad3d03dc5"
+      "bytes": 82137,
+      "sha256": "d811fc5138219811239bd74231438790fd375af63b11c2055877f77bf7ac60c0"
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionMenuEntry.cs.meta",
@@ -4320,8 +4330,8 @@
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionNeighborhoodStories.cs",
-      "bytes": 16753,
-      "sha256": "b4bbfc34e94511889b935e56e3955a52661f31a6111171bbe17b3a2dff869737"
+      "bytes": 16718,
+      "sha256": "8caccdce66f4131da188e1be4efb35d8231d1ccdce7cb5e95ff8b515c3a04428"
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionNeighborhoodStories.cs.meta",
@@ -4350,8 +4360,8 @@
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.cs",
-      "bytes": 591967,
-      "sha256": "224e70018974eef37c8a54c69a4069508feb2f96fe3c1129b6dc741e247c8810"
+      "bytes": 591960,
+      "sha256": "c357c7a5a72c3ae4036876178b56c8a19922b0fd0768755d43107a0559d394d9"
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.cs.meta",
@@ -4390,8 +4400,8 @@
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.NeighborhoodStories.cs",
-      "bytes": 4867,
-      "sha256": "021b0f4f3fba97d1258b3465a5b1938ff772c664aaefc08ca486004b5062ab8a"
+      "bytes": 5173,
+      "sha256": "1e968401e8804ae7342cb99c711bc35734b2357ccdba5eba8740f7b57882c0b0"
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.NeighborhoodStories.cs.meta",
@@ -4470,8 +4480,8 @@
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.SpecialTasks.cs",
-      "bytes": 48892,
-      "sha256": "b3e1112329bfa5a41a24293d609b882b4b6283eee4afd9bf272e9488174b1b4f"
+      "bytes": 49047,
+      "sha256": "5aafce69dfd01ebe590fdfcc52a2450293dab717f39e9cb72f47216de7fdaedd"
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.SpecialTasks.cs.meta",
@@ -6545,8 +6555,8 @@
     },
     {
       "path": "Assets/Tests/PlayMode/ConstructionNeighborhoodStoryPresentationTests.cs",
-      "bytes": 18421,
-      "sha256": "485fe59203e3eaa2985d85e01bc0458a917c61869fda6143ee46cbd60551ba51"
+      "bytes": 18611,
+      "sha256": "67579598669da7c9cafc64938257df50ea7abb6b4c52ab17fd166dd6cf025f77"
     },
     {
       "path": "Assets/Tests/PlayMode/ConstructionNeighborhoodStoryPresentationTests.cs.meta",
@@ -6605,8 +6615,8 @@
     },
     {
       "path": "Assets/Tests/PlayMode/ConstructionSceneNavigationTests.cs",
-      "bytes": 48704,
-      "sha256": "7caf85276db1b05bd8d88810c21ba4f1684bed899b6ea1f349ee92a5917996c5"
+      "bytes": 49561,
+      "sha256": "e5ecad4a777dcb16746819ac233e50dad06536047ea03d0946a23262b278c2f1"
     },
     {
       "path": "Assets/Tests/PlayMode/ConstructionSceneNavigationTests.cs.meta",
