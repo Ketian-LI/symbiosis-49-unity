@@ -1,3 +1,12 @@
+# Source revision — 21 November 2026
+
+Latest branch: [codex/readability-balance-2026-11-21](https://github.com/Ketian-LI/symbiosis-49-unity/tree/codex/readability-balance-2026-11-21).
+Score hierarchy, observed upgrade/penalty reasons and bilingual reading fixes are documented in the
+[dated review](../Docs/SKILL_GUIDED_UI_2026-11-21.md). Gameplay V13 and trophy rules 2 are retained after 72 diagnostic runs.
+This branch updates source; it contains no newly built Windows executable or macOS app. The release below is historical.
+
+---
+
 # Archive snapshot - 20 November 2026
 
 Canonical branch: [archive/2026-11-20](https://github.com/Ketian-LI/symbiosis-49-unity/tree/archive/2026-11-20). Release: [archive-2026-11-20](https://github.com/Ketian-LI/symbiosis-49-unity/releases/tag/archive-2026-11-20).

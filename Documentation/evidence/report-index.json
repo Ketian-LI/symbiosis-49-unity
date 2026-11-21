@@ -47,5 +47,21 @@
     "passed": 1,
     "failed": 0,
     "file": "story-final-render.xml"
+  },
+  {
+    "batch": "skill-polish-editmode",
+    "total": 90,
+    "passed": 90,
+    "failed": 0,
+    "file": "skill-polish-editmode.xml",
+    "scope": "Selected regression batch; may overlap earlier exports."
+  },
+  {
+    "batch": "skill-polish-playmode",
+    "total": 19,
+    "passed": 19,
+    "failed": 0,
+    "file": "skill-polish-playmode.xml",
+    "scope": "Selected regression batch; may overlap earlier exports."
   }
 ]

@@ -140,7 +140,7 @@ namespace UrbanWildlifeRooms.Presentation
                                 : "The waste room is right beside a home. Its neighbours pay for the disturbance.",
                             street ? "动物觅食的地方紧挨着车流。这次共边搭配会扣分。"
                                 : "垃圾间贴着住宅，打扰了旁边的住户。这次搭配会扣分。",
-                            $"{edges} unfavourable edge(s): build score {points * edges}.",
+                            $"{edges} poor pairing{(edges == 1 ? "" : "s")}: build score {points * edges}.",
                             $"新增 {edges} 组{(street ? "街道—绿地" : "垃圾间—住宅")}{(run.PlacementRulesVersion >= 4 ? "共边" : "相邻")}，建造 {points * edges} 分。", true);
                     }
             }
@@ -160,7 +160,7 @@ namespace UrbanWildlifeRooms.Presentation
                     "Home after work", "忙完一天，回家了",
                     "For the first time, a neighbour worked, ate and made it home.",
                     "上班、吃饭，再回家。终于有邻居顺利走完了这一天。",
-                    $"{firstCycle.completedWorkCycles} resident(s) worked, ate and returned home.",
+                    $"{firstCycle.completedWorkCycles} resident{(firstCycle.completedWorkCycles == 1 ? "" : "s")} worked, ate and returned home.",
                     $"当天 {firstCycle.completedWorkCycles} 位居民实际完成上班、用餐、回家循环。");
             var firstWildlifeMeal = days.FirstOrDefault(day => day.animalMeals > 0);
             if (firstWildlifeMeal != null)
@@ -183,14 +183,16 @@ namespace UrbanWildlifeRooms.Presentation
                         "Market leftovers", "动物吃了超市余粮",
                         "Animals found food left by the market and ate it.",
                         "小动物找到了超市留下的食物，也吃上了一份。",
-                        $"Wildlife actually ate {marketMeals} market food portion(s) in this settlement.",
+                        $"Wildlife ate {marketMeals} portion{(marketMeals == 1 ? "" : "s")} left at markets today.",
                         $"本次动物实际吃到 {marketMeals} 份超市食物。");
                 if (ecology.pigeonsPresent > 0 || ecology.hedgehogPresent)
                     Add(NeighborhoodStoryKind.WildlifeNeighbours, ecology.day, ConstructionCategory.Green,
                         "New neighbours", "又有新邻居",
                         "Pigeons or a hedgehog were seen in the neighbourhood today.",
                         "今天见到了鸽子或刺猬，绿地里又多了几道身影。",
-                        $"Observed: {ecology.pigeonsPresent} pigeon(s)" + (ecology.hedgehogPresent ? " and a hedgehog." : "."),
+                        ecology.pigeonsPresent == 0 ? "Observed: a hedgehog." :
+                            $"Observed: {ecology.pigeonsPresent} pigeon{(ecology.pigeonsPresent == 1 ? "" : "s")}" +
+                            (ecology.hedgehogPresent ? " and a hedgehog." : "."),
                         $"本次观察到 {ecology.pigeonsPresent} 只常驻鸽子" + (ecology.hedgehogPresent ? "，并有刺猬出现。" : "。"));
                 if (ecology.trafficSpecies != ConstructionTrafficSpecies.None)
                     Add(NeighborhoodStoryKind.Traffic, ecology.day, ConstructionCategory.Street,
@@ -205,7 +207,7 @@ namespace UrbanWildlifeRooms.Presentation
                     "Rubbish collected", "垃圾运走了",
                     "The waste room collected rubbish from the neighbourhood today.",
                     "今天的清运接上了，堆着的垃圾被运走了一些。",
-                    $"{run.LastWasteDay.Cleared} waste portion(s) were actually collected today.",
+                    $"Collected {run.LastWasteDay.Cleared} portion{(run.LastWasteDay.Cleared == 1 ? "" : "s")} of waste today.",
                     $"本次实际清运 {run.LastWasteDay.Cleared} 份垃圾。");
 
             if (stories.Count == 0)

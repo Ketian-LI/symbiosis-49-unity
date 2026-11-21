@@ -59,7 +59,7 @@ namespace UrbanWildlifeRooms.Presentation
             if (neighborhoodStoryRoot == null) return;
             neighborhoodStoryRoot.gameObject.SetActive(visible);
             if (!visible || run == null) return;
-            todayHeading.text = L("STREET JOURNAL", "街坊手记");
+            todayHeading.text = L("Street journal", "街坊手记");
             var stamp = $"{run.RunId}:{run.CurrentDay}:{run.BuiltCount}:{run.LastScoreDay?.day}:{run.IsFinished}";
             if (stamp != neighborhoodStoryStamp)
             {

@@ -422,10 +422,10 @@ namespace UrbanWildlifeRooms.Presentation
                 value.text = isUpgradeLabel
                     ? L(step.EnglishReason, step.ChineseReason) :
                     (step.Delta > 0 ? $"+{step.Delta}" : step.Delta.ToString()) +
-                    (showReason ? "\n<size=13>" + L(step.EnglishReason, step.ChineseReason) + "</size>" : "");
-                value.fontSize = isUpgradeLabel ? 14 : 30;
+                    (showReason ? "\n<size=16>" + L(step.EnglishReason, step.ChineseReason) + "</size>" : "");
+                value.fontSize = isUpgradeLabel ? 17 : 30;
                 if (showReason || isUpgradeLabel)
-                    rect.sizeDelta = new Vector2(180f, 66f);
+                    rect.sizeDelta = new Vector2(196f, 78f);
                 value.alignment = TextAnchor.MiddleCenter;
                 value.color = FillScoreColor(step.Side, step.Delta);
                 value.raycastTarget = false;
@@ -567,7 +567,7 @@ namespace UrbanWildlifeRooms.Presentation
             placementGuideText.gameObject.SetActive(false);
             selectedBuildIcon.gameObject.SetActive(false);
             var card = Panel("Selected hand card", guidePanel.transform,
-                new Vector2(-82f, -28f), new Vector2(128f, 128f),
+                new Vector2(-82f, -16f), new Vector2(128f, 128f),
                 HandPaper);
             card.raycastTarget = false;
             var cardOutline = card.gameObject.AddComponent<Outline>();
@@ -592,20 +592,22 @@ namespace UrbanWildlifeRooms.Presentation
                 Ink, TextAnchor.MiddleLeft);
             fillRightHandCount.raycastTarget = false;
             Panel("Selected hand divider", guidePanel.transform,
-                new Vector2(18f, -111f), new Vector2(294f, 1.5f),
+                new Vector2(18f, -96f), new Vector2(294f, 1.5f),
                 HandQuietBrass).raycastTarget = false;
             fillRightHandTagline = TextAt("Selected hand tagline",
-                guidePanel.transform, new Vector2(-24f, -138f),
+                guidePanel.transform, new Vector2(-24f, -126f),
                 new Vector2(238f, 60f), "", 18, false,
                 Ink, TextAnchor.MiddleLeft);
             fillRightHandTagline.raycastTarget = false;
             SetRect(openingTourGuideTarget, new Vector2(18f, -32f),
                 new Vector2(304f, 274f));
+            BuildReadingSummary();
         }
 
         private void RefreshFillRightHandPreview()
         {
             if (fillRightHandArt == null || run?.UsesFillHand != true) return;
+            RefreshReadingSummary();
             if (AwaitingFreeBuildChoice)
             {
                 fillRightHandArt.transform.parent.gameObject.SetActive(false);
@@ -660,8 +662,8 @@ namespace UrbanWildlifeRooms.Presentation
                         "Make the walk a little easier.",
                         "让这段路更好走。"),
                     ConstructionCategory.Supermarket => L(
-                        "Dining leaves 1 wildlife portion today; eaten food means less waste.",
-                        "当天有人用餐留 1 份动物食物；吃掉后少留垃圾。"),
+                        "Meals leave 1 portion for wildlife today.",
+                        "用餐后留 1 份余粮；动物吃掉后少留垃圾。"),
                     ConstructionCategory.Square => L(
                         "A place to stop and meet.",
                         "留个地方歇脚、相遇。"),
@@ -828,6 +830,7 @@ namespace UrbanWildlifeRooms.Presentation
             int shared, int build)
         {
             if (run?.UsesFillHand != true) return;
+            RefreshReadingTotals(shared, build, run.SpecialTaskScore);
             if (fillAnimalScoreValue != null)
                 fillAnimalScoreValue.text = animal.ToString();
             if (fillResidentScoreValue != null)
@@ -849,7 +852,7 @@ namespace UrbanWildlifeRooms.Presentation
                 if (font != null) fillRightScoreTitle.font = font;
                 fillRightScoreTitle.fontStyle = Chinese
                     ? FontStyles.Bold : FontStyles.Normal;
-                fillRightScoreTitle.text = L("RUN SCORE", "本局得分");
+                fillRightScoreTitle.text = L("Score", "本局得分");
             }
             if (fillRightScoreNumber != null)
                 fillRightScoreNumber.text = total.ToString();

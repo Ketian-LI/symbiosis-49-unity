@@ -2,7 +2,7 @@
 
 **A Unity game about arranging shared urban space for human and wild neighbours.**
 
-This is the current source update, checkpointed on **21 November 2026**, following the English assessment archive of 20 November for
+This is the current source update, revised on **21 November 2026**, following the English assessment archive of 20 November for
 **MSc Creative Computing Final Project, IU000293**. It brings the current construction game,
 its source assets, selected verification records and the project's earlier repositories into one navigable account.
 It is an archive of work, **not a claim that all assessment materials have been completed or submitted**.
@@ -15,6 +15,8 @@ the game supports English and Chinese. This is an actual Unity render, not parti
 New Fill runs use trophy bands 1500 / 2500 / 3500 / 4500. Historical runs retain their own bands.
 The latest source also includes larger reading text and a pigeon-save restoration fix.
 See [the update record](Docs/TROPHY_AND_UI_READING_2026-11-20.md).
+The [21 November skill-guided revision](Docs/SKILL_GUIDED_UI_2026-11-21.md) groups score information, retains observed
+upgrade/deduction reasons, checks both languages and extends calibration to 72 diagnostic runs. Gameplay points remain V13.
 Downloadable executables on the 20 November archive release remain earlier builds; this branch updates source.
 
 ## Start here

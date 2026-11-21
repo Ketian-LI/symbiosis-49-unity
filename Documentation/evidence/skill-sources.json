@@ -1,0 +1,42 @@
+[
+  {
+    "role": "layout",
+    "repository": "hueyexe/frontend-agent-skills",
+    "commit": "2841c079dd8a9c634882227194dc42e25227710d",
+    "path": "ui-visual-composition/SKILL.md",
+    "blob": "b6b3a137ae3d76d5db19aa64061263a301f5aeb3",
+    "url": "https://github.com/hueyexe/frontend-agent-skills/blob/2841c079dd8a9c634882227194dc42e25227710d/ui-visual-composition/SKILL.md",
+    "license": "MIT",
+    "bytes": 25792
+  },
+  {
+    "role": "copy",
+    "repository": "blader/humanizer",
+    "commit": "a32f24407364c74c812b43c15926d638bee1e072",
+    "path": "SKILL.md",
+    "blob": "bc51a89764e96c0178c707a2a7158d8dca4e6920",
+    "url": "https://github.com/blader/humanizer/blob/a32f24407364c74c812b43c15926d638bee1e072/SKILL.md",
+    "license": "MIT",
+    "bytes": 33628
+  },
+  {
+    "role": "balance",
+    "repository": "Getty/skills",
+    "commit": "e3cd5ab11f7acf196992985b8fc8535dfeb13a57",
+    "path": "game-development/game-balance-math/SKILL.md",
+    "blob": "695fe54e65675ceec202573cf76a1246624de1df",
+    "url": "https://github.com/Getty/skills/blob/e3cd5ab11f7acf196992985b8fc8535dfeb13a57/game-development/game-balance-math/SKILL.md",
+    "license": "Artistic-2.0",
+    "bytes": 5682
+  },
+  {
+    "role": "visuals",
+    "repository": "myshenoy/skills-open-source",
+    "commit": "0c321175433804913ef8d2909924601924771864",
+    "path": "game-visuals/SKILL.md",
+    "blob": "d7f88a6a63eb2998500d849e9fb7daf1d9f89600",
+    "url": "https://github.com/myshenoy/skills-open-source/blob/0c321175433804913ef8d2909924601924771864/game-visuals/SKILL.md",
+    "license": "MIT",
+    "bytes": 15938
+  }
+]

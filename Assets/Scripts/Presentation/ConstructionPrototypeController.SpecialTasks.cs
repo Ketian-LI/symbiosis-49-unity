@@ -71,7 +71,7 @@ namespace UrbanWildlifeRooms.Presentation
             parent = goalOverviewBackdrop.transform;
             var heading = TextAt("Goal progress heading", parent,
                 new Vector2(-70f, 96f), new Vector2(140f, 28f),
-                L("GOALS", "目标牌进度"), 17, true, HeadingInk,
+                L("Goals", "目标牌进度"), 17, true, HeadingInk,
                 TextAnchor.MiddleLeft);
             heading.raycastTarget = false;
             goalOverviewHeading = heading;
@@ -121,7 +121,7 @@ namespace UrbanWildlifeRooms.Presentation
         private void RefreshGoalOverview()
         {
             if (goalOverviewRoot == null || run == null) return;
-            goalOverviewHeading.text = L("GOALS", "目标牌进度");
+            goalOverviewHeading.text = L("Goals", "目标牌进度");
             var visible = run.IsSpecialTaskSelectionConfirmed &&
                 !run.IsIntroPhase;
             goalOverviewBackdrop.gameObject.SetActive(visible);
@@ -842,7 +842,7 @@ namespace UrbanWildlifeRooms.Presentation
                     L("Out and home again", "从家出发，再回家"),
                 ConstructionSpecialTaskKind.RaiseAnimals =>
                     run.UsesSpeciesTaskRules
-                        ? L("Wild neighbours of many kinds", "多种野邻居")
+                        ? L("Wildlife variety", "多种野邻居")
                         : L("More wild neighbours", "再来几位野邻居"),
                 ConstructionSpecialTaskKind.BuildSquares =>
                     L("Meet at the plaza", "广场见"),
@@ -851,7 +851,7 @@ namespace UrbanWildlifeRooms.Presentation
                 ConstructionSpecialTaskKind.ConnectGreens =>
                     L("Let the green meet", "绿地连成片"),
                 ConstructionSpecialTaskKind.CompleteCommunities =>
-                    L("Life within nine plots", "九格里的小日子"),
+                    L("Life in nine plots", "九格里的小日子"),
                 _ => string.Empty
             };
 

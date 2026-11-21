@@ -38,3 +38,10 @@ No learning improvement, ecological understanding, representative preference or 
 No aggregate percentage is inferred from the three reported questionnaires. Study results from an unidentified earlier build
 cannot validate this current scoring, tutorial, story panel or camera mode. Final thesis conclusions must remain proportionate
 to a traceable dataset and a stated method.
+
+## 21 November source revision
+
+The [skill-guided review](../Docs/SKILL_GUIDED_UI_2026-11-21.md) records 90/90 selected EditMode checks and 19/19
+PlayMode checks, including real SDF truncation and persistent penalty text. It also reports 72 synthetic Fill runs,
+split into 36 calibration samples and 36 held-out checks using unchanged diagnostic policies. These are technical
+evidence, not player findings. They overlap prior regression exports and are not a new cumulative unique-test count.

@@ -25,3 +25,10 @@ before submission. This archive does not invent collaborators or sign a declarat
 
 Do not upload full private chat exports to demonstrate AI use. A dated, selective log with task, output, verification and revision
 is more appropriate; the current [journal](DEVELOPMENT_JOURNAL.md) is a reconstructed record, not a complete prompt transcript.
+
+## 21 November skill consultation
+
+Public skill files for visual composition, Humanizer prose editing, balance maths and game visuals were read at
+pinned commits and adapted to this Unity project. Codex revised C#, wrote regression checks and documentation, and
+inspected actual Unity renders. No skill repository script was executed or new raster art generated in this pass.
+Sources, licences, decisions and verification limits are in the [dated review](../Docs/SKILL_GUIDED_UI_2026-11-21.md).

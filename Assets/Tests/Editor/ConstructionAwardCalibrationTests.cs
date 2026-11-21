@@ -17,7 +17,12 @@ namespace UrbanWildlifeRooms.Tests.Editor
             public string policy;
             public bool completed;
         }
-        [Serializable] public sealed class Report { public List<Sample> samples = new(); }
+        [Serializable] public sealed class Report
+        {
+            public int policyRevision = 1, scoringVersion = 13, awardRulesVersion = 2;
+            public string scope = "Diagnostic policies; seeds 1-12 calibration, 13-24 held-out checks. Not player research.";
+            public List<Sample> samples = new();
+        }
 
         // Diagnostic samples, not participant data or an optimal-play solver.
         [Test, Timeout(240000)]
@@ -25,7 +30,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
         {
             var report = new Report();
             foreach (var policy in new[] { "unfavourable-edges", "random-legal", "connected-services" })
-            for (var seed = 1; seed <= 12; seed++)
+            for (var seed = 1; seed <= 24; seed++)
             {
                 var saved = new ConstructionRunModel(ConstructionGameMode.Fill, true).Export();
                 saved.runId = "00000000-0000-0000-0000-" + seed.ToString("D12");
@@ -74,6 +79,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
                     placed=run.BuiltCount,completed=run.EndReason==ConstructionEndReason.BoardComplete};
                 report.samples.Add(sample);
                 Assert.That(sample.completed && sample.placed==49,Is.True);
+                Assert.That(sample.total, Is.EqualTo(run.BalanceScore + sample.build + sample.goals));
                 TestContext.WriteLine(policy+" seed "+seed+": "+sample.total);
             }
             var path=Environment.GetEnvironmentVariable("SYMBIOSIS_AWARD_PROBE_PATH");

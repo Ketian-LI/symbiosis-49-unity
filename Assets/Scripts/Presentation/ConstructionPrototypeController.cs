@@ -3357,6 +3357,11 @@ namespace UrbanWildlifeRooms.Presentation
                             upgradeGold).raycastTarget = false;
                     }
                     upgradePreviewBorders[column, row] = upgradeBorder.gameObject;
+                    Panel("Upgrade cue mount", upgradeBorder,
+                        new Vector2(0f, 44f), new Vector2(30f, 24f), Ink).raycastTarget = false;
+                    TextAt("Upgrade cue", upgradeBorder, new Vector2(0f, 44f),
+                        new Vector2(30f, 26f), "↑", 18, true, upgradeGold,
+                        TextAnchor.MiddleCenter).raycastTarget = false;
                     upgradeBorder.gameObject.SetActive(false);
                 }
                 var icon = Panel("Room icon", button.transform,
@@ -7191,7 +7196,7 @@ namespace UrbanWildlifeRooms.Presentation
                     : L("TOTAL PLOTS", "总建造格")
                 : L("ROOMS BUILT", "已建房间");
             nextStepHeading.text = run.UsesFillHand
-                ? L("SELECTED CARD", "当前手牌")
+                ? L("Selected card", "当前手牌")
                 : run.IsFinished
                 ? L("RESULT", "结算结果")
                 : IsEndless

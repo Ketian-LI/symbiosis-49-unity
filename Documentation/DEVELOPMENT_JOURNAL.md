@@ -105,3 +105,15 @@ The narrative is an interface intervention; whether it improves players' interpr
 This archive connects the stages, replaces the top-level historical description with English navigation, records source hashes,
 preserves relevant code/assets and adds a requirements/status map. The final thesis and approved anonymous research evidence
 remain pending by the author's instruction. Publication of this archive is not assessment submission.
+
+## 21 November: skills, reading hierarchy and observed reasons
+
+The current source was checkpointed before another interface pass. Four public GitHub skills informed layout,
+plain wording, balance diagnostics and game-state graphics. The adaptation keeps the existing tabletop identity,
+separates the three score components, shows next-trophy distance and retains selected observed causes after animation.
+Symbols and words accompany colour. Actual renders exposed a score-heading overlap and a fallback-arrow text
+truncation; both were corrected before publication. The same balance policies were extended to held-out seeds,
+supporting a provisional decision to keep the current bands rather than raise scores without evidence.
+
+See the [dated review](../Docs/SKILL_GUIDED_UI_2026-11-21.md) for pinned references, limitations, captures and test reports.
+This is an AI-assisted source revision, not a new participant study or executable release.
