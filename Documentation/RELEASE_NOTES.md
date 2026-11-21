@@ -1,3 +1,12 @@
+# Goal progress component
+
+The three-goal overview now uses a compact illustrated ledger with aligned counts, quieter metric labels and achieved-state
+marks. It reuses existing paper texture behind the reading area. The page artwork and gameplay rules are retained.
+See the [component record](../Docs/GOAL_PROGRESS_UI_2026-11-21.md) for bilingual renders and verification scope.
+This is a source update; existing executable downloads retain their original build contents.
+
+---
+
 # Matching inside leaves
 
 The left journal and goal leaf uses the right-side oak paper, heading scale and brass rules. The opening scene reads the same

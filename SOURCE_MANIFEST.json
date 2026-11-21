@@ -1,7 +1,7 @@
 {
   "prepared_on": "2026-11-21",
-  "source_base_commit": "0bf2520ded689f97abb298c1108a7f5dc200876e",
-  "note": "Matched left/right inside-paper presentation and opening continuity; source roots only, no new executable build.",
+  "source_base_commit": "788be33bfe5a885b193a8b12dff1f34681bd27a5",
+  "note": "Redesigned goal progress component; existing artwork and rules retained. Source roots only; no new executable build.",
   "files": [
     {
       "path": "Assets/_Recovery/0 (1).unity",
@@ -4279,6 +4279,16 @@
       "sha256": "6ab71b095d1d9878c77c5e21b909c392786d19a6a9b2f6d69f6bac4f7e3dabe8"
     },
     {
+      "path": "Assets/Scripts/Presentation/ConstructionGoalReadingWash.cs",
+      "bytes": 2075,
+      "sha256": "0bda827bf1bb65d6bb925aa2aecb1e610291ccc4c57de608a12af4d4b893dccd"
+    },
+    {
+      "path": "Assets/Scripts/Presentation/ConstructionGoalReadingWash.cs.meta",
+      "bytes": 59,
+      "sha256": "8fa4441397c9dd88b20e0c3e5ebf92c4bda97166ce156824b2fdcb95dd3983d1"
+    },
+    {
       "path": "Assets/Scripts/Presentation/ConstructionIllustratedVisualStyle.cs",
       "bytes": 16559,
       "sha256": "879e1620d512a65abc9d1fbaf9961df045f49d9e3638784e1456fa02b47ca954"
@@ -4480,8 +4490,8 @@
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.SpecialTasks.cs",
-      "bytes": 49047,
-      "sha256": "5aafce69dfd01ebe590fdfcc52a2450293dab717f39e9cb72f47216de7fdaedd"
+      "bytes": 52365,
+      "sha256": "d41c69f0fd9a25290945dfd372e473c824a0c80806e6e45a3a6654701a84257c"
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.SpecialTasks.cs.meta",
@@ -6555,8 +6565,8 @@
     },
     {
       "path": "Assets/Tests/PlayMode/ConstructionNeighborhoodStoryPresentationTests.cs",
-      "bytes": 18611,
-      "sha256": "67579598669da7c9cafc64938257df50ea7abb6b4c52ab17fd166dd6cf025f77"
+      "bytes": 18608,
+      "sha256": "ef48f77f4876a25eb751fb9bd91f59489032314dc331a80334a28444946450e1"
     },
     {
       "path": "Assets/Tests/PlayMode/ConstructionNeighborhoodStoryPresentationTests.cs.meta",

@@ -127,7 +127,7 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 Assert.That(side.Find("Story cue backing/Today heading").GetComponent<Text>().text,
                     Is.EqualTo("街坊手记"));
                 Assert.That(goals.Find("Goal progress heading").GetComponent<Text>().text,
-                    Is.EqualTo("目标牌进度"));
+                    Is.EqualTo("本局目标"));
                 var capture = Environment.GetEnvironmentVariable("SYMBIOSIS49_STORY_CAPTURE_PATH");
                 if (!string.IsNullOrEmpty(capture) && SystemInfo.graphicsDeviceType !=
                     UnityEngine.Rendering.GraphicsDeviceType.Null)

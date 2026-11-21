@@ -66,3 +66,11 @@ The exported [interface](evidence/left-leaf-final.xml) and [opening](evidence/le
 own scope; they overlap earlier exports. Two older opening tests failed both before and after this visual change; the
 [baseline](evidence/left-leaf-baseline-opening.xml) and [initial revision](evidence/left-leaf-legacy-opening-after.xml) reports
 retain those failures. The captures are synthetic fixtures and do not establish a participant preference.
+
+## Goal progress component revision
+
+The [component record](../Docs/GOAL_PROGRESS_UI_2026-11-21.md) describes the goal UI redesign and actual bilingual captures.
+The selected [PlayMode batch](evidence/goal-progress-ui.xml) passes 21/21 checks covering rendered text, goals/restart/skip,
+hand presentation, result interactions and score-source controls. This batch overlaps earlier exports and does not increase
+a cumulative unique-test total. The displayed layouts are synthetic fixtures, not participant preference evidence. No model
+or scoring rules changed, and the previously recorded opening-test limitations remain outside this component revision.

@@ -40,7 +40,7 @@ authored game rules. The [project report](Documentation/PROJECT_REPORT.md) expla
 
 ## Delivery and research status
 
-This branch contains the Unity source and English process documentation. Its score-index revision has no new executable build.
+This branch contains the Unity source and English process documentation. The current interface revisions have no new executable build.
 The [20 November archive release](https://github.com/Ketian-LI/symbiosis-49-unity/releases/tag/archive-2026-11-20) retains its earlier
 Windows build and macOS source delivery. See [release notes](Documentation/RELEASE_NOTES.md) before choosing a download.
 

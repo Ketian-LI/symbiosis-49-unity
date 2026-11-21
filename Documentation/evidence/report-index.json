@@ -111,5 +111,13 @@
     "failed": 2,
     "file": "left-leaf-baseline-opening.xml",
     "scope": "Known inherited opening failures; retained for baseline comparison, not a passing batch."
+  },
+  {
+    "batch": "goal-progress-ui",
+    "total": 21,
+    "passed": 21,
+    "failed": 0,
+    "file": "goal-progress-ui.xml",
+    "scope": "Selected goal, bilingual render, hand, result and score-source interface checks; overlaps older batches."
   }
 ]

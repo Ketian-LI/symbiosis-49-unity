@@ -150,3 +150,11 @@ reuse the right-side oak paper. A shared resource path also supplies the opening
 The left journal uses a transparent background, horizontal brass rules and the right-side heading/body scale. Goal content
 keeps a reading-paper backing. The [visual record](../Docs/LEFT_LEAF_STYLE_2026-11-21.md) links actual bilingual captures and
 separate interface/opening checks. The exterior lid and gameplay rules remain outside this visual change.
+
+## 21 November: redesigning the goal progress component
+
+The user clarified that the remaining mismatch concerned the goal progress UI, rather than the leaf artwork. The three
+goals now use a compact ledger: mounted illustrations, distinct goal names and metric labels, aligned fractions and fine brass
+rules. A small header badge reports achieved goals; completed rows have a tick and their actual activation/settlement state.
+A feathered field reuses hand-card paper texture to protect text over foliage. The [component record](../Docs/GOAL_PROGRESS_UI_2026-11-21.md)
+links actual bilingual renders and checks. Page backgrounds, scoring and simulation rules were retained.

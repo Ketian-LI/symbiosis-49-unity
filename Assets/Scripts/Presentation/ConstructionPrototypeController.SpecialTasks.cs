@@ -59,52 +59,87 @@ namespace UrbanWildlifeRooms.Presentation
         private readonly Text[] goalOverviewStates = new Text[3];
         private readonly Text[] goalOverviewProgress = new Text[3];
         private readonly Image[] goalOverviewFills = new Image[3];
+        private Image goalOverviewCompletionBadge;
+        private readonly GameObject[] goalOverviewSeals = new GameObject[3];
 
         private void BuildGoalOverview(Transform parent)
         {
             if (run?.UsesSpecialTasks != true) return;
             BuildNeighborhoodStories(parent);
             goalOverviewBackdrop = Panel("Goal progress paper", parent,
-                new Vector2(-CaseLeafCenter - 10f, -BoardCellSpacing - 8f),
-                new Vector2(288f, 232f), ReadingPaper);
+                new Vector2(-CaseLeafCenter - 10f, -132f),
+                new Vector2(288f, 286f), Color.clear);
             goalOverviewBackdrop.raycastTarget = false;
             parent = goalOverviewBackdrop.transform;
-            Panel("Goal heading rule", parent, new Vector2(0f, 115f),
+            var readingWash = NewRect("Goal reading wash", parent,
+                Vector2.zero, new Vector2(284f, 284f)).gameObject
+                .AddComponent<ConstructionGoalReadingWash>();
+            readingWash.color = new Color(1f, 1f, 1f, 0.96f);
+            readingWash.raycastTarget = false;
+            Panel("Goal heading rule", parent, new Vector2(0f, 140f),
                 new Vector2(272f, 1f), HandQuietBrass).raycastTarget = false;
             var heading = TextAt("Goal progress heading", parent,
-                new Vector2(-62f, 94f), new Vector2(140f, 38f),
-                L("Goals", "目标牌进度"), 23, true, HeadingInk,
+                new Vector2(-32f, 119f), new Vector2(200f, 38f),
+                L("Goals", "本局目标"), 23, true, HeadingInk,
                 TextAnchor.MiddleLeft);
             heading.raycastTarget = false;
             goalOverviewHeading = heading;
             goalOverviewRoot = NewRect("Goal progress overview", parent,
-                new Vector2(0f, -2f), new Vector2(264f, 174f));
+                new Vector2(0f, -10f), new Vector2(264f, 260f));
+            goalOverviewCompletionBadge = Panel("Goal completion badge", parent,
+                new Vector2(102f, 119f), new Vector2(60f, 28f), Ink);
+            goalOverviewCompletionBadge.raycastTarget = false;
             goalOverviewCount = TextAt("Goals completed", parent,
-                new Vector2(88f, 94f), new Vector2(88f, 28f), "", 16,
-                true, HeadingInk, TextAnchor.MiddleRight);
+                new Vector2(102f, 119f), new Vector2(60f, 28f), "", 17,
+                true, Paper, TextAnchor.MiddleCenter);
             goalOverviewCount.raycastTarget = false;
             for (var slot = 0; slot < 3; slot++)
             {
                 var row = NewRect($"Goal progress row {slot + 1}",
-                    goalOverviewRoot, new Vector2(0f, 44f - 58f * slot),
-                    new Vector2(264f, 56f));
+                    goalOverviewRoot, new Vector2(0f, 62f - 72f * slot),
+                    new Vector2(264f, 70f));
+                var mat = Panel("Goal illustration mount", row,
+                    new Vector2(-114f, 5f), new Vector2(36f, 36f), HandPaper);
+                mat.raycastTarget = false;
+                var outline = mat.gameObject.AddComponent<Outline>();
+                outline.effectColor = HandInk;
+                outline.effectDistance = new Vector2(1f, -1f);
                 goalOverviewIcons[slot] = Panel("Goal icon", row,
-                    new Vector2(-115f, 7f), new Vector2(30f, 30f),
+                    new Vector2(-114f, 5f), new Vector2(28f, 28f),
                     Color.white);
                 goalOverviewIcons[slot].preserveAspect = true;
                 goalOverviewIcons[slot].raycastTarget = false;
                 goalOverviewTitles[slot] = TextAt("Goal title", row,
-                    new Vector2(-16f, 15f), new Vector2(160f, 28f), "", 17,
+                    new Vector2(9f, 18f), new Vector2(186f, 30f), "", 19,
                     true, Ink, TextAnchor.MiddleLeft);
                 goalOverviewTitles[slot].raycastTarget = false;
                 goalOverviewStates[slot] = TextAt("Goal state", row,
-                    new Vector2(-16f, -14f), new Vector2(160f, 26f), "", 16,
+                    new Vector2(-22f, -17f), new Vector2(124f, 26f), "", 16,
                     false, HeadingInk, TextAnchor.MiddleLeft);
                 goalOverviewStates[slot].raycastTarget = false;
                 goalOverviewProgress[slot] = TextAt("Goal count", row,
-                    new Vector2(102f, 12f), new Vector2(60f, 28f), "", 17,
+                    new Vector2(74f, -17f), new Vector2(60f, 34f), "", 21,
                     true, Ink, TextAnchor.MiddleRight);
                 goalOverviewProgress[slot].raycastTarget = false;
+                goalOverviewProgress[slot].resizeTextForBestFit = true;
+                goalOverviewProgress[slot].resizeTextMinSize = 18;
+                goalOverviewProgress[slot].resizeTextMaxSize = 21;
+                var seal = Panel("Goal achieved seal", row,
+                    new Vector2(-101f, -8f), new Vector2(18f, 18f), ReadingGreen);
+                seal.raycastTarget = false;
+                var tickShort = Panel("Tick short", seal.transform,
+                    new Vector2(-3f, -1f), new Vector2(3f, 7f), Paper);
+                tickShort.raycastTarget = false;
+                tickShort.transform.localEulerAngles = new Vector3(0f, 0f, 45f);
+                var tickLong = Panel("Tick long", seal.transform,
+                    new Vector2(2f, 1f), new Vector2(3f, 11f), Paper);
+                tickLong.raycastTarget = false;
+                tickLong.transform.localEulerAngles = new Vector3(0f, 0f, -35f);
+                goalOverviewSeals[slot] = seal.gameObject;
+                seal.gameObject.SetActive(false);
+                if (slot < 2)
+                    Panel("Goal row rule", row, new Vector2(10f, -36f),
+                        new Vector2(188f, 1f), HandQuietBrass).raycastTarget = false;
                 var track = Panel("Goal progress track", row,
                     new Vector2(18f, -25f), new Vector2(216f, 2f),
                     new Color(0.61f, 0.62f, 0.50f, 0.55f));
@@ -123,7 +158,7 @@ namespace UrbanWildlifeRooms.Presentation
         private void RefreshGoalOverview()
         {
             if (goalOverviewRoot == null || run == null) return;
-            goalOverviewHeading.text = L("Goals", "目标牌进度");
+            goalOverviewHeading.text = L("Goals", "本局目标");
             var visible = run.IsSpecialTaskSelectionConfirmed &&
                 !run.IsIntroPhase;
             goalOverviewBackdrop.gameObject.SetActive(visible);
@@ -138,8 +173,9 @@ namespace UrbanWildlifeRooms.Presentation
                 !run.BuiltToday && !run.IsFinished);
             if (!visible) return;
             var tasks = run.SpecialTasks;
-            goalOverviewCount.text = L($"{tasks.Count(task => task.Completed)}/3 done",
-                $"完成 {tasks.Count(task => task.Completed)}/3");
+            var completed = tasks.Count(task => task.Completed);
+            goalOverviewCount.text = $"{completed}/3";
+            goalOverviewCompletionBadge.color = completed == 3 ? ReadingGreen : Ink;
             for (var slot = 0; slot < goalOverviewIcons.Length; slot++)
             {
                 var task = tasks[slot];
@@ -153,10 +189,13 @@ namespace UrbanWildlifeRooms.Presentation
                 goalOverviewStates[slot].text = task.Completed
                     ? endScore
                         ? run.IsFinished
-                            ? L("Points awarded", "已结算")
-                            : L("Scores at the end", "终局结算")
+                            ? L("Awarded", "已结算")
+                            : L("At finish", "终局结算")
                         : L("Active", "已生效")
-                    : SpecialTaskProgressLabel(task.Kind);
+                    : GoalOverviewCounterLabel(task.Kind);
+                goalOverviewSeals[slot].SetActive(task.Completed);
+                goalOverviewStates[slot].color = task.Completed ? ReadingGreen : HeadingInk;
+                goalOverviewProgress[slot].color = task.Completed ? ReadingGreen : Ink;
                 goalOverviewFills[slot].rectTransform.sizeDelta =
                     new Vector2(216f * Mathf.Clamp01(
                         task.Progress / (float)Mathf.Max(1, task.Target)), 3f);
@@ -164,6 +203,17 @@ namespace UrbanWildlifeRooms.Presentation
                     ? UsedGreen : Gold;
             }
         }
+        private string GoalOverviewCounterLabel(ConstructionSpecialTaskKind kind) => kind switch
+        {
+            ConstructionSpecialTaskKind.CommuteCycles => L("Full routines", "完整循环"),
+            ConstructionSpecialTaskKind.RaiseAnimals => run.UsesSpeciesTaskRules
+                ? L("Species", "动物种类") : L("Animals", "动物数量"),
+            ConstructionSpecialTaskKind.BuildSquares => L("Plazas built", "已建广场"),
+            ConstructionSpecialTaskKind.AvoidStreets => L("No streets", "连续未铺路"),
+            ConstructionSpecialTaskKind.ConnectGreens => L("Linked greens", "连片绿地"),
+            ConstructionSpecialTaskKind.CompleteCommunities => L("Communities", "完整街坊"),
+            _ => string.Empty
+        };
         private void BuildSpecialTasks(Transform canvas)
         {
             if (run?.UsesSpecialTasks != true) return;
