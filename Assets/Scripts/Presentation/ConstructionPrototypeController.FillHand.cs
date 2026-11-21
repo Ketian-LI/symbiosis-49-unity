@@ -528,7 +528,7 @@ namespace UrbanWildlifeRooms.Presentation
             balanceScoreText.rectTransform.anchoredPosition =
                 new Vector2(22f, -50f);
             balanceScoreText.rectTransform.sizeDelta = new Vector2(308f, 34f);
-            balanceScoreText.fontSize = 15;
+            balanceScoreText.fontSize = 17;
             balanceScoreText.alignment = TextAnchor.MiddleLeft;
             openingTourScoreTarget.SetParent(progressPanel.transform, false);
             SetRect(openingTourScoreTarget, new Vector2(0f, 19f),
@@ -567,7 +567,7 @@ namespace UrbanWildlifeRooms.Presentation
             placementGuideText.gameObject.SetActive(false);
             selectedBuildIcon.gameObject.SetActive(false);
             var card = Panel("Selected hand card", guidePanel.transform,
-                new Vector2(-55f, -28f), new Vector2(148f, 148f),
+                new Vector2(-82f, -28f), new Vector2(128f, 128f),
                 HandPaper);
             card.raycastTarget = false;
             var cardOutline = card.gameObject.AddComponent<Outline>();
@@ -575,28 +575,28 @@ namespace UrbanWildlifeRooms.Presentation
             cardOutline.effectDistance = new Vector2(1f, -1f);
             fillRightHandArt = Panel("Selected hand illustration",
                 card.transform, Vector2.zero,
-                new Vector2(142f, 142f), Color.white);
+                new Vector2(122f, 122f), Color.white);
             fillRightHandArt.preserveAspect = true;
             fillRightHandArt.raycastTarget = false;
             fillRightHandName = TextAt("Selected hand name",
-                guidePanel.transform, new Vector2(96f, 6f),
-                new Vector2(132f, 52f), "", 22, true,
+                guidePanel.transform, new Vector2(68f, 6f),
+                new Vector2(142f, 52f), "", 22, true,
                 Ink, TextAnchor.MiddleLeft);
             fillRightHandName.raycastTarget = false;
             fillRightHandName.resizeTextForBestFit = true;
             fillRightHandName.resizeTextMinSize = 17;
             fillRightHandName.resizeTextMaxSize = 22;
             fillRightHandCount = TextAt("Selected hand valid plots",
-                guidePanel.transform, new Vector2(96f, -42f),
-                new Vector2(132f, 34f), "", 17, false,
+                guidePanel.transform, new Vector2(68f, -42f),
+                new Vector2(142f, 34f), "", 17, false,
                 Ink, TextAnchor.MiddleLeft);
             fillRightHandCount.raycastTarget = false;
             Panel("Selected hand divider", guidePanel.transform,
                 new Vector2(18f, -111f), new Vector2(294f, 1.5f),
                 HandQuietBrass).raycastTarget = false;
             fillRightHandTagline = TextAt("Selected hand tagline",
-                guidePanel.transform, new Vector2(18f, -138f),
-                new Vector2(294f, 42f), "", 15, false,
+                guidePanel.transform, new Vector2(-24f, -138f),
+                new Vector2(238f, 60f), "", 18, false,
                 Ink, TextAnchor.MiddleLeft);
             fillRightHandTagline.raycastTarget = false;
             SetRect(openingTourGuideTarget, new Vector2(18f, -32f),
@@ -608,15 +608,18 @@ namespace UrbanWildlifeRooms.Presentation
             if (fillRightHandArt == null || run?.UsesFillHand != true) return;
             if (AwaitingFreeBuildChoice)
             {
-                fillRightHandArt.gameObject.SetActive(false);
-                fillRightHandName.text = L("Choose a card", "请选择手牌");
-                fillRightHandCount.text = L("No room selected", "尚未选择建筑");
-                fillRightHandTagline.text = L(
-                    "Review your goals, then choose a card from the hand below.",
-                    "先查看目标进度，再点击下方手牌。");
+                fillRightHandArt.transform.parent.gameObject.SetActive(false);
+                fillRightHandCount.gameObject.SetActive(false);
+                fillRightHandTagline.gameObject.SetActive(false);
+                SetRect(fillRightHandName.rectTransform, new Vector2(18f, 0f), new Vector2(294f, 52f));
+                fillRightHandName.text = L("Choose a card below", "从下方选一张牌");
                 return;
             }
+            fillRightHandArt.transform.parent.gameObject.SetActive(true);
             fillRightHandArt.gameObject.SetActive(true);
+            fillRightHandCount.gameObject.SetActive(true);
+            fillRightHandTagline.gameObject.SetActive(true);
+            SetRect(fillRightHandName.rectTransform, new Vector2(68f, 6f), new Vector2(142f, 52f));
             var planting = run.BuiltCount == 0
                 ? GreenPlanting.Oak
                 : selectedCategory == ConstructionCategory.Green
@@ -630,7 +633,7 @@ namespace UrbanWildlifeRooms.Presentation
             fillRightHandCount.text = run.IsFinished
                 ? L("Run complete", "本局结束")
                 : count > 0
-                    ? L($"{count} valid plot{(count == 1 ? "" : "s")}",
+                    ? L($"{count} plot{(count == 1 ? "" : "s")}",
                         $"可放 {count} 处")
                     : L("No valid plot", "暂无落点");
             fillRightHandTagline.text = run.BuiltCount == 0
@@ -639,7 +642,7 @@ namespace UrbanWildlifeRooms.Presentation
                 : selectedCategory switch
                 {
                     ConstructionCategory.Green => L(
-                        "Plant type follows the plot. Hover a plot for its type and maturity date.",
+                        "Hover a plot for its plant and maturity date.",
                         "落点决定类型；悬停空格查看植物和成熟日期。"),
                     ConstructionCategory.Residence => L(
                         "A new neighbour is looking for a home.",
@@ -890,16 +893,16 @@ namespace UrbanWildlifeRooms.Presentation
             if (run?.UsesFillHand != true) return;
 
             fillHandWood = Panel("Warm wood card rest", canvasParent,
-                new Vector2(0f, -368f), new Vector2(610f, 148f),
+                new Vector2(0f, -368f), new Vector2(610f, 156f),
                 Color.white);
             fillHandWood.sprite = ConstructionHandArtCatalog.GetTray();
             fillHandWood.type = Image.Type.Sliced;
             fillHandWood.pixelsPerUnitMultiplier =
-                fillHandWood.sprite.rect.height / 148f;
+                fillHandWood.sprite.rect.height / 156f;
             fillHandWood.raycastTarget = false;
 
             fillHandRoot = NewRect("Fill hand on tabletop", canvasParent,
-                new Vector2(0, -368f), new Vector2(610f, 148f));
+                new Vector2(0, -368f), new Vector2(610f, 156f));
 
             var noteShadow = Panel("Hand note shadow", fillHandRoot,
                 new Vector2(-230f, -19f), new Vector2(128f, 104f),
@@ -981,7 +984,7 @@ namespace UrbanWildlifeRooms.Presentation
                     new Color(0.76f, 0.60f, 0.37f, 0.65f))
                     .raycastTarget = false;
                 fillHandNames[index] = TextAt("Hand room name", card.transform,
-                    new Vector2(-19f, -68f), new Vector2(91f, 29f), "", 18,
+                    new Vector2(-19f, -68f), new Vector2(91f, 36f), "", 18,
                     true, HandInk, TextAnchor.MiddleLeft);
                 fillHandNames[index].raycastTarget = false;
                 for (var iconIndex = 0; iconIndex < 2; iconIndex++)
@@ -1051,7 +1054,7 @@ namespace UrbanWildlifeRooms.Presentation
             deck.raycastTarget = false;
             fillHandDeckRect = brassRim.rectTransform;
             var deckPrint = Panel("Oak town card back", deck.transform,
-                new Vector2(0f, 28f), new Vector2(132f, 110f), Color.white);
+                new Vector2(0f, 34f), new Vector2(132f, 100f), Color.white);
             deckPrint.sprite = ConstructionHandArtCatalog.GetDeck();
             deckPrint.preserveAspect = true;
             deckPrint.raycastTarget = false;
@@ -1060,7 +1063,7 @@ namespace UrbanWildlifeRooms.Presentation
                 new Color(0.76f, 0.60f, 0.37f, 0.65f))
                 .raycastTarget = false;
             fillHandDeckTitle = TextAt("Draw pile title", deck.transform,
-                new Vector2(-27f, -44f), new Vector2(72f, 25f), "", 17,
+                new Vector2(-27f, -44f), new Vector2(72f, 36f), "", 17,
                 true, HandInk, TextAnchor.MiddleLeft);
             fillHandDeckTitle.raycastTarget = false;
             var countTab = Panel("Deck footer divider", deck.transform,
@@ -1070,12 +1073,12 @@ namespace UrbanWildlifeRooms.Presentation
             fillHandDeckCountTab = countTab.rectTransform;
             fillHandDeck = TextAt("Remaining cards on draw pile",
                 deck.transform, new Vector2(43f, -44f),
-                new Vector2(49f, 24f), "", 12, true, HandInk,
+                new Vector2(54f, 34f), "", 20, true, HandInk,
                 TextAnchor.MiddleRight);
             fillHandDeck.raycastTarget = false;
             fillHandReroll = ButtonAt("Reroll selected hand card", fillHandRoot,
                 new Vector2(FillHandDeckX, -51f),
-                new Vector2(92f, 22f), "换牌 ×0", 11,
+                new Vector2(92f, 26f), "换牌 ×0", 16,
                 HandInk, Color.white, RerollSelectedFillHandCard,
                 themed: false);
             var rerollImage = fillHandReroll.GetComponent<Image>();
@@ -1154,27 +1157,29 @@ namespace UrbanWildlifeRooms.Presentation
             var intro = run.IsIntroPhase;
             fillHandNoteRect.gameObject.SetActive(intro);
             fillHandNoteShadowRect.gameObject.SetActive(intro);
-            fillHandNote.fontSize = 12;
+            fillHandNote.fontSize = 16;
             if (intro)
                 fillHandNote.text = run.BuiltCount == 0
-                    ? L("CARD 1/8\nOAK FIRST\nCentre plot",
-                        "第 1/8 张\n先种橡树\n正中格")
+                    ? L("1/8\nOak in centre\nThen build",
+                        "第 1/8 张\n橡树放正中\n点建造确认")
                     : L($"CARD {run.IntroTypesBuilt + 1}/8\nPick a lit plot\nThen confirm",
                         $"第 {run.IntroTypesBuilt + 1}/8 张\n选高亮格\n再确认建造");
             fillHandDeckTitle.text = L("DECK", "牌堆");
+            fillHandDeckTitle.gameObject.SetActive(false);
+            SetRect(fillHandDeck.rectTransform, new Vector2(0f, -38f), new Vector2(126f, 34f));
             fillHandDeck.text = intro
-                ? L("LESSONS", "教程牌")
+                ? L("Lesson deck", "教程牌堆")
                 : run.UsesFiniteFillDeck
-                    ? L($"{run.FillDeckCardsRemaining} LEFT",
-                        $"余{run.FillDeckCardsRemaining}")
+                    ? L($"Deck {run.FillDeckCardsRemaining}",
+                        $"牌堆 {run.FillDeckCardsRemaining}")
                     : L("RANDOM", "随机补牌");
-            fillHandDeck.fontSize = Chinese ? 12 : 11;
+            fillHandDeck.fontSize = 20;
             var handSize = intro ? 3 : Mathf.Max(1, cards.Count);
             var handWidth = handSize * HandCardWidth + (handSize - 1) * HandCardGap;
             var noteWidth = intro ? 118f + 16f : 0f;
             const float trayPadding = 22f;
             var trayWidth = trayPadding * 2f + noteWidth + handWidth + 20f + HandCardWidth;
-            fillHandRoot.sizeDelta = new Vector2(trayWidth, 148f);
+            fillHandRoot.sizeDelta = new Vector2(trayWidth, 156f);
             fillHandWood.rectTransform.sizeDelta = fillHandRoot.sizeDelta;
             var noteX = -trayWidth * 0.5f + trayPadding + 59f;
             var firstCardX = -trayWidth * 0.5f + trayPadding + noteWidth + HandCardWidth * 0.5f;
@@ -1200,7 +1205,7 @@ namespace UrbanWildlifeRooms.Presentation
             fillHandDeckRect.anchoredPosition = new Vector2(deckX, 0f);
             fillHandDeckRect.localScale =
                 Vector3.one * fillHandDeckBaseScale;
-            fillHandDeckCountTab.gameObject.SetActive(true);
+            fillHandDeckCountTab.gameObject.SetActive(false);
             fillHandDeck.gameObject.SetActive(true);
             fillHandReroll.gameObject.SetActive(!intro && run.UsesFiniteFillDeck);
             if (!intro && run.UsesFiniteFillDeck)
@@ -1208,7 +1213,7 @@ namespace UrbanWildlifeRooms.Presentation
                 fillHandReroll.GetComponent<RectTransform>().anchoredPosition =
                     new Vector2(deckX, -51f);
                 fillHandReroll.GetComponent<RectTransform>().sizeDelta =
-                    new Vector2(92f, 22f);
+                    new Vector2(92f, 26f);
                 fillHandReroll.GetComponentInChildren<Text>().text =
                     L($"SWAP ×{run.FillHandRerollsRemaining}",
                         $"换牌 ×{run.FillHandRerollsRemaining}");
@@ -1235,9 +1240,12 @@ namespace UrbanWildlifeRooms.Presentation
                 fillHandIcons[index].sprite =
                     ConstructionHandArtCatalog.GetRoom(category, planting) ??
                     ConstructionIconCatalog.GetBuild(category, planting);
-                fillHandNames[index].fontSize = Chinese ? 18 : 16;
+                fillHandNames[index].fontSize = Chinese ? 22 : 18;
                 fillHandNames[index].text = starterOak
-                    ? L("Central oak", "中央橡树") : CategoryLabel(category);
+                    ? L("Oak", "中央橡树")
+                    : !Chinese && category == ConstructionCategory.Supermarket
+                        ? "Market" : !Chinese && category == ConstructionCategory.Waste
+                            ? "Waste" : CategoryLabel(category);
                 var footerIcon = category switch
                 {
                     ConstructionCategory.Green => HandFooterIcon.Sprout,

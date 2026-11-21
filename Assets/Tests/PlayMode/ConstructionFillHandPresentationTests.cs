@@ -784,7 +784,7 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                     .gameObject.activeSelf, Is.False,
                     name + " must not repeat the next card over the goal page.");
             Assert.That(canvas.Find("Building choices/Next step backing/Selected hand name")
-                .GetComponent<Text>().text, Is.EqualTo("Choose a card"));
+                .GetComponent<Text>().text, Does.Contain("Choose a card"));
             foreach (var tab in hand.GetComponentsInChildren<Transform>(true)
                          .Where(child => child.name == "Selected card tab"))
                 Assert.That(tab.gameObject.activeSelf, Is.False,

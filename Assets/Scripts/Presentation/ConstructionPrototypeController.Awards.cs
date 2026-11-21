@@ -157,7 +157,7 @@ namespace UrbanWildlifeRooms.Presentation
             var eligible = ConstructionAwardModel.TryEvaluate(run.Mode,
                 run.ScoringVersion, result.DaysPlayed, run.EndReason,
                 run.UsesOverallScore ? run.OverallScore :
-                    result.BalancePointsTotal, out var tier);
+                    result.BalancePointsTotal, run.AwardRulesVersion, out var tier);
             foreach (var section in awardLegacySections)
             {
                 if (section == null) continue;
@@ -311,42 +311,35 @@ namespace UrbanWildlifeRooms.Presentation
 
         private string AwardRange(ConstructionAwardTier tier)
         {
-            var balanced = run?.ScoringVersion >= 12;
-            var iron = balanced ? ConstructionAwardModel.BalancedIronMinimum :
-                ConstructionAwardModel.IronMinimum;
-            var bronze = balanced ? ConstructionAwardModel.BalancedBronzeMinimum :
-                ConstructionAwardModel.BronzeMinimum;
-            var silver = balanced ? ConstructionAwardModel.BalancedSilverMinimum :
-                ConstructionAwardModel.SilverMinimum;
+            var iron = AwardMinimum(ConstructionAwardTier.Iron);
+            var bronze = AwardMinimum(ConstructionAwardTier.Bronze);
+            var silver = AwardMinimum(ConstructionAwardTier.Silver);
+            var gold = AwardMinimum(ConstructionAwardTier.Gold);
             return tier switch
             {
                 ConstructionAwardTier.Plastic => $"<{iron}",
                 ConstructionAwardTier.Iron => $"{iron}–{bronze - 1}",
                 ConstructionAwardTier.Bronze => $"{bronze}–{silver - 1}",
                 ConstructionAwardTier.Silver =>
-                    $"{silver}–{ConstructionAwardModel.GoldMinimum - 1}",
-                _ => $"≥{ConstructionAwardModel.GoldMinimum}"
+                    $"{silver}–{gold - 1}",
+                _ => $"≥{gold}"
             };
         }
 
         private int NextAwardMinimum(ConstructionAwardTier tier)
         {
-            var balanced = run?.ScoringVersion >= 12;
             return tier switch
             {
-                ConstructionAwardTier.Plastic => balanced
-                    ? ConstructionAwardModel.BalancedIronMinimum
-                    : ConstructionAwardModel.IronMinimum,
-                ConstructionAwardTier.Iron => balanced
-                    ? ConstructionAwardModel.BalancedBronzeMinimum
-                    : ConstructionAwardModel.BronzeMinimum,
-                ConstructionAwardTier.Bronze => balanced
-                    ? ConstructionAwardModel.BalancedSilverMinimum
-                    : ConstructionAwardModel.SilverMinimum,
-                ConstructionAwardTier.Silver =>
-                    ConstructionAwardModel.GoldMinimum,
+                ConstructionAwardTier.Plastic => AwardMinimum(ConstructionAwardTier.Iron),
+                ConstructionAwardTier.Iron => AwardMinimum(ConstructionAwardTier.Bronze),
+                ConstructionAwardTier.Bronze => AwardMinimum(ConstructionAwardTier.Silver),
+                ConstructionAwardTier.Silver => AwardMinimum(ConstructionAwardTier.Gold),
                 _ => 0
             };
         }
+
+        private int AwardMinimum(ConstructionAwardTier tier) =>
+            ConstructionAwardModel.MinimumFor(tier, run?.ScoringVersion ?? 13,
+                run?.AwardRulesVersion ?? ConstructionAwardModel.CurrentRulesVersion);
     }
 }

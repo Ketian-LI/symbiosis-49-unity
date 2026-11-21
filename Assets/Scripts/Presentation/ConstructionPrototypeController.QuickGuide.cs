@@ -64,7 +64,7 @@ namespace UrbanWildlifeRooms.Presentation
                 true, Ink, TextAnchor.MiddleCenter);
             quickGuideHeading.raycastTarget = false;
             quickGuideSubtitle = TextAt("Manual subtitle", frame.transform,
-                new Vector2(0f, 296f), new Vector2(310f, 30f), "", 13,
+                new Vector2(0f, 296f), new Vector2(310f, 30f), "", 16,
                 false, HeadingInk, TextAnchor.MiddleCenter);
             quickGuideSubtitle.raycastTarget = false;
             Panel("Manual heading rule", frame.transform,
@@ -83,10 +83,10 @@ namespace UrbanWildlifeRooms.Presentation
             bodyRect.anchoredPosition = Vector2.zero;
             bodyRect.sizeDelta = new Vector2(0f, ManualBodyHeight);
             quickGuideBody = bodyRect.gameObject.AddComponent<TextMeshProUGUI>();
-            quickGuideBody.fontSize = 17f;
+            quickGuideBody.fontSize = 19f;
             quickGuideBody.color = Ink;
             quickGuideBody.alignment = TextAlignmentOptions.TopLeft;
-            quickGuideBody.lineSpacing = 3f;
+            quickGuideBody.lineSpacing = 5f;
             quickGuideBody.richText = true;
             quickGuideBody.textWrappingMode = TextWrappingModes.Normal;
             quickGuideBody.overflowMode = TextOverflowModes.Overflow;
@@ -154,7 +154,7 @@ namespace UrbanWildlifeRooms.Presentation
             {
                 ManualEntry(page, zh, "Place a card",
                     "Select a card, click a lit plot to preview, then confirm. Each confirmed placement settles wildlife, residents and scores. Fill all 49 plots, including the central oak, to finish.",
-                    "放牌", "选手牌，点亮格预览，再确认建造。每次确认都结算动物、居民和得分。填满含中央橡树在内的 49 格即结束。");
+                    "放牌", "选一张牌，点亮格预览，再确认建造。每放一张结算一次动物、居民和分数。填满 49 格（含橡树）后结束。");
                 ManualEntry(page, zh, "Eight room lessons",
                     "The guided opening introduces oak, home, restaurant, workshop, street, waste room, supermarket and square. Skip tutorial ends the fixed order immediately and deals a free hand.",
                     "认识八种地块", "引导依次介绍橡树、住宅、餐厅、工作坊、街道、垃圾间、超市和广场。点“跳过教程”会立即结束固定顺序，改为自由手牌。");
@@ -383,19 +383,16 @@ namespace UrbanWildlifeRooms.Presentation
             if (run.Mode == ConstructionGameMode.Fill &&
                 ConstructionAwardModel.SupportsScoringVersion(run.ScoringVersion))
             {
-                var iron = balanced ? ConstructionAwardModel.BalancedIronMinimum :
-                    ConstructionAwardModel.IronMinimum;
-                var bronze = balanced ? ConstructionAwardModel.BalancedBronzeMinimum :
-                    ConstructionAwardModel.BronzeMinimum;
-                var silver = balanced ? ConstructionAwardModel.BalancedSilverMinimum :
-                    ConstructionAwardModel.SilverMinimum;
-                var gold = ConstructionAwardModel.GoldMinimum;
+                var iron = AwardMinimum(ConstructionAwardTier.Iron);
+                var bronze = AwardMinimum(ConstructionAwardTier.Bronze);
+                var silver = AwardMinimum(ConstructionAwardTier.Silver);
+                var gold = AwardMinimum(ConstructionAwardTier.Gold);
                 ManualEntry(page, zh, "Trophy and ranking",
                     run.UsesSpecialTasks
                         ? "After completing the board, the trophy and ranking use your final total: coexistence, construction and goal points, including end effects."
                         : "After completing the board, the trophy and ranking use your final coexistence score.",
                     "奖杯与排行", run.UsesSpecialTasks
-                        ? "填满棋盘后按最终总分评定奖杯与排行。总分含共栖、建造和目标分，终局目标效果也计入。"
+                        ? "填满棋盘后，用总分评奖杯和排行。总分包含共栖、建造、目标，以及目标的终局加分。"
                         : "填满棋盘后按最终共栖分评定奖杯与排行。");
                 ManualEntry(page, zh, "Trophy bands",
                     $"Plastic below {iron}; iron {iron}–{bronze - 1}; bronze {bronze}–{silver - 1}; silver {silver}–{gold - 1}; gold {gold}+.",
@@ -416,10 +413,10 @@ namespace UrbanWildlifeRooms.Presentation
             if (quickGuideButton != null)
             {
                 quickGuideButton.gameObject.SetActive(!blocked);
-                quickGuideButtonLabel.text = L("O  MANUAL", "O  手册");
+                quickGuideButtonLabel.text = L("Manual", "手册");
             }
             quickGuideHeading.text = L("GAME MANUAL", "游戏手册");
-            quickGuideSubtitle.text = L("SCROLL OR USE BUTTONS · O TO CLOSE", "滚轮或按钮翻阅 · O 键收起");
+            quickGuideSubtitle.text = L("Scroll to read · O to close", "滚轮翻阅　O 收起");
             quickGuidePreviousLabel.text = L("UP", "向上");
             quickGuideNextLabel.text = L("DOWN", "向下");
             quickGuideCloseLabel.text = L("CLOSE  ·  O", "收起手册  ·  O");

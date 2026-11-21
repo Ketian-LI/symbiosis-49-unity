@@ -22,7 +22,7 @@ namespace UrbanWildlifeRooms.Presentation
 
             return ConstructionAwardModel.TryEvaluate(mode,
                 payload.scoringVersion, payload.daysPlayed, endReason,
-                payload.totalPoints, out tier);
+                payload.totalPoints, payload.awardRulesVersion, out tier);
         }
     }
 }

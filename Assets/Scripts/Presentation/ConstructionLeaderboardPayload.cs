@@ -13,6 +13,7 @@ namespace UrbanWildlifeRooms.Presentation
         public string nickname;
         public string mode;
         public int scoringVersion;
+        public int awardRulesVersion;
         // Zero in records saved before the tabletop rules were versioned.
         // Random physical draws use version 2; older board-game runs use 1.
         public int boardGameRulesVersion;
@@ -59,6 +60,7 @@ namespace UrbanWildlifeRooms.Presentation
                 nickname = name,
                 mode = run.Mode.ToString(),
                 scoringVersion = run.ScoringVersion,
+                awardRulesVersion = run.AwardRulesVersion,
                 boardGameRulesVersion = run.BoardGameRulesVersion,
                 daysPlayed = result.DaysPlayed,
                 endReason = run.EndReason.ToString(),

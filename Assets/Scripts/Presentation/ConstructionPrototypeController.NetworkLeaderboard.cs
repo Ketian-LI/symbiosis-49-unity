@@ -320,13 +320,9 @@ namespace UrbanWildlifeRooms.Presentation
                     var prefix = rank > 0
                         ? L($"Online #{rank}", $"联网第 {rank} 名")
                         : L("Online board", "联网榜");
-                    var leader = networkCachedEntries.Length > 0
-                        ? $"#1 {networkCachedEntries[0].name} " +
-                          networkCachedEntries[0].score
-                        : L("No entries yet", "暂无成绩");
-                    SetNetworkLeaderboardStatus(runId,
-                        prefix + " · " + leader +
-                        L(" · click for top 20", " · 点击查看前 20 名"));
+                    SetNetworkLeaderboardStatus(runId, prefix +
+                        L($" · {networkCachedCount} score(s) · View rankings",
+                            $" · {networkCachedCount} 条成绩 · 查看排行"));
                 }
             }
             FinishNetworkLeaderboardRequest(runId);

@@ -104,6 +104,8 @@ namespace UrbanWildlifeRooms.Core
         // Stable anonymous identifier for an optional leaderboard submission.
         // Older saves receive one when restored, before their first submission.
         public string runId;
+        // Missing/zero keeps historical trophies on the original bands.
+        public int awardRulesVersion;
         // Zero denotes a save created before timed wildlife immigration.
         public int wildlifeReturnRulesVersion;
         // Missing in pre-onboarding saves, which continue under their
@@ -213,6 +215,8 @@ namespace UrbanWildlifeRooms.Core
         private List<ConstructionResidentDispatch> residentDispatches = new();
         private int introRulesVersion = 1;
         private bool usesFillHand;
+        private int awardRulesVersion;
+        public int AwardRulesVersion => awardRulesVersion;
         private int fillHandDeckVersion;
         private int greenPatchRulesVersion;
         private int endlessUpgradeRulesVersion;
@@ -1561,6 +1565,7 @@ namespace UrbanWildlifeRooms.Core
             bool useFillHand = false)
         {
             Mode = mode;
+            awardRulesVersion = ConstructionAwardModel.CurrentRulesVersion;
             usesFillHand = mode == ConstructionGameMode.Fill && useFillHand;
             fillHandDeckVersion = usesFillHand ? 3 : 0;
             greenPatchRulesVersion = usesFillHand ? 1 : 0;
@@ -2305,6 +2310,7 @@ namespace UrbanWildlifeRooms.Core
         public ConstructionRunSaveData Export() => new()
         {
             runId = RunId,
+            awardRulesVersion = AwardRulesVersion,
             wildlifeReturnRulesVersion = 1,
             introRulesVersion = introRulesVersion,
             usesFillHand = UsesFillHand,
@@ -2360,6 +2366,8 @@ namespace UrbanWildlifeRooms.Core
             // Accept hands saved under the former 2/4-square thresholds;
             // active hands are reconciled to the current 3/6 rule below.
             if (saved == null ||
+                saved.awardRulesVersion < 0 ||
+                saved.awardRulesVersion > ConstructionAwardModel.CurrentRulesVersion ||
                 (!string.IsNullOrEmpty(saved.runId) &&
                  !Guid.TryParse(saved.runId, out _)) ||
                 (saved.usesFillHand && string.IsNullOrEmpty(saved.runId)) ||
@@ -2450,11 +2458,8 @@ namespace UrbanWildlifeRooms.Core
                     : saved.pigeonArrivalDay < 2 ||
                       saved.pigeonArrivalDay > saved.currentDay + (saved.finished ? 1 : 0) ||
                       !(saved.greenPatchRulesVersion == 1
-                          ? ConstructionGreenPatchModel.Find(board,
-                                  saved.pigeonArrivalDay)
-                              .Any(patch => patch.PigeonCapacity >= 2 &&
-                                  patch.Meadows.Any(tile =>
-                                      tile.id == saved.pigeonTileId))
+                          ? HasValidPatchPigeonHistory(board, saved.pigeonArrivalDay,
+                              saved.currentDay + (saved.finished ? 1 : 0), saved.pigeonTileId)
                           : board.AnimalReachableGreenTiles(
                                   ConstructionBoardModel.StarterOakId,
                                   useLegacyEightNeighbours: true)
@@ -2971,6 +2976,7 @@ namespace UrbanWildlifeRooms.Core
             {
                 RunId = string.IsNullOrEmpty(saved.runId)
                     ? Guid.NewGuid().ToString("D") : saved.runId,
+                awardRulesVersion = saved.awardRulesVersion == 0 ? 1 : saved.awardRulesVersion,
                 board = board,
                 story = story,
                 score = score,
@@ -3061,6 +3067,21 @@ namespace UrbanWildlifeRooms.Core
                 run.EnsurePlayableRandomFillHand();
             }
             return true;
+        }
+
+        // Earlier patch saves used the flock's latest green food source as
+        // this reference. It can have been planted after the first arrival.
+        // Check arrival habitat at the historic day and the saved reference
+        // at the current day, without inventing an earlier planting date.
+        private static bool HasValidPatchPigeonHistory(ConstructionBoardModel board,
+            int arrivalDay, int currentDay, string referenceId)
+        {
+            var reference = board.BuiltTiles.FirstOrDefault(tile => tile.id == referenceId);
+            return reference != null && reference.category == ConstructionCategory.Green &&
+                reference.builtDay <= currentDay &&
+                ConstructionFoodModel.MaturityStage(reference, currentDay) == 2 &&
+                ConstructionGreenPatchModel.Find(board, arrivalDay)
+                    .Any(patch => patch.PigeonCapacity >= 2);
         }
 
         private bool MigrateWildlifeReturnState(int rulesVersion)

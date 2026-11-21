@@ -2,15 +2,20 @@
 
 **A Unity game about arranging shared urban space for human and wild neighbours.**
 
-This is the English assessment-archive snapshot prepared on **20 November 2026** for
+This is the current source update, checkpointed on **21 November 2026**, following the English assessment archive of 20 November for
 **MSc Creative Computing Final Project, IU000293**. It brings the current construction game,
 its source assets, selected verification records and the project's earlier repositories into one navigable account.
 It is an archive of work, **not a claim that all assessment materials have been completed or submitted**.
 
-![The current construction game and event-driven neighbourhood journal](Documentation/images/street-journal-zh.png)
+![The current construction game and event-driven neighbourhood journal](Documentation/images/game-readable-zh.png)
 
 *Current Unity interface, captured from a deterministic nine-placement test fixture. The in-game language shown is Chinese;
 the game supports English and Chinese. This is an actual Unity render, not participant evidence or a generated gameplay mockup.*
+
+New Fill runs use trophy bands 1500 / 2500 / 3500 / 4500. Historical runs retain their own bands.
+The latest source also includes larger reading text and a pigeon-save restoration fix.
+See [the update record](Docs/TROPHY_AND_UI_READING_2026-11-20.md).
+Downloadable executables on the 20 November archive release remain earlier builds; this branch updates source.
 
 ## Start here
 

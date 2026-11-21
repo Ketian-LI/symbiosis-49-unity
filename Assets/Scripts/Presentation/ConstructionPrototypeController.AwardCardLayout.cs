@@ -219,7 +219,7 @@ namespace UrbanWildlifeRooms.Presentation
                 return;
             }
 
-            cardResultTitle.text = L("COEXISTENCE RESULTS", "共栖结算");
+            cardResultTitle.text = L("Your neighbourhood", "街坊建好了");
             cardResultMode.text = L("49 plots placed", "49 格已放置");
             cardAwardIcon.sprite = AwardSprite(tier);
             cardAwardName.text = AwardTierName(tier);
@@ -227,7 +227,7 @@ namespace UrbanWildlifeRooms.Presentation
                 result.BalancePointsTotal).ToString(CultureInfo.InvariantCulture);
             cardTotalUnit.text = L("pts", "分");
             cardTotalCaption.text = L("TOTAL SCORE", "本局总分");
-            cardCompositionTitle.text = L("SCORE BREAKDOWN", "分数构成");
+            cardCompositionTitle.text = L("Where the points came from", "分数从哪来");
             var labels = new[]
             {
                 L("Animals", "动物"), L("Residents", "居民"),
@@ -248,8 +248,7 @@ namespace UrbanWildlifeRooms.Presentation
             cardCurrentTierIcon.sprite = AwardSprite(tier);
             cardCurrentTierLabel.text = AwardTierName(tier) + " · " +
                 AwardRange(tier) + L(" pts", " 分");
-            cardStandardsLink.text = L("View award bands  ›",
-                "查看奖杯标准  ›");
+            cardStandardsLink.text = L("Trophy scores", "奖杯分数线");
             for (var index = 0; index < AwardOrder.Length; index++)
             {
                 cardStandardNames[index].text = AwardTierName(AwardOrder[index]);

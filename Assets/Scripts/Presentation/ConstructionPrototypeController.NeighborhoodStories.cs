@@ -28,25 +28,25 @@ namespace UrbanWildlifeRooms.Presentation
                 new Vector2(-152f, 0f), new Vector2(3f, 230f), Gold);
             neighborhoodStoryAccent.raycastTarget = false;
             neighborhoodStoryDate = TextAt("Story date", paper.transform,
-                new Vector2(0f, 101f), new Vector2(282f, 21f), "", 11,
+                new Vector2(0f, 101f), new Vector2(282f, 28f), "", 15,
                 false, HeadingInk, TextAnchor.MiddleRight);
             neighborhoodStoryIcon = Panel("Story event icon", paper.transform,
                 new Vector2(-124f, 63f), new Vector2(32f, 32f), Color.white);
             neighborhoodStoryIcon.preserveAspect = true;
             neighborhoodStoryIcon.raycastTarget = false;
             neighborhoodStoryTitle = TextAt("Story title", paper.transform,
-                new Vector2(21f, 63f), new Vector2(230f, 48f), "", 19,
+                new Vector2(21f, 63f), new Vector2(230f, 48f), "", 21,
                 true, Ink, TextAnchor.MiddleLeft);
             neighborhoodStoryBody = TextAt("Story paragraph", paper.transform,
-                new Vector2(0f, 6f), new Vector2(282f, 78f), "", 14,
+                new Vector2(0f, 6f), new Vector2(282f, 78f), "", 18,
                 false, Ink, TextAnchor.UpperLeft);
             Panel("Story cause divider", paper.transform, new Vector2(0f, -39f),
                 new Vector2(282f, 1f), Gold).raycastTarget = false;
             neighborhoodStoryCause = TextAt("Story trigger", paper.transform,
-                new Vector2(0f, -70f), new Vector2(282f, 56f), "", 12,
+                new Vector2(0f, -70f), new Vector2(282f, 56f), "", 16,
                 false, HeadingInk, TextAnchor.UpperLeft);
             neighborhoodStoryPrevious = TextAt("Previous story", paper.transform,
-                new Vector2(0f, -109f), new Vector2(282f, 18f), "", 10,
+                new Vector2(0f, -109f), new Vector2(282f, 26f), "", 14,
                 false, HeadingInk, TextAnchor.MiddleLeft);
             foreach (var label in new[] { neighborhoodStoryDate, neighborhoodStoryTitle,
                 neighborhoodStoryBody, neighborhoodStoryCause, neighborhoodStoryPrevious })
@@ -69,17 +69,16 @@ namespace UrbanWildlifeRooms.Presentation
             var story = neighborhoodStories[0];
             neighborhoodStoryDate.text = story.Day == 0
                 ? L("A beginning", "街坊的开篇")
-                : L($"Day {story.Day} · {(story.Concern ? "A concern" : "A little change")}",
-                    $"第 {story.Day} 天 · {(story.Concern ? "需要留意" : "街坊的新变化")}");
+                : L($"Day {story.Day} · {(story.Concern ? "A concern" : "New today")}",
+                    $"第 {story.Day} 天 · {(story.Concern ? "需要留意" : "新鲜事")}");
             neighborhoodStoryTitle.text = L(story.EnglishTitle, story.ChineseTitle);
-            neighborhoodStoryBody.fontSize = Chinese ? 14 : 13;
-            neighborhoodStoryCause.fontSize = Chinese ? 12 : 11;
+            neighborhoodStoryBody.fontSize = Chinese ? 18 : 17;
+            neighborhoodStoryCause.fontSize = 16;
             neighborhoodStoryBody.text = L(story.EnglishBody, story.ChineseBody);
-            neighborhoodStoryCause.text = L("WHY IT HAPPENED\n" + story.EnglishCause,
-                "触发原因\n" + story.ChineseCause);
+            neighborhoodStoryCause.text = L(story.EnglishCause, story.ChineseCause);
             neighborhoodStoryPrevious.text = neighborhoodStories.Count > 1
                 ? L("Earlier: " + neighborhoodStories[1].EnglishTitle,
-                    "上次的手记：" + neighborhoodStories[1].ChineseTitle) : "";
+                    "前一则：" + neighborhoodStories[1].ChineseTitle) : "";
             neighborhoodStoryIcon.sprite = ConstructionIconCatalog.GetBuild(story.Icon);
             neighborhoodStoryAccent.color = story.Concern
                 ? new Color(0.70f, 0.36f, 0.24f) : UsedGreen;

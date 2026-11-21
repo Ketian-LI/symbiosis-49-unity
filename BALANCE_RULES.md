@@ -1,3 +1,13 @@
+# Current update: 20 November 2026
+
+New Fill/Endless games use gameplay scoring V13; the physical BoardGame path retains its own scoring version.
+New Fill trophy bands are Iron 1500, Bronze 2500, Silver 3500 and Gold 4500 (inclusive). Previous runs and local records
+retain their own trophy standards. See [the update record](Docs/TROPHY_AND_UI_READING_2026-11-20.md).
+
+The V6 notes below are historical. They do not describe every rule or the optional network service in the current build.
+
+---
+
 # SYMBIOSIS:49 建造计分与食物规则（2026-11-07）
 
 ## 每日结算与共栖分

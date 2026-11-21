@@ -77,7 +77,7 @@ namespace UrbanWildlifeRooms.Tests.Editor
             ConstructionEndReason.BoardComplete)]
         [TestCase(ConstructionGameMode.Fill, 7, 49,
             ConstructionEndReason.BoardComplete)]
-        [TestCase(ConstructionGameMode.Fill, 11, 49,
+        [TestCase(ConstructionGameMode.Fill, ConstructionScoreLedger.CurrentScoringVersion + 1, 49,
             ConstructionEndReason.BoardComplete)]
         [TestCase(ConstructionGameMode.Fill, 8, 48,
             ConstructionEndReason.None)]

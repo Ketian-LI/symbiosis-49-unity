@@ -1,0 +1,2366 @@
+{
+    "runId": "1425be3a-26ff-416b-94d1-8ffe314187df",
+    "awardRulesVersion": 2,
+    "wildlifeReturnRulesVersion": 1,
+    "introRulesVersion": 1,
+    "usesFillHand": true,
+    "fillHandDeckVersion": 3,
+    "greenPatchRulesVersion": 1,
+    "fillHandRandomState": 323394918,
+    "fillHandCards": [],
+    "fillHandWitnessedLinkage": true,
+    "fillHandExpanded": true,
+    "fillHandExpandedToFive": false,
+    "fillHandFedSpeciesMask": 3,
+    "fillHandRerollsSpent": 0,
+    "specialTasks": {
+        "version": 6,
+        "randomState": 839706500,
+        "bonusScore": 40,
+        "effectScore": 20,
+        "endgameScore": 20,
+        "endgameAwarded": true,
+        "selectionConfirmed": true,
+        "activeTasks": [
+            {
+                "kind": 0,
+                "difficulty": 0,
+                "target": 6,
+                "progress": 6,
+                "points": 25,
+                "effectPoints": 20,
+                "replacementUsed": false,
+                "completed": true
+            },
+            {
+                "kind": 1,
+                "difficulty": 1,
+                "target": 3,
+                "progress": 2,
+                "points": 50,
+                "effectPoints": 0,
+                "replacementUsed": false,
+                "completed": false
+            },
+            {
+                "kind": 3,
+                "difficulty": 0,
+                "target": 3,
+                "progress": 3,
+                "points": 15,
+                "effectPoints": 20,
+                "replacementUsed": false,
+                "completed": true
+            }
+        ],
+        "seenTaskKeys": [
+            "0:0",
+            "1:1",
+            "3:0"
+        ],
+        "completedTaskKeys": [
+            "3:0",
+            "0:0"
+        ]
+    },
+    "placementScore": {
+        "version": 6,
+        "entries": [
+            {
+                "tileId": "starter-oak",
+                "points": 0
+            },
+            {
+                "tileId": "built-002",
+                "points": 16
+            },
+            {
+                "tileId": "built-003",
+                "points": 24
+            },
+            {
+                "tileId": "built-004",
+                "points": 24
+            },
+            {
+                "tileId": "built-005",
+                "points": 0
+            },
+            {
+                "tileId": "built-006",
+                "points": 0
+            },
+            {
+                "tileId": "built-007",
+                "points": 12
+            },
+            {
+                "tileId": "built-008",
+                "points": 0
+            },
+            {
+                "tileId": "built-009",
+                "points": 12
+            },
+            {
+                "tileId": "built-010",
+                "points": 12
+            },
+            {
+                "tileId": "built-011",
+                "points": 0
+            },
+            {
+                "tileId": "built-012",
+                "points": 0
+            },
+            {
+                "tileId": "built-013",
+                "points": 16
+            },
+            {
+                "tileId": "built-014",
+                "points": 24
+            },
+            {
+                "tileId": "built-015",
+                "points": 0
+            },
+            {
+                "tileId": "built-016",
+                "points": 0
+            },
+            {
+                "tileId": "built-017",
+                "points": 0
+            },
+            {
+                "tileId": "built-018",
+                "points": 0
+            },
+            {
+                "tileId": "built-019",
+                "points": 32
+            },
+            {
+                "tileId": "built-020",
+                "points": 16
+            },
+            {
+                "tileId": "built-021",
+                "points": 32
+            },
+            {
+                "tileId": "built-022",
+                "points": 0
+            },
+            {
+                "tileId": "built-023",
+                "points": 32
+            },
+            {
+                "tileId": "built-024",
+                "points": 0
+            },
+            {
+                "tileId": "built-025",
+                "points": 52
+            },
+            {
+                "tileId": "built-026",
+                "points": 12
+            },
+            {
+                "tileId": "built-027",
+                "points": 20
+            },
+            {
+                "tileId": "built-028",
+                "points": 0
+            },
+            {
+                "tileId": "built-029",
+                "points": -4
+            },
+            {
+                "tileId": "built-030",
+                "points": 16
+            },
+            {
+                "tileId": "built-031",
+                "points": 16
+            },
+            {
+                "tileId": "built-032",
+                "points": 24
+            },
+            {
+                "tileId": "built-033",
+                "points": 52
+            },
+            {
+                "tileId": "built-034",
+                "points": 24
+            },
+            {
+                "tileId": "built-035",
+                "points": 48
+            },
+            {
+                "tileId": "built-036",
+                "points": 0
+            },
+            {
+                "tileId": "built-037",
+                "points": 0
+            },
+            {
+                "tileId": "built-038",
+                "points": 24
+            },
+            {
+                "tileId": "built-039",
+                "points": 0
+            },
+            {
+                "tileId": "built-040",
+                "points": 24
+            },
+            {
+                "tileId": "built-041",
+                "points": 64
+            },
+            {
+                "tileId": "built-042",
+                "points": 0
+            },
+            {
+                "tileId": "built-043",
+                "points": 24
+            },
+            {
+                "tileId": "built-044",
+                "points": -80
+            },
+            {
+                "tileId": "built-045",
+                "points": 0
+            },
+            {
+                "tileId": "built-046",
+                "points": 12
+            },
+            {
+                "tileId": "built-047",
+                "points": 24
+            },
+            {
+                "tileId": "built-048",
+                "points": 48
+            },
+            {
+                "tileId": "built-049",
+                "points": 24
+            }
+        ],
+        "communityAwards": []
+    },
+    "tutorialTipsSkipped": false,
+    "fillTutorialSkipped": false,
+    "fillTutorialSkipBuiltCount": 0,
+    "openingTourCompleted": false,
+    "endlessLossRulesVersion": 1,
+    "animalDeathLimit": 3,
+    "unemployedResidentLimit": 1,
+    "endlessLossRulesConfirmed": false,
+    "endlessUpgradeRulesVersion": 0,
+    "mode": 0,
+    "endReason": 1,
+    "survival": {
+        "squirrels": 1,
+        "pigeons": 0,
+        "predatedSquirrels": 0,
+        "predatedPigeons": 0,
+        "trafficKilledSquirrels": 0,
+        "trafficKilledPigeons": 1,
+        "trafficDeaths": [
+            {
+                "streetTileId": "built-028",
+                "count": 1
+            }
+        ],
+        "hedgehogNextArrivalShrubs": 0,
+        "foxEstablished": false,
+        "foxHungryDays": 0,
+        "foxReturnDay": 0,
+        "squirrelHungryDays": 0,
+        "pigeonHungryDays": 0,
+        "squirrelFedDays": 0,
+        "pigeonFedDays": 0,
+        "squirrelReturnDays": [],
+        "pigeonReturnDays": [],
+        "returnedSquirrels": 0,
+        "returnedPigeons": 1,
+        "squirrelReturnCeiling": 2147483647,
+        "pigeonReturnCeiling": 2147483647,
+        "lastSquirrelReturnDay": 0,
+        "lastPigeonReturnDay": 48,
+        "squirrelExtinctDay": 0,
+        "pigeonExtinctDay": 0,
+        "hedgehogAbsent": false,
+        "hedgehogReturnDay": 0,
+        "hedgehogPatches": [],
+        "animalDeathDays": [],
+        "unemployedResidentsLastDay": 0,
+        "unemployedDaysInRow": 0,
+        "residents": []
+    },
+    "board": {
+        "expansionRings": 0,
+        "tiles": [
+            {
+                "id": "starter-oak",
+                "buildIndex": 1,
+                "builtDay": 1,
+                "column": 3,
+                "row": 3,
+                "category": 0,
+                "planting": 1,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-002",
+                "buildIndex": 2,
+                "builtDay": 2,
+                "column": 4,
+                "row": 3,
+                "category": 1,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-003",
+                "buildIndex": 3,
+                "builtDay": 3,
+                "column": 5,
+                "row": 3,
+                "category": 3,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-004",
+                "buildIndex": 4,
+                "builtDay": 4,
+                "column": 4,
+                "row": 4,
+                "category": 2,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-005",
+                "buildIndex": 5,
+                "builtDay": 5,
+                "column": 4,
+                "row": 2,
+                "category": 6,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-006",
+                "buildIndex": 6,
+                "builtDay": 6,
+                "column": 6,
+                "row": 3,
+                "category": 5,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-007",
+                "buildIndex": 7,
+                "builtDay": 7,
+                "column": 3,
+                "row": 2,
+                "category": 4,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-008",
+                "buildIndex": 8,
+                "builtDay": 8,
+                "column": 4,
+                "row": 1,
+                "category": 7,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-009",
+                "buildIndex": 9,
+                "builtDay": 9,
+                "column": 4,
+                "row": 0,
+                "category": 0,
+                "planting": 2,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-010",
+                "buildIndex": 10,
+                "builtDay": 10,
+                "column": 3,
+                "row": 0,
+                "category": 7,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-011",
+                "buildIndex": 11,
+                "builtDay": 11,
+                "column": 5,
+                "row": 2,
+                "category": 6,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-012",
+                "buildIndex": 12,
+                "builtDay": 12,
+                "column": 5,
+                "row": 1,
+                "category": 4,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-013",
+                "buildIndex": 13,
+                "builtDay": 13,
+                "column": 2,
+                "row": 0,
+                "category": 1,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-014",
+                "buildIndex": 14,
+                "builtDay": 14,
+                "column": 1,
+                "row": 0,
+                "category": 3,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-015",
+                "buildIndex": 15,
+                "builtDay": 15,
+                "column": 0,
+                "row": 0,
+                "category": 0,
+                "planting": 2,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-016",
+                "buildIndex": 16,
+                "builtDay": 16,
+                "column": 1,
+                "row": 1,
+                "category": 5,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-017",
+                "buildIndex": 17,
+                "builtDay": 17,
+                "column": 2,
+                "row": 1,
+                "category": 6,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-018",
+                "buildIndex": 18,
+                "builtDay": 18,
+                "column": 3,
+                "row": 1,
+                "category": 2,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-019",
+                "buildIndex": 19,
+                "builtDay": 19,
+                "column": 5,
+                "row": 0,
+                "category": 1,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-020",
+                "buildIndex": 20,
+                "builtDay": 20,
+                "column": 6,
+                "row": 0,
+                "category": 7,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-021",
+                "buildIndex": 21,
+                "builtDay": 21,
+                "column": 0,
+                "row": 1,
+                "category": 0,
+                "planting": 2,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-022",
+                "buildIndex": 22,
+                "builtDay": 22,
+                "column": 2,
+                "row": 2,
+                "category": 5,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-023",
+                "buildIndex": 23,
+                "builtDay": 23,
+                "column": 6,
+                "row": 1,
+                "category": 1,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-024",
+                "buildIndex": 24,
+                "builtDay": 24,
+                "column": 6,
+                "row": 2,
+                "category": 6,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-025",
+                "buildIndex": 25,
+                "builtDay": 25,
+                "column": 0,
+                "row": 2,
+                "category": 0,
+                "planting": 1,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-026",
+                "buildIndex": 26,
+                "builtDay": 26,
+                "column": 1,
+                "row": 2,
+                "category": 7,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-027",
+                "buildIndex": 27,
+                "builtDay": 27,
+                "column": 0,
+                "row": 3,
+                "category": 1,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-028",
+                "buildIndex": 28,
+                "builtDay": 28,
+                "column": 1,
+                "row": 3,
+                "category": 6,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-029",
+                "buildIndex": 29,
+                "builtDay": 29,
+                "column": 2,
+                "row": 3,
+                "category": 0,
+                "planting": 2,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-030",
+                "buildIndex": 30,
+                "builtDay": 30,
+                "column": 0,
+                "row": 4,
+                "category": 4,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-031",
+                "buildIndex": 31,
+                "builtDay": 31,
+                "column": 1,
+                "row": 4,
+                "category": 1,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-032",
+                "buildIndex": 32,
+                "builtDay": 32,
+                "column": 2,
+                "row": 4,
+                "category": 2,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-033",
+                "buildIndex": 33,
+                "builtDay": 33,
+                "column": 3,
+                "row": 4,
+                "category": 0,
+                "planting": 2,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-034",
+                "buildIndex": 34,
+                "builtDay": 34,
+                "column": 1,
+                "row": 5,
+                "category": 3,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-035",
+                "buildIndex": 35,
+                "builtDay": 35,
+                "column": 5,
+                "row": 4,
+                "category": 1,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-036",
+                "buildIndex": 36,
+                "builtDay": 36,
+                "column": 6,
+                "row": 4,
+                "category": 6,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-037",
+                "buildIndex": 37,
+                "builtDay": 37,
+                "column": 0,
+                "row": 5,
+                "category": 5,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-038",
+                "buildIndex": 38,
+                "builtDay": 38,
+                "column": 5,
+                "row": 5,
+                "category": 2,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-039",
+                "buildIndex": 39,
+                "builtDay": 39,
+                "column": 2,
+                "row": 5,
+                "category": 0,
+                "planting": 2,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-040",
+                "buildIndex": 40,
+                "builtDay": 40,
+                "column": 3,
+                "row": 5,
+                "category": 7,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-041",
+                "buildIndex": 41,
+                "builtDay": 41,
+                "column": 4,
+                "row": 5,
+                "category": 1,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-042",
+                "buildIndex": 42,
+                "builtDay": 42,
+                "column": 6,
+                "row": 5,
+                "category": 5,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-043",
+                "buildIndex": 43,
+                "builtDay": 43,
+                "column": 4,
+                "row": 6,
+                "category": 2,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-044",
+                "buildIndex": 44,
+                "builtDay": 44,
+                "column": 0,
+                "row": 6,
+                "category": 1,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-045",
+                "buildIndex": 45,
+                "builtDay": 45,
+                "column": 1,
+                "row": 6,
+                "category": 6,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-046",
+                "buildIndex": 46,
+                "builtDay": 46,
+                "column": 2,
+                "row": 6,
+                "category": 4,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-047",
+                "buildIndex": 47,
+                "builtDay": 47,
+                "column": 3,
+                "row": 6,
+                "category": 0,
+                "planting": 2,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-048",
+                "buildIndex": 48,
+                "builtDay": 48,
+                "column": 5,
+                "row": 6,
+                "category": 1,
+                "planting": 0,
+                "residenceKind": 0
+            },
+            {
+                "id": "built-049",
+                "buildIndex": 49,
+                "builtDay": 49,
+                "column": 6,
+                "row": 6,
+                "category": 3,
+                "planting": 0,
+                "residenceKind": 0
+            }
+        ]
+    },
+    "story": {
+        "squirrelAte": true,
+        "newWildlifeArrived": true,
+        "residentAte": true,
+        "directAccessBlocked": true,
+        "restaurantCrowded": true
+    },
+    "score": {
+        "days": [
+            {
+                "day": 1,
+                "animalMeals": 1,
+                "animalPoints": 5,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 0,
+                "humanPoints": 0,
+                "balancePoints": 5,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 0,
+                "biodiversityHomes": 0,
+                "linkagePoints": 0
+            },
+            {
+                "day": 2,
+                "animalMeals": 1,
+                "animalPoints": 5,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 0,
+                "humanPoints": 0,
+                "balancePoints": 5,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 0,
+                "biodiversityHomes": 0,
+                "linkagePoints": 0
+            },
+            {
+                "day": 3,
+                "animalMeals": 1,
+                "animalPoints": 5,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 1,
+                "humanPoints": 7,
+                "balancePoints": 12,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 1
+            },
+            {
+                "day": 4,
+                "animalMeals": 1,
+                "animalPoints": 5,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 1,
+                "humanPoints": 8,
+                "balancePoints": 13,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 1
+            },
+            {
+                "day": 5,
+                "animalMeals": 1,
+                "animalPoints": 5,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 1,
+                "humanPoints": 8,
+                "balancePoints": 13,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 1
+            },
+            {
+                "day": 6,
+                "animalMeals": 1,
+                "animalPoints": 5,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 1,
+                "humanPoints": 8,
+                "balancePoints": 13,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 1
+            },
+            {
+                "day": 7,
+                "animalMeals": 1,
+                "animalPoints": 5,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 1,
+                "humanPoints": 8,
+                "balancePoints": 13,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 1
+            },
+            {
+                "day": 8,
+                "animalMeals": 1,
+                "animalPoints": 5,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 1,
+                "humanPoints": 9,
+                "balancePoints": 14,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 1
+            },
+            {
+                "day": 9,
+                "animalMeals": 1,
+                "animalPoints": 5,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 1,
+                "humanPoints": 9,
+                "balancePoints": 14,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 1
+            },
+            {
+                "day": 10,
+                "animalMeals": 1,
+                "animalPoints": 5,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 1,
+                "humanPoints": 9,
+                "balancePoints": 14,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 1
+            },
+            {
+                "day": 11,
+                "animalMeals": 1,
+                "animalPoints": 5,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 1,
+                "humanPoints": 9,
+                "balancePoints": 14,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 1
+            },
+            {
+                "day": 12,
+                "animalMeals": 1,
+                "animalPoints": 5,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 1,
+                "humanPoints": 9,
+                "balancePoints": 14,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 1
+            },
+            {
+                "day": 13,
+                "animalMeals": 1,
+                "animalPoints": 5,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 1,
+                "humanPoints": 9,
+                "balancePoints": 14,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 1
+            },
+            {
+                "day": 14,
+                "animalMeals": 1,
+                "animalPoints": 5,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 2,
+                "humanPoints": 14,
+                "balancePoints": 19,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 1
+            },
+            {
+                "day": 15,
+                "animalMeals": 1,
+                "animalPoints": 5,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 2,
+                "humanPoints": 14,
+                "balancePoints": 19,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 1
+            },
+            {
+                "day": 16,
+                "animalMeals": 1,
+                "animalPoints": 5,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 2,
+                "humanPoints": 14,
+                "balancePoints": 19,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 1
+            },
+            {
+                "day": 17,
+                "animalMeals": 1,
+                "animalPoints": 5,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 2,
+                "humanPoints": 14,
+                "balancePoints": 19,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 1
+            },
+            {
+                "day": 18,
+                "animalMeals": 1,
+                "animalPoints": 5,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 2,
+                "humanPoints": 16,
+                "balancePoints": 21,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 1
+            },
+            {
+                "day": 19,
+                "animalMeals": 1,
+                "animalPoints": 5,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 3,
+                "humanPoints": 20,
+                "balancePoints": 25,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 1
+            },
+            {
+                "day": 20,
+                "animalMeals": 1,
+                "animalPoints": 5,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 3,
+                "humanPoints": 21,
+                "balancePoints": 26,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 1
+            },
+            {
+                "day": 21,
+                "animalMeals": 0,
+                "animalPoints": 0,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 3,
+                "humanPoints": 20,
+                "balancePoints": 20,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 0,
+                "biodiversityHomes": 0,
+                "linkagePoints": 0
+            },
+            {
+                "day": 22,
+                "animalMeals": 1,
+                "animalPoints": 5,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 3,
+                "humanPoints": 21,
+                "balancePoints": 26,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 1
+            },
+            {
+                "day": 23,
+                "animalMeals": 3,
+                "animalPoints": 13,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 3,
+                "humanPoints": 21,
+                "balancePoints": 34,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 1
+            },
+            {
+                "day": 24,
+                "animalMeals": 3,
+                "animalPoints": 13,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 4,
+                "humanPoints": 26,
+                "balancePoints": 39,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 1
+            },
+            {
+                "day": 25,
+                "animalMeals": 2,
+                "animalPoints": 10,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 4,
+                "humanPoints": 25,
+                "balancePoints": 35,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 0,
+                "biodiversityHomes": 0,
+                "linkagePoints": 0
+            },
+            {
+                "day": 26,
+                "animalMeals": 3,
+                "animalPoints": 13,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 4,
+                "humanPoints": 26,
+                "balancePoints": 39,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 1
+            },
+            {
+                "day": 27,
+                "animalMeals": 4,
+                "animalPoints": 18,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 4,
+                "humanPoints": 26,
+                "balancePoints": 44,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 1
+            },
+            {
+                "day": 28,
+                "animalMeals": 4,
+                "animalPoints": 18,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 4,
+                "humanPoints": 26,
+                "balancePoints": 44,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 1
+            },
+            {
+                "day": 29,
+                "animalMeals": 4,
+                "animalPoints": 18,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 4,
+                "humanPoints": 26,
+                "balancePoints": 44,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 0,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 1
+            },
+            {
+                "day": 30,
+                "animalMeals": 4,
+                "animalPoints": 18,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 5,
+                "humanPoints": 34,
+                "balancePoints": 52,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 1,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 4
+            },
+            {
+                "day": 31,
+                "animalMeals": 4,
+                "animalPoints": 18,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 5,
+                "humanPoints": 34,
+                "balancePoints": 52,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 1,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 4
+            },
+            {
+                "day": 32,
+                "animalMeals": 4,
+                "animalPoints": 18,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 6,
+                "humanPoints": 40,
+                "balancePoints": 58,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 1,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 4
+            },
+            {
+                "day": 33,
+                "animalMeals": 4,
+                "animalPoints": 18,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 6,
+                "humanPoints": 40,
+                "balancePoints": 58,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 1,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 4
+            },
+            {
+                "day": 34,
+                "animalMeals": 4,
+                "animalPoints": 18,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 6,
+                "humanPoints": 41,
+                "balancePoints": 59,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 1,
+                "sharedSupermarketMeals": 0,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 4
+            },
+            {
+                "day": 35,
+                "animalMeals": 6,
+                "animalPoints": 26,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 7,
+                "humanPoints": 48,
+                "balancePoints": 74,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 1,
+                "sharedSupermarketMeals": 1,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 6
+            },
+            {
+                "day": 36,
+                "animalMeals": 6,
+                "animalPoints": 26,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 7,
+                "humanPoints": 48,
+                "balancePoints": 74,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 1,
+                "sharedSupermarketMeals": 1,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 6
+            },
+            {
+                "day": 37,
+                "animalMeals": 6,
+                "animalPoints": 26,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 7,
+                "humanPoints": 48,
+                "balancePoints": 74,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 1,
+                "sharedSupermarketMeals": 1,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 6
+            },
+            {
+                "day": 38,
+                "animalMeals": 6,
+                "animalPoints": 26,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 7,
+                "humanPoints": 47,
+                "balancePoints": 73,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 1,
+                "sharedSupermarketMeals": 1,
+                "sharedGreenMeals": 0,
+                "biodiversityHomes": 0,
+                "linkagePoints": 5
+            },
+            {
+                "day": 39,
+                "animalMeals": 6,
+                "animalPoints": 26,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 7,
+                "humanPoints": 49,
+                "balancePoints": 75,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 1,
+                "sharedSupermarketMeals": 1,
+                "sharedGreenMeals": 0,
+                "biodiversityHomes": 1,
+                "linkagePoints": 7
+            },
+            {
+                "day": 40,
+                "animalMeals": 6,
+                "animalPoints": 26,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 7,
+                "humanPoints": 50,
+                "balancePoints": 76,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 1,
+                "sharedSupermarketMeals": 1,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 1,
+                "linkagePoints": 8
+            },
+            {
+                "day": 41,
+                "animalMeals": 6,
+                "animalPoints": 26,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 7,
+                "humanPoints": 48,
+                "balancePoints": 74,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 1,
+                "sharedSupermarketMeals": 1,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 6
+            },
+            {
+                "day": 42,
+                "animalMeals": 6,
+                "animalPoints": 26,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 7,
+                "humanPoints": 48,
+                "balancePoints": 74,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 1,
+                "sharedSupermarketMeals": 1,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 6
+            },
+            {
+                "day": 43,
+                "animalMeals": 6,
+                "animalPoints": 26,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 7,
+                "humanPoints": 48,
+                "balancePoints": 74,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 1,
+                "sharedSupermarketMeals": 1,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 6
+            },
+            {
+                "day": 44,
+                "animalMeals": 6,
+                "animalPoints": 26,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 7,
+                "humanPoints": 48,
+                "balancePoints": 74,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 1,
+                "sharedSupermarketMeals": 1,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 6
+            },
+            {
+                "day": 45,
+                "animalMeals": 5,
+                "animalPoints": 23,
+                "trafficPenaltyPoints": 60,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 8,
+                "humanPoints": 53,
+                "balancePoints": 16,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 1,
+                "sharedSupermarketMeals": 1,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 6
+            },
+            {
+                "day": 46,
+                "animalMeals": 5,
+                "animalPoints": 23,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 8,
+                "humanPoints": 53,
+                "balancePoints": 76,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 1,
+                "sharedSupermarketMeals": 1,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 6
+            },
+            {
+                "day": 47,
+                "animalMeals": 5,
+                "animalPoints": 23,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 8,
+                "humanPoints": 53,
+                "balancePoints": 76,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 1,
+                "sharedSupermarketMeals": 1,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 6
+            },
+            {
+                "day": 48,
+                "animalMeals": 6,
+                "animalPoints": 26,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 8,
+                "humanPoints": 53,
+                "balancePoints": 79,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 1,
+                "sharedSupermarketMeals": 1,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 6
+            },
+            {
+                "day": 49,
+                "animalMeals": 6,
+                "animalPoints": 26,
+                "trafficPenaltyPoints": 0,
+                "trafficPenaltyRulesApplied": true,
+                "completedWorkCycles": 9,
+                "humanPoints": 58,
+                "balancePoints": 84,
+                "linkageRulesApplied": true,
+                "sharedSquareMeals": 1,
+                "sharedSupermarketMeals": 1,
+                "sharedGreenMeals": 1,
+                "biodiversityHomes": 0,
+                "linkagePoints": 6
+            }
+        ],
+        "scoringVersion": 13
+    },
+    "food": {
+        "lastSettledDay": 49,
+        "tiles": [
+            {
+                "tileId": "built-009",
+                "stock": 2
+            },
+            {
+                "tileId": "built-015",
+                "stock": 0
+            },
+            {
+                "tileId": "built-021",
+                "stock": 0
+            },
+            {
+                "tileId": "built-025",
+                "stock": 3
+            },
+            {
+                "tileId": "built-029",
+                "stock": 0
+            },
+            {
+                "tileId": "built-033",
+                "stock": 4
+            },
+            {
+                "tileId": "built-039",
+                "stock": 2
+            },
+            {
+                "tileId": "built-047",
+                "stock": 2
+            },
+            {
+                "tileId": "starter-oak",
+                "stock": 4
+            }
+        ]
+    },
+    "waste": {
+        "lastSettledDay": 49,
+        "tiles": [
+            {
+                "tileId": "built-002",
+                "backlog": 0
+            },
+            {
+                "tileId": "built-003",
+                "backlog": 0
+            },
+            {
+                "tileId": "built-007",
+                "backlog": 0
+            },
+            {
+                "tileId": "built-012",
+                "backlog": 0
+            },
+            {
+                "tileId": "built-013",
+                "backlog": 0
+            },
+            {
+                "tileId": "built-014",
+                "backlog": 0
+            },
+            {
+                "tileId": "built-019",
+                "backlog": 31
+            },
+            {
+                "tileId": "built-023",
+                "backlog": 0
+            },
+            {
+                "tileId": "built-027",
+                "backlog": 23
+            },
+            {
+                "tileId": "built-030",
+                "backlog": 0
+            },
+            {
+                "tileId": "built-031",
+                "backlog": 0
+            },
+            {
+                "tileId": "built-034",
+                "backlog": 0
+            },
+            {
+                "tileId": "built-035",
+                "backlog": 0
+            },
+            {
+                "tileId": "built-041",
+                "backlog": 9
+            },
+            {
+                "tileId": "built-044",
+                "backlog": 0
+            },
+            {
+                "tileId": "built-046",
+                "backlog": 0
+            },
+            {
+                "tileId": "built-048",
+                "backlog": 0
+            },
+            {
+                "tileId": "built-049",
+                "backlog": 0
+            }
+        ]
+    },
+    "residentDispatches": [],
+    "lastEcologyDay": {
+        "day": 49,
+        "squirrelAte": true,
+        "squirrelFoodTileId": "starter-oak",
+        "squirrelsPresent": 2,
+        "squirrelsFed": 2,
+        "squirrelFoodTileIds": [
+            "starter-oak",
+            "built-025"
+        ],
+        "squirrelMealHomeTileIds": [
+            "starter-oak",
+            "built-025"
+        ],
+        "pigeonMealHomeTileIds": [
+            "built-029",
+            "built-029",
+            "built-015",
+            "built-015"
+        ],
+        "pigeonsFed": 4,
+        "pigeonFoodTileId": "built-029",
+        "pigeonHabitatTileId": "built-029",
+        "pigeonsPresent": 4,
+        "pigeonFoodTileIds": [
+            "built-029",
+            "built-021"
+        ],
+        "pigeonMealTileIds": [
+            "built-029",
+            "built-029",
+            "built-021",
+            "built-021"
+        ],
+        "hedgehogPresent": false,
+        "hedgehogFed": false,
+        "hedgehogHomeTileIds": [],
+        "hedgehogMealHomeTileIds": [],
+        "hedgehogMealTileIds": [],
+        "hedgehogFoodTileId": "",
+        "hedgehogHabitatTileId": "",
+        "urbanMealTileIds": [],
+        "animalPoints": 26,
+        "scoredFoodTileIds": [
+            "starter-oak",
+            "built-007",
+            "built-021",
+            "built-025",
+            "built-026",
+            "built-029",
+            "built-033"
+        ],
+        "fedScoringSourceTileIds": [
+            "starter-oak",
+            "built-021",
+            "built-025",
+            "built-029"
+        ],
+        "predatedSpecies": 0,
+        "predationTileId": "",
+        "foxHuntRouteTileIds": [],
+        "trafficSpecies": 0,
+        "trafficStreetTileId": "",
+        "trafficWildlifeTileId": "",
+        "foodChanges": [
+            {
+                "tileId": "starter-oak",
+                "produced": 1,
+                "eaten": 1,
+                "remaining": 4
+            },
+            {
+                "tileId": "built-009",
+                "produced": 0,
+                "eaten": 0,
+                "remaining": 2
+            },
+            {
+                "tileId": "built-015",
+                "produced": 0,
+                "eaten": 0,
+                "remaining": 0
+            },
+            {
+                "tileId": "built-021",
+                "produced": 0,
+                "eaten": 2,
+                "remaining": 0
+            },
+            {
+                "tileId": "built-025",
+                "produced": 0,
+                "eaten": 1,
+                "remaining": 3
+            },
+            {
+                "tileId": "built-029",
+                "produced": 0,
+                "eaten": 2,
+                "remaining": 0
+            },
+            {
+                "tileId": "built-033",
+                "produced": 0,
+                "eaten": 0,
+                "remaining": 4
+            },
+            {
+                "tileId": "built-039",
+                "produced": 0,
+                "eaten": 0,
+                "remaining": 2
+            },
+            {
+                "tileId": "built-047",
+                "produced": 0,
+                "eaten": 0,
+                "remaining": 2
+            }
+        ]
+    },
+    "lastHumanDay": {
+        "day": 49,
+        "restaurantDemand": 7,
+        "restaurantServed": 6,
+        "restaurantRejectedForCapacity": 1,
+        "restaurantRejectedForWaste": 0,
+        "residents": [
+            {
+                "homeTileId": "built-013",
+                "workTileId": "built-018",
+                "mealTileId": "built-014",
+                "squareTileId": "built-010",
+                "greenVisitTileId": "",
+                "worked": true,
+                "ate": true,
+                "completedCycle": true,
+                "visitedSquare": true,
+                "workStreetTiles": 1,
+                "mealStreetTiles": 0,
+                "residencePreferenceMet": true,
+                "basePoints": 1,
+                "workplaceBonus": 2,
+                "mealBonus": 1,
+                "greenNeighbourBonus": 0,
+                "shortStreetBonus": 2,
+                "homeBonus": 2,
+                "routeBonus": 0,
+                "squareBonus": 1,
+                "linkageBonus": 0,
+                "linkageKind": 0,
+                "linkageSourceTileId": "",
+                "biodiversityBonus": 0,
+                "biodiversityHabitatTileIds": [],
+                "satisfactionPoints": 7,
+                "routeTileIds": [
+                    "built-013",
+                    "built-017",
+                    "built-018",
+                    "built-017",
+                    "built-013",
+                    "built-014",
+                    "built-013",
+                    "built-010",
+                    "built-013"
+                ]
+            },
+            {
+                "homeTileId": "built-019",
+                "workTileId": "built-012",
+                "mealTileId": "built-012",
+                "squareTileId": "built-020",
+                "greenVisitTileId": "built-009",
+                "worked": true,
+                "ate": true,
+                "completedCycle": true,
+                "visitedSquare": true,
+                "workStreetTiles": 0,
+                "mealStreetTiles": 0,
+                "residencePreferenceMet": true,
+                "basePoints": 1,
+                "workplaceBonus": 0,
+                "mealBonus": 0,
+                "greenNeighbourBonus": 2,
+                "shortStreetBonus": 0,
+                "homeBonus": 2,
+                "routeBonus": 1,
+                "squareBonus": 1,
+                "linkageBonus": 0,
+                "linkageKind": 0,
+                "linkageSourceTileId": "",
+                "biodiversityBonus": 0,
+                "biodiversityHabitatTileIds": [],
+                "satisfactionPoints": 5,
+                "routeTileIds": [
+                    "built-019",
+                    "built-012",
+                    "built-019",
+                    "built-020",
+                    "built-019"
+                ]
+            },
+            {
+                "homeTileId": "built-023",
+                "workTileId": "built-003",
+                "mealTileId": "built-003",
+                "squareTileId": "",
+                "greenVisitTileId": "",
+                "worked": true,
+                "ate": true,
+                "completedCycle": true,
+                "visitedSquare": false,
+                "workStreetTiles": 2,
+                "mealStreetTiles": 2,
+                "residencePreferenceMet": true,
+                "basePoints": 1,
+                "workplaceBonus": 1,
+                "mealBonus": 1,
+                "greenNeighbourBonus": 0,
+                "shortStreetBonus": 2,
+                "homeBonus": 2,
+                "routeBonus": 0,
+                "squareBonus": 0,
+                "linkageBonus": 0,
+                "linkageKind": 0,
+                "linkageSourceTileId": "",
+                "biodiversityBonus": 0,
+                "biodiversityHabitatTileIds": [],
+                "satisfactionPoints": 5,
+                "routeTileIds": [
+                    "built-023",
+                    "built-024",
+                    "built-011",
+                    "built-003",
+                    "built-011",
+                    "built-024",
+                    "built-023"
+                ]
+            },
+            {
+                "homeTileId": "built-027",
+                "workTileId": "built-030",
+                "mealTileId": "built-030",
+                "squareTileId": "built-026",
+                "greenVisitTileId": "built-025",
+                "worked": true,
+                "ate": true,
+                "completedCycle": true,
+                "visitedSquare": true,
+                "workStreetTiles": 0,
+                "mealStreetTiles": 0,
+                "residencePreferenceMet": true,
+                "basePoints": 1,
+                "workplaceBonus": 0,
+                "mealBonus": 0,
+                "greenNeighbourBonus": 2,
+                "shortStreetBonus": 0,
+                "homeBonus": 2,
+                "routeBonus": 1,
+                "squareBonus": 1,
+                "linkageBonus": 3,
+                "linkageKind": 1,
+                "linkageSourceTileId": "built-026",
+                "biodiversityBonus": 0,
+                "biodiversityHabitatTileIds": [],
+                "satisfactionPoints": 8,
+                "routeTileIds": [
+                    "built-027",
+                    "built-030",
+                    "built-027",
+                    "built-028",
+                    "built-026",
+                    "built-028",
+                    "built-027"
+                ]
+            },
+            {
+                "homeTileId": "built-031",
+                "workTileId": "built-032",
+                "mealTileId": "built-034",
+                "squareTileId": "",
+                "greenVisitTileId": "built-029",
+                "worked": true,
+                "ate": true,
+                "completedCycle": true,
+                "visitedSquare": false,
+                "workStreetTiles": 0,
+                "mealStreetTiles": 0,
+                "residencePreferenceMet": true,
+                "basePoints": 1,
+                "workplaceBonus": 2,
+                "mealBonus": 1,
+                "greenNeighbourBonus": 2,
+                "shortStreetBonus": 0,
+                "homeBonus": 2,
+                "routeBonus": 1,
+                "squareBonus": 0,
+                "linkageBonus": 1,
+                "linkageKind": 3,
+                "linkageSourceTileId": "built-029",
+                "biodiversityBonus": 0,
+                "biodiversityHabitatTileIds": [],
+                "satisfactionPoints": 8,
+                "routeTileIds": [
+                    "built-031",
+                    "built-032",
+                    "built-031",
+                    "built-034",
+                    "built-031"
+                ]
+            },
+            {
+                "homeTileId": "built-035",
+                "workTileId": "built-004",
+                "mealTileId": "built-003",
+                "squareTileId": "",
+                "greenVisitTileId": "",
+                "worked": true,
+                "ate": true,
+                "completedCycle": true,
+                "visitedSquare": false,
+                "workStreetTiles": 0,
+                "mealStreetTiles": 0,
+                "residencePreferenceMet": true,
+                "basePoints": 1,
+                "workplaceBonus": 2,
+                "mealBonus": 1,
+                "greenNeighbourBonus": 0,
+                "shortStreetBonus": 0,
+                "homeBonus": 0,
+                "routeBonus": 1,
+                "squareBonus": 0,
+                "linkageBonus": 0,
+                "linkageKind": 0,
+                "linkageSourceTileId": "",
+                "biodiversityBonus": 0,
+                "biodiversityHabitatTileIds": [],
+                "satisfactionPoints": 5,
+                "routeTileIds": [
+                    "built-035",
+                    "built-004",
+                    "built-035",
+                    "built-003",
+                    "built-035"
+                ]
+            },
+            {
+                "homeTileId": "built-041",
+                "workTileId": "built-038",
+                "mealTileId": "",
+                "squareTileId": "",
+                "greenVisitTileId": "built-033",
+                "worked": true,
+                "ate": false,
+                "completedCycle": false,
+                "visitedSquare": false,
+                "workStreetTiles": 0,
+                "mealStreetTiles": 0,
+                "residencePreferenceMet": false,
+                "basePoints": 0,
+                "workplaceBonus": 0,
+                "mealBonus": 0,
+                "greenNeighbourBonus": 0,
+                "shortStreetBonus": 0,
+                "homeBonus": 0,
+                "routeBonus": 0,
+                "squareBonus": 0,
+                "linkageBonus": 0,
+                "linkageKind": 0,
+                "linkageSourceTileId": "",
+                "biodiversityBonus": 0,
+                "biodiversityHabitatTileIds": [],
+                "satisfactionPoints": 0,
+                "routeTileIds": [
+                    "built-041",
+                    "built-038",
+                    "built-041"
+                ]
+            },
+            {
+                "homeTileId": "built-044",
+                "workTileId": "built-034",
+                "mealTileId": "built-034",
+                "squareTileId": "",
+                "greenVisitTileId": "",
+                "worked": true,
+                "ate": true,
+                "completedCycle": true,
+                "visitedSquare": false,
+                "workStreetTiles": 1,
+                "mealStreetTiles": 1,
+                "residencePreferenceMet": true,
+                "basePoints": 1,
+                "workplaceBonus": 1,
+                "mealBonus": 1,
+                "greenNeighbourBonus": 0,
+                "shortStreetBonus": 2,
+                "homeBonus": 2,
+                "routeBonus": 0,
+                "squareBonus": 0,
+                "linkageBonus": 0,
+                "linkageKind": 0,
+                "linkageSourceTileId": "",
+                "biodiversityBonus": 0,
+                "biodiversityHabitatTileIds": [],
+                "satisfactionPoints": 5,
+                "routeTileIds": [
+                    "built-044",
+                    "built-045",
+                    "built-034",
+                    "built-045",
+                    "built-044"
+                ]
+            },
+            {
+                "homeTileId": "built-048",
+                "workTileId": "built-038",
+                "mealTileId": "built-049",
+                "squareTileId": "",
+                "greenVisitTileId": "",
+                "worked": true,
+                "ate": true,
+                "completedCycle": true,
+                "visitedSquare": false,
+                "workStreetTiles": 0,
+                "mealStreetTiles": 0,
+                "residencePreferenceMet": true,
+                "basePoints": 1,
+                "workplaceBonus": 2,
+                "mealBonus": 1,
+                "greenNeighbourBonus": 0,
+                "shortStreetBonus": 0,
+                "homeBonus": 0,
+                "routeBonus": 1,
+                "squareBonus": 0,
+                "linkageBonus": 0,
+                "linkageKind": 0,
+                "linkageSourceTileId": "",
+                "biodiversityBonus": 0,
+                "biodiversityHabitatTileIds": [],
+                "satisfactionPoints": 5,
+                "routeTileIds": [
+                    "built-048",
+                    "built-038",
+                    "built-048",
+                    "built-049",
+                    "built-048"
+                ]
+            },
+            {
+                "homeTileId": "built-002",
+                "workTileId": "built-004",
+                "mealTileId": "built-007",
+                "squareTileId": "built-008",
+                "greenVisitTileId": "starter-oak",
+                "worked": true,
+                "ate": true,
+                "completedCycle": true,
+                "visitedSquare": true,
+                "workStreetTiles": 0,
+                "mealStreetTiles": 1,
+                "residencePreferenceMet": true,
+                "basePoints": 1,
+                "workplaceBonus": 2,
+                "mealBonus": 0,
+                "greenNeighbourBonus": 2,
+                "shortStreetBonus": 2,
+                "homeBonus": 4,
+                "routeBonus": 0,
+                "squareBonus": 1,
+                "linkageBonus": 2,
+                "linkageKind": 2,
+                "linkageSourceTileId": "built-007",
+                "biodiversityBonus": 0,
+                "biodiversityHabitatTileIds": [],
+                "satisfactionPoints": 10,
+                "routeTileIds": [
+                    "built-002",
+                    "built-004",
+                    "built-002",
+                    "built-005",
+                    "built-007",
+                    "built-005",
+                    "built-002",
+                    "built-005",
+                    "built-008",
+                    "built-005",
+                    "built-002"
+                ]
+            }
+        ]
+    },
+    "lastWasteDay": {
+        "day": 49,
+        "changes": [
+            {
+                "tileId": "built-002",
+                "cleared": 1,
+                "produced": 1,
+                "foraged": 0,
+                "remaining": 0
+            },
+            {
+                "tileId": "built-003",
+                "cleared": 2,
+                "produced": 2,
+                "foraged": 0,
+                "remaining": 0
+            },
+            {
+                "tileId": "built-007",
+                "cleared": 1,
+                "produced": 1,
+                "foraged": 0,
+                "remaining": 0
+            },
+            {
+                "tileId": "built-012",
+                "cleared": 1,
+                "produced": 1,
+                "foraged": 0,
+                "remaining": 0
+            },
+            {
+                "tileId": "built-013",
+                "cleared": 1,
+                "produced": 1,
+                "foraged": 0,
+                "remaining": 0
+            },
+            {
+                "tileId": "built-014",
+                "cleared": 1,
+                "produced": 1,
+                "foraged": 0,
+                "remaining": 0
+            },
+            {
+                "tileId": "built-019",
+                "cleared": 0,
+                "produced": 1,
+                "foraged": 0,
+                "remaining": 31
+            },
+            {
+                "tileId": "built-023",
+                "cleared": 1,
+                "produced": 1,
+                "foraged": 0,
+                "remaining": 0
+            },
+            {
+                "tileId": "built-027",
+                "cleared": 0,
+                "produced": 1,
+                "foraged": 0,
+                "remaining": 23
+            },
+            {
+                "tileId": "built-030",
+                "cleared": 1,
+                "produced": 1,
+                "foraged": 0,
+                "remaining": 0
+            },
+            {
+                "tileId": "built-031",
+                "cleared": 1,
+                "produced": 1,
+                "foraged": 0,
+                "remaining": 0
+            },
+            {
+                "tileId": "built-034",
+                "cleared": 2,
+                "produced": 2,
+                "foraged": 0,
+                "remaining": 0
+            },
+            {
+                "tileId": "built-035",
+                "cleared": 1,
+                "produced": 1,
+                "foraged": 0,
+                "remaining": 0
+            },
+            {
+                "tileId": "built-041",
+                "cleared": 0,
+                "produced": 1,
+                "foraged": 0,
+                "remaining": 9
+            },
+            {
+                "tileId": "built-044",
+                "cleared": 1,
+                "produced": 1,
+                "foraged": 0,
+                "remaining": 0
+            },
+            {
+                "tileId": "built-046",
+                "cleared": 0,
+                "produced": 0,
+                "foraged": 0,
+                "remaining": 0
+            },
+            {
+                "tileId": "built-048",
+                "cleared": 1,
+                "produced": 1,
+                "foraged": 0,
+                "remaining": 0
+            },
+            {
+                "tileId": "built-049",
+                "cleared": 1,
+                "produced": 1,
+                "foraged": 0,
+                "remaining": 0
+            }
+        ]
+    },
+    "lastForecast": {
+        "day": 49,
+        "animalMeals": 6,
+        "completedWorkCycles": 9,
+        "humanPoints": 58,
+        "wasteCleared": 16,
+        "blockedHomeTileIds": [],
+        "blockedFoodTileIds": []
+    },
+    "currentDay": 49,
+    "finished": true,
+    "pigeonTileId": "built-029",
+    "pigeonArrivalDay": 23,
+    "pigeonMeadowInspected": false,
+    "firstResidentMealDay": 3
+}

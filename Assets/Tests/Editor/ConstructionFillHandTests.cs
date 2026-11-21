@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
@@ -384,8 +385,18 @@ namespace UrbanWildlifeRooms.Tests.Editor
                                 ConstructionRunModel.DigitalFillCardSupply(kind)));
                 }
                 Assert.That(run.BuiltCount, Is.EqualTo(49));
-                Assert.That(ConstructionRunModel.TryRestore(run.Export(),
-                    out var completed), Is.True,
+                var exported = run.Export();
+                var loadable = ConstructionRunModel.TryRestore(exported, out var completed);
+                if (!loadable)
+                {
+                    var debugPath = Environment.GetEnvironmentVariable("SYMBIOSIS_SAVE_DIAGNOSTIC_PATH");
+                    if (!string.IsNullOrEmpty(debugPath))
+                        File.WriteAllText(debugPath, UnityEngine.JsonUtility.ToJson(exported, true));
+                    exported.awardRulesVersion = 0;
+                    TestContext.WriteLine("Same save without award metadata loads: " +
+                        ConstructionRunModel.TryRestore(exported, out _));
+                }
+                Assert.That(loadable, Is.True,
                     $"Seed {seed}: a completed board must remain loadable.");
                 Assert.That(completed.OverallScore, Is.EqualTo(run.OverallScore));
             }

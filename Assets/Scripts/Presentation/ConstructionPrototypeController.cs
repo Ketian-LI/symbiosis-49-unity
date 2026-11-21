@@ -1918,7 +1918,7 @@ namespace UrbanWildlifeRooms.Presentation
                     new Vector2(0f, -161f), new Vector2(186f, 34f));
                 var dispatchLabel = openDispatchButton.GetComponentInChildren<Text>();
                 dispatchLabel.rectTransform.sizeDelta = new Vector2(180f, 32f);
-                dispatchLabel.fontSize = 13;
+                dispatchLabel.fontSize = 16;
             }
             // Focus the task copy below the heading row. The Skip tips button
             // shares that row and must remain outside the yellow tour frame.
@@ -2458,7 +2458,7 @@ namespace UrbanWildlifeRooms.Presentation
             var placeholder = TextAt("Nickname placeholder",
                 inputBackground.transform, Vector2.zero, new Vector2(219, 30),
                 L("Leaderboard name (1–16)", "排行名字（1–16字）"), 15, false,
-                new Color(Ink.r, Ink.g, Ink.b, 0.56f), TextAnchor.MiddleLeft);
+                new Color(Ink.r, Ink.g, Ink.b, 0.76f), TextAnchor.MiddleLeft);
             placeholder.raycastTarget = false;
             resultNicknameInput.textComponent = nicknameText;
             resultNicknameInput.placeholder = placeholder;
@@ -2611,7 +2611,7 @@ namespace UrbanWildlifeRooms.Presentation
             var namePlaceholder = TextAt("My ranking name placeholder",
                 nameBackground.transform, Vector2.zero,
                 new Vector2(262, 30), L("1–16 characters", "1–16 个字"),
-                14, false, new Color(Ink.r, Ink.g, Ink.b, 0.56f),
+                14, false, new Color(Ink.r, Ink.g, Ink.b, 0.76f),
                 TextAnchor.MiddleLeft);
             namePlaceholder.raycastTarget = false;
             localRankingsNamePlaceholder = namePlaceholder;
@@ -5350,14 +5350,10 @@ namespace UrbanWildlifeRooms.Presentation
             var bounds = tooltipCanvas.rect;
             var maxBodyHeight = Mathf.Min(620f,
                 Mathf.Max(140f, bounds.height - 132f));
-            tooltipBody.fontSize = 15;
+            tooltipBody.fontSize = 18;
             tooltipBody.rectTransform.sizeDelta =
                 new Vector2(TooltipTextWidth, maxBodyHeight);
-            // TMP's SDF glyph metrics can wrap one line earlier than the
-            // legacy Text used to measure this panel. Leave line-height room
-            // instead of clipping the last line of a lesson on hover.
-            if (tooltipBody.preferredHeight > maxBodyHeight - 28f)
-                tooltipBody.fontSize = 14;
+            // Leave space for SDF line metrics without shrinking the body.
             var bodyHeight = Mathf.Clamp(
                 Mathf.Ceil(tooltipBody.preferredHeight) + 28f,
                 20f, maxBodyHeight);
@@ -9647,7 +9643,21 @@ namespace UrbanWildlifeRooms.Presentation
             textWeights.Add(label, bold);
             label.font = Chinese ? chineseFont : bold ? boldFont : regularFont;
             label.fontStyle = Chinese && bold ? FontStyle.Bold : FontStyle.Normal;
-            label.fontSize = fontSize;
+            // Reading roles use a consistent floor; tiny map markers keep their own size.
+            var readingMinimum = name switch
+            {
+                "Story preview" or "Room function" or "Route status" or
+                "Day review text" or "Placement guide" or "Selected hand tagline" => 18,
+                "Hand instruction" or "Goals completed" or "Goal state" or
+                "Manual subtitle" or "Leaderboard status" or "Network leaderboard status" or
+                "Local rankings subtitle" or "Local rankings hint" => 16,
+                "Nickname value" or "Local nickname value" => 18,
+                "Draw pile title" => 22,
+                "Remaining cards on draw pile" => 20,
+                _ => 0
+            };
+            label.fontSize = Mathf.Max(fontSize, readingMinimum);
+            label.lineSpacing = 1.12f;
             label.color = color;
             label.alignment = alignment;
             label.horizontalOverflow = HorizontalWrapMode.Wrap;
