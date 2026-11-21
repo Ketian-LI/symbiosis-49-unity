@@ -57,6 +57,12 @@ flowchart LR
 | Narrative derived from observations | [ConstructionNeighborhoodStories.cs](../Assets/Scripts/Presentation/ConstructionNeighborhoodStories.cs) |
 | Build entry points | [UrbanWildlifeBuildPipeline.cs](../Assets/Scripts/Editor/UrbanWildlifeBuildPipeline.cs) |
 
+## Contributor inspection
+
+[ConstructionScoreTrace.cs](../Assets/Scripts/Presentation/ConstructionScoreTrace.cs) projects the last settled day into room and actor references.
+The controller partial handles review and keyboard input; the world-view partial resolves existing actors.
+See [controls](CONTROLS.md) for player-facing behaviour and restrictions.
+
 ## Verification
 
 Use Unity Test Runner for EditMode and PlayMode. The [evaluation index](EVALUATION.md) identifies the selected exported batches;

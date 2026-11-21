@@ -45,3 +45,15 @@ The [skill-guided review](../Docs/SKILL_GUIDED_UI_2026-11-21.md) records 90/90 s
 PlayMode checks, including real SDF truncation and persistent penalty text. It also reports 72 synthetic Fill runs,
 split into 36 calibration samples and 36 held-out checks using unchanged diagnostic policies. These are technical
 evidence, not player findings. They overlap prior regression exports and are not a new cumulative unique-test count.
+
+## Score-index source revision
+
+| Batch | Passed / total | Scope |
+| --- | --- | --- |
+| [Contributor model](evidence/score-index-editmode.xml) | 16/16 | Actual meals/routines, pairing deductions, restore consistency, absent contribution and nearby score/story regressions |
+| [Index and interface](evidence/score-index-playmode.xml) | 21/21 | Index navigation, input and modal isolation, visible actor brackets, Fill score phases, Endless relocation and existing hand/goal/result/localisation checks |
+
+The [test source](../Assets/Tests/PlayMode/ConstructionScoreIndexPresentationTests.cs) checks visible actor resolution,
+room targets, unchanged saved state and topmost pointer targets. The [capture](images/score-index-zh.png) is a Unity-rendered
+fixture. The new batches overlap earlier reports and do not add a new unique-test total. The 72-run score calibration remains
+the separate [skill-guided diagnostic record](../Docs/SKILL_GUIDED_UI_2026-11-21.md); this read-only interface revision changes no scoring formula.

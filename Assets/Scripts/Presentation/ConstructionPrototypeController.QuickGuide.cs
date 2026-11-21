@@ -207,6 +207,9 @@ namespace UrbanWildlifeRooms.Presentation
             ManualEntry(page, zh, "Inspect and pause",
                 "Hover over a built plot for its status. Select a home to set work and meals. Esc opens the pause menu.",
                 "查看与暂停", "悬停已建格可看状态。点击住宅可安排工作与用餐。按 Esc 打开暂停菜单。");
+            ManualEntry(page, zh, "Score index shortcuts",
+                "H opens the last settled day's score index. Tab moves forward; Shift+Tab moves back. F centres an indexed plot in Endless. Esc closes the index. Coloured brackets identify the contributing rooms and visible actors during settlement and review.",
+                "得分索引快捷键", "H 打开最近一次结算的得分索引。Tab 下一项，Shift+Tab 上一项；无尽模式下按 F 居中定位。Esc 关闭索引。结算和查看索引时，彩色边框会标出相关房间与仍在场的居民、动物。");
 
             ManualSection(page, L("ROOMS AND UPGRADES", "房间与升级"));
             ManualEntry(page, zh, "Shared edges and nearby plots",

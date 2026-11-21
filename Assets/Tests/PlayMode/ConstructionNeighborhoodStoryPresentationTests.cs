@@ -244,6 +244,8 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 Assert.That(projected.y, Is.EqualTo(centre.y).Within(2f));
                 var worldPitch = camera.WorldToScreenPoint(new Vector3(WorldScaleStandards.CellSizeMeters, 0f, 0f));
                 Assert.That(worldPitch.x - projected.x, Is.EqualTo(pixelPitch).Within(2f));
+                typeof(ConstructionPrototypeController).GetMethod("DrawScoreTrace", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .Invoke(root.GetComponent<ConstructionPrototypeController>(), null);
                 camera.Render();
                 RenderTexture.active = target;
                 shot.ReadPixels(new Rect(0, 0, 1920, 1080), 0, 0);

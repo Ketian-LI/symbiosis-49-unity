@@ -13,7 +13,7 @@ namespace UrbanWildlifeRooms.Presentation
     // Presentation only: the construction model remains the sole source of
     // placement, food and route outcomes. This reuses the original low-poly
     // furniture, sketch material and animated characters in the new mode.
-    public sealed class ConstructionWorldView : MonoBehaviour
+    public sealed partial class ConstructionWorldView : MonoBehaviour
     {
         // Unity's existing room kit uses 3.1 world units per cell. The 4.3 cm
         // physical tile dimension is not a Unity scene-space measurement.

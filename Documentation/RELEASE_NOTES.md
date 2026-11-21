@@ -1,3 +1,14 @@
+# Score-index source revision
+
+Inspect the last settled day's contributors with the score index. The interface highlights related rooms and visible residents
+or animals, supports keyboard navigation, and locates off-screen causes in Endless. The [controls reference](CONTROLS.md)
+describes the keys and restrictions. The [documentation review](DOCUMENTATION_REVIEW_2026-11-21.md) records the summary changes.
+
+This revision updates source and evidence. Earlier downloadable executables retain their original build contents.
+The [evaluation record](EVALUATION.md) links the selected checks and their scope.
+
+---
+
 # Source revision — 21 November 2026
 
 Latest branch: [codex/readability-balance-2026-11-21](https://github.com/Ketian-LI/symbiosis-49-unity/tree/codex/readability-balance-2026-11-21).

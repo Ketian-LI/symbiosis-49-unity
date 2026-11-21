@@ -4,6 +4,19 @@
 This is not a backfilled contemporaneous diary. Historical design proposals, working implementations and current features
 are separated. Detailed author dates and commit subjects are in [the CSV records](history/).
 
+## Process navigation
+
+| Stage | Design decision to inspect | Evidence owner |
+| --- | --- | --- |
+| Web feeding prototype | Indirect intervention and delayed consequences | [July-August account](#july-august-2026-feeding-as-a-spatial-intervention) |
+| Tangible Unity experiment | Physical tokens, city networks and input reliability | [September account](#september-2026-tangible-input-and-city-networks) |
+| Bounded room system | Repeatable layout, routes and observed activity | [Room-system account](#22-september-6-october-2026-a-bounded-room-system) |
+| Construction game | Successive placements, card presentation and neighbour upgrades | [Construction account](#october-2026-construction-and-consequence-feedback) |
+| Consequence feedback | Score separation, review, stories and participant navigation | Dated November entries below |
+
+The table routes to the historical accounts. Current behaviour belongs to the [project report](PROJECT_REPORT.md);
+test counts and research claims belong to [evaluation](EVALUATION.md).
+
 ## July-August 2026: feeding as a spatial intervention
 
 The browser prototype began with a Feed control, persistent state and periodic system changes. Successive commits explored
@@ -117,3 +130,15 @@ supporting a provisional decision to keep the current bands rather than raise sc
 
 See the [dated review](../Docs/SKILL_GUIDED_UI_2026-11-21.md) for pinned references, limitations, captures and test reports.
 This is an AI-assisted source revision, not a new participant study or executable release.
+
+## 21 November: score contributors and documentation structure
+
+The user asked to jump between score causes with keyboard shortcuts and highlight the rooms, residents or animals involved.
+The revision projects an index from settled placement, meal and routine records. Fill score phases show the corresponding
+contributors; manual review reopens the same causes. An Endless jump moves the viewing window to an off-screen contributor.
+Input fields and blocking overlays suspend the shortcuts. Missing historical actor identities retain known room causes.
+
+Two documentation skills informed the README, project-report and navigation edits. Current behaviour, historical decisions,
+controls and evidence have separate owners. Earlier dated entries and their limitations remain intact. Sources and review
+decisions are in the [documentation review](DOCUMENTATION_REVIEW_2026-11-21.md), with runtime scope in the
+[score-index record](../Docs/SCORE_INDEX_2026-11-21.md).

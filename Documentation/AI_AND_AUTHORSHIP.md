@@ -32,3 +32,9 @@ Public skill files for visual composition, Humanizer prose editing, balance math
 pinned commits and adapted to this Unity project. Codex revised C#, wrote regression checks and documentation, and
 inspected actual Unity renders. No skill repository script was executed or new raster art generated in this pass.
 Sources, licences, decisions and verification limits are in the [dated review](../Docs/SKILL_GUIDED_UI_2026-11-21.md).
+
+## Contributor-index and documentation review
+
+Codex assisted the score-trace projection, controller/world integration, input and visual checks, and English summary revision.
+Two further public documentation skills informed structure and claim review. Their pinned sources and concrete changes are
+recorded in [the documentation review](DOCUMENTATION_REVIEW_2026-11-21.md). No new raster artwork was generated in this pass.

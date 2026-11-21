@@ -1,7 +1,7 @@
 {
   "prepared_on": "2026-11-21",
-  "source_base_commit": "a1fe868ff766e5e3bfb5bc6e914834ec381ff567",
-  "note": "Current skill-guided source revision after the pre-revision checkpoint; no new executable build. Source roots only; this manifest excludes itself and prose/evidence documents.",
+  "source_base_commit": "be87d40ff81d07032a5a61e5d9b6a57a202e4291",
+  "note": "Read-only contributor-index source revision; source roots only, no new executable build.",
   "files": [
     {
       "path": "Assets/_Recovery/0 (1).unity",
@@ -4350,8 +4350,8 @@
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.cs",
-      "bytes": 591693,
-      "sha256": "1eb09cf0cb076d3ff9166868b605ea543803a3668c00ab50d4d874d2cbf4a6ab"
+      "bytes": 591967,
+      "sha256": "224e70018974eef37c8a54c69a4069508feb2f96fe3c1129b6dc741e247c8810"
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.cs.meta",
@@ -4360,8 +4360,8 @@
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.FillHand.cs",
-      "bytes": 80318,
-      "sha256": "992d64a0677a50bb7c72039fc2f0fe275edd7fcb0b17839bc55941e17cbebc04"
+      "bytes": 80423,
+      "sha256": "54ab236a8d14182f6d7d0fd94a01079bf9f75fa5c96e3ca9556c8364ed3fd2c6"
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.FillHand.cs.meta",
@@ -4420,8 +4420,8 @@
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.QuickGuide.cs",
-      "bytes": 37506,
-      "sha256": "de2a0bef51a96b089127301b287d34b3a5f3bfab7716ce46fe2ca0f1152cebf3"
+      "bytes": 38107,
+      "sha256": "4c717ffc76311fd06ab7cff177e020665194398baa668b0db8667acdf0c24ef1"
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.QuickGuide.cs.meta",
@@ -4459,6 +4459,16 @@
       "sha256": "0fb6e67381feafa55052522e88bd973631b3d2069323902a19e71ac41af68c81"
     },
     {
+      "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.ScoreTrace.cs",
+      "bytes": 13580,
+      "sha256": "030acc29b35597299861de717fe3fa5e6e13a856609e9b435a6c4113cbe0e5b7"
+    },
+    {
+      "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.ScoreTrace.cs.meta",
+      "bytes": 59,
+      "sha256": "2a89744d7ff8d2526dd1d9ca6c6f4559caf733f9df2aa1fd444760751127e174"
+    },
+    {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.SpecialTasks.cs",
       "bytes": 48892,
       "sha256": "b3e1112329bfa5a41a24293d609b882b4b6283eee4afd9bf272e9488174b1b4f"
@@ -4489,6 +4499,16 @@
       "sha256": "689d24c11bac0a0f61c671e9f004cf98de0af1cf20c462c6daa8b8e435cff418"
     },
     {
+      "path": "Assets/Scripts/Presentation/ConstructionScoreTrace.cs",
+      "bytes": 9448,
+      "sha256": "3e42f8af1b6e5f42e4c7ee2b9d121b63f6fe68a176b74b0cb077018910162038"
+    },
+    {
+      "path": "Assets/Scripts/Presentation/ConstructionScoreTrace.cs.meta",
+      "bytes": 59,
+      "sha256": "9717920b578060a43d794abb0009c146129f363ae5b654fa7e37e2abddf15fb7"
+    },
+    {
       "path": "Assets/Scripts/Presentation/ConstructionStreetVehicleVisual.cs",
       "bytes": 11185,
       "sha256": "7163570f21f16c8b0c5f2d3e2e9cac8358702a77516b9cf6bd37bbd62e2faa07"
@@ -4500,13 +4520,23 @@
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionWorldView.cs",
-      "bytes": 129537,
-      "sha256": "135d69c60bac567833bc4eef14a6912c27e5babe60077dc7eac5383787ee85d4"
+      "bytes": 129545,
+      "sha256": "b4876bf810ef4204f40cae2387ec78811ff371b25a39d7327091dc2cc9ccf014"
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionWorldView.cs.meta",
       "bytes": 62,
       "sha256": "1518b6452fb5ec8c29018994e74f730a36950c4a1c562caff2d56103454f7081"
+    },
+    {
+      "path": "Assets/Scripts/Presentation/ConstructionWorldView.ScoreTrace.cs",
+      "bytes": 1602,
+      "sha256": "b89232b0c275a8d00b14d0348647434c5301fcbb205e7b5a0f6db76935e2febf"
+    },
+    {
+      "path": "Assets/Scripts/Presentation/ConstructionWorldView.ScoreTrace.cs.meta",
+      "bytes": 59,
+      "sha256": "a8e9243e27dc2e29e7a6dd15eab1c60d74780e583960f7236ad641a629561624"
     },
     {
       "path": "Assets/Scripts/Presentation/DailySpatialDecision.cs",
@@ -5694,6 +5724,16 @@
       "sha256": "6a16bf085cdff74aebb92d1a6fe417bc8712b82bf069325dca9adfeb5a008305"
     },
     {
+      "path": "Assets/Tests/Editor/ConstructionScoreTraceTests.cs",
+      "bytes": 4774,
+      "sha256": "8602f3bb91ffa8ea75926ca28b76be835c17d08b715c21ca7cabb12cff8a5d33"
+    },
+    {
+      "path": "Assets/Tests/Editor/ConstructionScoreTraceTests.cs.meta",
+      "bytes": 59,
+      "sha256": "a5e15e6e1534105f71f1fce6163b0b0d986cdcb399cbe90c73dbaffbe704d552"
+    },
+    {
       "path": "Assets/Tests/Editor/ConstructionSpecialTaskTests.cs",
       "bytes": 30627,
       "sha256": "166d3ea8128711d146a78ff76a57003be579179f2803b8a6e4f9ae0d70bbe75b"
@@ -6505,8 +6545,8 @@
     },
     {
       "path": "Assets/Tests/PlayMode/ConstructionNeighborhoodStoryPresentationTests.cs",
-      "bytes": 18198,
-      "sha256": "0504b792b2d6ac221ff24f69fc61c193b9768b28166eb178a4aa99642f23be70"
+      "bytes": 18421,
+      "sha256": "485fe59203e3eaa2985d85e01bc0458a917c61869fda6143ee46cbd60551ba51"
     },
     {
       "path": "Assets/Tests/PlayMode/ConstructionNeighborhoodStoryPresentationTests.cs.meta",
@@ -6572,6 +6612,16 @@
       "path": "Assets/Tests/PlayMode/ConstructionSceneNavigationTests.cs.meta",
       "bytes": 251,
       "sha256": "2bfe628fd4b19e1896d1ca6b3d5185592f01030d3d0bebc3323154ff75943bca"
+    },
+    {
+      "path": "Assets/Tests/PlayMode/ConstructionScoreIndexPresentationTests.cs",
+      "bytes": 10190,
+      "sha256": "65936bd3e063e104ee8621e5452f960f3a9c1c8ad0111991697e274b23677352"
+    },
+    {
+      "path": "Assets/Tests/PlayMode/ConstructionScoreIndexPresentationTests.cs.meta",
+      "bytes": 59,
+      "sha256": "48e3b73921a49fc12405d51c7d5b87752f3ab8a49e2fdaf3424d16709398dece"
     },
     {
       "path": "Assets/Tests/PlayMode/ConstructionSquirrelForagingVisualTests.cs",

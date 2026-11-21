@@ -370,6 +370,7 @@ namespace UrbanWildlifeRooms.Presentation
             ClearFillScoreTags();
             scoreMotionGroup.alpha = 0f;
             scoreMotionAnimation = null;
+            EndScoreTracePhase();
         }
 
         private IEnumerator AnimateFillScoreGroup(
@@ -378,6 +379,7 @@ namespace UrbanWildlifeRooms.Presentation
             int toAnimal, int toResident, int toShared, int toBuild,
             string objectPrefix)
         {
+            if (steps.Count > 0) ShowScoreTracePhase(steps[0].Side);
             var tags = new List<(RectTransform rect, Vector2 source,
                 Vector2 target, bool travel)>();
             scoreMotionTag.gameObject.SetActive(false);

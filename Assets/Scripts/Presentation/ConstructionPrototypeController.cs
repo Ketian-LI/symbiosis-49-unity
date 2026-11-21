@@ -687,7 +687,8 @@ namespace UrbanWildlifeRooms.Presentation
         private void Update()
         {
             UpdateFillHandMotion();
-            if (Input.GetKeyDown(KeyCode.Escape)) TogglePauseMenu();
+            if (Input.GetKeyDown(KeyCode.Escape) && !HandleScoreIndexKey(KeyCode.Escape)) TogglePauseMenu();
+            UpdateScoreTrace();
             if (IsEndless && IsBoardCaseOpen && !PauseOpen && !QuickGuideOpen &&
                 !run.IsFinished &&
                 (EventSystem.current?.currentSelectedGameObject == null ||
@@ -2272,6 +2273,7 @@ namespace UrbanWildlifeRooms.Presentation
             BuildResidentDispatch(canvas.transform);
             BuildTutorialFocus(canvas.transform);
             BuildScoreMotion(canvas.transform);
+            BuildScoreTrace(canvas.transform);
             if (handMode)
             {
                 BuildRoomIssueIcons();
@@ -4777,6 +4779,7 @@ namespace UrbanWildlifeRooms.Presentation
             WriteScoreMotionTotals(animal, resident, shared);
             foreach (var step in steps)
             {
+                ShowScoreTracePhase(step.Side);
                 var card = step.Side == ScoreSide.Animal
                     ? animalMetricText.transform.parent.GetComponent<Image>()
                     : humanMetricText.transform.parent.GetComponent<Image>();
@@ -4834,6 +4837,7 @@ namespace UrbanWildlifeRooms.Presentation
             WriteScoreMotionTotals(settledAnimal, settledResident, settledShared);
             scoreMotionGroup.alpha = 0f;
             scoreMotionAnimation = null;
+            EndScoreTracePhase();
         }
 
         private Vector2 ScoreMotionSource(string tileId)
@@ -4899,6 +4903,7 @@ namespace UrbanWildlifeRooms.Presentation
 
         private void StopScoreMotion(bool restoreTotals = true)
         {
+            EndScoreTracePhase();
             ClearIdleCues();
             if (scoreMotionAnimation != null)
             {
@@ -7904,6 +7909,7 @@ namespace UrbanWildlifeRooms.Presentation
                     endlessRulesOverlay.transform.SetAsLastSibling();
             }
             RefreshResultReview();
+            RefreshScoreTrace();
         }
 
         private void RefreshFinalResult(ConstructionFinalResult result)

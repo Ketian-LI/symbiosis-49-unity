@@ -63,5 +63,21 @@
     "failed": 0,
     "file": "skill-polish-playmode.xml",
     "scope": "Selected regression batch; may overlap earlier exports."
+  },
+  {
+    "batch": "score-index-editmode",
+    "total": 16,
+    "passed": 16,
+    "failed": 0,
+    "file": "score-index-editmode.xml",
+    "scope": "Selected score-index and regression checks; overlaps earlier batches."
+  },
+  {
+    "batch": "score-index-playmode",
+    "total": 21,
+    "passed": 21,
+    "failed": 0,
+    "file": "score-index-playmode.xml",
+    "scope": "Selected score-index and regression checks; overlaps earlier batches."
   }
 ]

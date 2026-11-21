@@ -1,0 +1,20 @@
+[
+  {
+    "role": "technical-writing",
+    "repository": "Tekkiiiii/the-agency",
+    "commit": "36b8ed35080d8707bd17a21ad7dc45c66ef3d962",
+    "path": "skills/tech-writer/SKILL.md",
+    "blob": "35b0388d6e3f60ecb3c5d006d5668d436a66dbbb",
+    "url": "https://github.com/Tekkiiiii/the-agency/blob/36b8ed35080d8707bd17a21ad7dc45c66ef3d962/skills/tech-writer/SKILL.md",
+    "license": "MIT"
+  },
+  {
+    "role": "documentation-truth",
+    "repository": "riekelt/technical-writer",
+    "commit": "85e53729dd959a2795d593d6769068e342cf3486",
+    "path": "plugins/technical-writer/skills/technical-writing/SKILL.md",
+    "blob": "6c9129840daee8286eff2ac233a3a6da9eb8d7e7",
+    "url": "https://github.com/riekelt/technical-writer/blob/85e53729dd959a2795d593d6769068e342cf3486/plugins/technical-writer/skills/technical-writing/SKILL.md",
+    "license": "MIT"
+  }
+]
