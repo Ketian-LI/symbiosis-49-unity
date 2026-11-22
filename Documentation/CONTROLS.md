@@ -11,7 +11,9 @@ The keyboard and mouse controls below apply to the construction scenes in
 | Click a lit empty plot, then confirm | Commit the selected room | A legal preview and explicit confirmation are required |
 | Hover a built plot | Inspect status and causes | Construction board |
 | Click a built room | Pin its coverage, pairings and recorded score relationships; click it again to cancel | Construction scenes; warning and coverage can coexist |
-| Click a home | Inspect work and meal choices | Where resident dispatch is available |
+| Click a home | Inspect its automatically allocated work and meal route | No manual destination editing |
+| Hover a linked term | Read a short meaning | Manual, tutorials and explanatory copy |
+| Click a linked term | Open the manual at its marked definition | Actual entry position, not only the manual front page |
 | Click the draw pile | Inspect actual remaining / initial category counts | Fill; outside click, close or Esc dismisses it |
 | H or Score sources | Open or close the score-source index | After a recorded settlement |
 | Tab | Open the index or select the next entry | Wraps after the last entry |

@@ -87,3 +87,7 @@ approved UI revision are not implemented here; older opening-test limitations re
 ## Approved Fill interface verification
 
 The [revision record](../Docs/APPROVED_FILL_UI_2026-11-22.md) links 38/38 selected EditMode and 27/27 selected PlayMode checks. These cover stock conservation, legacy random-save compatibility, emphasis, bilingual native Fill UI, selection/coverage/warnings, modal isolation, restart/skip goals, three score batches and exact menu navigation. They overlap earlier batches and are not participant evidence or a cumulative unique-test count. The initial clipping and fixture failures were corrected before the passing exports. Other historical opening-test limitations above are retained.
+
+## Automatic route and term verification
+
+The [revision record](../Docs/AUTOMATIC_ROUTES_AND_TERMS_2026-11-22.md) links 72/72 selected EditMode and 31/31 selected PlayMode checks. They cover live automatic routing, constrained leftover capacity, historical dispatch migration, bilingual hover/click/anchor behaviour, modal ownership and previous controls. They overlap prior batches and are not cumulative unique tests or participant evidence. These final checks used an isolated source copy excluding unrelated in-progress changes. Earlier opening limitations remain above.

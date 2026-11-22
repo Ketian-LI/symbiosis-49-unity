@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -524,18 +524,10 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             Assert.That(total.preferredHeight,
                 Is.LessThanOrEqualTo(total.rectTransform.rect.height + 1f));
             Assert.That(controller.TryPlace(4, 3), Is.False,
-                "Selecting the occupied home should still expose resident choices.");
-            var dispatch = canvas.Find(
-                "Building choices/Story cue backing/Open resident dispatch")
-                .GetComponent<Button>();
-            Assert.That(dispatch.gameObject.activeInHierarchy, Is.True);
-            Assert.That(dispatch.GetComponentInChildren<Text>().text,
-                Is.EqualTo("Set work & meals"));
+                "Selecting an occupied home inspects its automatic route.");
+            Assert.That(canvas.Find("Building choices/Story cue backing/Open resident dispatch"),Is.Null);
+            Assert.That(canvas.Find("Resident dispatch"),Is.Null);
             Assert.That(routePanel.gameObject.activeInHierarchy, Is.False);
-            dispatch.onClick.Invoke();
-            Assert.That(canvas.Find("Resident dispatch").gameObject.activeInHierarchy,
-                Is.True, "The relocated button must still open resident choices.");
-            controller.CloseResidentDispatch();
             Assert.That(controller.TryPlace(4, 3), Is.False);
 
             Assert.That(controller.RequestPlacement(5, 3), Is.True);

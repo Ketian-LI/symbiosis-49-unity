@@ -42,3 +42,7 @@ recorded in [the documentation review](DOCUMENTATION_REVIEW_2026-11-21.md). No n
 ## Approved Fill implementation, 22 November
 
 Codex assisted native UI composition, stock inspection, selective guidance emphasis, compatibility checks and documentation. Two city/oak background adaptations were generated with the built-in image tool; the [exact prompts](../Docs/FILL_PAPER_ASSETS_2026-11-22.json) are recorded. The [feature record](../Docs/APPROVED_FILL_UI_2026-11-22.md) separates those assets from actual Unity fixture renders and from participant findings.
+
+## Automatic routes and glossary, 22 November
+
+Codex assisted the live automatic-routing change, leftover-capacity matching, terminology data, TMP pointer interaction, manual anchors, migration checks and English evidence record. No new raster art was generated. Native renders and optimization limits are documented in the [revision record](../Docs/AUTOMATIC_ROUTES_AND_TERMS_2026-11-22.md).

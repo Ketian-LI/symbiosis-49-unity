@@ -1891,19 +1891,7 @@ namespace UrbanWildlifeRooms.Presentation
             routeSuccessIcon.preserveAspect = true;
             routeSuccessIcon.raycastTarget = false;
             routeSuccessIcon.gameObject.SetActive(false);
-            openDispatchButton = ButtonAt("Open resident dispatch",
-                routePanel.transform, new Vector2(88, 25), new Vector2(78, 32),
-                "Dispatch →", 12, UsedGreen, Paper,
-                () => OpenResidentDispatch(), themed: false);
-            var dispatchOutline = openDispatchButton.gameObject.AddComponent<Outline>();
-            dispatchOutline.effectColor = Gold;
-            dispatchOutline.effectDistance = new Vector2(1f, -1f);
-            AttachHover(openDispatchButton.gameObject,
-                () => ConstructionIconCatalog.GetBuild(ConstructionCategory.Residence),
-                () => L("Resident dispatch", "居民调度"),
-                () => L("Choose work and meal places for this home. Change them freely without using a build.",
-                    "为这户选择上班与用餐地点；可随时调换，不占用建造次数。"),
-                TooltipLocation.LeftLeaf);
+
 
             // Keep the original painted sprite available for tests and later
             // popovers, but do not leave a tall permanent sidebar on screen.
@@ -1917,18 +1905,6 @@ namespace UrbanWildlifeRooms.Presentation
                 new Vector2(-CaseLeafCenter, 215),
                 new Vector2(350, 266), Color.clear);
             storyBacking.raycastTarget = false;
-            if (handMode)
-            {
-                // The hand game has no permanent settlement/route ledger.
-                // Keep manual resident choices reachable beside the scores.
-                openDispatchButton.transform.SetParent(storyBacking.transform,
-                    false);
-                SetRect(openDispatchButton.GetComponent<RectTransform>(),
-                    new Vector2(0f, -161f), new Vector2(186f, 34f));
-                var dispatchLabel = openDispatchButton.GetComponentInChildren<Text>();
-                dispatchLabel.rectTransform.sizeDelta = new Vector2(180f, 32f);
-                dispatchLabel.fontSize = 16;
-            }
             // Focus the task copy below the heading row. The Skip tips button
             // shares that row and must remain outside the yellow tour frame.
             openingTourTodayTarget = NewRect("Today tour target",
@@ -2278,7 +2254,7 @@ namespace UrbanWildlifeRooms.Presentation
             // The case hinges are added to the root Canvas during the opening
             // sequence. Keep this popover at that same level so it can sit
             // above the hardware when opened.
-            BuildResidentDispatch(canvas.transform);
+            // Work and meal routes are planned automatically; no dispatch editor.
             BuildTutorialFocus(canvas.transform);
             BuildScoreMotion(canvas.transform);
             BuildScoreTrace(canvas.transform);
@@ -6911,68 +6887,11 @@ namespace UrbanWildlifeRooms.Presentation
             Refresh();
         }
 
-        public void OpenResidentDispatch()
-        {
-            if (run == null || run.IsFinished || hasPendingPlacement ||
-                routeSubject != RouteSubject.Resident ||
-                string.IsNullOrEmpty(selectedHomeId) ||
-                !run.HasResident(selectedHomeId)) return;
-            buildPaletteOpen = false;
-            residentDispatchOpen = true;
-            HideTooltip();
-            SymbiosisAudioDirector.Play(SymbiosisSound.UiSelect);
-            Refresh();
-        }
-
-        public void CloseResidentDispatch()
-        {
-            if (!residentDispatchOpen) return;
-            residentDispatchOpen = false;
-            SymbiosisAudioDirector.Play(SymbiosisSound.UiCancel);
-            Refresh();
-        }
-
-        // This is a separate, unlimited operation. Each click applies to the
-        // current day's preview immediately; building remains available.
-        public bool CycleResidentDispatch(bool work, int direction)
-        {
-            if (!residentDispatchOpen || run == null || run.IsFinished ||
-                direction == 0 || string.IsNullOrEmpty(selectedHomeId) ||
-                !run.HasResident(selectedHomeId)) return false;
-            var preference = run.GetResidentDispatch(selectedHomeId);
-            var currentId = work ? preference?.workTileId : preference?.mealTileId;
-            var options = (work ? run.DispatchWorkOptions(selectedHomeId) :
-                    run.DispatchMealOptions(selectedHomeId))
-                .OrderBy(tile => tile.row).ThenBy(tile => tile.column)
-                .ThenBy(tile => tile.id, StringComparer.Ordinal).ToArray();
-            var choices = new List<string> { null };
-            choices.AddRange(options.Select(tile => tile.id));
-            if (choices.Count == 1) return false;
-            var index = choices.FindIndex(id => id == currentId);
-            if (index < 0) index = 0;
-            var next = (index + Math.Sign(direction) + choices.Count) % choices.Count;
-            var workId = work ? choices[next] : preference?.workTileId;
-            var mealId = work ? preference?.mealTileId : choices[next];
-            if (!run.TrySetResidentDispatch(selectedHomeId, workId, mealId))
-                return false;
-            Save();
-            SymbiosisAudioDirector.Play(SymbiosisSound.UiSelect);
-            Refresh();
-            return true;
-        }
-
-        public bool ClearResidentDispatch()
-        {
-            if (!residentDispatchOpen || run == null || run.IsFinished ||
-                string.IsNullOrEmpty(selectedHomeId) ||
-                !run.HasResident(selectedHomeId)) return false;
-            if (!run.TrySetResidentDispatch(selectedHomeId, null, null))
-                return false;
-            Save();
-            SymbiosisAudioDirector.Play(SymbiosisSound.UiSelect);
-            Refresh();
-            return true;
-        }
+        // Kept as inert compatibility entry points for older integrations.
+        public void OpenResidentDispatch() { }
+        public void CloseResidentDispatch() { }
+        public bool CycleResidentDispatch(bool work, int direction) => false;
+        public bool ClearResidentDispatch() => false;
 
         private void RefreshPaletteVisibility()
         {
@@ -8693,8 +8612,8 @@ namespace UrbanWildlifeRooms.Presentation
                     ? L("Click the central oak to inspect tomorrow's squirrel food route.",
                         "点击中央橡树，查看松鼠明日的食物路线。")
                     : hasHomes
-                    ? L("Click a home to inspect routes and dispatch its resident to work and meals.",
-                        "点击住宅查看路线，并安排居民的上班、用餐地点。")
+                    ? L("Click a home to inspect its automatically planned work and meal routes.",
+                        "点击住宅查看自动规划的上班、用餐路线。")
                     : L("Click a green tile with wildlife to preview its food or hunting route.",
                         "点击有动物的绿地，查看明日觅食或捕猎路线。");
                 routePanel.gameObject.SetActive(!run.UsesFillHand &&
@@ -9309,11 +9228,11 @@ namespace UrbanWildlifeRooms.Presentation
             var resident = current.LastHumanDay?.residents?.FirstOrDefault();
             if (current.CurrentDay != 5 || resident == null ||
                 !current.HasBalanceScore)
-                return L("Select a home, then Dispatch. Change work and meals any time.",
-                    "点住宅，再点“居民调度”；上班和用餐地点可随时换。");
+                return L("Work and meal destinations are planned automatically. Connect homes to enough jobs and seats.",
+                    "岗位和餐位会自动分配；让住宅接通足够的工作与用餐地点。");
             if (!resident.completedCycle)
-                return L("No full cycle yesterday. Select a home and use Dispatch to inspect work and meal routes.",
-                    "昨日未完成循环。点住宅用“居民调度”检查上班和用餐路线。");
+                return L("No commute completed yesterday. Inspect a home and connect reachable jobs and meal seats.",
+                    "昨日未完成通勤。点击住宅查看路线，检查岗位、餐位是否足够且连通。");
 
             var en = new List<string>();
             var zh = new List<string>();
@@ -9330,9 +9249,9 @@ namespace UrbanWildlifeRooms.Presentation
             Add(resident.homeBonus, "home", "住宅");
             Add(resident.squareBonus, "square", "广场");
             return L($"Yesterday +{resident.satisfactionPoints}: " +
-                    $"{string.Join(" + ", en)}. Home → Dispatch.",
+                    $"{string.Join(" + ", en)}. Routes are planned automatically.",
                 $"昨日居民+{resident.satisfactionPoints}：" +
-                    $"{string.Join("＋", zh)}。点住宅“居民调度”。");
+                    $"{string.Join("＋", zh)}。系统自动安排通勤。");
         }
 
         private string BoardGameInstruction()
@@ -9434,8 +9353,8 @@ namespace UrbanWildlifeRooms.Presentation
                     L("1 job and 2 meal seats/day. After a full cycle: restaurant work +1, meal +1.",
                         "每天1岗位、2餐位，可上班也可吃饭。完成循环后，餐厅上班＋1分、用餐再＋1分。"),
                 ConstructionTutorialChapter.Workshop =>
-                    L("2 jobs/day. Work, eat, return: workshop work +2 points. Assign it at home.",
-                        "每天2岗位。居民在这里上班、吃饭并回家后，岗位额外＋2分；可在住宅的“居民调度”中选择。"),
+                    L("2 jobs/day. Work, eat, return: workshop work +2 points. Routes are planned automatically.",
+                        "每天2岗位。居民在这里上班、吃饭并回家后，岗位额外＋2分；系统自动分配可达岗位。"),
                 ConstructionTutorialChapter.Waste =>
                     current.UsesUncappedWaste
                         ? L("Clears all nearby or street-connected waste, including new waste today. Remaining piles show a waste issue icon but do not shut rooms down.",
@@ -9515,8 +9434,8 @@ namespace UrbanWildlifeRooms.Presentation
                 L("PLACE: Beside a home or connected street, sharing an edge. Corner contact does not connect.\nPURPOSE: One job and two meal seats each day, so residents can work or eat here. The same worker may use a free seat. After a full cycle, the restaurant job and meal each add +1.",
                     "放置：餐厅贴住宅或已连通街道的上下左右一侧；斜角不连通。\n解决：每天1岗位、2餐位，居民可以在此上班或吃饭。同一个人也能在此上班和用餐。完成完整循环后，餐厅工作和用餐各额外＋1分。"),
             ConstructionTutorialChapter.Workshop =>
-                L("PLACE: Beside a home or connected street, sharing an edge. Corner contact does not connect.\nPURPOSE: Two more jobs each day. When an assigned resident works, eats and returns home, a workshop job adds +2. Choose the job from the home in Resident dispatch.",
-                    "放置：工作坊贴住宅或已连通街道的上下左右一侧；斜角不连通。\n解决：每天增加2个岗位。居民完成上班、吃饭、回家后，工作坊岗位额外＋2分；可点住宅打开“居民调度”安排。") +
+                L("PLACE: Beside a home or connected street, sharing an edge. Corner contact does not connect.\nPURPOSE: Two more jobs each day. When an assigned resident works, eats and returns home, a workshop job adds +2. Reachable jobs and meals are allocated automatically.",
+                    "放置：工作坊贴住宅或已连通街道的上下左右一侧；斜角不连通。\n解决：每天增加2个岗位。居民完成上班、吃饭、回家后，工作坊岗位额外＋2分；系统自动安排通勤路线。") +
                 "\n" + FirstWorkshopScoreLesson(run),
             ConstructionTutorialChapter.Street =>
                 L("PLACE: Extend each street across a shared edge from a home or connected street. Diagonal contact and empty gaps do not connect.\nPURPOSE: Continuous streets bring distant jobs and meals within reach and let waste rooms collect from distant sources. Streets never skip a plot. Animals can cross, but roadside animals face traffic risk.",
@@ -9679,6 +9598,8 @@ namespace UrbanWildlifeRooms.Presentation
         {
             var rect = NewRect(name, parent, position, size);
             var label = rect.gameObject.AddComponent<Text>();
+            if (ConstructionGlossary.AppliesTo(name))
+                rect.gameObject.AddComponent<ConstructionTermSource>().Owner = this;
             if (InstructionEmphasis.AppliesTo(name))
             {
                 bold = false;

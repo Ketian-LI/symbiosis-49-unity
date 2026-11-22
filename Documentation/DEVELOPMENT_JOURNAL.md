@@ -171,3 +171,7 @@ approved wider visual revision outside this delivery. Selection does not award o
 ## 22 November: apply the approved Fill interface
 
 The approved concept was implemented with a restored city motif, restrained story/goal hierarchy, room-card thumbnails, a separate score-source button and selective action emphasis. A live remaining-card catalogue uses actual stock and returns swapped cards to the pile. New generated paper adaptations reserve clear reading space and are shared by opening lids and the live board. Native Fill captures and the 38/38 logic and 27/27 interface batches are linked in the [revision record](../Docs/APPROVED_FILL_UI_2026-11-22.md). Recurring deductions, commuting/glossary diagrams and P journal remain pending.
+
+## 22 November: automatic commuting and term navigation
+
+Manual dispatch was removed from live construction. All homes use the capacity-aware allocator; spare jobs/seats now also use global matching. Home inspection shows the automatic plan. Ten bilingual terms gained hover meanings and links to exact marked manual entries. The [record](../Docs/AUTOMATIC_ROUTES_AND_TERMS_2026-11-22.md) includes the term table, migration boundaries, native captures and 72/72 logic plus 31/31 interface checks. Unrelated recurring-penalty/reference work is excluded.

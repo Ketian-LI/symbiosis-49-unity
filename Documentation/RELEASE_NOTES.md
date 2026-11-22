@@ -1,3 +1,9 @@
+# Automatic resident routes and linked terms
+
+Removed manual dispatch from live construction. Added automatic route inspection and capacity-aware leftover assignment. Ten core terms now show meanings on hover and jump to marked manual definitions on click. See the [feature record](../Docs/AUTOMATIC_ROUTES_AND_TERMS_2026-11-22.md). Source only; downloadable executables were not rebuilt.
+
+---
+
 # Approved Fill interface and remaining cards
 
 Restored the city paper, compact goal/card hierarchy and a separate Score sources · H row. Added real deck category counts and selective action emphasis. Room selection and resident/animal/shared settlement groups remain active. See the [implementation and verification record](../Docs/APPROVED_FILL_UI_2026-11-22.md). Source and assets only; no new executable.

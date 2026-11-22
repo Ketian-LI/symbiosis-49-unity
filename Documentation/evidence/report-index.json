@@ -151,5 +151,21 @@
     "failed": 0,
     "file": "approved-fill-ui-playmode.xml",
     "scope": "Overlapping technical regression batch; not participant evidence or cumulative unique-test total."
+  },
+  {
+    "batch": "automatic-routes-terms-editmode",
+    "total": 72,
+    "passed": 72,
+    "failed": 0,
+    "file": "automatic-routes-terms-editmode.xml",
+    "scope": "Overlapping technical regression checks, not participant evidence or cumulative unique-test totals."
+  },
+  {
+    "batch": "automatic-routes-terms-playmode",
+    "total": 31,
+    "passed": 31,
+    "failed": 0,
+    "file": "automatic-routes-terms-playmode.xml",
+    "scope": "Overlapping technical regression checks, not participant evidence or cumulative unique-test totals."
   }
 ]

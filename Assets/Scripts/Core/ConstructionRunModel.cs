@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UrbanWildlifeRooms.Data;
@@ -610,12 +610,8 @@ namespace UrbanWildlifeRooms.Core
                 : UsesFillHand ? BuiltToday : CurrentDay == 1 || BuiltToday);
         public bool IsFull => board.IsFull;
         public IReadOnlyList<ConstructionTileData> BuiltTiles => board.BuiltTiles;
-        public ConstructionResidentDispatch GetResidentDispatch(string homeTileId)
-        {
-            var plan = residentDispatches.FirstOrDefault(item =>
-                item.homeTileId == homeTileId);
-            return plan == null ? null : CopyDispatch(plan);
-        }
+        // Legacy save/API compatibility only. Live runs always use automatic routes.
+        public ConstructionResidentDispatch GetResidentDispatch(string homeTileId) => null;
 
         public IReadOnlyList<ConstructionTileData> DispatchWorkOptions(
             string homeTileId) => DispatchOptions(homeTileId, false);
@@ -635,29 +631,8 @@ namespace UrbanWildlifeRooms.Core
                 .OrderBy(tile => tile.buildIndex).ToArray();
         }
 
-        // Dispatch changes do not consume the day's room placement. Null on
-        // either leg restores automatic allocation for that leg.
         public bool TrySetResidentDispatch(string homeTileId,
-            string workTileId, string mealTileId)
-        {
-            if (IsFinished || !HasResident(homeTileId)) return false;
-            workTileId = string.IsNullOrEmpty(workTileId) ? null : workTileId;
-            mealTileId = string.IsNullOrEmpty(mealTileId) ? null : mealTileId;
-            if (workTileId != null && !DispatchWorkOptions(homeTileId)
-                    .Any(tile => tile.id == workTileId) ||
-                mealTileId != null && !DispatchMealOptions(homeTileId)
-                    .Any(tile => tile.id == mealTileId)) return false;
-            residentDispatches.RemoveAll(item =>
-                item.homeTileId == homeTileId);
-            if (workTileId != null || mealTileId != null)
-                residentDispatches.Add(new ConstructionResidentDispatch
-                {
-                    homeTileId = homeTileId,
-                    workTileId = workTileId,
-                    mealTileId = mealTileId
-                });
-            return true;
-        }
+            string workTileId, string mealTileId) => false;
 
         private static ConstructionResidentDispatch CopyDispatch(
             ConstructionResidentDispatch plan) => new()
@@ -1175,7 +1150,7 @@ namespace UrbanWildlifeRooms.Core
             var availability = PreviewWasteAvailability();
             var human = ConstructionHumanModel.SettleDay(CurrentDay, board,
                 availability.BlockedHomes, availability.BlockedFoodServices,
-                DepartedHomes, residentDispatches,
+                DepartedHomes, null,
                 score.ScoringVersion >= 11, UsesNeighborUpgrades);
             if (score.HasLinkageScore)
                 ConstructionLinkageScorer.Apply(board, CurrentDay,
@@ -1237,7 +1212,7 @@ namespace UrbanWildlifeRooms.Core
             var availability = PreviewWasteAvailability();
             var human = ConstructionHumanModel.SettleDay(CurrentDay, board,
                 availability.BlockedHomes, availability.BlockedFoodServices,
-                DepartedHomes, residentDispatches,
+                DepartedHomes, null,
                 score.ScoringVersion >= 11, UsesNeighborUpgrades);
             var hunt = PlanPredation();
             var traffic = PlanTrafficCollision(hunt, human);
@@ -1342,7 +1317,7 @@ namespace UrbanWildlifeRooms.Core
             var availability = PreviewWasteAvailability();
             var human = ConstructionHumanModel.SettleDay(CurrentDay, board,
                 availability.BlockedHomes, availability.BlockedFoodServices,
-                DepartedHomes, residentDispatches,
+                DepartedHomes, null,
                 score.ScoringVersion >= 11, UsesNeighborUpgrades);
             return ProtectedStreets(human).Contains(streetTileId);
         }
@@ -1729,7 +1704,7 @@ namespace UrbanWildlifeRooms.Core
             var expectedEcology = PreviewEcologyDay();
             var expectedHuman = ConstructionHumanModel.SettleDay(CurrentDay, board,
                 availability.BlockedHomes, availability.BlockedFoodServices,
-                DepartedHomes, residentDispatches,
+                DepartedHomes, null,
                 score.ScoringVersion >= 11, UsesNeighborUpgrades);
             if (score.HasLinkageScore)
                 ConstructionLinkageScorer.Apply(board, CurrentDay,
@@ -1773,7 +1748,7 @@ namespace UrbanWildlifeRooms.Core
             ApplyEnhancedGreenScore(ecology);
             var human = ConstructionHumanModel.SettleDay(CurrentDay, board,
                 availability.BlockedHomes, availability.BlockedFoodServices,
-                DepartedHomes, residentDispatches,
+                DepartedHomes, null,
                 score.ScoringVersion >= 11, UsesNeighborUpgrades);
             var linkage = score.HasLinkageScore
                 ? ConstructionLinkageScorer.Apply(board, CurrentDay, ecology,
@@ -2997,8 +2972,8 @@ namespace UrbanWildlifeRooms.Core
                 LastWasteDay = lastWasteDay,
                 LastForecast = lastForecast
             };
-            run.residentDispatches = savedDispatches.Select(CopyDispatch)
-                .ToList();
+            // Read/validate legacy preferences above, but do not reserve future capacity.
+            run.residentDispatches = new List<ConstructionResidentDispatch>();
             run.Mode = saved.mode;
             run.introRulesVersion = saved.introRulesVersion;
             run.usesFillHand = saved.usesFillHand;

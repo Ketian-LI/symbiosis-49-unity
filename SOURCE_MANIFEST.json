@@ -1,7 +1,7 @@
 {
   "prepared_on": "2026-11-21",
-  "source_base_commit": "a0b2f9c51ccf61655e475f903f4322af9341191d",
-  "note": "Approved Fill interface, real remaining-card catalogue, clear paper adaptations and retained room highlights. No new executable.",
+  "source_base_commit": "bb65fc46044f7348d85c8c9ea11c933ef53f4798",
+  "note": "Automatic resident routes and ten linked bilingual terms. Separate recurring-penalty/reference work excluded. No new executable.",
   "files": [
     {
       "path": "Assets/_Recovery/0 (1).unity",
@@ -3300,8 +3300,8 @@
     },
     {
       "path": "Assets/Scripts/Core/ConstructionHumanModel.cs",
-      "bytes": 44295,
-      "sha256": "97a96ba8e83745352095176f4f09eb30fbb134017c4806ea49459658b61709f2"
+      "bytes": 45995,
+      "sha256": "0b860e0a87ee3a28baf7cfb29e7d332ae056e9bc13d02052da791d33e2bd4c07"
     },
     {
       "path": "Assets/Scripts/Core/ConstructionHumanModel.cs.meta",
@@ -3340,8 +3340,8 @@
     },
     {
       "path": "Assets/Scripts/Core/ConstructionRunModel.cs",
-      "bytes": 174576,
-      "sha256": "df82cbf248303514b2a4cc83bcfe74b4d927e1fc31a4be1c50a7d35b35984054"
+      "bytes": 173377,
+      "sha256": "1a184fd7ab2d6f010b99b0ae1a320f173fb7cf481b443a279c4b9b9068c690e0"
     },
     {
       "path": "Assets/Scripts/Core/ConstructionRunModel.cs.meta",
@@ -4390,8 +4390,8 @@
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.cs",
-      "bytes": 593517,
-      "sha256": "4eb0ae13364887ddb6b7db9a43eb994fca6c97aa5cf9aaaba0908235945cd8de"
+      "bytes": 589477,
+      "sha256": "00d301ba10472b2faa8eb2dcaaad5011ba92822e3995cb49d83248c744f2adb3"
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.cs.meta",
@@ -4410,8 +4410,8 @@
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.FillHand.cs",
-      "bytes": 81525,
-      "sha256": "34abe3e8a030383091113e63175c0d9ca0378deec7d803dbcbf7938485c2b8f6"
+      "bytes": 81474,
+      "sha256": "4a48274671185d288a9ccd4164c1a9de8ea6155eb95fd4b1617250b1807a3e6c"
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.FillHand.cs.meta",
@@ -4470,8 +4470,8 @@
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.QuickGuide.cs",
-      "bytes": 38259,
-      "sha256": "eb3799c91ae6f09c34e3f6949f57457df8f7fe4f237c962f5723e9565394b7ab"
+      "bytes": 40783,
+      "sha256": "e16fb100e62a617b33c08cece022c44b7a4027788d79ebd2630e5d0ed08dd01d"
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.QuickGuide.cs.meta",
@@ -4500,8 +4500,8 @@
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.RoomHighlights.cs",
-      "bytes": 13373,
-      "sha256": "6debacdb7b6f73864cbec30dd34b56ef4566cc663ea50d05366b8160e3868c27"
+      "bytes": 15165,
+      "sha256": "8ffb69e3fe5b97ba4d88678746d4f3b1784bf5c1ff94577f1cf7a9bee3a07611"
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.RoomHighlights.cs.meta",
@@ -4530,13 +4530,23 @@
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.SpecialTasks.cs",
-      "bytes": 53248,
-      "sha256": "9c5221560fbabd3e578cde7782a3e3ee1e7fbbea2d30ee5760bb557c46624f3d"
+      "bytes": 53219,
+      "sha256": "5c060871c8f0ef48f81e9d9e380f21219447f4897656bf1bd940356cbe8c1afb"
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.SpecialTasks.cs.meta",
       "bytes": 59,
       "sha256": "03e5772bcb7892adba07f8fad23c5ba85480e4c599f008256bedc8acf59d540e"
+    },
+    {
+      "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.Terms.cs",
+      "bytes": 2423,
+      "sha256": "6df604c8348fc08e41f1668aad7ebf3e6015c19d2f12cd63376592e77692d186"
+    },
+    {
+      "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.Terms.cs.meta",
+      "bytes": 59,
+      "sha256": "90e1ef66a7d01b7ac3598ae1965c60ea33162aa2bb9cd86305dcee575ece0212"
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionRecentChanges.cs",
@@ -4944,6 +4954,16 @@
       "sha256": "82d6374f00e36a52cac6024aa55e68fe39ff87faa9c526628f7268994a04a15b"
     },
     {
+      "path": "Assets/Scripts/UI/ConstructionGlossary.cs",
+      "bytes": 5863,
+      "sha256": "0095b3a676c1061205aea6ba73a12f7cfb70bac67eca516d88c3fbc9662b041c"
+    },
+    {
+      "path": "Assets/Scripts/UI/ConstructionGlossary.cs.meta",
+      "bytes": 59,
+      "sha256": "271fa00902bef841e1ff9690c8f5f1c1c73d08fd8926af5494344837fab1424c"
+    },
+    {
       "path": "Assets/Scripts/UI/ConstructionHandArtCatalog.cs",
       "bytes": 6946,
       "sha256": "0e335f5b2ae0822d5fa44756e15fbc6b3066cceb8f0ba4d255de9ad109c6a710"
@@ -4972,6 +4992,26 @@
       "path": "Assets/Scripts/UI/ConstructionMainMenuLayout.cs.meta",
       "bytes": 60,
       "sha256": "83102e1a819cadce9692588e58e343a61fdb6b159bda92e20048a3e4d460583b"
+    },
+    {
+      "path": "Assets/Scripts/UI/ConstructionTermLinks.cs",
+      "bytes": 2027,
+      "sha256": "2049d9402cc42cf36af73af064e63dc1b06bd097dd231d7fb51a8caf2702c870"
+    },
+    {
+      "path": "Assets/Scripts/UI/ConstructionTermLinks.cs.meta",
+      "bytes": 59,
+      "sha256": "5f5eaa5806377a9ee6793390bb4d259b5ed13396e08c0d83d5652833cdb27aea"
+    },
+    {
+      "path": "Assets/Scripts/UI/ConstructionTermSource.cs",
+      "bytes": 235,
+      "sha256": "d7b524c05f282f9ee84c1411107e6959c655df4d3b75930114d51fe0a978fcb2"
+    },
+    {
+      "path": "Assets/Scripts/UI/ConstructionTermSource.cs.meta",
+      "bytes": 59,
+      "sha256": "a531d33188f4a381f545d61f2b2ad9570726e02c6211fe0835413b66232565fc"
     },
     {
       "path": "Assets/Scripts/UI/DayNightDialGraphic.cs",
@@ -5095,8 +5135,8 @@
     },
     {
       "path": "Assets/Scripts/UI/LegacyTextTmpBridge.cs",
-      "bytes": 11370,
-      "sha256": "4bcd0ab5473546e893aad923a90d6002c2f1d987b875dfe02a72df344a2bff43"
+      "bytes": 12167,
+      "sha256": "b1f24d70c622a6ba97a96d0eae872b29e7e1a44594d61df22f4ac42ef7fff63a"
     },
     {
       "path": "Assets/Scripts/UI/LegacyTextTmpBridge.cs.meta",
@@ -5564,6 +5604,16 @@
       "sha256": "ee305e797459913949780e89e338377ade837a87f746ad33580edaf1db1b1373"
     },
     {
+      "path": "Assets/Tests/Editor/ConstructionAutomaticRoutesAndTermsTests.cs",
+      "bytes": 2651,
+      "sha256": "b35009ea09b4ce47b32656ff6d4f278bce8048ba10ab6b6f8837fd478c4b2ef3"
+    },
+    {
+      "path": "Assets/Tests/Editor/ConstructionAutomaticRoutesAndTermsTests.cs.meta",
+      "bytes": 59,
+      "sha256": "68b7ee75dccce66fda8d2825b7e92c8dbc86f708ca6444ff29e049499bc41fee"
+    },
+    {
       "path": "Assets/Tests/Editor/ConstructionAwardCalibrationTests.cs",
       "bytes": 5551,
       "sha256": "cdfc9ec1c7a32dc40c9ad38d9cc47f986255605e998f5cc01b38a413c3ac2b94"
@@ -5695,8 +5745,8 @@
     },
     {
       "path": "Assets/Tests/Editor/ConstructionHumanModelTests.cs",
-      "bytes": 55555,
-      "sha256": "82bc1d6bd709d04abd5ea646f2b3957c81c539241b277175e6eb11a7c7be7da5"
+      "bytes": 52048,
+      "sha256": "9bde29422db7cf460872d63a9fe36f271e57a190dd7ab3f4ec661f7273f88058"
     },
     {
       "path": "Assets/Tests/Editor/ConstructionHumanModelTests.cs.meta",
@@ -6605,8 +6655,8 @@
     },
     {
       "path": "Assets/Tests/PlayMode/ConstructionFillHandPresentationTests.cs",
-      "bytes": 67878,
-      "sha256": "d27b905c3df2b7124c417de8daef82a7c423b8cf4e82ef3e4ab43b968b96e3f0"
+      "bytes": 67430,
+      "sha256": "b008acccfc430c4851f053a5dc946a1b1fa66c9d15672cae7d558141839a8ce5"
     },
     {
       "path": "Assets/Tests/PlayMode/ConstructionFillHandPresentationTests.cs.meta",
@@ -6655,8 +6705,8 @@
     },
     {
       "path": "Assets/Tests/PlayMode/ConstructionNeighborhoodStoryPresentationTests.cs",
-      "bytes": 19930,
-      "sha256": "1e222cb84f03c35c3aa628c183660e37e00f94313301965159c041164202bd9b"
+      "bytes": 21946,
+      "sha256": "cc75e36ef123ebc5c3789c35be0f1dd406241fde4c3270a14e91f5a3246b8abd"
     },
     {
       "path": "Assets/Tests/PlayMode/ConstructionNeighborhoodStoryPresentationTests.cs.meta",
@@ -6685,8 +6735,8 @@
     },
     {
       "path": "Assets/Tests/PlayMode/ConstructionPrototypeFlowTests.cs",
-      "bytes": 305885,
-      "sha256": "c60438e3ee8bc0a606c421a9cbc90c407cc6f126ec73b31507ea8ddb36d3e9bb"
+      "bytes": 293521,
+      "sha256": "4bb9817b1b05896124b02fba61219642f176600b8686a834291ac17c0c8ab900"
     },
     {
       "path": "Assets/Tests/PlayMode/ConstructionPrototypeFlowTests.cs.meta",
@@ -6752,6 +6802,16 @@
       "path": "Assets/Tests/PlayMode/ConstructionSquirrelForagingVisualTests.cs.meta",
       "bytes": 60,
       "sha256": "10bab09ac0e5b0d5f34742f496a0a16271c0096a2693450279a8e35f0ad2f19a"
+    },
+    {
+      "path": "Assets/Tests/PlayMode/ConstructionTermLinksPresentationTests.cs",
+      "bytes": 10078,
+      "sha256": "fe8cb5bbb3db23bb946e88d87fbc8f1ce6c28142bbe8118faa60cab13833ed87"
+    },
+    {
+      "path": "Assets/Tests/PlayMode/ConstructionTermLinksPresentationTests.cs.meta",
+      "bytes": 59,
+      "sha256": "3786fe947973e1712c2a0600c3916ff8202cc8b70bb495dcdee07467be128a36"
     },
     {
       "path": "Assets/Tests/PlayMode/ConstructionTrafficVisualTests.cs",

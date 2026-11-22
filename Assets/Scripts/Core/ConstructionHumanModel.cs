@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UrbanWildlifeRooms.Data;
@@ -194,20 +194,8 @@ namespace UrbanWildlifeRooms.Core
                     ? explicitAssignment : automaticByHome[home.home.id]).ToList();
             // Only after reserving every possible complete cycle may an
             // unserved resident take a spare job or meal by itself.
-            foreach (var assignment in assignments.Where(item => item.job == null))
-            {
-                assignment.job = assignment.household.jobs.FirstOrDefault(option =>
-                    remainingJobs[option.tile.id] > 0);
-                if (assignment.job != null)
-                    remainingJobs[assignment.job.tile.id]--;
-            }
-            foreach (var assignment in assignments.Where(item => item.meal == null))
-            {
-                assignment.meal = assignment.household.meals.FirstOrDefault(option =>
-                    remainingMeals[option.tile.id] > 0);
-                if (assignment.meal != null)
-                    remainingMeals[assignment.meal.tile.id]--;
-            }
+            AssignSpareServices(assignments, true, remainingJobs);
+            AssignSpareServices(assignments, false, remainingMeals);
             var squareVisits = AssignSquareVisits(assignments, squares,
                 board, day);
             foreach (var assignment in assignments)
@@ -549,6 +537,43 @@ namespace UrbanWildlifeRooms.Core
                 board, day, scoreWeight, restaurantWeight,
                 remainingJobs, remainingMeals);
             return assignments;
+        }
+
+        // Match leftover capacity globally too: a flexible household must not
+        // take the only reachable job/seat of a constrained household.
+        private static void AssignSpareServices(IReadOnlyList<Assignment> assignments,
+            bool work, Dictionary<string, int> remaining)
+        {
+            var missing = assignments.Where(item => work ? item.job == null : item.meal == null).ToArray();
+            var services = remaining.Where(item => item.Value > 0).Select(item => item.Key).ToArray();
+            if (missing.Length == 0 || services.Length == 0) return;
+            var indexes = services.Select((id,index)=>(id,index)).ToDictionary(item=>item.id,item=>item.index);
+            var sink = 1 + missing.Length + services.Length;
+            var flow = new FlowNetwork(sink + 1);
+            var links = new List<(int home, ServiceChoice choice, FlowEdge edge)>();
+            var choices = missing.Select(item => (work ? item.household.jobs : item.household.meals)
+                .Where(choice => indexes.ContainsKey(choice.tile.id)).ToArray()).ToArray();
+            var rankBudget = 1L + choices.Sum(list=>list.Length==0?0:list.Max(choice=>choice.rank));
+            var priorityWeight = 1L + choices.Sum(list=>list.Length == 0 ? 0L :
+                list.Max(choice=>choice.route.Count * rankBudget + choice.rank));
+            for (var index=0;index<missing.Length;index++)
+            {
+                flow.AddEdge(0,1+index,1,index * priorityWeight);
+                foreach (var choice in choices[index])
+                {
+                    var edge=flow.AddEdge(1+index,1+missing.Length+indexes[choice.tile.id],1,
+                        choice.route.Count * rankBudget + choice.rank);
+                    links.Add((index,choice,edge));
+                }
+            }
+            for(var index=0;index<services.Length;index++)
+                flow.AddEdge(1+missing.Length+index,sink,remaining[services[index]],0);
+            flow.MaxFlow(0,sink);
+            foreach(var link in links.Where(item=>item.edge.capacity==0))
+            {
+                if(work)missing[link.home].job=link.choice;else missing[link.home].meal=link.choice;
+                remaining[link.choice.tile.id]--;
+            }
         }
 
         private static int MealRank(Household home, ServiceChoice choice) =>

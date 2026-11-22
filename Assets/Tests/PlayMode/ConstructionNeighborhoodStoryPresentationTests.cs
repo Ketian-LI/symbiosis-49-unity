@@ -222,6 +222,25 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             var oldSize = camera.orthographicSize;
             var oldPosition = camera.transform.position;
             var oldActive = RenderTexture.active;
+            // Keep the shared physical case/desk while excluding old room and
+            // actor visuals left by navigation fixtures. Do not change gameplay.
+            var view=root.GetComponentInChildren<ConstructionWorldView>(true);
+            var opening=UnityEngine.Object.FindFirstObjectByType<ConstructionOpeningBoardPreview>();
+            var sharedMap=view.UsesOpeningBoard?opening?.Foundation?.parent:null;
+            var sharedDesk=view.UsesOpeningBoard?opening?.Tabletop:null;
+            bool OtherRenderer(Renderer renderer)
+            {
+                if(renderer.transform.IsChildOf(root.transform))return false;
+                var room=renderer.GetComponentInParent<RoomView>();
+                if(room!=null && (!view.UsesOpeningBoard || room!=opening.OpeningOak))return true;
+                if(renderer.GetComponentsInParent<MonoBehaviour>().Any(value=>value!=null && value.GetType().Name.EndsWith("DemoAgent")))return true;
+                return !(sharedMap!=null && renderer.transform.IsChildOf(sharedMap) ||
+                    sharedDesk!=null && renderer.transform.IsChildOf(sharedDesk));
+            }
+            var otherRenderers=UnityEngine.Object.FindObjectsByType<Renderer>(FindObjectsInactive.Exclude,FindObjectsSortMode.None)
+                .Where(renderer=>renderer.enabled && OtherRenderer(renderer)).ToArray();
+            var otherCanvases=UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsInactive.Exclude,FindObjectsSortMode.None)
+                .Where(value=>value.enabled && !value.transform.IsChildOf(root.transform)).ToArray();
             var target = new RenderTexture(1920, 1080, 24);
             var shot = new Texture2D(1920, 1080, TextureFormat.RGB24, false);
             try
@@ -257,6 +276,8 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                     .Invoke(root.GetComponent<ConstructionPrototypeController>(), null);
                 typeof(ConstructionPrototypeController).GetMethod("DrawSelectedRoomHighlights", BindingFlags.Instance | BindingFlags.NonPublic)
                     .Invoke(root.GetComponent<ConstructionPrototypeController>(), null);
+                foreach(var renderer in otherRenderers)if(renderer!=null)renderer.enabled=false;
+                foreach(var otherCanvas in otherCanvases)if(otherCanvas!=null)otherCanvas.enabled=false;
                 camera.Render();
                 RenderTexture.active = target;
                 shot.ReadPixels(new Rect(0, 0, 1920, 1080), 0, 0);
@@ -277,6 +298,8 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             }
             finally
             {
+                foreach(var renderer in otherRenderers)if(renderer!=null)renderer.enabled=true;
+                foreach(var otherCanvas in otherCanvases)if(otherCanvas!=null)otherCanvas.enabled=true;
                 canvas.renderMode = oldMode;
                 canvas.worldCamera = oldCamera;
                 canvas.planeDistance = oldDistance;

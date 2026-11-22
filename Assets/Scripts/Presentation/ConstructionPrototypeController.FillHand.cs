@@ -785,8 +785,8 @@ namespace UrbanWildlifeRooms.Presentation
                     "Join green plots edge to edge so wildlife can find shelter and food.",
                     "把绿地沿上下左右接起来，给动物多留一点栖身和觅食的地方。"),
                 ConstructionCategory.Residence => L(
-                    "Place the home beside a built plot. After building, click the home and choose Set work & meals on the left.",
-                    "把住宅贴着已建格放下。建好后点击住宅，再点左侧“安排工作与用餐”。"),
+                    "Place the home beside a built plot. Work and meal routes are planned automatically; connect enough jobs and seats.",
+                    "把住宅贴着已建格放下；岗位和餐位会自动分配，请保证道路连通。"),
                 ConstructionCategory.Restaurant => run.UsesNeighborUpgrades
                     ? L("Build by a home or its connected street. One job and two seats, or three seats beside a plaza.",
                         "贴住宅或与住宅接通的街道。餐厅有 1 个岗位和 2 个餐位，贴广场可增至 3 个餐位。")
@@ -1442,8 +1442,8 @@ namespace UrbanWildlifeRooms.Presentation
                     "Plant type follows the plot, not the day. Hover to see its type and maturity date; habitat level does not speed up growth.",
                     "类型由落点决定，不按天数解锁。悬停看类型和成熟日期；连片升级不会提前成熟。"),
                 ConstructionCategory.Residence => L(
-                    "Place beside a built plot. Click the home, then Set work & meals on the left to choose reachable destinations.",
-                    "贴已建格放置，住进 1 人。点击住宅，再点左侧“安排工作与用餐”，选择可达的岗位和餐位。"),
+                    "Place beside a built plot. Routes to reachable jobs and meals are planned automatically.",
+                    "贴已建格放置，住进 1 人。系统会自动选择可达的岗位和餐位，完成通勤。"),
                 ConstructionCategory.Restaurant => L(
                     "Place beside a home or its street. Offers one job and two meal seats.",
                     "贴住宅或住宅连通街道；提供 1 个岗位和 2 个餐位。"),

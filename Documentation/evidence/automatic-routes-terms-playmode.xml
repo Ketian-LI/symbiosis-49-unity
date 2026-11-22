@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="31" result="Passed" total="31" passed="31" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-22 12:52:48Z" end-time="2026-11-22 12:55:19Z" duration="150.5657494">
+  <test-suite type="TestSuite" id="1258" name="城市共栖房间" fullname="城市共栖房间" runstate="Runnable" testcasecount="210" result="Passed" start-time="2026-11-22 12:52:48Z" end-time="2026-11-22 12:55:19Z" duration="150.565749" total="31" passed="31" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <test-suite type="Assembly" id="1254" name="UrbanWildlifeRooms.Tests.PlayMode.dll" fullname="[user]/Documents/ChatGPT/毕设/work/commute-terms-owner-01a1f1a4/project/Library/ScriptAssemblies/UrbanWildlifeRooms.Tests.PlayMode.dll" runstate="Runnable" testcasecount="210" result="Passed" start-time="2026-11-22 12:52:48Z" end-time="2026-11-22 12:55:19Z" duration="150.553908" total="31" passed="31" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="46540" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <test-suite type="TestSuite" id="1255" name="UrbanWildlifeRooms" fullname="UrbanWildlifeRooms" runstate="Runnable" testcasecount="210" result="Passed" start-time="2026-11-22 12:52:48Z" end-time="2026-11-22 12:55:19Z" duration="150.551822" total="31" passed="31" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1256" name="Tests" fullname="UrbanWildlifeRooms.Tests" runstate="Runnable" testcasecount="210" result="Passed" start-time="2026-11-22 12:52:48Z" end-time="2026-11-22 12:55:19Z" duration="150.549553" total="31" passed="31" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestSuite" id="1257" name="PlayMode" fullname="UrbanWildlifeRooms.Tests.PlayMode" runstate="Runnable" testcasecount="210" result="Passed" start-time="2026-11-22 12:52:48Z" end-time="2026-11-22 12:55:19Z" duration="150.547230" total="31" passed="31" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1033" name="ConstructionApprovedFillUiTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionApprovedFillUiTests" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionApprovedFillUiTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-11-22 12:52:48Z" end-time="2026-11-22 12:53:01Z" duration="13.113182" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1036" name="FillSelectionShowsCoverageAndPenaltyTogetherWithoutHidingGoals" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionApprovedFillUiTests.FillSelectionShowsCoverageAndPenaltyTogetherWithoutHidingGoals" methodname="FillSelectionShowsCoverageAndPenaltyTogetherWithoutHidingGoals" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionApprovedFillUiTests" runstate="Runnable" seed="1834938436" result="Passed" start-time="2026-11-22 12:52:48Z" end-time="2026-11-22 12:52:54Z" duration="5.801830" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+]]></output>
+              </test-case>
+              <test-case id="1035" name="RemainingCardsAreRealBilingualModalAndReadOnly" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionApprovedFillUiTests.RemainingCardsAreRealBilingualModalAndReadOnly" methodname="RemainingCardsAreRealBilingualModalAndReadOnly" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionApprovedFillUiTests" runstate="Runnable" seed="1621382047" result="Passed" start-time="2026-11-22 12:52:54Z" end-time="2026-11-22 12:52:58Z" duration="3.847005" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+]]></output>
+              </test-case>
+              <test-case id="1034" name="SkippedTutorialEmptyFillBoardKeepsThreeGoalsAndManualShortcut" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionApprovedFillUiTests.SkippedTutorialEmptyFillBoardKeepsThreeGoalsAndManualShortcut" methodname="SkippedTutorialEmptyFillBoardKeepsThreeGoalsAndManualShortcut" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionApprovedFillUiTests" runstate="Runnable" seed="1549951901" result="Passed" start-time="2026-11-22 12:52:58Z" end-time="2026-11-22 12:53:01Z" duration="3.445619" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1040" name="ConstructionFillHandPresentationTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionFillHandPresentationTests" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionFillHandPresentationTests" runstate="Runnable" testcasecount="10" result="Passed" start-time="2026-11-22 12:53:01Z" end-time="2026-11-22 12:53:53Z" duration="51.541293" total="10" passed="10" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <output><![CDATA[There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+]]></output>
+              <test-case id="1050" name="CompactTrayFitsThreeFourAndFiveCardsWithoutClipping" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionFillHandPresentationTests.CompactTrayFitsThreeFourAndFiveCardsWithoutClipping" methodname="CompactTrayFitsThreeFourAndFiveCardsWithoutClipping" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionFillHandPresentationTests" runstate="Runnable" seed="457441578" result="Passed" start-time="2026-11-22 12:53:01Z" end-time="2026-11-22 12:53:15Z" duration="14.233247" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1048" name="EndlessHorizontalPanButtonsAreClickable" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionFillHandPresentationTests.EndlessHorizontalPanButtonsAreClickable" methodname="EndlessHorizontalPanButtonsAreClickable" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionFillHandPresentationTests" runstate="Runnable" seed="263205274" result="Passed" start-time="2026-11-22 12:53:15Z" end-time="2026-11-22 12:53:18Z" duration="2.977678" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+]]></output>
+              </test-case>
+              <test-case id="1043" name="FirstMeadowVisitorsBecomeResidentsOnlyAfterSecondMatures" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionFillHandPresentationTests.FirstMeadowVisitorsBecomeResidentsOnlyAfterSecondMatures" methodname="FirstMeadowVisitorsBecomeResidentsOnlyAfterSecondMatures" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionFillHandPresentationTests" runstate="Runnable" seed="1353719274" result="Passed" start-time="2026-11-22 12:53:18Z" end-time="2026-11-22 12:53:18Z" duration="0.039246" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+]]></output>
+              </test-case>
+              <test-case id="1044" name="FirstOakCardIsVisibleAndSettlesAfterCenterPlacement" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionFillHandPresentationTests.FirstOakCardIsVisibleAndSettlesAfterCenterPlacement" methodname="FirstOakCardIsVisibleAndSettlesAfterCenterPlacement" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionFillHandPresentationTests" runstate="Runnable" seed="1313524839" result="Passed" start-time="2026-11-22 12:53:18Z" end-time="2026-11-22 12:53:37Z" duration="18.662331" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+]]></output>
+              </test-case>
+              <test-case id="1047" name="FourthCardAndSwapControlAppearAfterUnlock" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionFillHandPresentationTests.FourthCardAndSwapControlAppearAfterUnlock" methodname="FourthCardAndSwapControlAppearAfterUnlock" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionFillHandPresentationTests" runstate="Runnable" seed="407440979" result="Passed" start-time="2026-11-22 12:53:37Z" end-time="2026-11-22 12:53:40Z" duration="3.098740" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+]]></output>
+              </test-case>
+              <test-case id="1045" name="FreeFillSettlementWaitsForPlayerChoiceAndKeepsGoalsVisible" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionFillHandPresentationTests.FreeFillSettlementWaitsForPlayerChoiceAndKeepsGoalsVisible" methodname="FreeFillSettlementWaitsForPlayerChoiceAndKeepsGoalsVisible" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionFillHandPresentationTests" runstate="Runnable" seed="1347497310" result="Passed" start-time="2026-11-22 12:53:40Z" end-time="2026-11-22 12:53:44Z" duration="3.326003" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+]]></output>
+              </test-case>
+              <test-case id="1046" name="FreeFillSwapCannotChooseACardWhileWaitingForPlayer" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionFillHandPresentationTests.FreeFillSwapCannotChooseACardWhileWaitingForPlayer" methodname="FreeFillSwapCannotChooseACardWhileWaitingForPlayer" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionFillHandPresentationTests" runstate="Runnable" seed="789585535" result="Passed" start-time="2026-11-22 12:53:44Z" end-time="2026-11-22 12:53:47Z" duration="3.009814" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+]]></output>
+              </test-case>
+              <test-case id="1049" name="OtherModesKeepTheirExistingControls" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionFillHandPresentationTests.OtherModesKeepTheirExistingControls" methodname="OtherModesKeepTheirExistingControls" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionFillHandPresentationTests" runstate="Runnable" seed="34164467" result="Passed" start-time="2026-11-22 12:53:47Z" end-time="2026-11-22 12:53:53Z" duration="6.090244" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+[Camera Recognition] Waiting for the board detector on 127.0.0.1:49549.
+[Camera Recognition] Waiting for live camera observations.
+]]></output>
+              </test-case>
+              <test-case id="1041" name="PrintedHandArtworkLoadsForEveryRoomAndControl" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionFillHandPresentationTests.PrintedHandArtworkLoadsForEveryRoomAndControl" methodname="PrintedHandArtworkLoadsForEveryRoomAndControl" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionFillHandPresentationTests" runstate="Runnable" seed="1348797032" result="Passed" start-time="2026-11-22 12:53:53Z" end-time="2026-11-22 12:53:53Z" duration="0.004223" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1042" name="SeparatePatchesRenderTenPigeonsAndTwoHedgehogs" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionFillHandPresentationTests.SeparatePatchesRenderTenPigeonsAndTwoHedgehogs" methodname="SeparatePatchesRenderTenPigeonsAndTwoHedgehogs" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionFillHandPresentationTests" runstate="Runnable" seed="1693355694" result="Passed" start-time="2026-11-22 12:53:53Z" end-time="2026-11-22 12:53:53Z" duration="0.094452" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1051" name="ConstructionGoalRestartTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionGoalRestartTests" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionGoalRestartTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-11-22 12:53:53Z" end-time="2026-11-22 12:54:09Z" duration="16.686697" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1053" name="LeftTutorialSkipKeepsTheThreeChosenGoals" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionGoalRestartTests.LeftTutorialSkipKeepsTheThreeChosenGoals" methodname="LeftTutorialSkipKeepsTheThreeChosenGoals" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionGoalRestartTests" runstate="Runnable" seed="1099989617" result="Passed" start-time="2026-11-22 12:53:53Z" end-time="2026-11-22 12:53:58Z" duration="4.817901" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+]]></output>
+              </test-case>
+              <test-case id="1052" name="RestartThenSkipKeepsThreeGoalsAndTheirBookmark" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionGoalRestartTests.RestartThenSkipKeepsThreeGoalsAndTheirBookmark" methodname="RestartThenSkipKeepsThreeGoalsAndTheirBookmark" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionGoalRestartTests" runstate="Runnable" seed="1485773001" result="Passed" start-time="2026-11-22 12:53:58Z" end-time="2026-11-22 12:54:05Z" duration="7.084562" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1054" name="SkipAndReloadPreserveTheChosenTaskIdentities" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionGoalRestartTests.SkipAndReloadPreserveTheChosenTaskIdentities" methodname="SkipAndReloadPreserveTheChosenTaskIdentities" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionGoalRestartTests" runstate="Runnable" seed="577582141" result="Passed" start-time="2026-11-22 12:54:05Z" end-time="2026-11-22 12:54:09Z" duration="4.778726" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1065" name="ConstructionNeighborhoodStoryPresentationTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionNeighborhoodStoryPresentationTests" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionNeighborhoodStoryPresentationTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-11-22 12:54:09Z" end-time="2026-11-22 12:54:16Z" duration="6.346093" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <output><![CDATA[There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+]]></output>
+              <test-case id="1066" name="StoryAndGoalsFitTheSameLeafInBothLanguages" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionNeighborhoodStoryPresentationTests.StoryAndGoalsFitTheSameLeafInBothLanguages" methodname="StoryAndGoalsFitTheSameLeafInBothLanguages" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionNeighborhoodStoryPresentationTests" runstate="Runnable" seed="658643868" result="Passed" start-time="2026-11-22 12:54:09Z" end-time="2026-11-22 12:54:16Z" duration="6.343733" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1074" name="ConstructionPrototypeFlowTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionPrototypeFlowTests" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionPrototypeFlowTests" runstate="Runnable" testcasecount="71" result="Passed" start-time="2026-11-22 12:54:16Z" end-time="2026-11-22 12:54:19Z" duration="3.033131" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <output><![CDATA[There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+]]></output>
+              <test-case id="1145" name="ResidentRoutesAreAutomaticAndInspectionCannotChangeAssignments" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionPrototypeFlowTests.ResidentRoutesAreAutomaticAndInspectionCannotChangeAssignments" methodname="ResidentRoutesAreAutomaticAndInspectionCannotChangeAssignments" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionPrototypeFlowTests" runstate="Runnable" seed="210888384" result="Passed" start-time="2026-11-22 12:54:16Z" end-time="2026-11-22 12:54:19Z" duration="3.013888" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1151" name="ConstructionResultReviewTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionResultReviewTests" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionResultReviewTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-11-22 12:54:19Z" end-time="2026-11-22 12:54:24Z" duration="5.134352" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <output><![CDATA[There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+]]></output>
+              <test-case id="1154" name="BadAdjacencyShowsItsAmountAndCauseDuringSettlement" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionResultReviewTests.BadAdjacencyShowsItsAmountAndCauseDuringSettlement" methodname="BadAdjacencyShowsItsAmountAndCauseDuringSettlement" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionResultReviewTests" runstate="Runnable" seed="77013915" result="Passed" start-time="2026-11-22 12:54:19Z" end-time="2026-11-22 12:54:20Z" duration="1.350133" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+]]></output>
+              </test-case>
+              <test-case id="1152" name="CollapsePreservesFinishedBoardAndCanReturnAfterRefresh" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionResultReviewTests.CollapsePreservesFinishedBoardAndCanReturnAfterRefresh" methodname="CollapsePreservesFinishedBoardAndCanReturnAfterRefresh" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionResultReviewTests" runstate="Runnable" seed="1358231287" result="Passed" start-time="2026-11-22 12:54:20Z" end-time="2026-11-22 12:54:21Z" duration="1.255136" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+]]></output>
+              </test-case>
+              <test-case id="1155" name="OnlineNicknameReceivesKeyboardAndRenamesTheActualLocalRecord" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionResultReviewTests.OnlineNicknameReceivesKeyboardAndRenamesTheActualLocalRecord" methodname="OnlineNicknameReceivesKeyboardAndRenamesTheActualLocalRecord" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionResultReviewTests" runstate="Runnable" seed="460018247" result="Passed" start-time="2026-11-22 12:54:21Z" end-time="2026-11-22 12:54:23Z" duration="1.277422" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1153" name="RestartRulesRemainClickableAfterRefreshingFinishedResult" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionResultReviewTests.RestartRulesRemainClickableAfterRefreshingFinishedResult" methodname="RestartRulesRemainClickableAfterRefreshingFinishedResult" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionResultReviewTests" runstate="Runnable" seed="248331018" result="Passed" start-time="2026-11-22 12:54:23Z" end-time="2026-11-22 12:54:24Z" duration="1.248223" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1156" name="ConstructionRoomHighlightPresentationTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionRoomHighlightPresentationTests" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionRoomHighlightPresentationTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-11-22 12:54:24Z" end-time="2026-11-22 12:54:28Z" duration="3.619888" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <output><![CDATA[There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+]]></output>
+              <test-case id="1157" name="WasteCoverageAndWarningsCoexistAndSelectionSurvivesPointerExit" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionRoomHighlightPresentationTests.WasteCoverageAndWarningsCoexistAndSelectionSurvivesPointerExit" methodname="WasteCoverageAndWarningsCoexistAndSelectionSurvivesPointerExit" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionRoomHighlightPresentationTests" runstate="Runnable" seed="6587472" result="Passed" start-time="2026-11-22 12:54:24Z" end-time="2026-11-22 12:54:28Z" duration="3.617774" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1158" name="ConstructionSceneNavigationTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionSceneNavigationTests" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionSceneNavigationTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-11-22 12:54:28Z" end-time="2026-11-22 12:54:43Z" duration="14.966418" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <output><![CDATA[There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+]]></output>
+              <test-case id="1163" name="LegacyMenuCanEnterConstructionAndConstructionCanReturn" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionSceneNavigationTests.LegacyMenuCanEnterConstructionAndConstructionCanReturn" methodname="LegacyMenuCanEnterConstructionAndConstructionCanReturn" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionSceneNavigationTests" runstate="Runnable" seed="1657761704" result="Passed" start-time="2026-11-22 12:54:28Z" end-time="2026-11-22 12:54:43Z" duration="14.957644" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[Urban Wildlife Layout] 7×7 layout validated: 49 single-cell rooms occupy all 49 cells.
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1164" name="ConstructionScoreIndexPresentationTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionScoreIndexPresentationTests" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionScoreIndexPresentationTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-11-22 12:54:43Z" end-time="2026-11-22 12:55:03Z" duration="20.041000" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1166" name="EndlessIndexJumpsToAnOffscreenContributor" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionScoreIndexPresentationTests.EndlessIndexJumpsToAnOffscreenContributor" methodname="EndlessIndexJumpsToAnOffscreenContributor" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionScoreIndexPresentationTests" runstate="Runnable" seed="219470402" result="Passed" start-time="2026-11-22 12:54:43Z" end-time="2026-11-22 12:54:47Z" duration="4.781408" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1167" name="EndlessSettlementUsesThreeIsolatedBatchesWithoutChangingTheRun" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionScoreIndexPresentationTests.EndlessSettlementUsesThreeIsolatedBatchesWithoutChangingTheRun" methodname="EndlessSettlementUsesThreeIsolatedBatchesWithoutChangingTheRun" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionScoreIndexPresentationTests" runstate="Runnable" seed="893973612" result="Passed" start-time="2026-11-22 12:54:47Z" end-time="2026-11-22 12:54:54Z" duration="6.907916" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1165" name="IndexHighlightsRealParticipantsAndHonoursShortcutsAndModals" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionScoreIndexPresentationTests.IndexHighlightsRealParticipantsAndHonoursShortcutsAndModals" methodname="IndexHighlightsRealParticipantsAndHonoursShortcutsAndModals" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionScoreIndexPresentationTests" runstate="Runnable" seed="154505353" result="Passed" start-time="2026-11-22 12:54:54Z" end-time="2026-11-22 12:55:03Z" duration="8.284905" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1171" name="ConstructionTermLinksPresentationTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionTermLinksPresentationTests" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionTermLinksPresentationTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-11-22 12:55:03Z" end-time="2026-11-22 12:55:19Z" duration="15.976859" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1173" name="DefinitionOverGoalReviewReturnsWithoutChangingGoals" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionTermLinksPresentationTests.DefinitionOverGoalReviewReturnsWithoutChangingGoals" methodname="DefinitionOverGoalReviewReturnsWithoutChangingGoals" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionTermLinksPresentationTests" runstate="Runnable" seed="1458618606" result="Passed" start-time="2026-11-22 12:55:03Z" end-time="2026-11-22 12:55:06Z" duration="3.524062" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1172" name="ManualTermsHoverAndJumpToTheirActualBilingualLines" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionTermLinksPresentationTests.ManualTermsHoverAndJumpToTheirActualBilingualLines" methodname="ManualTermsHoverAndJumpToTheirActualBilingualLines" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionTermLinksPresentationTests" runstate="Runnable" seed="1837667461" result="Passed" start-time="2026-11-22 12:55:06Z" end-time="2026-11-22 12:55:14Z" duration="8.141325" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1174" name="RoomHintsLinkToManualAndNoDispatchControlCanCoverGoals" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionTermLinksPresentationTests.RoomHintsLinkToManualAndNoDispatchControlCanCoverGoals" methodname="RoomHintsLinkToManualAndNoDispatchControlCanCoverGoals" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionTermLinksPresentationTests" runstate="Runnable" seed="564872998" result="Passed" start-time="2026-11-22 12:55:14Z" end-time="2026-11-22 12:55:19Z" duration="4.295680" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1178" name="ConstructionWorldViewResizeTests" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionWorldViewResizeTests" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionWorldViewResizeTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-11-22 12:55:19Z" end-time="2026-11-22 12:55:19Z" duration="0.073259" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1179" name="ReframingKeepsWorldBoardCentredOnItsUiPlot" fullname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionWorldViewResizeTests.ReframingKeepsWorldBoardCentredOnItsUiPlot" methodname="ReframingKeepsWorldBoardCentredOnItsUiPlot" classname="UrbanWildlifeRooms.Tests.PlayMode.ConstructionWorldViewResizeTests" runstate="Runnable" seed="503310687" result="Passed" start-time="2026-11-22 12:55:19Z" end-time="2026-11-22 12:55:19Z" duration="0.057536" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Saving results to: [user]/AppData/LocalLow/Urban Wildlife Rooms/城市共栖房间\TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

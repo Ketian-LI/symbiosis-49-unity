@@ -10,6 +10,9 @@ routines actually completed. Stories, score reasons and participant highlights c
 The image is an actual Unity render of a fixed Fill test layout. English and Chinese are supported.
 See the [approved interface revision](Docs/APPROVED_FILL_UI_2026-11-22.md) for remaining cards, pinned relationships and verification.
 
+Residents now receive automatic work/meal routes. Hover linked room terms for a meaning and click to jump to the manual.
+See the [route and term revision](Docs/AUTOMATIC_ROUTES_AND_TERMS_2026-11-22.md) for behaviour and evidence.
+
 ## Run the source
 
 1. Download this branch or clone the repository.
