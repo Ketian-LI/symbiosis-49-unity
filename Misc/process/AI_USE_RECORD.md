@@ -10,7 +10,7 @@ This page links the records retained alongside it.
 | [Documentation review](iterations/DOCUMENTATION_REVIEW_2026-11-21.md) | Documentation references and the changes they informed. |
 
 The 22 November documentation work used Codex to organise the reading routes, edit English text and check links and source hashes.
-It did not change gameplay code. These logs do not provide a complete prompt history or a generation record for every asset.
+It did not change gameplay code. These logs do not provide a complete prompt history or a tool-use record for every asset.
 
 Private questionnaires, messages and transcripts are not published as tool logs.
 Their earlier use with external tools is recorded in the [ethics reflection](../../Documentation/ETHICS_REFLECTION.md).
