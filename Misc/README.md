@@ -22,5 +22,5 @@ The repository's [link and source checker](tools/verify_archive.py) belongs to t
 ## Reading old records
 
 Dates, results and superseded rules belong to the snapshot named in each record.
-Saved test reports have not been rerun for this reorganisation. Use [project status](../Documentation/PROJECT_STATUS.md)
+Saved test reports have not been rerun for this reorganisation. Use [submission record](../Documentation/assessment/README.md)
 to compare source and download versions. Private participant material is not included.

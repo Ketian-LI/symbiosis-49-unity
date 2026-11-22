@@ -14,7 +14,7 @@ mode differences and where each system belongs. The study record distinguishes t
 The thesis page identifies the latest local English revision while leaving the final PDF pending.
 
 This update changes documents and their validator. It does not change gameplay, scenes, runtime artwork or saved test results.
-The dated ethics reflection is retained. Delivery versions and outstanding work are listed in [project status](../../Documentation/PROJECT_STATUS.md).
+The dated ethics reflection is retained. Delivery versions and outstanding work are listed in [submission record](../../Documentation/assessment/README.md).
 
 ---
 
@@ -28,7 +28,7 @@ The final thesis and approved anonymous study evidence remain pending. The Windo
 The 20 November source ZIP is an older snapshot and does not include later source or documentation changes.
 The macOS download remains source-only. No new executable or Moodle submission was made in this update.
 
-The older entries below describe their own snapshots. See the [checklist](../../Documentation/assessment/SUBMISSION_CHECKLIST.md) for final packaging.
+The older entries below describe their own snapshots. See the [checklist](../../Documentation/assessment/README.md) for final packaging.
 
 ---
 

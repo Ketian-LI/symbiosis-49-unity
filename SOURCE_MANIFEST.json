@@ -8215,8 +8215,8 @@
     },
     {
       "path": "Misc/tools/verify_archive.py",
-      "bytes": 5593,
-      "sha256": "55271b06d6b3269b3489f632345b865b0262e845d006c62e2b0f413a47fa16be"
+      "bytes": 5511,
+      "sha256": "33484454919b5fbc3242f41fef36b656466f6dc207a783467a31f2c588553079"
     }
   ]
 }

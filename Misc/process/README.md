@@ -1,7 +1,7 @@
 # Development process
 
-Use the [linked timeline](../../Documentation/PROJECT_OVERVIEW.md#follow-the-project-in-time) for a quick route through the project.
-Read the [development journal](../../Documentation/DEVELOPMENT_JOURNAL.md) for the sequence of decisions.
+The [development journal and timeline](../../Documentation/DEVELOPMENT_JOURNAL.md#timeline) follow the project
+from the web prototype to the final source.
 The [repository lineage](REPOSITORY_LINEAGE.md) identifies where each implementation lives.
 
 ## Follow a change

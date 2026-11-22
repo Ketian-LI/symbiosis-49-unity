@@ -10,5 +10,5 @@
 | Inspect saves and compatibility | [Save format](SAVE_FORMAT.md) |
 | Check font notices | [Font licences](FONT_LICENSES.md) |
 
-The [project status](../../Documentation/PROJECT_STATUS.md) identifies the version these guides describe.
+The [submission record](../../Documentation/assessment/README.md) identifies the version these guides describe.
 Historical room-rearrangement rules and old save notes remain in the [archive](../archive/README.md).

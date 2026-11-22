@@ -36,9 +36,16 @@ Ethics review belongs in the project plan before recruitment, rather than at the
 
 For future work, I will check the process with my supervisor early, obtain the required review and document consent before collecting data. I will keep dated records of permissions and changes to the study. This reflection records responsibility and the remaining work; it does not replace that work or the University's decision.
 
-## Guidance checked
+## Representation and the optional leaderboard
 
-- [CCI ethical guidance for taught projects](https://git.arts.ac.uk/pages/wzhang/CCI-Thesis/), accessed 22 November 2026. The page contains 2025 deadlines; those dates are not used as deadlines for this project.
-- [UAL Code of Practice on Research Ethics](https://www.arts.ac.uk/__data/assets/pdf_file/0020/43328/UAL-Code-of-Practice-on-Research-Ethics-October-2020.pdf), October 2020, accessed 22 November 2026.
+The game reduces food, movement, habitat and risk to authored rules. A high score describes success within those rules,
+rather than the ecological quality of a real city. Combining resident and animal points can hide competing needs.
+Separate contributions and visible causes expose some assumptions, while short stories can also oversimplify them.
+The evaluation does not establish how well players recognise these limits.
 
+The optional leaderboard derives an identity from a public IP using an HMAC digest. People on a shared network can share
+a record. This is pseudonymous processing, not guaranteed anonymity. The server receives a chosen name and score;
+it does not replay the run to prove the score. Offline play and local rankings work without this service.
+
+The [references](REFERENCES.md#ethics-guidance-checked-on-22-november-2026) identify the institutional guidance consulted.
 Private forms and the staff conversation are excluded from the public archive.

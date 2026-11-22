@@ -13,21 +13,20 @@ for group in ('Assets', 'Packages', 'ProjectSettings'):
 for relative in ('Project/README.md', 'Project/04-Final/README.md',
                  'Documentation/README.md',
                  'Misc/README.md',
-                 'Documentation/PROJECT_STATUS.md',
                  'Misc/technical/README.md',
                  'Misc/process/README.md',
                  'Documentation/assessment/README.md',
-                 'Documentation/media/README.md',
+                 'Documentation/media/screenshots/README.md',
                  'Misc/technical/SCENES_AND_MODES.md',
                  'Misc/technical/SETUP_AND_BUILD.md',
                  'Misc/technical/ARCHITECTURE.md',
                  'Misc/technical/GAME_RULES.md',
                  'Misc/technical/CONTROLS.md',
                  'Misc/technical/SAVE_FORMAT.md',
-                 'Documentation/assessment/REQUIREMENTS.md',
-                 'Documentation/assessment/SUBMISSION_CHECKLIST.md',
-                 'Documentation/evidence/README.md',
-                 'Documentation/evidence/user-testing/README.md'):
+                 'Documentation/DEVELOPMENT_JOURNAL.md',
+                 'Documentation/EVALUATION.md',
+                 'Documentation/ETHICS_REFLECTION.md',
+                 'Thesis/Appendices/README.md'):
     if not (root / relative).is_file(): errors.append('Missing guide: ' + relative)
 if (root / 'Docs').exists(): errors.append('Unsorted Docs directory remains')
 

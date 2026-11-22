@@ -1,20 +1,42 @@
 # Project documentation
 
-The [overview and linked timeline](PROJECT_OVERVIEW.md) connects the first prototype to the current game.
-The [Project index](../Project/README.md) holds the browser prototype and Unity versions, with the final source clearly marked.
-The main reading follows the sequence below.
+Start with the [portfolio](PORTFOLIO.md) to see the game, then follow the reading route below.
+The [Project index](../Project/README.md) identifies each implementation and the final Unity source.
 
-| Read | Focus |
+## Reading route
+
+| Document | Purpose |
 | --- | --- |
-| [Portfolio](PORTFOLIO.md) | The game and selected screenshots. |
-| [Project report](PROJECT_REPORT.md) | The question, design choices and implementation. |
-| [Development journal](DEVELOPMENT_JOURNAL.md) and [design decisions](DESIGN_DECISIONS.md) | The development sequence, decisions and their supporting records. |
-| [Evaluation](EVALUATION.md) and [study method](evidence/user-testing/METHOD.md) | Feedback, software results and evidence limits. |
-| [Ethics reflection](ETHICS_REFLECTION.md) and [limitations](ETHICS_AND_LIMITATIONS.md) | Research conduct, representation and practical limits. |
-| [AI use](AI_AND_AUTHORSHIP.md), [asset sources](ASSET_PROVENANCE.md) and [references](REFERENCES.md) | Tools, contributions and attribution. |
-| [Thesis record](../Thesis/README.md) | The associated dissertation. |
-| [Assessment guide](assessment/README.md) | Requirements and submission inventory. |
+| [Project report](PROJECT_REPORT.md) | The research question, game design and implementation |
+| [Development journal](DEVELOPMENT_JOURNAL.md#timeline) | A linked timeline from the browser prototype to the final game |
+| [Design decisions](DESIGN_DECISIONS.md) | Why the main changes were made, with supporting records |
+| [Evaluation](EVALUATION.md) | Playtesting method, feedback, software checks and evidence limits |
+| [Ethics reflection](ETHICS_REFLECTION.md) | Research conduct, outstanding risks and lessons |
+| [AI use and authorship](AI_AND_AUTHORSHIP.md) and [asset sources](ASSET_PROVENANCE.md) | Contributions, tools and attribution |
+| [References](REFERENCES.md) | Sources consulted for the project account |
+| [Submission record](assessment/README.md) | Required work, its location and current status |
 
-The [delivery record](PROJECT_STATUS.md) identifies the source, downloads and included material.
-[Media](media/README.md) labels the visual records; [evidence](evidence/README.md) links the study and software reports.
-Detailed guides, dated revisions, raw software reports and older designs are grouped in [Misc](../Misc/README.md).
+## Folder map
+
+| Folder | File types | Contents |
+| --- | --- | --- |
+| [Project](../Project/README.md) | .md, .json; .cs, .unity, models, images and audio in the final project | Version pages, source downloads and the directly openable final Unity project |
+| [Documentation](README.md) | .md | The main assessment reading |
+| [media/screenshots](media/screenshots/README.md) | .png, .md | Labelled browser captures and Unity test renders |
+| [assessment](assessment/README.md) | .md | One requirements and submission table |
+| [Thesis](../Thesis/README.md) | .md | Dissertation record and appendix reference; the PDF is not included |
+| [Misc](../Misc/README.md) | .md, .xml, .json, .csv, .docx, .png | Technical detail, saved reports, dated revisions and older designs |
+
+## File types
+
+| Type | Meaning |
+| --- | --- |
+| .md | A text document with headings and links, readable on GitHub |
+| .pdf / .docx | A fixed-layout document / an editable Word document; check its title and date |
+| .csv / .json / .xml | Tables, configuration, inventories or saved reports |
+| .cs / .unity | C# code / a Unity scene |
+| .asset / .mat / .meta | Unity data, materials and asset references |
+| .blend / .fbx / .glb | Editable or exported 3D models |
+| .png / .jpg / .svg / .wav | Images, vector artwork or audio |
+| .py / .cmd | Helper scripts, with instructions in the technical guides |
+| .js / .mjs / .sql / .toml | Code and configuration for the optional leaderboard service |

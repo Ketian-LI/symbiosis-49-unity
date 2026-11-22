@@ -28,10 +28,12 @@ The earlier Windows executable is listed separately in [downloads](../Downloads/
 It is the 19 November build; it does not contain every change in this final source snapshot.
 The macOS archive contains source, not a built Mac application.
 
-## Verification record
+## Snapshot scope
 
-The saved final interface reports contain
-[38 selected EditMode checks](../../Misc/evidence/automated-tests/approved-fill-ui-editmode.xml) and
-[27 selected PlayMode checks](../../Misc/evidence/automated-tests/approved-fill-ui-playmode.xml).
-They cover the named source snapshot and overlap earlier batches. The directory reorganisation preserves game-source bytes;
-it does not constitute a new gameplay test or executable build.
+The snapshot includes the restored town-paper motif, card-art goal rows, selective guidance emphasis,
+the real per-category deck catalogue, persistent room relationships and three settlement highlight batches.
+Recurring bad-pair deductions, clickable manual terms, additional commuting diagrams, Enter-to-confirm
+and a separate P journal are outside this pinned snapshot.
+
+The [evaluation](../../Documentation/EVALUATION.md#software-checks) identifies the saved software checks and their limits.
+The documentation reorganisation preserves game-source bytes; it does not constitute a new gameplay test or executable build.

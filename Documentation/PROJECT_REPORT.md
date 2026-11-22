@@ -5,7 +5,7 @@ Homes need access to work and meals. Animals need food they can reach. Streets, 
 can help one part of the neighbourhood while causing problems elsewhere.
 
 This report connects the design problem, implementation and evaluation. The [development journal](DEVELOPMENT_JOURNAL.md)
-traces the earlier prototypes, and the [delivery record](PROJECT_STATUS.md) identifies the published material.
+traces the earlier prototypes, and the [submission record](assessment/README.md) identifies the published material.
 
 ## The design problem
 
@@ -42,11 +42,11 @@ placement scores and saving. Presentation code turns those results into rooms, a
 The [architecture guide](../Misc/technical/ARCHITECTURE.md) links the main classes.
 
 The game supports local rankings. An optional HTTP service receives submitted scores and names. Offline play does not
-depend on that service. Its identity method and validation limits are described in [ethics and limitations](ETHICS_AND_LIMITATIONS.md).
+depend on that service. Its identity method and validation limits are described in [ethics and limitations](ETHICS_REFLECTION.md).
 
 ## What the evidence shows
 
-Remote playtesting involved two rounds with 13 different participants. The [method record](evidence/user-testing/METHOD.md)
+Remote playtesting involved two rounds with 13 different participants. The [playtesting method](EVALUATION.md#playtesting)
 describes the groups and rule differences. Feedback identified unclear rules, delayed feedback and repetition.
 The study began before formal ethics review, and exact executable identifiers are not documented for every session.
 The [ethics reflection](ETHICS_REFLECTION.md) states the limits on further use of the earlier records.
@@ -61,5 +61,4 @@ It remains a simplified account of urban life, with authored scores and species 
 ## Ethical reflection
 
 The [ethics reflection](ETHICS_REFLECTION.md) records the missed review, participant and institutional risks,
-the response to the oversight and the lessons for future work. An [appendix copy](../Thesis/Appendices/ETHICS_REFLECTION.md)
-is provided with the dissertation material.
+the response to the oversight and the lessons for future work. The [thesis appendix](../Thesis/Appendices/README.md) refers to this statement.

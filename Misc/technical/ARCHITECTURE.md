@@ -63,4 +63,4 @@ Its sequence is described in [scenes and modes](SCENES_AND_MODES.md).
 Current saves are separate from the earlier full-board session format.
 
 For verification, choose checks that exercise the changed behaviour.
-The [evidence index](../../Documentation/evidence/README.md) identifies the saved reports and their limits.
+The [evidence overview](../../Documentation/EVALUATION.md#evidence-and-limits) identifies the saved reports and their limits.

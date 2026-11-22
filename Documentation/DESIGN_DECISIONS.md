@@ -100,7 +100,7 @@ It remains a [technical prototype](../Project/04-Final/Tools/CameraRecognition/R
 
 The final 22 November source includes score-source navigation and the real per-category deck catalogue.
 Clickable manual terms and Enter-to-confirm remain separate requirements outside the pinned final snapshot.
-The [delivery record](PROJECT_STATUS.md) distinguishes the source from the Windows executable and macOS source-only package.
+The [submission record](assessment/README.md) distinguishes the source from the Windows executable and macOS source-only package.
 
 The [decision register](../Misc/process/records/design-decision-register.csv) lists 26 decisions with supporting files.
-The [evidence index](evidence/README.md) links the software reports and evaluation account.
+The [evidence overview](EVALUATION.md#evidence-and-limits) links the software reports and evaluation account.

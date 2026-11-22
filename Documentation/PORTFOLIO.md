@@ -34,7 +34,7 @@ The score-source review keeps the latest settlement available after the animatio
 
 These images are actual Unity renders of fixed test layouts from the 22 November source revision.
 They document software appearance rather than participant sessions. [Screenshot records](media/screenshots/README.md)
-identify the earlier captures; [demonstration coverage](media/demonstrations/README.md) is listed separately.
+identify the earlier captures.
 
 ## Where it began
 
