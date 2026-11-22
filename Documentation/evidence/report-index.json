@@ -151,5 +151,29 @@
     "failed": 0,
     "file": "approved-fill-ui-playmode.xml",
     "scope": "Overlapping technical regression batch; not participant evidence or cumulative unique-test total."
+  },
+  {
+    "batch": "commuting-reference-penalties-editmode",
+    "total": 77,
+    "passed": 77,
+    "failed": 0,
+    "file": "commuting-reference-penalties-editmode.xml",
+    "scope": "Overlapping technical regression batch; not participant evidence or cumulative unique-test total."
+  },
+  {
+    "batch": "commuting-reference-penalties-playmode",
+    "total": 32,
+    "passed": 32,
+    "failed": 0,
+    "file": "commuting-reference-penalties-playmode.xml",
+    "scope": "Overlapping technical regression batch; not participant evidence or cumulative unique-test total."
+  },
+  {
+    "batch": "commuting-reference-penalties-capture",
+    "total": 4,
+    "passed": 4,
+    "failed": 0,
+    "file": "commuting-reference-penalties-capture.xml",
+    "scope": "Targeted UI/capture checks after presentation adjustments; overlaps main batch."
   }
 ]

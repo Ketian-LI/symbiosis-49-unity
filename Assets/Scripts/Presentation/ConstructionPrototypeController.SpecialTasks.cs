@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Linq;
 using TMPro;
@@ -213,7 +213,7 @@ namespace UrbanWildlifeRooms.Presentation
             }, kind == ConstructionSpecialTaskKind.RaiseAnimals ? GreenPlanting.Oak : GreenPlanting.Meadow);
         private string GoalOverviewCounterLabel(ConstructionSpecialTaskKind kind) => kind switch
         {
-            ConstructionSpecialTaskKind.CommuteCycles => L("Full routines", "完整循环"),
+            ConstructionSpecialTaskKind.CommuteCycles => L("Commutes", "完成通勤"),
             ConstructionSpecialTaskKind.RaiseAnimals => run.UsesSpeciesTaskRules
                 ? L("Species", "动物种类") : L("Animals", "动物数量"),
             ConstructionSpecialTaskKind.BuildSquares => L("Plazas built", "已建广场"),
@@ -899,7 +899,7 @@ namespace UrbanWildlifeRooms.Presentation
             kind switch
             {
                 ConstructionSpecialTaskKind.CommuteCycles =>
-                    L("Out and home again", "从家出发，再回家"),
+                    L("Commuting", "通勤"),
                 ConstructionSpecialTaskKind.RaiseAnimals =>
                     run.UsesSpeciesTaskRules
                         ? L("Wildlife variety", "多种野邻居")

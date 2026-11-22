@@ -11,7 +11,7 @@ The keyboard and mouse controls below apply to the construction scenes in
 | Click a lit empty plot, then confirm | Commit the selected room | A legal preview and explicit confirmation are required |
 | Hover a built plot | Inspect status and causes | Construction board |
 | Click a built room | Pin its coverage, pairings and recorded score relationships; click it again to cancel | Construction scenes; warning and coverage can coexist |
-| Click a home | Inspect work and meal choices | Where resident dispatch is available |
+| Click a home | Inspect automatic work/meal destinations and missing links | No manual dispatch editor |
 | Click the draw pile | Inspect actual remaining / initial category counts | Fill; outside click, close or Esc dismisses it |
 | H or Score sources | Open or close the score-source index | After a recorded settlement |
 | Tab | Open the index or select the next entry | Wraps after the last entry |
@@ -19,7 +19,10 @@ The keyboard and mouse controls below apply to the construction scenes in
 | Previous / Next buttons | Move through score entries | Same index as the keyboard controls |
 | F | Centre the indexed plot | Endless; Fill already displays its complete board |
 | Esc | Close an open index, otherwise clear visible room selection, otherwise open/close pause | Other overlays retain their existing pause/close behaviour |
-| O | Open or close the game manual | Existing manual control |
+| O | Open or close the game manual | Linked terms jump to marked definitions |
+| P | Open/close rules and building examples | Three pages; Esc also closes |
+| I | Open/close the independent settlement journal | Actual placements, deductions and upgrades |
+| Hover / click a linked term | Show meaning / jump to its manual definition | Reading surfaces; button/input actions retained |
 | Arrow keys | Pan the board viewport | Active Endless play, with the board open |
 
 Index shortcuts are suspended while a name input, manual, pause menu, remaining-card catalogue, placement confirmation or blocking overlay is active.

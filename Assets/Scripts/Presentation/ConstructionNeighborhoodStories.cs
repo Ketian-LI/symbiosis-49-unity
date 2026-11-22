@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UrbanWildlifeRooms.Core;
@@ -11,7 +11,7 @@ namespace UrbanWildlifeRooms.Presentation
         Beginning, Oak, FirstHome, GreenConnected, GreenSanctuary,
         MatureGreen, GardenHome, Terrace, SlowStreet, FirstMeal,
         FirstCycle, FirstWildlifeMeal, MarketFood, WildlifeNeighbours,
-        WasteCollected, StreetBesideGreen, WasteBesideHome, Traffic
+        WasteCollected, StreetBesideGreen, WasteBesideHome, Traffic, RecurringPenalty
     }
 
     public sealed class NeighborhoodStory
@@ -54,6 +54,13 @@ namespace UrbanWildlifeRooms.Presentation
                 stories.Add(new NeighborhoodStory(kind, day, icon, enTitle, zhTitle,
                     enBody, zhBody, enCause, zhCause, concern));
 
+            if(run.LastRecurringPenaltyPoints<0)
+                Add(NeighborhoodStoryKind.RecurringPenalty,run.LastScoreDay.day,ConstructionCategory.Waste,
+                    "The disturbance continues","邻接干扰还在",
+                    "Existing bad shared edges lost points again at this settlement. Cleanup does not remove the disturbance.",
+                    "已有的不良共边在本次结算再次扣分。垃圾清运不会消除邻接干扰。",
+                    $"Recurring pairings: {run.LastRecurringPenaltyPoints} points this settlement.",
+                    $"本次持续扣分 {run.LastRecurringPenaltyPoints} 分。按 I 查看涉及的地块。",true);
             foreach (var tile in tiles)
             {
                 var day = Math.Max(1, tile.builtDay);
@@ -226,6 +233,7 @@ namespace UrbanWildlifeRooms.Presentation
             NeighborhoodStoryKind.Traffic => 100,
             NeighborhoodStoryKind.StreetBesideGreen or NeighborhoodStoryKind.WasteBesideHome => 90,
             NeighborhoodStoryKind.MarketFood => 80,
+            NeighborhoodStoryKind.RecurringPenalty => 110,
             NeighborhoodStoryKind.GardenHome or NeighborhoodStoryKind.Terrace or NeighborhoodStoryKind.SlowStreet => 75,
             NeighborhoodStoryKind.FirstCycle => 70,
             NeighborhoodStoryKind.GreenConnected or NeighborhoodStoryKind.GreenSanctuary => 65,

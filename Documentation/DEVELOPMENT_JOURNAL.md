@@ -171,3 +171,7 @@ approved wider visual revision outside this delivery. Selection does not award o
 ## 22 November: apply the approved Fill interface
 
 The approved concept was implemented with a restored city motif, restrained story/goal hierarchy, room-card thumbnails, a separate score-source button and selective action emphasis. A live remaining-card catalogue uses actual stock and returns swapped cards to the pile. New generated paper adaptations reserve clear reading space and are shared by opening lids and the live board. Native Fill captures and the 38/38 logic and 27/27 interface batches are linked in the [revision record](../Docs/APPROVED_FILL_UI_2026-11-22.md). Recurring deductions, commuting/glossary diagrams and P journal remain pending.
+
+## 22 November: automatic commuting and visible continuous consequences
+
+Manual resident dispatch was retired in live runs. Capacity-aware allocation and shortest legal fixed-order itinerary now feed inspection and animation. Ten terms link to exact marked manual entries. The author clarified P for rules/examples and I for a separate journal. Fill bad shared edges now deduct at each confirmed settlement, with per-edge persisted causes and no duplicate introduction charge. Zero-value road death warnings and duplicate exposure icons were removed. The [revision record](../Docs/COMMUTING_REFERENCE_AND_PENALTIES_2026-11-22.md) links source details and native renders.

@@ -218,12 +218,14 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             var oldMode = canvas.renderMode;
             var oldCamera = canvas.worldCamera;
             var oldDistance = canvas.planeDistance;
+            var oldSort=canvas.sortingOrder;var oldOverride=canvas.overrideSorting;
             var oldTarget = camera.targetTexture;
             var oldSize = camera.orthographicSize;
             var oldPosition = camera.transform.position;
             var oldActive = RenderTexture.active;
             var target = new RenderTexture(1920, 1080, 24);
             var shot = new Texture2D(1920, 1080, TextureFormat.RGB24, false);
+            var foreignRenderers=new System.Collections.Generic.List<Renderer>();
             try
             {
                 target.Create();
@@ -231,6 +233,7 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 canvas.renderMode = RenderMode.ScreenSpaceCamera;
                 canvas.worldCamera = camera;
                 canvas.planeDistance = 1f;
+                canvas.overrideSorting=true;canvas.sortingOrder=10000;
                 yield return null;
                 Canvas.ForceUpdateCanvases();
                 var board = root.transform.Find("Construction UI/7 by 7 construction board")
@@ -257,6 +260,11 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                     .Invoke(root.GetComponent<ConstructionPrototypeController>(), null);
                 typeof(ConstructionPrototypeController).GetMethod("DrawSelectedRoomHighlights", BindingFlags.Instance | BindingFlags.NonPublic)
                     .Invoke(root.GetComponent<ConstructionPrototypeController>(), null);
+                // Scene-navigation fixtures may leave a legacy board on this
+                // same layer. Capture only this fixture's world, not that board.
+                foreach(var renderer in UnityEngine.Object.FindObjectsByType<Renderer>(FindObjectsSortMode.None))
+                    if(renderer.enabled && renderer.gameObject.layer==29 && !renderer.transform.IsChildOf(root.transform))
+                    {foreignRenderers.Add(renderer);renderer.enabled=false;}
                 camera.Render();
                 RenderTexture.active = target;
                 shot.ReadPixels(new Rect(0, 0, 1920, 1080), 0, 0);
@@ -277,9 +285,11 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             }
             finally
             {
+                foreach(var renderer in foreignRenderers)if(renderer!=null)renderer.enabled=true;
                 canvas.renderMode = oldMode;
                 canvas.worldCamera = oldCamera;
                 canvas.planeDistance = oldDistance;
+                canvas.sortingOrder=oldSort;canvas.overrideSorting=oldOverride;
                 camera.targetTexture = oldTarget;
                 camera.orthographicSize = oldSize;
                 camera.transform.position = oldPosition;

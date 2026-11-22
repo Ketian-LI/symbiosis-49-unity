@@ -1,3 +1,9 @@
+# Automatic commuting, recurring deductions and P/I references
+
+Residents now receive automatic routes. Ten linked terms show meanings and jump to manual entries. Existing bad shared edges deduct at each confirmed Fill settlement; the first placement is not charged twice. P opens rules/building diagrams and I opens a separate journal. Fixed zero-value/repeated road warnings. See the [implementation record](../Docs/COMMUTING_REFERENCE_AND_PENALTIES_2026-11-22.md). Source only; executable archives were not rebuilt.
+
+---
+
 # Approved Fill interface and remaining cards
 
 Restored the city paper, compact goal/card hierarchy and a separate Score sources · H row. Added real deck category counts and selective action emphasis. Room selection and resident/animal/shared settlement groups remain active. See the [implementation and verification record](../Docs/APPROVED_FILL_UI_2026-11-22.md). Source and assets only; no new executable.

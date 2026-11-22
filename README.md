@@ -10,6 +10,10 @@ routines actually completed. Stories, score reasons and participant highlights c
 The image is an actual Unity render of a fixed Fill test layout. English and Chinese are supported.
 See the [approved interface revision](Docs/APPROVED_FILL_UI_2026-11-22.md) for remaining cards, pinned relationships and verification.
 
+Residents receive automatic work/meal routes. Hover linked terms for meanings and click to jump to manual definitions.
+P opens building examples; I opens the independent settlement journal. Bad shared edges now deduct at each confirmed Fill settlement.
+See the [current revision and evidence](Docs/COMMUTING_REFERENCE_AND_PENALTIES_2026-11-22.md).
+
 ## Run the source
 
 1. Download this branch or clone the repository.

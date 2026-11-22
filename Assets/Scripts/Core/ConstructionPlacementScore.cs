@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UrbanWildlifeRooms.Data;
@@ -436,7 +436,7 @@ namespace UrbanWildlifeRooms.Core
         }
         public int PlacementScore => UsesPlacementScore
             ? placementScore.entries.Sum(entry => entry.points) +
-              (placementScore.communityAwards?.Sum(award => award.points) ?? 0)
+              (placementScore.communityAwards?.Sum(award => award.points) ?? 0) + RecurringPenaltyTotal
             : 0;
         public int LastPlacementPoints => UsesPlacementScore &&
             placementScore.entries.Count > 0

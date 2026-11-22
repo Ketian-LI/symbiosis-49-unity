@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -523,19 +523,15 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 Does.Contain($"BUILD {run.PlacementScore}"));
             Assert.That(total.preferredHeight,
                 Is.LessThanOrEqualTo(total.rectTransform.rect.height + 1f));
+            var motionEnd=Time.realtimeSinceStartup+12f;
+            while(typeof(ConstructionPrototypeController).GetField("scoreMotionAnimation",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(controller)!=null && Time.realtimeSinceStartup<motionEnd)yield return null;
             Assert.That(controller.TryPlace(4, 3), Is.False,
-                "Selecting the occupied home should still expose resident choices.");
-            var dispatch = canvas.Find(
-                "Building choices/Story cue backing/Open resident dispatch")
-                .GetComponent<Button>();
-            Assert.That(dispatch.gameObject.activeInHierarchy, Is.True);
-            Assert.That(dispatch.GetComponentInChildren<Text>().text,
-                Is.EqualTo("Set work & meals"));
+                "Selecting an occupied home inspects its automatic route.");
+            Assert.That(canvas.Find("Building choices/Story cue backing/Open resident dispatch"),Is.Null);
+            Assert.That(canvas.Find("Resident dispatch"),Is.Null);
+            var autoDetail=root.GetComponentsInChildren<Text>().Single(t=>t.name=="Selected room relationship explanation");
+            Assert.That(autoDetail.text,Does.Contain("Automatic commute"));
             Assert.That(routePanel.gameObject.activeInHierarchy, Is.False);
-            dispatch.onClick.Invoke();
-            Assert.That(canvas.Find("Resident dispatch").gameObject.activeInHierarchy,
-                Is.True, "The relocated button must still open resident choices.");
-            controller.CloseResidentDispatch();
             Assert.That(controller.TryPlace(4, 3), Is.False);
 
             Assert.That(controller.RequestPlacement(5, 3), Is.True);

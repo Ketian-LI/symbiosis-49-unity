@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UrbanWildlifeRooms.Data;
@@ -194,20 +194,8 @@ namespace UrbanWildlifeRooms.Core
                     ? explicitAssignment : automaticByHome[home.home.id]).ToList();
             // Only after reserving every possible complete cycle may an
             // unserved resident take a spare job or meal by itself.
-            foreach (var assignment in assignments.Where(item => item.job == null))
-            {
-                assignment.job = assignment.household.jobs.FirstOrDefault(option =>
-                    remainingJobs[option.tile.id] > 0);
-                if (assignment.job != null)
-                    remainingJobs[assignment.job.tile.id]--;
-            }
-            foreach (var assignment in assignments.Where(item => item.meal == null))
-            {
-                assignment.meal = assignment.household.meals.FirstOrDefault(option =>
-                    remainingMeals[option.tile.id] > 0);
-                if (assignment.meal != null)
-                    remainingMeals[assignment.meal.tile.id]--;
-            }
+            AssignSpareServices(assignments, true, remainingJobs);
+            AssignSpareServices(assignments, false, remainingMeals);
             var squareVisits = AssignSquareVisits(assignments, squares,
                 board, day);
             foreach (var assignment in assignments)
@@ -256,7 +244,7 @@ namespace UrbanWildlifeRooms.Core
                     resident.satisfactionPoints += resident.squareBonus;
                 }
                 resident.routeTileIds = ComposeRoundTrip(household.home.id,
-                    work?.route, meal?.route, square?.route);
+                    work?.route, meal?.route, square?.route, board, day);
                 if (!household.reachesRestaurant) continue;
                 // A resident who deliberately selected and reached the market
                 // did not request a restaurant seat. Automatic overflow to a
@@ -549,6 +537,43 @@ namespace UrbanWildlifeRooms.Core
                 board, day, scoreWeight, restaurantWeight,
                 remainingJobs, remainingMeals);
             return assignments;
+        }
+
+        // Match leftover capacity globally too: a flexible household must not
+        // take the only reachable job/seat of a constrained household.
+        private static void AssignSpareServices(IReadOnlyList<Assignment> assignments,
+            bool work, Dictionary<string, int> remaining)
+        {
+            var missing = assignments.Where(item => work ? item.job == null : item.meal == null).ToArray();
+            var services = remaining.Where(item => item.Value > 0).Select(item => item.Key).ToArray();
+            if (missing.Length == 0 || services.Length == 0) return;
+            var indexes = services.Select((id,index)=>(id,index)).ToDictionary(item=>item.id,item=>item.index);
+            var sink = 1 + missing.Length + services.Length;
+            var flow = new FlowNetwork(sink + 1);
+            var links = new List<(int home, ServiceChoice choice, FlowEdge edge)>();
+            var choices = missing.Select(item => (work ? item.household.jobs : item.household.meals)
+                .Where(choice => indexes.ContainsKey(choice.tile.id)).ToArray()).ToArray();
+            var rankBudget = 1L + choices.Sum(list=>list.Length==0?0:list.Max(choice=>choice.rank));
+            var priorityWeight = 1L + choices.Sum(list=>list.Length == 0 ? 0L :
+                list.Max(choice=>choice.route.Count * rankBudget + choice.rank));
+            for (var index=0;index<missing.Length;index++)
+            {
+                flow.AddEdge(0,1+index,1,index * priorityWeight);
+                foreach (var choice in choices[index])
+                {
+                    var edge=flow.AddEdge(1+index,1+missing.Length+indexes[choice.tile.id],1,
+                        choice.route.Count * rankBudget + choice.rank);
+                    links.Add((index,choice,edge));
+                }
+            }
+            for(var index=0;index<services.Length;index++)
+                flow.AddEdge(1+missing.Length+index,sink,remaining[services[index]],0);
+            flow.MaxFlow(0,sink);
+            foreach(var link in links.Where(item=>item.edge.capacity==0))
+            {
+                if(work)missing[link.home].job=link.choice;else missing[link.home].meal=link.choice;
+                remaining[link.choice.tile.id]--;
+            }
         }
 
         private static int MealRank(Household home, ServiceChoice choice) =>
@@ -873,36 +898,35 @@ namespace UrbanWildlifeRooms.Core
                 ConstructionFoodModel.MaturityStage(green, day) == 2)
                 .OrderBy(green => green.buildIndex).FirstOrDefault();
 
-        // Work -> meal may pass through the home. Every adjacent step remains
-        // on a checked home/street/service route, and the resident returns.
+        // Shortest legal legs in the fixed work -> meal -> optional square ->
+        // home order. Only streets and this resident's own home are transit.
         private static List<string> ComposeRoundTrip(string homeId,
             IReadOnlyList<ConstructionTileData> work,
             IReadOnlyList<ConstructionTileData> meal,
-            IReadOnlyList<ConstructionTileData> square)
+            IReadOnlyList<ConstructionTileData> square,
+            ConstructionBoardModel board, int day)
         {
-            var route = new List<string> { homeId };
-            AppendOutAndBack(route, work);
-            // Working and eating in the same room is one visit, not two
-            // identical home-to-service trips in the animation.
-            if (work?.Count > 1 && meal?.Count > 1 &&
-                work[work.Count - 1].id == meal[meal.Count - 1].id)
+            var tiles=board.BuiltTiles.Where(t=>Math.Max(1,t.builtDay)<=day).ToArray();
+            var route=new List<string>{homeId};
+            var stops=new[]{work?.LastOrDefault()?.id,meal?.LastOrDefault()?.id,square?.LastOrDefault()?.id,homeId};
+            foreach(var stop in stops.Where(id=>id!=null))
             {
-                AppendOutAndBack(route, square);
-                return route;
+                var start=route.Last();if(start==stop)continue;
+                var queue=new Queue<string>();queue.Enqueue(start);
+                var previous=new Dictionary<string,string>{{start,null}};
+                while(queue.Count>0 && !previous.ContainsKey(stop))
+                {
+                    var id=queue.Dequeue();var tile=tiles.First(t=>t.id==id);
+                    foreach(var next in tiles.Where(t=>ConstructionBoardModel.AreCardinalNeighbours(tile.column,tile.row,t.column,t.row)))
+                    {
+                        if(previous.ContainsKey(next.id) || !(next.id==stop || next.id==homeId || next.category==ConstructionCategory.Street))continue;
+                        previous[next.id]=id;queue.Enqueue(next.id);
+                    }
+                }
+                if(!previous.ContainsKey(stop))throw new InvalidOperationException("Assigned resident leg is disconnected.");
+                var leg=new List<string>();for(var id=stop;id!=start;id=previous[id])leg.Add(id);leg.Reverse();route.AddRange(leg);
             }
-            AppendOutAndBack(route, meal);
-            AppendOutAndBack(route, square);
             return route;
-        }
-
-        private static void AppendOutAndBack(List<string> journey,
-            IReadOnlyList<ConstructionTileData> leg)
-        {
-            if (leg == null || leg.Count < 2) return;
-            for (var index = 1; index < leg.Count; index++)
-                journey.Add(leg[index].id);
-            for (var index = leg.Count - 2; index >= 0; index--)
-                journey.Add(leg[index].id);
         }
     }
 }

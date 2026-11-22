@@ -42,3 +42,7 @@ recorded in [the documentation review](DOCUMENTATION_REVIEW_2026-11-21.md). No n
 ## Approved Fill implementation, 22 November
 
 Codex assisted native UI composition, stock inspection, selective guidance emphasis, compatibility checks and documentation. Two city/oak background adaptations were generated with the built-in image tool; the [exact prompts](../Docs/FILL_PAPER_ASSETS_2026-11-22.json) are recorded. The [feature record](../Docs/APPROVED_FILL_UI_2026-11-22.md) separates those assets from actual Unity fixture renders and from participant findings.
+
+## Commuting, references and penalty feedback, 22 November
+
+Codex assisted C# route allocation, itinerary search, recurring-ledger persistence, TMP term interaction, native rule diagrams, journal views, regression checks and this English evidence record. Existing room artwork is reused; no new raster art was generated. Optimization guarantees and technical-versus-participant evidence boundaries are stated in the [revision record](../Docs/COMMUTING_REFERENCE_AND_PENALTIES_2026-11-22.md).

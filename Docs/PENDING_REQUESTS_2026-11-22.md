@@ -1,15 +1,15 @@
-# Pending requested work, 22 November 2026
-
-The author asked to complete one item at a time, beginning with highlights.
+# Requested work status, 22 November 2026
 
 | Request | Current source status |
 | --- | --- |
-| Persistent room selection, simultaneous cleanup coverage and pairing warnings, three settlement batches | Implemented; [highlight record](ROOM_HIGHLIGHTS_2026-11-22.md) |
-| Approved Fill journal/score layout, restored city motif, room-card thumbnails, selective guidance emphasis, live deck contents | Implemented; [approved interface record](APPROVED_FILL_UI_2026-11-22.md) |
-| Repeat bad-pair deductions at each settlement | Pending rule design, versioning, feedback and checks; building-time rule retained |
-| Rename complete work/meal/return routine to commuting; clickable manual terms and hover definitions | Pending |
-| Commuting and recommended street/building arrangement diagrams | Pending |
-| Separate journal opened with P | Pending |
+| Approved Fill layout, live deck inventory, pinned relations and three settlement batches | Implemented; [interface record](APPROVED_FILL_UI_2026-11-22.md) |
+| Automatic resident routes; remove manual dispatch | Implemented; [current record](COMMUTING_REFERENCE_AND_PENALTIES_2026-11-22.md) |
+| Linked terms with hover meanings and exact manual jumps | Implemented for ten core terms; [coverage](TERM_INDEX_2026-11-22.md) |
+| Repeat bad shared-edge deductions per confirmed Fill settlement | Implemented with persisted per-edge records, visible causes and read-only inspection |
+| Commuting, streets, cleanup and upgrade diagrams | Implemented; P opens three reference pages |
+| Independent event journal | Implemented; author clarified I for the journal, P for rules/examples |
+| Road-symbol issue | Zero-death warning and duplicate exposure markers corrected; a different visual defect still needs a location |
+| Fresh Windows/macOS builds | Not rebuilt for these source changes |
 
-Requests, technical checks and participant findings are separate kinds of evidence. The earlier downloadable executables have
-not been rebuilt for this source revision.
+Technical tests and fixed-layout screenshots are separate from participant findings. Earlier download archives retain their
+older code and rules. No final submission or research-evidence publication is inferred from this source update.

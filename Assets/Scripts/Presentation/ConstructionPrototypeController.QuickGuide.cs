@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UrbanWildlifeRooms.Core;
 using UrbanWildlifeRooms.Data;
+using UrbanWildlifeRooms.UI;
 
 namespace UrbanWildlifeRooms.Presentation
 {
@@ -90,7 +91,8 @@ namespace UrbanWildlifeRooms.Presentation
             quickGuideBody.richText = true;
             quickGuideBody.textWrappingMode = TextWrappingModes.Normal;
             quickGuideBody.overflowMode = TextOverflowModes.Overflow;
-            quickGuideBody.raycastTarget = false;
+            quickGuideBody.raycastTarget = true;
+            quickGuideBody.gameObject.AddComponent<ConstructionTermLinks>().Owner = this;
             quickGuideScroll = viewport.gameObject.AddComponent<ScrollRect>();
             quickGuideScroll.viewport = viewport;
             quickGuideScroll.content = bodyRect;
@@ -123,14 +125,18 @@ namespace UrbanWildlifeRooms.Presentation
             RefreshQuickGuide();
         }
 
-        private static void ManualEntry(StringBuilder page, bool chinese,
+        private void ManualEntry(StringBuilder page, bool chinese,
             string englishName, string englishExplanation,
             string chineseName, string chineseExplanation)
         {
+            var id = ConstructionGlossary.Anchor(englishName);
+            page.Append("<link=\"entry:").Append(id).Append("\">");
+            if(id==manualFocusedTerm)page.Append("<mark=#71927D55><color=#163C32>");
             page.Append("<b>").Append(chinese ? chineseName : englishName)
-                .Append(chinese ? "：</b>" : ":</b> ")
-                .Append(UrbanWildlifeRooms.UI.InstructionEmphasis.Format(chinese ? chineseExplanation : englishExplanation))
-                .Append("\n\n");
+                .Append(chinese ? "：</b>" : ":</b> ");
+            if(id==manualFocusedTerm)page.Append("</color></mark>");
+            page.Append("</link>").Append(ConstructionGlossary.Linkify(InstructionEmphasis.Format(
+                chinese ? chineseExplanation : englishExplanation))).Append("\n\n");
         }
 
         private static void ManualSection(StringBuilder page, string title)
@@ -205,8 +211,8 @@ namespace UrbanWildlifeRooms.Presentation
                     "每天建一格", "从建造栏选房间，点亮格预览并确认。点“下一天”结算动物进食、居民活动和得分。");
             }
             ManualEntry(page, zh, "Inspect and pause",
-                "Hover over a built plot for its status. Select a home to set work and meals. Esc opens the pause menu.",
-                "查看与暂停", "悬停已建格可看状态。点击住宅可安排工作与用餐。按 Esc 打开暂停菜单。");
+                "Hover over a built plot for its status. Routes are planned automatically; select a home to inspect them. Esc opens the pause menu.",
+                "查看与暂停", "悬停已建格可看状态。居民路线自动规划；点击住宅可查看通勤路线。按 Esc 打开暂停菜单。");
             ManualEntry(page, zh, "Score index shortcuts",
                 "H opens the last settled day's score index. Tab moves forward; Shift+Tab moves back. F centres an indexed plot in Endless. Esc closes the index. Coloured brackets identify the contributing rooms and visible actors during settlement and review.",
                 "得分来源快捷键", "H 打开最近一次结算的得分来源。Tab 下一项，Shift+Tab 上一项；无尽模式下按 F 居中定位。Esc 关闭索引。结算和查看索引时，彩色边框会标出相关房间与仍在场的居民、动物。");
@@ -221,11 +227,14 @@ namespace UrbanWildlifeRooms.Presentation
                     (hand ? " The lesson plaza needs a route from a home." : ""),
                     "合法落点", "工作坊、餐厅、超市和街道要贴住宅或与住宅接通的街道。垃圾间还可贴餐厅。" +
                     (hand ? "教程里的广场须接通住宅。" : ""));
-            ManualEntry(page, zh, "Oak and green",
+            ManualEntry(page, zh, "Central oak",
+                "The first oak goes in the centre and provides the opening squirrel habitat.",
+                "中央橡树", "第一棵橡树放在棋盘正中，为松鼠保留最初的栖息地。");
+            ManualEntry(page, zh, "Green habitats",
                 run.UsesGreenUpgrades
                     ? "Edge-connected green plots reach level 2 at two plots and level 3 at three or more. Level is separate from maturity: each extra level adds one storage space per plot and one food on mature producing turns."
                     : "The oak starts the city. Green plots provide habitat and food for wildlife.",
-                "橡树与绿地", run.UsesGreenUpgrades
+                "绿地", run.UsesGreenUpgrades
                     ? "共边绿地连成两格升到 2 级，三格及以上升到 3 级。等级与成熟分开计算；每升一级，每格多存 1 份食物，成熟后的产食回合多产 1 份。"
                     : "橡树是城市起点。绿地为动物提供栖息和食物。");
             ManualEntry(page, zh, "When green matures",
@@ -243,11 +252,16 @@ namespace UrbanWildlifeRooms.Presentation
                     "A mature oak shelters squirrels. One meadow brings visiting pigeons. Two mature meadows in the same patch make room for resident pigeons. One mature shrub offers hedgehog habitat and two offer fox habitat.",
                     "动物住在哪里", "成熟橡树可供松鼠栖息。一块草地可供鸽子暂歇，同一片里有两块成熟草地才有常驻鸽子的住处。一块成熟灌木能给刺猬留出栖息地，两块可形成狐狸栖息地。");
             ManualEntry(page, zh, "Home",
-                "Houses one resident. Click a built home, then Set work & meals to choose reachable destinations. Their daily loop is work, meal, then home.",
-                "住宅", "每格容纳一名居民。点击已建住宅，再点左侧“安排工作与用餐”，选择可达的地点；居民的循环是上班、用餐、回家。");
-            ManualEntry(page, zh, "Workshops, restaurants and supermarkets",
-                "A workshop offers two jobs. A restaurant or supermarket offers one job and two meal seats.",
-                "工作坊、餐厅、超市", "工作坊提供两个岗位；餐厅和超市各有一个岗位、两个餐位。");
+                "Houses one resident. Work and meal destinations are planned automatically. Click the home to inspect its commuting route.",
+                "住宅", "每格容纳 1 名居民。系统自动分配可达的岗位和餐位；点击住宅可查看通勤路线。");
+            ManualEntry(page, zh, "Workshop", "Provides two jobs; residents still need a reachable restaurant or supermarket for meals.",
+                "工作坊", "提供 2 个岗位；居民还需要连通餐厅或超市用餐。");
+            ManualEntry(page, zh, "Restaurant", "Provides one job and two meal seats. Beside a square it can gain a terrace and a third seat.",
+                "餐厅", "提供 1 个岗位、2 个餐位；贴广场可形成露台，增至 3 个餐位。");
+            ManualEntry(page, zh, "Supermarket", "Provides one job and two meal seats. Actual dining can leave temporary wildlife food.",
+                "超市", "提供 1 个岗位、2 个餐位；当天实际有人用餐后，可留下临时动物食物。");
+            ManualEntry(page, zh, "Commuting", "A complete routine is home, work, meal, then home. The system maximizes complete routines within reachable job and seat capacities. Scarce places rotate between households. It then improves satisfaction and route choices. Spare capacity is also matched across households; a disconnected or closed service cannot be used. Inspect a home to see its current plan. You decide the layout; no manual dispatch is required.",
+                "通勤", "居民从住宅出发，上班、用餐后回家的一次完整循环。系统先让尽可能多的居民获得可达的岗位与餐位；名额不足时轮换，再优化满意度和路线。剩余岗位、餐位也会统一分配。断开的道路、已停用的服务不能使用。点击住宅可查看当前计划；玩家负责建筑布局，无需手动调度。");
             ManualEntry(page, zh, "What supermarket food does",
                 "Each supermarket with a resident meal produces one temporary wildlife portion that day, regardless of diner count. Wildlife uses natural food first, then this food if still hungry and able to reach it. Each portion eaten removes one portion of supermarket waste. Unused food is treated as waste, not stored as tomorrow's food; food alone does not attract new animals.",
                 "超市食物有什么用", "每家超市当天有人实际用餐，就留下 1 份临时动物食物，与用餐人数无关。动物先吃自然食物，仍饥饿且能到达时再取食。每吃掉 1 份，超市少留 1 份餐厨垃圾。未吃的按垃圾处理，不能留作隔日食物；留下食物不会自动引来新动物。");
@@ -264,12 +278,15 @@ namespace UrbanWildlifeRooms.Presentation
                         ? "松鼠和刺猬还要求食源在其栖息格周围八格内，鸽子可沿通路到更远处。"
                         : "松鼠还要求食源在其栖息格周围八格内，鸽子和刺猬可沿通路到更远处。"
                     : ""));
-            ManualEntry(page, zh, "Street and square",
+            ManualEntry(page, zh, "Street",
+                "Shared-edge streets extend work, meal and cleanup routes. Diagonal contact does not connect them.",
+                "街道", "沿上下左右共边延伸上班、用餐和清运路线；斜角接触不算连通。");
+            ManualEntry(page, zh, "Square",
                 "Connected streets extend work, meal and waste collection routes. A visit to a square after a completed resident loop can leave food." +
                 (run.ScoringVersion >= 8
                     ? " It also halves traffic risk on streets in the surrounding eight plots."
                     : ""),
-                "街道和广场", "连通街道可延伸工作、用餐和清运路线。居民完成循环后到访广场，可留下动物食物。" +
+                "广场", "连通街道可延伸工作、用餐和清运路线。居民完成循环后到访广场，可留下动物食物。" +
                 (run.ScoringVersion >= 8 ? "到访也会让广场周围八格内街道的车祸风险减半。" : ""));
             ManualEntry(page, zh, "Waste room", run.UsesUncappedWaste
                     ? "Clears all waste in the surrounding eight plots and in homes or food services reached by continuous shared-edge streets."
@@ -352,8 +369,8 @@ namespace UrbanWildlifeRooms.Presentation
                     var waste = -ConstructionPlacementScore.PairPoints(ConstructionCategory.Waste,
                         ConstructionCategory.Residence, run.PlacementRulesVersion);
                     ManualEntry(page, zh, "Bad pairings",
-                        $"Street beside green: −{street} per shared edge, including slow streets. Waste room beside a home: −{waste} per shared edge.",
-                        "不良搭配", $"街道与绿地每条共边扣 {street} 分，慢行街同样计入。垃圾间与住宅每条共边扣 {waste} 分。");
+                        $"Street beside green: −{street} per shared edge, including slow streets. Waste room beside a home: −{waste} per shared edge." + (run.UsesRecurringPenalties ? " Pay once on placement, then again at each confirmed settlement; inspection and card selection do not deduct. P opens examples; I opens the journal." : ""),
+                        "不良搭配", $"街道与绿地每条共边扣 {street} 分，慢行街同样计入。垃圾间与住宅每条共边扣 {waste} 分。" + (run.UsesRecurringPenalties ? "首次在放置时扣除，之后每次建造结算继续扣；查看、选牌和打开手册不扣分。按 P 查看建造图例，按 I 查看日志。" : ""));
                 }
             }
             if (run.HasTrafficPenaltyScore)
@@ -406,11 +423,13 @@ namespace UrbanWildlifeRooms.Presentation
 
         private void RefreshQuickGuide()
         {
+            RefreshReferenceLabels();
+            if (ReferenceOpen) RefreshReference();
             if (quickGuideRoot == null || run == null) return;
             var blocked = run.IsFinished || !IsBoardCaseOpen ||
-                specialTaskSelectionRoot != null &&
+                !manualTermContext && specialTaskSelectionRoot != null &&
                     specialTaskSelectionRoot.gameObject.activeSelf ||
-                endlessRulesOverlay != null && endlessRulesOverlay.activeSelf;
+                !manualTermContext && endlessRulesOverlay != null && endlessRulesOverlay.activeSelf;
             if (blocked && QuickGuideOpen)
                 quickGuideRoot.gameObject.SetActive(false);
             if (quickGuideButton != null)
@@ -420,7 +439,7 @@ namespace UrbanWildlifeRooms.Presentation
                 quickGuideButtonLabel.fontSize = 16;
             }
             quickGuideHeading.text = L("GAME MANUAL", "游戏手册");
-            quickGuideSubtitle.text = L("Scroll to read · O to close", "滚轮翻阅　O 收起");
+            quickGuideSubtitle.text = L("Hover terms · click to jump", "悬停释义 · 点击跳转");
             quickGuidePreviousLabel.text = L("UP", "向上");
             quickGuideNextLabel.text = L("DOWN", "向下");
             quickGuideCloseLabel.text = L("CLOSE  ·  O", "收起手册  ·  O");
@@ -446,6 +465,8 @@ namespace UrbanWildlifeRooms.Presentation
                 Canvas.ForceUpdateCanvases();
                 quickGuideScroll.StopMovement();
                 quickGuideScroll.verticalNormalizedPosition = 1f;
+                if (!string.IsNullOrEmpty(manualFocusedTerm) && QuickGuideOpen)
+                    ScrollManualToTerm(manualFocusedTerm);
             }
             if (QuickGuideOpen) quickGuideRoot.SetAsLastSibling();
         }
@@ -469,11 +490,12 @@ namespace UrbanWildlifeRooms.Presentation
             CloseDeckInventory();
             if (quickGuideRoot == null || run == null || run.IsFinished ||
                 !IsBoardCaseOpen || PauseOpen ||
-                specialTaskSelectionRoot != null &&
+                !manualTermContext && specialTaskSelectionRoot != null &&
                     specialTaskSelectionRoot.gameObject.activeSelf ||
-                endlessRulesOverlay != null && endlessRulesOverlay.activeSelf)
+                !manualTermContext && endlessRulesOverlay != null && endlessRulesOverlay.activeSelf)
                 return;
             quickGuideRoot.gameObject.SetActive(!QuickGuideOpen);
+            if(!QuickGuideOpen)manualTermContext=false;
             HideTooltip();
             RefreshQuickGuide();
             RefreshOpeningTour();

@@ -87,3 +87,7 @@ approved UI revision are not implemented here; older opening-test limitations re
 ## Approved Fill interface verification
 
 The [revision record](../Docs/APPROVED_FILL_UI_2026-11-22.md) links 38/38 selected EditMode and 27/27 selected PlayMode checks. These cover stock conservation, legacy random-save compatibility, emphasis, bilingual native Fill UI, selection/coverage/warnings, modal isolation, restart/skip goals, three score batches and exact menu navigation. They overlap earlier batches and are not participant evidence or a cumulative unique-test count. The initial clipping and fixture failures were corrected before the passing exports. Other historical opening-test limitations above are retained.
+
+## Automatic commuting, references and recurring penalties
+
+The [current record](../Docs/COMMUTING_REFERENCE_AND_PENALTIES_2026-11-22.md) links 77/77 selected EditMode and 32/32 selected PlayMode checks. They cover assignment constraints, fixed-order shortest routing, historical dispatch migration, repeated deductions and persistence, bilingual term navigation, P/I views, road markers and previous controls. The overlapping batches are not cumulative unique tests or participant findings. Existing historical opening limitations remain above. Future Fill scoring changed, so older balance examples/rankings are not directly comparable benchmarks.

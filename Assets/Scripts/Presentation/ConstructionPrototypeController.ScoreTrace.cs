@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -88,7 +88,7 @@ namespace UrbanWildlifeRooms.Presentation
             return root;
         }
 
-        private bool ScoreTraceBlocked => run == null || !IsBoardCaseOpen || PauseOpen || QuickGuideOpen ||
+        private bool ScoreTraceBlocked => run == null || !IsBoardCaseOpen || PauseOpen || QuickGuideOpen || ReferenceOpen ||
             ShouldShowOpeningTour() || buildPaletteOpen || hasPendingPlacement || DeckInventoryOpen ||
             specialTaskSelectionRoot != null && specialTaskSelectionRoot.gameObject.activeSelf ||
             finalResultPanel != null && finalResultPanel.activeSelf ||
