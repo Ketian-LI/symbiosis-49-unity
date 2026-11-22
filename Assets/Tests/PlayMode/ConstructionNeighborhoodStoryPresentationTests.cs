@@ -238,15 +238,21 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 var pixelPitch = Vector2.Distance(centre, across);
                 camera.orthographicSize = WorldScaleStandards.CellSizeMeters * target.height / (2f * pixelPitch);
                 var size = camera.orthographicSize;
-                camera.transform.position = new Vector3((0.5f - centre.x / target.width) * 2f * size * camera.aspect,
+                var controller=root.GetComponent<ConstructionPrototypeController>();
+                var viewX=(int)typeof(ConstructionPrototypeController).GetField("viewMinColumn",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(controller);
+                var viewY=(int)typeof(ConstructionPrototypeController).GetField("viewMinRow",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(controller);
+                var viewCentre=new Vector3(viewX*WorldScaleStandards.CellSizeMeters,0,-viewY*WorldScaleStandards.CellSizeMeters);
+                camera.transform.position = viewCentre + new Vector3((0.5f - centre.x / target.width) * 2f * size * camera.aspect,
                     42f, (0.5f - centre.y / target.height) * 2f * size);
                 Canvas.ForceUpdateCanvases();
-                var projected = camera.WorldToScreenPoint(Vector3.zero);
+                var projected = camera.WorldToScreenPoint(viewCentre);
                 Assert.That(projected.x, Is.EqualTo(centre.x).Within(2f));
                 Assert.That(projected.y, Is.EqualTo(centre.y).Within(2f));
-                var worldPitch = camera.WorldToScreenPoint(new Vector3(WorldScaleStandards.CellSizeMeters, 0f, 0f));
+                var worldPitch = camera.WorldToScreenPoint(viewCentre+new Vector3(WorldScaleStandards.CellSizeMeters, 0f, 0f));
                 Assert.That(worldPitch.x - projected.x, Is.EqualTo(pixelPitch).Within(2f));
                 typeof(ConstructionPrototypeController).GetMethod("DrawScoreTrace", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .Invoke(root.GetComponent<ConstructionPrototypeController>(), null);
+                typeof(ConstructionPrototypeController).GetMethod("DrawSelectedRoomHighlights", BindingFlags.Instance | BindingFlags.NonPublic)
                     .Invoke(root.GetComponent<ConstructionPrototypeController>(), null);
                 camera.Render();
                 RenderTexture.active = target;

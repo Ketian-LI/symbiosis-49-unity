@@ -24,12 +24,18 @@ namespace UrbanWildlifeRooms.Presentation
         private int scoreTraceDay = -1, scoreTraceIndex;
         private bool scoreTraceReviewOpen, scoreTraceAutomatic;
         private Button scoreTraceLaunch;
+        private RectTransform scoreBatchPanel;
+        private Text scoreBatchLabel;
         public bool IsScoreIndexOpen => scoreTraceReviewOpen;
         public int ScoreIndexCount => scoreTraceEntries.Count;
         public int CurrentScoreIndex => scoreTraceIndex;
 
         private void BuildScoreTrace(Transform canvas)
         {
+            var batch=Panel("Score batch",canvas,new Vector2(0,338),new Vector2(278,32),Ink);
+            batch.raycastTarget=false;scoreBatchPanel=batch.rectTransform;
+            scoreBatchLabel=TextAt("Score batch label",batch.transform,Vector2.zero,new Vector2(266,30),"",17,true,Paper,TextAnchor.MiddleCenter);
+            scoreBatchLabel.raycastTarget=false;scoreBatchPanel.gameObject.SetActive(false);
             scoreTraceActorLayer = NewRect("Scoring actor highlights", canvas, Vector2.zero, Vector2.zero);
             Stretch(scoreTraceActorLayer);
             var group = scoreTraceActorLayer.gameObject.AddComponent<CanvasGroup>();
@@ -90,7 +96,7 @@ namespace UrbanWildlifeRooms.Presentation
         public bool HandleScoreIndexKey(KeyCode key, bool shift = false)
         {
             var selected = EventSystem.current?.currentSelectedGameObject;
-            if (ScoreTraceBlocked || selected != null &&
+            if (ScoreTraceBlocked || scoreMotionAnimation!=null || selected != null &&
                 (selected.GetComponentInParent<InputField>() != null || selected.GetComponentInParent<TMP_InputField>() != null)) return false;
             if(key==KeyCode.H) return ToggleScoreIndex();
             if(key==KeyCode.Tab) return StepScoreIndex(shift ? -1 : 1);
@@ -142,7 +148,7 @@ namespace UrbanWildlifeRooms.Presentation
         public bool JumpToScoreIndex(int index)
         {
             RefreshScoreTrace();
-            if(ScoreTraceBlocked || scoreTraceEntries.Count==0) return false;
+            if(ScoreTraceBlocked || scoreMotionAnimation!=null || scoreTraceEntries.Count==0) return false;
             scoreTraceReviewOpen=true;
             scoreTraceIndex=((index%scoreTraceEntries.Count)+scoreTraceEntries.Count)%scoreTraceEntries.Count;
             SelectScoreTrace();
@@ -182,10 +188,20 @@ namespace UrbanWildlifeRooms.Presentation
 
         private void ShowScoreTracePhase(ScoreSide side)
         {
-            RefreshScoreTrace(); if(scoreTraceReviewOpen) return;
+            RefreshScoreTrace();
+            if(side is not (ScoreSide.Resident or ScoreSide.Animal or ScoreSide.Shared))
+            {EndScoreTracePhase();return;}
+            scoreTraceReviewOpen=false;
             var kind=side==ScoreSide.Animal?ScoreTraceKind.Animal:side==ScoreSide.Resident?ScoreTraceKind.Resident:
                 side==ScoreSide.Build?ScoreTraceKind.Build:ScoreTraceKind.Shared;
             scoreTraceActive=scoreTraceEntries.Where(entry=>entry.Kind==kind).ToArray();
+            scoreBatchLabel.text=side switch
+            {
+                ScoreSide.Resident=>L("Residents · 1/3","居民结算 · 1/3"),
+                ScoreSide.Animal=>L("Animals · 2/3","动物结算 · 2/3"),
+                _=>L("Shared · 3/3","共同得分 · 3/3")
+            };
+            scoreBatchLabel.color=side==ScoreSide.Animal?Color.Lerp(ScoreAnimalGreen,Paper,0.35f):side==ScoreSide.Shared?Color.Lerp(ScoreSharedBlue,Paper,0.25f):ScoreGold;
             scoreTraceAutomatic=true; DrawScoreTrace();
         }
 
@@ -208,6 +224,7 @@ namespace UrbanWildlifeRooms.Presentation
         {
             if(scoreTracePanel==null) return;
             var visible=!ScoreTraceBlocked;
+            scoreBatchPanel.gameObject.SetActive(visible && scoreTraceAutomatic);
             scoreTracePanel.gameObject.SetActive(scoreTraceReviewOpen && visible);
             if(readingChangeRoot!=null && scoreTraceReviewOpen) readingChangeRoot.gameObject.SetActive(false);
             var active=visible && (scoreTraceReviewOpen || scoreTraceAutomatic) ? scoreTraceActive : Array.Empty<ScoreTraceEntry>();

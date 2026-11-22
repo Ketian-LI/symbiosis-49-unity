@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="17" result="Passed" total="17" passed="17" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-22 05:48:10Z" end-time="2026-11-22 05:48:11Z" duration="0.5697989">
+  <test-suite type="TestSuite" id="1000" name="城市共栖房间" fullname="城市共栖房间" runstate="Runnable" testcasecount="810" result="Passed" start-time="2026-11-22 05:48:10Z" end-time="2026-11-22 05:48:11Z" duration="0.569799" total="17" passed="17" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1956" name="UrbanWildlifeRooms.Tests.Editor.dll" fullname="[workspace]/work/result-review-20261119/project/Library/ScriptAssemblies/UrbanWildlifeRooms.Tests.Editor.dll" runstate="Runnable" testcasecount="810" result="Passed" start-time="2026-11-22 05:48:10Z" end-time="2026-11-22 05:48:11Z" duration="0.551253" total="17" passed="17" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="24328" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1957" name="UrbanWildlifeRooms" fullname="UrbanWildlifeRooms" runstate="Runnable" testcasecount="810" result="Passed" start-time="2026-11-22 05:48:10Z" end-time="2026-11-22 05:48:11Z" duration="0.542217" total="17" passed="17" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1958" name="Tests" fullname="UrbanWildlifeRooms.Tests" runstate="Runnable" testcasecount="810" result="Passed" start-time="2026-11-22 05:48:10Z" end-time="2026-11-22 05:48:11Z" duration="0.532885" total="17" passed="17" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestSuite" id="1959" name="Editor" fullname="UrbanWildlifeRooms.Tests.Editor" runstate="Runnable" testcasecount="810" result="Passed" start-time="2026-11-22 05:48:10Z" end-time="2026-11-22 05:48:11Z" duration="0.524873" total="17" passed="17" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1463" name="ConstructionRoomRelationsTests" fullname="UrbanWildlifeRooms.Tests.Editor.ConstructionRoomRelationsTests" classname="UrbanWildlifeRooms.Tests.Editor.ConstructionRoomRelationsTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-22 05:48:10Z" end-time="2026-11-22 05:48:11Z" duration="0.176848" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1464" name="CoverageUsesEightNearbyPlotsAndOnlySharedEdgeRoadChains" fullname="UrbanWildlifeRooms.Tests.Editor.ConstructionRoomRelationsTests.CoverageUsesEightNearbyPlotsAndOnlySharedEdgeRoadChains" methodname="CoverageUsesEightNearbyPlotsAndOnlySharedEdgeRoadChains" classname="UrbanWildlifeRooms.Tests.Editor.ConstructionRoomRelationsTests" runstate="Runnable" seed="177859735" result="Passed" start-time="2026-11-22 05:48:10Z" end-time="2026-11-22 05:48:11Z" duration="0.023986" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1465" name="CoveredDiagonalHomeAndPenalisedEdgeHomeRemainDifferentReadOnlyRelations" fullname="UrbanWildlifeRooms.Tests.Editor.ConstructionRoomRelationsTests.CoveredDiagonalHomeAndPenalisedEdgeHomeRemainDifferentReadOnlyRelations" methodname="CoveredDiagonalHomeAndPenalisedEdgeHomeRemainDifferentReadOnlyRelations" classname="UrbanWildlifeRooms.Tests.Editor.ConstructionRoomRelationsTests" runstate="Runnable" seed="1842729178" result="Passed" start-time="2026-11-22 05:48:11Z" end-time="2026-11-22 05:48:11Z" duration="0.134156" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1466" name="ConstructionScoreTraceTests" fullname="UrbanWildlifeRooms.Tests.Editor.ConstructionScoreTraceTests" classname="UrbanWildlifeRooms.Tests.Editor.ConstructionScoreTraceTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-11-22 05:48:11Z" end-time="2026-11-22 05:48:11Z" duration="0.101740" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1471" name="AHomeWithoutACompletedRoutineDoesNotInventAResidentContributor" fullname="UrbanWildlifeRooms.Tests.Editor.ConstructionScoreTraceTests.AHomeWithoutACompletedRoutineDoesNotInventAResidentContributor" methodname="AHomeWithoutACompletedRoutineDoesNotInventAResidentContributor" classname="UrbanWildlifeRooms.Tests.Editor.ConstructionScoreTraceTests" runstate="Runnable" seed="1171953636" result="Passed" start-time="2026-11-22 05:48:11Z" end-time="2026-11-22 05:48:11Z" duration="0.002906" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1469" name="DeductionHighlightsBothSidesAndExcludesTheUnsettledNextRoom" fullname="UrbanWildlifeRooms.Tests.Editor.ConstructionScoreTraceTests.DeductionHighlightsBothSidesAndExcludesTheUnsettledNextRoom" methodname="DeductionHighlightsBothSidesAndExcludesTheUnsettledNextRoom" classname="UrbanWildlifeRooms.Tests.Editor.ConstructionScoreTraceTests" runstate="Runnable" seed="1328199072" result="Passed" start-time="2026-11-22 05:48:11Z" end-time="2026-11-22 05:48:11Z" duration="0.020989" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1467" name="EmptyRunHasNoInventedContributors" fullname="UrbanWildlifeRooms.Tests.Editor.ConstructionScoreTraceTests.EmptyRunHasNoInventedContributors" methodname="EmptyRunHasNoInventedContributors" classname="UrbanWildlifeRooms.Tests.Editor.ConstructionScoreTraceTests" runstate="Runnable" seed="179166621" result="Passed" start-time="2026-11-22 05:48:11Z" end-time="2026-11-22 05:48:11Z" duration="0.007110" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1470" name="RestoringASettledSaveReconstructsTheSameIndex" fullname="UrbanWildlifeRooms.Tests.Editor.ConstructionScoreTraceTests.RestoringASettledSaveReconstructsTheSameIndex" methodname="RestoringASettledSaveReconstructsTheSameIndex" classname="UrbanWildlifeRooms.Tests.Editor.ConstructionScoreTraceTests" runstate="Runnable" seed="530058486" result="Passed" start-time="2026-11-22 05:48:11Z" end-time="2026-11-22 05:48:11Z" duration="0.056852" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1468" name="TracesActualMealsRoutinesAndRoomsWithoutChangingSave" fullname="UrbanWildlifeRooms.Tests.Editor.ConstructionScoreTraceTests.TracesActualMealsRoutinesAndRoomsWithoutChangingSave" methodname="TracesActualMealsRoutinesAndRoomsWithoutChangingSave" classname="UrbanWildlifeRooms.Tests.Editor.ConstructionScoreTraceTests" runstate="Runnable" seed="2117387306" result="Passed" start-time="2026-11-22 05:48:11Z" end-time="2026-11-22 05:48:11Z" duration="0.009452" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1509" name="ConstructionWasteModelTests" fullname="UrbanWildlifeRooms.Tests.Editor.ConstructionWasteModelTests" classname="UrbanWildlifeRooms.Tests.Editor.ConstructionWasteModelTests" runstate="Runnable" testcasecount="10" result="Passed" start-time="2026-11-22 05:48:11Z" end-time="2026-11-22 05:48:11Z" duration="0.217302" total="10" passed="10" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1512" name="BacklogDisruptsJourneyAndTwoNewRoomsCanRecoverIt" fullname="UrbanWildlifeRooms.Tests.Editor.ConstructionWasteModelTests.BacklogDisruptsJourneyAndTwoNewRoomsCanRecoverIt" methodname="BacklogDisruptsJourneyAndTwoNewRoomsCanRecoverIt" classname="UrbanWildlifeRooms.Tests.Editor.ConstructionWasteModelTests" runstate="Runnable" seed="937928419" result="Passed" start-time="2026-11-22 05:48:11Z" end-time="2026-11-22 05:48:11Z" duration="0.006302" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1510" name="CleanupReachesOneDiagonalStepButNotTwoRowsAway" fullname="UrbanWildlifeRooms.Tests.Editor.ConstructionWasteModelTests.CleanupReachesOneDiagonalStepButNotTwoRowsAway" methodname="CleanupReachesOneDiagonalStepButNotTwoRowsAway" classname="UrbanWildlifeRooms.Tests.Editor.ConstructionWasteModelTests" runstate="Runnable" seed="1548152903" result="Passed" start-time="2026-11-22 05:48:11Z" end-time="2026-11-22 05:48:11Z" duration="0.001666" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1514" name="ConnectedStreetsExtendWasteCollectionBeyondSurroundingPlots" fullname="UrbanWildlifeRooms.Tests.Editor.ConstructionWasteModelTests.ConnectedStreetsExtendWasteCollectionBeyondSurroundingPlots" methodname="ConnectedStreetsExtendWasteCollectionBeyondSurroundingPlots" classname="UrbanWildlifeRooms.Tests.Editor.ConstructionWasteModelTests" runstate="Runnable" seed="310813266" result="Passed" start-time="2026-11-22 05:48:11Z" end-time="2026-11-22 05:48:11Z" duration="0.001750" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1515" name="DigitalHandHomeShowsWasteWorkAndMealIssuesTogether" fullname="UrbanWildlifeRooms.Tests.Editor.ConstructionWasteModelTests.DigitalHandHomeShowsWasteWorkAndMealIssuesTogether" methodname="DigitalHandHomeShowsWasteWorkAndMealIssuesTogether" classname="UrbanWildlifeRooms.Tests.Editor.ConstructionWasteModelTests" runstate="Runnable" seed="599789654" result="Passed" start-time="2026-11-22 05:48:11Z" end-time="2026-11-22 05:48:11Z" duration="0.017676" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1513" name="DigitalHandWasteRoomClearsAllNearbyWithoutShutdownThreshold" fullname="UrbanWildlifeRooms.Tests.Editor.ConstructionWasteModelTests.DigitalHandWasteRoomClearsAllNearbyWithoutShutdownThreshold" methodname="DigitalHandWasteRoomClearsAllNearbyWithoutShutdownThreshold" classname="UrbanWildlifeRooms.Tests.Editor.ConstructionWasteModelTests" runstate="Runnable" seed="602832875" result="Passed" start-time="2026-11-22 05:48:11Z" end-time="2026-11-22 05:48:11Z" duration="0.003298" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1511" name="HomesAndServedMealsMakeWasteAndTwoDailyPortionsAreCleared" fullname="UrbanWildlifeRooms.Tests.Editor.ConstructionWasteModelTests.HomesAndServedMealsMakeWasteAndTwoDailyPortionsAreCleared" methodname="HomesAndServedMealsMakeWasteAndTwoDailyPortionsAreCleared" classname="UrbanWildlifeRooms.Tests.Editor.ConstructionWasteModelTests" runstate="Runnable" seed="2061734869" result="Passed" start-time="2026-11-22 05:48:11Z" end-time="2026-11-22 05:48:11Z" duration="0.002909" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1516" name="NewRestaurantDoesNotClearMissedWorkOrMealBeforeSettlement" fullname="UrbanWildlifeRooms.Tests.Editor.ConstructionWasteModelTests.NewRestaurantDoesNotClearMissedWorkOrMealBeforeSettlement" methodname="NewRestaurantDoesNotClearMissedWorkOrMealBeforeSettlement" classname="UrbanWildlifeRooms.Tests.Editor.ConstructionWasteModelTests" runstate="Runnable" seed="280315292" result="Passed" start-time="2026-11-22 05:48:11Z" end-time="2026-11-22 05:48:11Z" duration="0.021121" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1519" name="RunPreviewAndDailyScoreUseSameCleanupResultAfterReload" fullname="UrbanWildlifeRooms.Tests.Editor.ConstructionWasteModelTests.RunPreviewAndDailyScoreUseSameCleanupResultAfterReload" methodname="RunPreviewAndDailyScoreUseSameCleanupResultAfterReload" classname="UrbanWildlifeRooms.Tests.Editor.ConstructionWasteModelTests" runstate="Runnable" seed="765672778" result="Passed" start-time="2026-11-22 05:48:11Z" end-time="2026-11-22 05:48:11Z" duration="0.069051" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1518" name="SaveRestoresBacklogAndRejectsUnknownSource" fullname="UrbanWildlifeRooms.Tests.Editor.ConstructionWasteModelTests.SaveRestoresBacklogAndRejectsUnknownSource" methodname="SaveRestoresBacklogAndRejectsUnknownSource" classname="UrbanWildlifeRooms.Tests.Editor.ConstructionWasteModelTests" runstate="Runnable" seed="1450159607" result="Passed" start-time="2026-11-22 05:48:11Z" end-time="2026-11-22 05:48:11Z" duration="0.001211" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1517" name="WasteIconWaitsForActualCleanupEvenWhenForecastIsClear" fullname="UrbanWildlifeRooms.Tests.Editor.ConstructionWasteModelTests.WasteIconWaitsForActualCleanupEvenWhenForecastIsClear" methodname="WasteIconWaitsForActualCleanupEvenWhenForecastIsClear" classname="UrbanWildlifeRooms.Tests.Editor.ConstructionWasteModelTests" runstate="Runnable" seed="1805405761" result="Passed" start-time="2026-11-22 05:48:11Z" end-time="2026-11-22 05:48:11Z" duration="0.085619" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Saving results to: [user]/AppData/LocalLow/Urban Wildlife Rooms/城市共栖房间\TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

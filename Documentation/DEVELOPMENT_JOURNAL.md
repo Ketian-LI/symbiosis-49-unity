@@ -158,3 +158,12 @@ goals now use a compact ledger: mounted illustrations, distinct goal names and m
 rules. A small header badge reports achieved goals; completed rows have a tick and their actual activation/settlement state.
 A feathered field reuses hand-card paper texture to protect text over foliage. The [component record](../Docs/GOAL_PROGRESS_UI_2026-11-21.md)
 links actual bilingual renders and checks. Page backgrounds, scoring and simulation rules were retained.
+
+## 22 November: persistent room relationships and isolated score batches
+
+The user prioritised highlights before further UI/rule work. Clicking a built room now pins its current pairings and recorded
+score relationships. A waste room shows collection coverage and separate red frames for bad residential pairings at the same
+time. Pointer exit no longer clears the pin. Residents, animals and shared score animate in three isolated groups, with explicit
+phase labels. The [feature record](../Docs/ROOM_HIGHLIGHTS_2026-11-22.md) links checks and actual captures; the
+[pending list](../Docs/PENDING_REQUESTS_2026-11-22.md) keeps recurring deductions, terminology, diagrams, the P journal and the
+approved wider visual revision outside this delivery. Selection does not award or deduct points.

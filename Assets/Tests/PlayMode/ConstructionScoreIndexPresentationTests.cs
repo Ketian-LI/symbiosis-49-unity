@@ -84,14 +84,27 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 var day=run.LastScoreDay;
                 typeof(ConstructionPrototypeController).GetMethod("StartFillHandScoreMotion",Private).Invoke(controller,new object[]{run.LastEcologyDay,
                     run.AnimalScore-day.animalPoints+day.trafficPenaltyPoints,run.HumanScore-day.humanPoints,run.BalanceScore-day.balancePoints});
-                var seen=new HashSet<ScoreTraceKind>();var end=Time.realtimeSinceStartup+12f;
+                var seen=new HashSet<ScoreTraceKind>();var order=new List<ScoreTraceKind>();var end=Time.realtimeSinceStartup+16f;
                 while(typeof(ConstructionPrototypeController).GetField("scoreMotionAnimation",Private).GetValue(controller)!=null && Time.realtimeSinceStartup<end)
                 {
                     var active=(ScoreTraceEntry[])typeof(ConstructionPrototypeController).GetField("scoreTraceActive",Private).GetValue(controller);
-                    foreach(var entry in active)seen.Add(entry.Kind);
+                    var kinds=active.Select(entry=>entry.Kind).Distinct().ToArray();
+                    Assert.That(kinds.Length,Is.LessThanOrEqualTo(1),"A batch must never mix contributor groups.");
+                    foreach(var entry in active)
+                        if(seen.Add(entry.Kind))
+                        {
+                            order.Add(entry.Kind);
+                            Assert.That(controller.HandleScoreIndexKey(KeyCode.H),Is.False,"Manual review waits for settlement batches.");
+                            var path=Environment.GetEnvironmentVariable("SYMBIOSIS49_STORY_CAPTURE_PATH");
+                            if(!string.IsNullOrEmpty(path))
+                                yield return (IEnumerator)typeof(ConstructionNeighborhoodStoryPresentationTests).GetMethod("Capture",BindingFlags.Static|BindingFlags.NonPublic)
+                                    .Invoke(null,new object[]{root,Path.Combine(Path.GetDirectoryName(path),"score-batch-"+entry.Kind.ToString().ToLowerInvariant()+".png")});
+                        }
                     yield return null;
                 }
                 Assert.That(seen,Does.Contain(ScoreTraceKind.Animal));Assert.That(seen,Does.Contain(ScoreTraceKind.Resident));Assert.That(seen,Does.Contain(ScoreTraceKind.Shared));
+                Assert.That(order,Is.EqualTo(new[]{ScoreTraceKind.Resident,ScoreTraceKind.Animal,ScoreTraceKind.Shared}));
+                Assert.That(root.GetComponentsInChildren<Text>().Any(t=>t.name=="Score batch label"),Is.False,"The phase label must disappear after settlement.");
                 Assert.That(root.GetComponentsInChildren<RectTransform>().Any(rect=>rect.name=="Scoring room highlight"),Is.False);
                 Assert.That(JsonUtility.ToJson(run.Export()),Is.EqualTo(saved));
             }
@@ -117,6 +130,33 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             }
             finally{UnityEngine.Object.Destroy(root);}yield return null;
         }
+        [UnityTest] public IEnumerator EndlessSettlementUsesThreeIsolatedBatchesWithoutChangingTheRun()
+        {
+            var run=new ConstructionRunModel(ConstructionGameMode.Endless);run.ConfigureEndlessLossRules(20,20);run.SetOpeningTourCompleted(true);run.TrySimulateDay(out _);
+            foreach(var c in new[]{(ConstructionCategory.Residence,4,3),(ConstructionCategory.Restaurant,5,3)})
+            {Assert.That(run.TryBuild(c.Item2,c.Item3,c.Item1,GreenPlanting.None,out _,out _,out _),Is.True);Assert.That(run.TrySimulateConstructionDay(out _),Is.True);}
+            var root=new GameObject("Endless three-batch fixture");
+            try
+            {
+                var controller=root.AddComponent<ConstructionPrototypeController>();controller.UseRunForTesting(run);yield return Ready(controller);
+                var saved=JsonUtility.ToJson(run.Export());var day=run.LastScoreDay;
+                typeof(ConstructionPrototypeController).GetMethod("StartScoreMotion",Private).Invoke(controller,new object[]{run.LastEcologyDay,
+                    run.AnimalScore-day.animalPoints+day.trafficPenaltyPoints,run.HumanScore-day.humanPoints,run.BalanceScore-day.balancePoints});
+                var order=new List<string>();var deadline=Time.realtimeSinceStartup+16f;
+                while(typeof(ConstructionPrototypeController).GetField("scoreMotionAnimation",Private).GetValue(controller)!=null && Time.realtimeSinceStartup<deadline)
+                {
+                    var label=root.GetComponentsInChildren<Text>().FirstOrDefault(t=>t.name=="Score batch label");
+                    if(label!=null && !order.Contains(label.text))order.Add(label.text);
+                    var entries=(ScoreTraceEntry[])typeof(ConstructionPrototypeController).GetField("scoreTraceActive",Private).GetValue(controller);
+                    Assert.That(entries.Select(e=>e.Kind).Distinct().Count(),Is.LessThanOrEqualTo(1));yield return null;
+                }
+                Assert.That(order.Count,Is.EqualTo(3));
+                Assert.That(order[0],Does.Contain("1/3"));Assert.That(order[1],Does.Contain("2/3"));Assert.That(order[2],Does.Contain("3/3"));
+                Assert.That(JsonUtility.ToJson(run.Export()),Is.EqualTo(saved));
+            }
+            finally{UnityEngine.Object.Destroy(root);}yield return null;
+        }
+
         private static IEnumerator Ready(ConstructionPrototypeController controller)
         {yield return null;var end=Time.realtimeSinceStartup+12f;while(!controller.IsBoardCaseOpen&&Time.realtimeSinceStartup<end)yield return null;Assert.That(controller.IsBoardCaseOpen,Is.True);}
         private static ConstructionRunModel Fill()

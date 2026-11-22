@@ -687,8 +687,10 @@ namespace UrbanWildlifeRooms.Presentation
         private void Update()
         {
             UpdateFillHandMotion();
-            if (Input.GetKeyDown(KeyCode.Escape) && !HandleScoreIndexKey(KeyCode.Escape)) TogglePauseMenu();
+            if (Input.GetKeyDown(KeyCode.Escape) && !HandleScoreIndexKey(KeyCode.Escape) &&
+                !TryCancelRoomHighlights()) TogglePauseMenu();
             UpdateScoreTrace();
+            DrawSelectedRoomHighlights();
             if (IsEndless && IsBoardCaseOpen && !PauseOpen && !QuickGuideOpen &&
                 !run.IsFinished &&
                 (EventSystem.current?.currentSelectedGameObject == null ||
@@ -1034,6 +1036,7 @@ namespace UrbanWildlifeRooms.Presentation
             if (existing != null)
             {
                 selectedInfoTileId = existing.id;
+                SelectRoomForReview(column,row);
                 hoveredInfoTileId = null;
                 hoveredEmptyColumn = null;
                 hoveredEmptyRow = null;
@@ -1150,6 +1153,7 @@ namespace UrbanWildlifeRooms.Presentation
                 Refresh();
                 return false;
             }
+            ClearRoomHighlightSelection();
             if (IsBoardGame && !cameraCommitInProgress)
             {
                 if (feedbackText != null)
@@ -2274,6 +2278,7 @@ namespace UrbanWildlifeRooms.Presentation
             BuildTutorialFocus(canvas.transform);
             BuildScoreMotion(canvas.transform);
             BuildScoreTrace(canvas.transform);
+            BuildRoomHighlights(canvas.transform);
             if (handMode)
             {
                 BuildRoomIssueIcons();
@@ -4777,9 +4782,15 @@ namespace UrbanWildlifeRooms.Presentation
             var resident = oldResident;
             var shared = oldShared;
             WriteScoreMotionTotals(animal, resident, shared);
-            foreach (var step in steps)
+            var activeSide=ScoreSide.None;
+            foreach (var step in steps.OrderBy(step=>step.Side==ScoreSide.Resident?0:1))
             {
-                ShowScoreTracePhase(step.Side);
+                if(activeSide!=step.Side)
+                {
+                    EndScoreTracePhase();
+                    yield return new WaitForSecondsRealtime(0.14f);
+                    ShowScoreTracePhase(step.Side);activeSide=step.Side;
+                }
                 var card = step.Side == ScoreSide.Animal
                     ? animalMetricText.transform.parent.GetComponent<Image>()
                     : humanMetricText.transform.parent.GetComponent<Image>();
@@ -4791,9 +4802,7 @@ namespace UrbanWildlifeRooms.Presentation
                 scoreMotionValue.text = step.Delta > 0
                     ? $"+{step.Delta}" : step.Delta.ToString(
                         CultureInfo.InvariantCulture);
-                scoreMotionValue.color = step.Delta >= 0
-                    ? new Color(0.66f, 0.86f, 0.63f)
-                    : new Color(0.96f, 0.60f, 0.51f);
+                scoreMotionValue.color = FillScoreColor(step.Side,step.Delta);
                 scoreMotionReason.text = L(step.EnglishReason, step.ChineseReason);
                 scoreMotionAccent.color = changeColor;
                 var nextAnimal = step.Side == ScoreSide.Animal
@@ -4802,9 +4811,7 @@ namespace UrbanWildlifeRooms.Presentation
                 var nextResident = step.Side == ScoreSide.Resident
                     ? (int)Math.Max(int.MinValue, Math.Min(int.MaxValue,
                         (long)resident + step.Delta)) : resident;
-                var nextShared = run.HasAdditiveCoexistenceScore
-                    ? (int)Math.Max(int.MinValue, Math.Min(int.MaxValue,
-                        (long)shared + step.Delta)) : shared;
+                var nextShared = shared;
                 var elapsed = 0f;
                 var duration = steps.Count > 5 ? 0.43f : 0.7f;
                 while (elapsed < duration)
@@ -4833,6 +4840,22 @@ namespace UrbanWildlifeRooms.Presentation
                 scoreMotionGroup.alpha = 0f;
                 yield return new WaitForSecondsRealtime(
                     steps.Count > 5 ? 0.04f : 0.12f);
+            }
+            EndScoreTracePhase();
+            yield return new WaitForSecondsRealtime(0.14f);
+            ShowScoreTracePhase(ScoreSide.Shared);
+            scoreMotionReason.text=L("Shared score · third batch","共同得分 · 第三批");
+            scoreMotionValue.text=(settledShared-oldShared).ToString("+0;-0;0");
+            scoreMotionValue.color=ScoreSharedBlue;
+            scoreMotionTag.anchoredPosition=ScoreMotionSource(null);
+            scoreMotionGroup.alpha=1f;
+            var sharedTime=0f;
+            while(sharedTime<0.9f)
+            {
+                sharedTime+=Time.unscaledDeltaTime;
+                WriteScoreMotionTotals(settledAnimal,settledResident,
+                    InterpolateScore(oldShared,settledShared,Mathf.Clamp01(sharedTime/0.9f)));
+                yield return null;
             }
             WriteScoreMotionTotals(settledAnimal, settledResident, settledShared);
             scoreMotionGroup.alpha = 0f;

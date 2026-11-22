@@ -1,3 +1,12 @@
+# Room relationships and three score batches
+
+Click a built room to pin its relationships. Waste collection coverage and residential pairing warnings are visible together.
+Settled contributors highlight in resident, animal and shared-score batches, with the previous batch cleared between stages.
+See the [record](../Docs/ROOM_HIGHLIGHTS_2026-11-22.md) for bilingual captures and verification. Selection changes no scores;
+recurring deductions and the broader approved UI revision remain pending. This is a source update, without a rebuilt executable.
+
+---
+
 # Goal progress component
 
 The three-goal overview now uses a compact illustrated ledger with aligned counts, quieter metric labels and achieved-state

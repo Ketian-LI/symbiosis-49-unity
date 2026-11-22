@@ -353,14 +353,14 @@ namespace UrbanWildlifeRooms.Presentation
                     oldResident, oldShared, oldBuild,
                     oldAnimal, oldResident, oldShared, run.PlacementScore,
                     "Score fly Build");
-            yield return AnimateFillScoreGroup(animal, oldAnimal,
+            yield return AnimateFillScoreGroup(resident, oldAnimal,
                 oldResident, oldShared, run.PlacementScore,
-                run.AnimalScore, oldResident, oldShared,
-                run.PlacementScore, "Score fly Animal");
-            yield return AnimateFillScoreGroup(resident, run.AnimalScore,
-                oldResident, oldShared, run.PlacementScore,
-                run.AnimalScore, run.HumanScore, oldShared,
+                oldAnimal, run.HumanScore, oldShared,
                 run.PlacementScore, "Score fly Resident");
+            yield return AnimateFillScoreGroup(animal, oldAnimal,
+                run.HumanScore, oldShared, run.PlacementScore,
+                run.AnimalScore, run.HumanScore, oldShared,
+                run.PlacementScore, "Score fly Animal");
             yield return AnimateFillScoreGroup(shared, run.AnimalScore,
                 run.HumanScore, oldShared, run.PlacementScore,
                 run.AnimalScore, run.HumanScore, run.BalanceScore,
@@ -380,6 +380,7 @@ namespace UrbanWildlifeRooms.Presentation
             string objectPrefix)
         {
             if (steps.Count > 0) ShowScoreTracePhase(steps[0].Side);
+            else EndScoreTracePhase();
             var tags = new List<(RectTransform rect, Vector2 source,
                 Vector2 target, bool travel)>();
             scoreMotionTag.gameObject.SetActive(false);
@@ -439,7 +440,7 @@ namespace UrbanWildlifeRooms.Presentation
             scoreMotionGroup.alpha = 1f;
             var elapsed = 0f;
             var hoverDuration = steps.Any(step => step.Delta < 0 ||
-                step.Side == ScoreSide.Build) ? 1.5f : 0.16f;
+                step.Side == ScoreSide.Build) ? 1.5f : 0.65f;
             const float flyDuration = 0.50f;
             while (elapsed < hoverDuration + flyDuration)
             {
@@ -473,6 +474,8 @@ namespace UrbanWildlifeRooms.Presentation
             WriteFillScoreTotals(toAnimal, toResident, toShared, toBuild);
             ClearFillScoreTags();
             scoreMotionGroup.alpha = 0f;
+            EndScoreTracePhase();
+            yield return new WaitForSecondsRealtime(0.14f);
         }
 
         private void WriteFillScoreTotals(int animal, int resident,
@@ -1124,6 +1127,7 @@ namespace UrbanWildlifeRooms.Presentation
 
         private void SelectFillHandCard(int index)
         {
+            ClearRoomHighlightSelection();
             if (run?.UsesFillHand != true || run.IsFinished) return;
             var cards = run.FillHandCards;
             if (index < 0 || index >= cards.Count) return;

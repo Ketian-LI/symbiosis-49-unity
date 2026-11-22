@@ -74,3 +74,12 @@ The selected [PlayMode batch](evidence/goal-progress-ui.xml) passes 21/21 checks
 hand presentation, result interactions and score-source controls. This batch overlaps earlier exports and does not increase
 a cumulative unique-test total. The displayed layouts are synthetic fixtures, not participant preference evidence. No model
 or scoring rules changed, and the previously recorded opening-test limitations remain outside this component revision.
+
+## Room relationship highlights
+
+The [feature record](../Docs/ROOM_HIGHLIGHTS_2026-11-22.md) covers 17/17 selected EditMode checks and 23/23 selected PlayMode
+checks. Exported [logic](evidence/room-highlights-editmode.xml) and [interface](evidence/room-highlights-playmode.xml) reports
+include waste coverage versus shared-edge warnings, selection persistence, modal isolation, bilingual text, three-batch
+ordering/cleanup in Fill and Endless and prior interactions. These batches overlap earlier exports and are not cumulative
+unique-test or participant totals. The synthetic captures verify those fixtures. Recurring penalty rules and the broader
+approved UI revision are not implemented here; older opening-test limitations remain in the history above.

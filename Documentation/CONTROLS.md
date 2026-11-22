@@ -10,13 +10,14 @@ The keyboard and mouse controls below apply to the construction scenes in
 | Click a hand card | Select its room category | Fill; selection alone does not place a room |
 | Click a lit empty plot, then confirm | Commit the selected room | A legal preview and explicit confirmation are required |
 | Hover a built plot | Inspect status and causes | Construction board |
+| Click a built room | Pin its coverage, pairings and recorded score relationships; click it again to cancel | Construction scenes; warning and coverage can coexist |
 | Click a home | Inspect work and meal choices | Where resident dispatch is available |
 | H or the Index button | Open or close the score index | After a recorded settlement |
 | Tab | Open the index or select the next entry | Wraps after the last entry |
 | Shift+Tab | Select the previous index entry | Opens at the last entry when closed |
 | Previous / Next buttons | Move through score entries | Same index as the keyboard controls |
 | F | Centre the indexed plot | Endless; Fill already displays its complete board |
-| Esc | Close an open index; otherwise open/close pause | Other overlays retain their existing pause/close behaviour |
+| Esc | Close an open index, otherwise clear visible room selection, otherwise open/close pause | Other overlays retain their existing pause/close behaviour |
 | O | Open or close the game manual | Existing manual control |
 | Arrow keys | Pan the board viewport | Active Endless play, with the board open |
 

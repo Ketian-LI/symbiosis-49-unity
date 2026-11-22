@@ -429,6 +429,7 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             Assert.That(routePanel.gameObject.activeInHierarchy, Is.False);
 
             var motion = canvas.Find("Score motion overlay");
+            yield return WaitForScoreFly(motion, "Score fly Animal 0");
             var oakDay = motion.Find("Score fly Animal 0");
             Assert.That(oakDay, Is.Not.Null,
                 "The oak's observed animal point should rise from its room.");
@@ -444,7 +445,7 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             Assert.That(green.g, Is.GreaterThan(green.b));
             Assert.That(motion.GetComponent<CanvasGroup>().blocksRaycasts,
                 Is.False);
-            yield return new WaitForSecondsRealtime(2.1f);
+            yield return WaitForScoresToFinish(controller);
             Assert.That(scorePage.Find("Board progress").GetComponent<Text>().text,
                 Is.EqualTo(run.OverallScore.ToString()));
 
@@ -542,26 +543,7 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             Assert.That(issueIcons.Find("Room issue MissingMeal")
                     .gameObject.activeInHierarchy, Is.True,
                 "The meal issue should stay visible while the resident and score move.");
-            yield return WaitForScoreFly(motion, "Score fly Animal 0");
-            var animalFly = motion.Find("Score fly Animal 0");
-            Assert.That(animalFly, Is.Not.Null);
-            Assert.That(motion.Find("Score fly Resident 0"), Is.Null,
-                "Resident points should wait for the animal batch.");
-            var animalColor = animalFly.GetComponent<Text>().color;
-            Assert.That(animalColor.g, Is.GreaterThan(animalColor.r));
-            var animalTarget = scorePage.Find("Board progress")
-                .GetComponent<RectTransform>();
             var overlay = motion.GetComponent<RectTransform>();
-            var animalDestination = (Vector2)overlay.InverseTransformPoint(
-                animalTarget.position);
-            var animalDistance = Vector2.Distance(animalFly
-                .GetComponent<RectTransform>().anchoredPosition,
-                animalDestination);
-            yield return new WaitForSecondsRealtime(0.3f);
-            Assert.That(Vector2.Distance(animalFly.GetComponent<RectTransform>()
-                    .anchoredPosition, animalDestination),
-                Is.LessThan(animalDistance));
-
             yield return WaitForScoreFly(motion, "Score fly Resident 0");
             var residentFly = motion.Find("Score fly Resident 0");
             Assert.That(residentFly, Is.Not.Null);
@@ -584,6 +566,25 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                 Is.LessThan(residentDistance),
                 "Resident points should travel toward the resident score.");
 
+            yield return WaitForScoreFly(motion, "Score fly Animal 0");
+            var animalFly = motion.Find("Score fly Animal 0");
+            Assert.That(animalFly, Is.Not.Null);
+            Assert.That(motion.Find("Score fly Resident 0"), Is.Null,
+                "The earlier resident batch must be cleared before animal points appear.");
+            var animalColor = animalFly.GetComponent<Text>().color;
+            Assert.That(animalColor.g, Is.GreaterThan(animalColor.r));
+            var animalTarget = scorePage.Find("Board progress")
+                .GetComponent<RectTransform>();
+            var animalDestination = (Vector2)overlay.InverseTransformPoint(
+                animalTarget.position);
+            var animalDistance = Vector2.Distance(animalFly
+                .GetComponent<RectTransform>().anchoredPosition,
+                animalDestination);
+            yield return new WaitForSecondsRealtime(0.3f);
+            Assert.That(Vector2.Distance(animalFly.GetComponent<RectTransform>()
+                    .anchoredPosition, animalDestination),
+                Is.LessThan(animalDistance));
+
             yield return WaitForScoreFly(motion, "Score fly Shared 0");
             var sharedFly = motion.Find("Score fly Shared 0");
             var blue = sharedFly.GetComponent<Text>().color;
@@ -601,7 +602,7 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                     .anchoredPosition, totalDestination),
                 Is.LessThan(sharedDistance),
                 "Shared points should arrive at the run total last.");
-            yield return new WaitForSecondsRealtime(0.7f);
+            yield return WaitForScoresToFinish(controller);
             Assert.That(total.text, Does.Contain($"SHARED {run.BalanceScore}"));
             Assert.That(scorePage.Find("Board progress").GetComponent<Text>().text,
                 Is.EqualTo(run.OverallScore.ToString()));
@@ -1193,9 +1194,17 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             Assert.Fail("The opening special-task cards did not finish sliding in.");
         }
 
+        private static IEnumerator WaitForScoresToFinish(ConstructionPrototypeController controller)
+        {
+            var field=typeof(ConstructionPrototypeController).GetField("scoreMotionAnimation",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic);
+            var deadline=Time.realtimeSinceStartup+12f;
+            while(field.GetValue(controller)!=null && Time.realtimeSinceStartup<deadline)yield return null;
+            Assert.That(field.GetValue(controller),Is.Null,"All three settlement batches must finish.");
+        }
+
         private static IEnumerator WaitForScoreFly(Transform overlay, string name)
         {
-            var deadline = Time.realtimeSinceStartup + 3f;
+            var deadline = Time.realtimeSinceStartup + 6f;
             while (Time.realtimeSinceStartup < deadline)
             {
                 var cue = overlay.Find(name);

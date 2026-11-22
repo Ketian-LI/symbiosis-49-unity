@@ -119,5 +119,21 @@
     "failed": 0,
     "file": "goal-progress-ui.xml",
     "scope": "Selected goal, bilingual render, hand, result and score-source interface checks; overlaps older batches."
+  },
+  {
+    "batch": "room-highlights-editmode",
+    "total": 17,
+    "passed": 17,
+    "failed": 0,
+    "file": "room-highlights-editmode.xml",
+    "scope": "Selected range, relation and interaction checks; overlaps earlier batches."
+  },
+  {
+    "batch": "room-highlights-playmode",
+    "total": 23,
+    "passed": 23,
+    "failed": 0,
+    "file": "room-highlights-playmode.xml",
+    "scope": "Selected range, relation and interaction checks; overlaps earlier batches."
   }
 ]

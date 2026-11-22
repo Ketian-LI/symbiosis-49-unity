@@ -245,9 +245,22 @@ namespace UrbanWildlifeRooms.Core
             IReadOnlyList<ConstructionTileData> built,
             IReadOnlyList<ConstructionTileData> sources)
         {
-            var covered = sources.Where(source =>
-                Distance(room, source) <= CleanupRadius)
+            var plots = CoveragePlots(room, built);
+            return sources.Where(source => plots.Contains((source.column, source.row)))
                 .Select(source => source.id).ToHashSet();
+        }
+
+        // Shared by cleanup and the selection overlay so the displayed range
+        // cannot drift from the simulation. Empty plots are included as range,
+        // not as claims that waste was produced or removed there.
+        public static HashSet<(int column, int row)> CoveragePlots(ConstructionTileData room,
+            IReadOnlyList<ConstructionTileData> built)
+        {
+            var covered = new HashSet<(int column, int row)>();
+            if (room == null || room.category != ConstructionCategory.Waste || built == null) return covered;
+            for (var y = -CleanupRadius; y <= CleanupRadius; y++)
+            for (var x = -CleanupRadius; x <= CleanupRadius; x++)
+                covered.Add((room.column + x, room.row + y));
             var streets = built.Where(tile =>
                 tile.category == ConstructionCategory.Street).ToArray();
             var visited = new HashSet<string>();
@@ -258,9 +271,11 @@ namespace UrbanWildlifeRooms.Core
             while (pending.Count > 0)
             {
                 var current = pending.Dequeue();
-                foreach (var source in sources.Where(tile =>
-                             SharesEdge(current, tile)))
-                    covered.Add(source.id);
+                covered.Add((current.column, current.row));
+                covered.Add((current.column - 1, current.row));
+                covered.Add((current.column + 1, current.row));
+                covered.Add((current.column, current.row - 1));
+                covered.Add((current.column, current.row + 1));
                 foreach (var street in streets.Where(tile =>
                              SharesEdge(current, tile)))
                     if (visited.Add(street.id)) pending.Enqueue(street);
