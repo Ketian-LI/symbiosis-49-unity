@@ -3,6 +3,7 @@
 This is the starting page for the whole project.
 First use the [folder map](#what-is-in-each-folder) to find a type of material.
 Then follow the [timeline](#follow-the-project-in-time) to see how the work developed.
+The [design-decision account](DESIGN_DECISIONS.md) connects the main changes to their reasons and evidence.
 
 [Folder map](#what-is-in-each-folder) · [File types](#what-the-file-types-mean) · [Timeline](#follow-the-project-in-time) · [Delivery record](#10-published-record)
 

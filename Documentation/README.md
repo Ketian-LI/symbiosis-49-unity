@@ -7,7 +7,7 @@ The main reading follows the sequence below.
 | --- | --- |
 | [Portfolio](PORTFOLIO.md) | The game and selected screenshots. |
 | [Project report](PROJECT_REPORT.md) | The question, design choices and implementation. |
-| [Development journal](DEVELOPMENT_JOURNAL.md) | What changed and the reasons behind each stage. |
+| [Development journal](DEVELOPMENT_JOURNAL.md) and [design decisions](DESIGN_DECISIONS.md) | The development sequence, decisions and their supporting records. |
 | [Evaluation](EVALUATION.md) and [study method](evidence/user-testing/METHOD.md) | Feedback, software results and evidence limits. |
 | [Ethics reflection](ETHICS_REFLECTION.md) and [limitations](ETHICS_AND_LIMITATIONS.md) | Research conduct, representation and practical limits. |
 | [AI use](AI_AND_AUTHORSHIP.md), [asset sources](ASSET_PROVENANCE.md) and [references](REFERENCES.md) | Tools, contributions and attribution. |

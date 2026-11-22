@@ -5,6 +5,7 @@ It was first assembled on 20 November and reorganised on 22 November 2026.
 Retrospective entries are not presented as notes written at the time.
 
 The [project overview and linked timeline](PROJECT_OVERVIEW.md#follow-the-project-in-time) gives a shorter route through these stages.
+The [design-decision account](DESIGN_DECISIONS.md) explains the reasons behind the changes and links them to source and verification records.
 
 ## July-August: feeding pigeons
 
