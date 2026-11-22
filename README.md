@@ -37,6 +37,7 @@ are designed game rules. They are not predictions of a real ecosystem.
 | [Evaluation](Documentation/EVALUATION.md) | User feedback, technical checks and open questions |
 | [Thesis](Thesis/README.md) | Final PDF status |
 | [Ethics and limitations](Documentation/ETHICS_AND_LIMITATIONS.md) | Representation, participant data and practical limits |
+| [Ethics reflection](Documentation/ETHICS_REFLECTION.md) | The missed review, risks, work done and remaining actions |
 | [AI use and authorship](Documentation/AI_AND_AUTHORSHIP.md) | Assistance and the author's contribution |
 | [Asset sources](Documentation/ASSET_PROVENANCE.md) | Artwork, models, fonts and licences |
 | [Assessment map](Documentation/assessment/REQUIREMENTS.md) | Where to find each required item |
@@ -46,6 +47,7 @@ are designed game rules. They are not predictions of a real ecosystem.
 The source includes the 21 November goal-progress and score-source interface changes.
 The 22 November update reorganises the documents and rewrites the main guides in plain English. It changes no game rules.
 
+The ethics application has not yet been sent to the supervisor. The [ethics reflection](Documentation/ETHICS_REFLECTION.md) states the oversight and outstanding actions.
 The final thesis PDF and approved anonymous study evidence still need the author's confirmation.
 The [submission checklist](Documentation/assessment/SUBMISSION_CHECKLIST.md) records the remaining work.
 Publishing this repository does not submit the assessment to Moodle.

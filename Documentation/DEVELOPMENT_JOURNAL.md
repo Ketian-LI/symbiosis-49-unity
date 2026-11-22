@@ -68,3 +68,10 @@ They are not described as implemented features in this revision.
 
 The next submission tasks are to finish the thesis, reconcile study evidence and package the same version that the report describes.
 See the [checklist](assessment/SUBMISSION_CHECKLIST.md).
+
+## 22 November ethics reflection
+
+The author supplied staff advice to explain the missed ethics review and reflect on its risks. The author confirmed that
+the application had not yet been sent to the supervisor. Pausing further playtesting, moving records to UAL OneDrive and
+handling external service records had not been completed. The [reflection](ETHICS_REFLECTION.md) separates the materials
+prepared and disclosure made from the work still needed. Private participant forms remain outside the public repository.

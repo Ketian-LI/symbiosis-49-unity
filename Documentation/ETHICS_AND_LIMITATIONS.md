@@ -11,8 +11,12 @@ relationship seem simple. Whether players understand these limits needs user res
 
 ## Participant records
 
-The 20 November ethics and consent documents are drafts. They state that ethics approval had not yet been obtained and
-that earlier feedback needs review. No approval record has been confirmed for this public archive.
+Playtests and feedback collection began before formal ethics review was completed. On 22 November, the author confirmed
+that the application had not yet been sent to the supervisor. A pause on further playtesting, transfer to UAL OneDrive and
+handling of old records held through AI or leaderboard services had not been completed.
+
+The [ethics reflection](ETHICS_REFLECTION.md) explains the oversight, risks and lessons. Preparing forms and explaining the
+problem do not establish approval or resolve the remaining data-handling work.
 
 Before earlier feedback is analysed or quoted further, the author needs to confirm its permitted use with the supervisor.
 Participant identities, chats, audio, contact details and signed forms stay outside this repository.

@@ -4,7 +4,9 @@ Approved anonymous study materials have not yet been added to this public archiv
 
 The working thesis reports five completed remote Fill sessions and three questionnaires.
 The exact tested build and final analysis still need confirmation.
-The second-round account also needs reconciliation: the thesis describes a plan, while later ethics drafts mention feedback.
+An older draft described the second round as a plan; a local 22 November revision records further feedback.
+The final public account still needs to identify the tested builds and permitted use of those records.
+See the [ethics reflection](../../ETHICS_REFLECTION.md) for the confirmed oversight and outstanding work.
 
 The [method](METHOD.md) is a proposed/reconciliation plan. It is not proof that every step was carried out.
 

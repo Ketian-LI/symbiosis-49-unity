@@ -25,3 +25,7 @@ source hashes. Historical notes remain labelled as history. No gameplay code was
 
 Exact prompt coverage and per-asset generation records are incomplete. The archive does not invent model versions or dates.
 Private conversations and participant records are not published as an AI log.
+
+Earlier questionnaires, message extracts and transcripts were supplied to ChatGPT/Codex for organisation and analysis.
+The [ethics reflection](ETHICS_REFLECTION.md) discloses this use and the outstanding review of external records.
+No claim is made that these earlier copies have been deleted or recalled.

@@ -12,9 +12,12 @@ The thesis describes players reaching the end without understanding some rules. 
 a player chose a valid location, but the old version delayed the visible result until the next day. That delay led to a rule
 change. These are findings reported in the draft, not a verified dataset published with this repository.
 
-The exact study build, approved anonymous records and final analysis still need confirmation. The thesis describes the
-second round as planned, while later ethics drafts refer to further feedback. Those records need to be reconciled before
-the final account is written. No participant names, voices or signed forms are included here.
+The older thesis draft described the second round as planned. A local 22 November revision records further feedback.
+The exact builds, approved anonymous records and final analysis still need checking. No participant names, voices or signed
+forms are included here.
+
+The [ethics reflection](ETHICS_REFLECTION.md) records that the application has not yet been sent to the supervisor. It also
+identifies unfinished safeguards. The existence of feedback or consent documents does not settle its permitted research use.
 
 The [method and reconciliation plan](evidence/user-testing/METHOD.md) sets out the proposed questions and analysis.
 The [study folder](evidence/user-testing/README.md) lists the evidence still needed. Ethics approval and permission to use

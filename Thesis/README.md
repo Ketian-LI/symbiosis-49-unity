@@ -12,3 +12,7 @@ The project report and thesis PDF arrangement should follow the tutor's guidance
 
 Once approved, add `SYMBIOSIS_49_Thesis.pdf` here and update the [submission checklist](../Documentation/assessment/SUBMISSION_CHECKLIST.md).
 Do not include private participant records or signed forms in this folder.
+
+An [ethics reflection](../Documentation/ETHICS_REFLECTION.md) is available for use as an appendix. It states the position on
+22 November, including the application not yet sent to the supervisor and the unfinished safeguards. Adding the reflection
+does not replace review or authorise use of participant material.

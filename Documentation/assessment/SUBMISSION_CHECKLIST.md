@@ -16,7 +16,10 @@ Status checked on 22 November 2026. An item is complete only when the linked mat
 - [ ] Add the approved English thesis PDF, at least 3,500 words.
 - [ ] Confirm how the project report and thesis should be arranged as PDF.
 - [ ] Reconcile the study build, participant counts, second-round status and analysis.
+- [x] Add an [honest ethics reflection](../ETHICS_REFLECTION.md) and state the unresolved status.
+- [ ] Send the ethics application to the supervisor; it was not yet sent as of 22 November.
 - [ ] Confirm ethics and permitted use of earlier feedback with the supervisor.
+- [ ] Address further playtesting, storage and external service records as agreed through review.
 - [ ] Add only approved, de-identified study evidence.
 - [ ] Review the individual-contribution statement and remaining asset attribution.
 - [ ] Add a demonstration of the final build if needed for the portfolio or tutor guidance.
