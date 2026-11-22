@@ -1,0 +1,439 @@
+{
+  "date": "2026-11-22",
+  "base_commit": "231e97db2bfdca4fd1f246835fb669fe4bec48e6",
+  "purpose": "Keep the assessment reading separate from supporting detail. No evidence discarded.",
+  "moves": [
+    {
+      "from": "Documentation/archive/ARCHIVE_PRECEDENTS.md",
+      "to": "Misc/archive/ARCHIVE_PRECEDENTS.md"
+    },
+    {
+      "from": "Documentation/archive/BALANCE_RULES_2026-11-20.md",
+      "to": "Misc/archive/BALANCE_RULES_2026-11-20.md"
+    },
+    {
+      "from": "Documentation/archive/README.md",
+      "to": "Misc/archive/README.md"
+    },
+    {
+      "from": "Documentation/process/README.md",
+      "to": "Misc/process/README.md"
+    },
+    {
+      "from": "Documentation/process/RELEASE_NOTES.md",
+      "to": "Misc/process/RELEASE_NOTES.md"
+    },
+    {
+      "from": "Documentation/process/REPOSITORY_LINEAGE.md",
+      "to": "Misc/process/REPOSITORY_LINEAGE.md"
+    },
+    {
+      "from": "Documentation/technical/ARCHITECTURE.md",
+      "to": "Misc/technical/ARCHITECTURE.md"
+    },
+    {
+      "from": "Documentation/technical/CONTROLS.md",
+      "to": "Misc/technical/CONTROLS.md"
+    },
+    {
+      "from": "Documentation/technical/FONT_LICENSES.md",
+      "to": "Misc/technical/FONT_LICENSES.md"
+    },
+    {
+      "from": "Documentation/technical/GAME_RULES.md",
+      "to": "Misc/technical/GAME_RULES.md"
+    },
+    {
+      "from": "Documentation/technical/README.md",
+      "to": "Misc/technical/README.md"
+    },
+    {
+      "from": "Documentation/technical/SAVE_FORMAT.md",
+      "to": "Misc/technical/SAVE_FORMAT.md"
+    },
+    {
+      "from": "Documentation/technical/SCENES_AND_MODES.md",
+      "to": "Misc/technical/SCENES_AND_MODES.md"
+    },
+    {
+      "from": "Documentation/technical/SETUP_AND_BUILD.md",
+      "to": "Misc/technical/SETUP_AND_BUILD.md"
+    },
+    {
+      "from": "Documentation/process/history/document-path-moves-2026-11-22.json",
+      "to": "Misc/process/history/document-path-moves-2026-11-22.json"
+    },
+    {
+      "from": "Documentation/process/history/early-web-history.csv",
+      "to": "Misc/process/history/early-web-history.csv"
+    },
+    {
+      "from": "Documentation/process/history/README.md",
+      "to": "Misc/process/history/README.md"
+    },
+    {
+      "from": "Documentation/process/history/related-repositories.json",
+      "to": "Misc/process/history/related-repositories.json"
+    },
+    {
+      "from": "Documentation/process/history/symbiosis-unity-history.csv",
+      "to": "Misc/process/history/symbiosis-unity-history.csv"
+    },
+    {
+      "from": "Documentation/process/iterations/DOCUMENTATION_REVIEW_2026-11-21.md",
+      "to": "Misc/process/iterations/DOCUMENTATION_REVIEW_2026-11-21.md"
+    },
+    {
+      "from": "Documentation/process/iterations/GOAL_PROGRESS_UI_2026-11-21.md",
+      "to": "Misc/process/iterations/GOAL_PROGRESS_UI_2026-11-21.md"
+    },
+    {
+      "from": "Documentation/process/iterations/LEFT_LEAF_STYLE_2026-11-21.md",
+      "to": "Misc/process/iterations/LEFT_LEAF_STYLE_2026-11-21.md"
+    },
+    {
+      "from": "Documentation/process/iterations/README.md",
+      "to": "Misc/process/iterations/README.md"
+    },
+    {
+      "from": "Documentation/process/iterations/SCORE_INDEX_2026-11-21.md",
+      "to": "Misc/process/iterations/SCORE_INDEX_2026-11-21.md"
+    },
+    {
+      "from": "Documentation/process/iterations/SKILL_GUIDED_UI_2026-11-21.md",
+      "to": "Misc/process/iterations/SKILL_GUIDED_UI_2026-11-21.md"
+    },
+    {
+      "from": "Documentation/process/iterations/TROPHY_AND_UI_READING_2026-11-20.md",
+      "to": "Misc/process/iterations/TROPHY_AND_UI_READING_2026-11-20.md"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/documentation-skill-sources.json",
+      "to": "Misc/evidence/automated-tests/documentation-skill-sources.json"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/goal-progress-ui.xml",
+      "to": "Misc/evidence/automated-tests/goal-progress-ui.xml"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/goal-restart-before-fix.xml",
+      "to": "Misc/evidence/automated-tests/goal-restart-before-fix.xml"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/goal-restart.xml",
+      "to": "Misc/evidence/automated-tests/goal-restart.xml"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/leaderboard-local.xml",
+      "to": "Misc/evidence/automated-tests/leaderboard-local.xml"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/left-leaf-baseline-opening.xml",
+      "to": "Misc/evidence/automated-tests/left-leaf-baseline-opening.xml"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/left-leaf-final.xml",
+      "to": "Misc/evidence/automated-tests/left-leaf-final.xml"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/left-leaf-legacy-opening-after.xml",
+      "to": "Misc/evidence/automated-tests/left-leaf-legacy-opening-after.xml"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/left-leaf-opening.xml",
+      "to": "Misc/evidence/automated-tests/left-leaf-opening.xml"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/README.md",
+      "to": "Misc/evidence/automated-tests/README.md"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/release-manifest.json",
+      "to": "Misc/evidence/automated-tests/release-manifest.json"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/report-index.json",
+      "to": "Misc/evidence/automated-tests/report-index.json"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/result-interactions.xml",
+      "to": "Misc/evidence/automated-tests/result-interactions.xml"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/score-index-editmode.xml",
+      "to": "Misc/evidence/automated-tests/score-index-editmode.xml"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/score-index-playmode.xml",
+      "to": "Misc/evidence/automated-tests/score-index-playmode.xml"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/scoring-and-storage.xml",
+      "to": "Misc/evidence/automated-tests/scoring-and-storage.xml"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/skill-calibration-72.json",
+      "to": "Misc/evidence/automated-tests/skill-calibration-72.json"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/skill-polish-editmode.xml",
+      "to": "Misc/evidence/automated-tests/skill-polish-editmode.xml"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/skill-polish-playmode.xml",
+      "to": "Misc/evidence/automated-tests/skill-polish-playmode.xml"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/skill-sources.json",
+      "to": "Misc/evidence/automated-tests/skill-sources.json"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/story-final-render.xml",
+      "to": "Misc/evidence/automated-tests/story-final-render.xml"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/story-interface.xml",
+      "to": "Misc/evidence/automated-tests/story-interface.xml"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/story-model.xml",
+      "to": "Misc/evidence/automated-tests/story-model.xml"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/trophy-calibration.json",
+      "to": "Misc/evidence/automated-tests/trophy-calibration.json"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/trophy-reading-editmode.xml",
+      "to": "Misc/evidence/automated-tests/trophy-reading-editmode.xml"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/trophy-reading-playmode.xml",
+      "to": "Misc/evidence/automated-tests/trophy-reading-playmode.xml"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/windows-smoke-result.json",
+      "to": "Misc/evidence/automated-tests/windows-smoke-result.json"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/legacy/TestResults_Difficulty_EditMode_Final_2026-10-06.xml",
+      "to": "Misc/evidence/automated-tests/legacy/TestResults_Difficulty_EditMode_Final_2026-10-06.xml"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/legacy/TestResults_Difficulty_MenuFinal_2of2_2026-10-06.xml",
+      "to": "Misc/evidence/automated-tests/legacy/TestResults_Difficulty_MenuFinal_2of2_2026-10-06.xml"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/legacy/TestResults_Difficulty_PlayMode_63of63_2026-10-06.xml",
+      "to": "Misc/evidence/automated-tests/legacy/TestResults_Difficulty_PlayMode_63of63_2026-10-06.xml"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/legacy/TestResults_Neutral30Days_2026-10-06.xml",
+      "to": "Misc/evidence/automated-tests/legacy/TestResults_Neutral30Days_2026-10-06.xml"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/legacy/TestResults_PlayMode_2026-10-06.xml",
+      "to": "Misc/evidence/automated-tests/legacy/TestResults_PlayMode_2026-10-06.xml"
+    },
+    {
+      "from": "Documentation/evidence/automated-tests/legacy/TestResults_StrategySeedCheck_2026-10-06.xml",
+      "to": "Misc/evidence/automated-tests/legacy/TestResults_StrategySeedCheck_2026-10-06.xml"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/CONSTRUCTION_BUILD_LIMITS_2026-10-17.md",
+      "to": "Misc/archive/legacy-docs/CONSTRUCTION_BUILD_LIMITS_2026-10-17.md"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/CONSTRUCTION_FEATURE_AUDIT_2026-10-09.md",
+      "to": "Misc/archive/legacy-docs/CONSTRUCTION_FEATURE_AUDIT_2026-10-09.md"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/CURRENT_VERSION_ISSUES_2026-10-05.md",
+      "to": "Misc/archive/legacy-docs/CURRENT_VERSION_ISSUES_2026-10-05.md"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/CURRENT_VERSION_ISSUES_2026-10-06.md",
+      "to": "Misc/archive/legacy-docs/CURRENT_VERSION_ISSUES_2026-10-06.md"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/DAILY_SPATIAL_DECISION_2026-10-06.md",
+      "to": "Misc/archive/legacy-docs/DAILY_SPATIAL_DECISION_2026-10-06.md"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/Fox_Landmark_Coordinates_v03.md",
+      "to": "Misc/archive/legacy-docs/Fox_Landmark_Coordinates_v03.md"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/GAMEPLAY_HUD_V02_ASSETS.md",
+      "to": "Misc/archive/legacy-docs/GAMEPLAY_HUD_V02_ASSETS.md"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/GAMEPLAY_TABLETOP_BACKDROP_V01.md",
+      "to": "Misc/archive/legacy-docs/GAMEPLAY_TABLETOP_BACKDROP_V01.md"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/MAIN_MENU_REFERENCE_COMPONENTS_2026-10-22.md",
+      "to": "Misc/archive/legacy-docs/MAIN_MENU_REFERENCE_COMPONENTS_2026-10-22.md"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/PHYSICAL_BOARD_RECOGNITION.md",
+      "to": "Misc/archive/legacy-docs/PHYSICAL_BOARD_RECOGNITION.md"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/README-historical-before-archive.md",
+      "to": "Misc/archive/legacy-docs/README-historical-before-archive.md"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/SAVE_DATA_SCHEMA.md",
+      "to": "Misc/archive/legacy-docs/SAVE_DATA_SCHEMA.md"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/STRATEGY_DIAGNOSTIC_2026-10-06.md",
+      "to": "Misc/archive/legacy-docs/STRATEGY_DIAGNOSTIC_2026-10-06.md"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/SYMBIOSIS_49_UI_VISUAL_SPEC.md",
+      "to": "Misc/archive/legacy-docs/SYMBIOSIS_49_UI_VISUAL_SPEC.md"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/WILDLIFE_ROOM_COLOR_SAMPLES.md",
+      "to": "Misc/archive/legacy-docs/WILDLIFE_ROOM_COLOR_SAMPLES.md"
+    },
+    {
+      "from": "Documentation/archive/overviews-before-2026-11-22/AI_AND_AUTHORSHIP.md",
+      "to": "Misc/archive/overviews-before-2026-11-22/AI_AND_AUTHORSHIP.md"
+    },
+    {
+      "from": "Documentation/archive/overviews-before-2026-11-22/ASSET_PROVENANCE.md",
+      "to": "Misc/archive/overviews-before-2026-11-22/ASSET_PROVENANCE.md"
+    },
+    {
+      "from": "Documentation/archive/overviews-before-2026-11-22/DEVELOPMENT_JOURNAL.md",
+      "to": "Misc/archive/overviews-before-2026-11-22/DEVELOPMENT_JOURNAL.md"
+    },
+    {
+      "from": "Documentation/archive/overviews-before-2026-11-22/ETHICS_AND_LIMITATIONS.md",
+      "to": "Misc/archive/overviews-before-2026-11-22/ETHICS_AND_LIMITATIONS.md"
+    },
+    {
+      "from": "Documentation/archive/overviews-before-2026-11-22/EVALUATION.md",
+      "to": "Misc/archive/overviews-before-2026-11-22/EVALUATION.md"
+    },
+    {
+      "from": "Documentation/archive/overviews-before-2026-11-22/PORTFOLIO.md",
+      "to": "Misc/archive/overviews-before-2026-11-22/PORTFOLIO.md"
+    },
+    {
+      "from": "Documentation/archive/overviews-before-2026-11-22/PROJECT_REPORT.md",
+      "to": "Misc/archive/overviews-before-2026-11-22/PROJECT_REPORT.md"
+    },
+    {
+      "from": "Documentation/archive/overviews-before-2026-11-22/README.md",
+      "to": "Misc/archive/overviews-before-2026-11-22/README.md"
+    },
+    {
+      "from": "Documentation/archive/overviews-before-2026-11-22/TECHNICAL_GUIDE.md",
+      "to": "Misc/archive/overviews-before-2026-11-22/TECHNICAL_GUIDE.md"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/ArtReferences/Construction_Box_Visual_v01.md",
+      "to": "Misc/archive/legacy-docs/ArtReferences/Construction_Box_Visual_v01.md"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/ArtReferences/Construction_UI_Icons_v01.md",
+      "to": "Misc/archive/legacy-docs/ArtReferences/Construction_UI_Icons_v01.md"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/DesignHistory/\u57ce\u5e02\u5171\u6816\u623f\u95f4_\u6e38\u620f\u8bbe\u8ba1\u6587\u6863_v0.1.docx",
+      "to": "Misc/archive/legacy-docs/DesignHistory/\u57ce\u5e02\u5171\u6816\u623f\u95f4_\u6e38\u620f\u8bbe\u8ba1\u6587\u6863_v0.1.docx"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/GDD/SYMBIOSIS_49_GDD_Current_2026-10-05_EN.docx",
+      "to": "Misc/archive/legacy-docs/GDD/SYMBIOSIS_49_GDD_Current_2026-10-05_EN.docx"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/GDD/SYMBIOSIS_49_GDD_Current_2026-10-05_ZH.docx",
+      "to": "Misc/archive/legacy-docs/GDD/SYMBIOSIS_49_GDD_Current_2026-10-05_ZH.docx"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/Images/board-full-art-reference-v01.png",
+      "to": "Misc/archive/legacy-docs/Images/board-full-art-reference-v01.png"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/Images/end-of-run-results-sample-v02.png",
+      "to": "Misc/archive/legacy-docs/Images/end-of-run-results-sample-v02.png"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/Research/SYMBIOSIS_49_\u6e38\u620f\u8bf4\u660e_\u95ee\u5377\u4e0e\u8bba\u6587\u4f9d\u636e_2026-10-06.docx",
+      "to": "Misc/archive/legacy-docs/Research/SYMBIOSIS_49_\u6e38\u620f\u8bf4\u660e_\u95ee\u5377\u4e0e\u8bba\u6587\u4f9d\u636e_2026-10-06.docx"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/Images/UI/results-days-survived-v02.png",
+      "to": "Misc/archive/legacy-docs/Images/UI/results-days-survived-v02.png"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/Images/UI/results-end-animal-deaths-v02.png",
+      "to": "Misc/archive/legacy-docs/Images/UI/results-end-animal-deaths-v02.png"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/Images/UI/results-end-negative-resources-v02.png",
+      "to": "Misc/archive/legacy-docs/Images/UI/results-end-negative-resources-v02.png"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/Images/UI/results-export-button-v02.png",
+      "to": "Misc/archive/legacy-docs/Images/UI/results-export-button-v02.png"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/Images/UI/results-header-pigeon-v02.png",
+      "to": "Misc/archive/legacy-docs/Images/UI/results-header-pigeon-v02.png"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/Images/UI/results-layout-thumbnail-frame-v02.png",
+      "to": "Misc/archive/legacy-docs/Images/UI/results-layout-thumbnail-frame-v02.png"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/Images/UI/results-main-card-v02.png",
+      "to": "Misc/archive/legacy-docs/Images/UI/results-main-card-v02.png"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/Images/UI/results-main-menu-button-v02.png",
+      "to": "Misc/archive/legacy-docs/Images/UI/results-main-menu-button-v02.png"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/Images/UI/results-new-record-ribbon-v02.png",
+      "to": "Misc/archive/legacy-docs/Images/UI/results-new-record-ribbon-v02.png"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/Images/UI/results-restart-button-v02.png",
+      "to": "Misc/archive/legacy-docs/Images/UI/results-restart-button-v02.png"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/Images/UI/results-summary-ecology-v02.png",
+      "to": "Misc/archive/legacy-docs/Images/UI/results-summary-ecology-v02.png"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/Images/UI/results-summary-residents-v02.png",
+      "to": "Misc/archive/legacy-docs/Images/UI/results-summary-residents-v02.png"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/Images/UI/results-summary-resources-v02.png",
+      "to": "Misc/archive/legacy-docs/Images/UI/results-summary-resources-v02.png"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/ArtReferences/Animals/fox-lowpoly-turnaround-v01.png",
+      "to": "Misc/archive/legacy-docs/ArtReferences/Animals/fox-lowpoly-turnaround-v01.png"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/ArtReferences/Animals/hedgehog-lowpoly-turnaround-v01.png",
+      "to": "Misc/archive/legacy-docs/ArtReferences/Animals/hedgehog-lowpoly-turnaround-v01.png"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/ArtReferences/Animals/pigeon-lowpoly-turnaround-v01.png",
+      "to": "Misc/archive/legacy-docs/ArtReferences/Animals/pigeon-lowpoly-turnaround-v01.png"
+    },
+    {
+      "from": "Documentation/archive/legacy-docs/ArtReferences/Animals/squirrel-lowpoly-turnaround-v01.png",
+      "to": "Misc/archive/legacy-docs/ArtReferences/Animals/squirrel-lowpoly-turnaround-v01.png"
+    }
+  ]
+}

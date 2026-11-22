@@ -17,8 +17,8 @@ The [early web AI log](https://github.com/Ketian-LI/urban-wildlife-simulation/bl
 it is not a complete log of Unity development.
 
 Public writing, layout, balance and documentation skills were consulted during the November revisions.
-Their pinned sources and licences are recorded in the [UI review](process/iterations/SKILL_GUIDED_UI_2026-11-21.md)
-and [documentation review](process/iterations/DOCUMENTATION_REVIEW_2026-11-21.md).
+Their pinned sources and licences are recorded in the [UI review](../Misc/process/iterations/SKILL_GUIDED_UI_2026-11-21.md)
+and [documentation review](../Misc/process/iterations/DOCUMENTATION_REVIEW_2026-11-21.md).
 
 On 22 November, Codex reorganised these documents, rewrote the main guides in shorter English and checked local links and
 source hashes. Historical notes remain labelled as history. No gameplay code was changed in that documentation update.

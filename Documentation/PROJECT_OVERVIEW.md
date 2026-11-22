@@ -8,30 +8,34 @@ Then follow the [timeline](#follow-the-project-in-time) to see how the work deve
 
 ## What is in each folder
 
-| Part | Folder or main file | File types present | What belongs here |
+The assessment reading is in `Documentation` and `Thesis`. Supporting records are grouped in `Misc`.
+The timeline below connects the main account to the relevant detail.
+
+| Part | Folder or main file | File types | What belongs here |
 | --- | --- | --- | --- |
-| Project entrance | [Root README](../README.md) | .md | What the game is, how to open it and where to read next |
-| Project account | [Main documents](README.md) | .md | Report, portfolio, journal, evaluation, ethics, authorship and sources |
-| Current technical instructions | [technical](technical/README.md) | .md | Setup, rules, controls, code responsibilities, modes and saves |
-| Development decisions | [process](process/README.md) | .md | Why the project changed and which revision to inspect |
-| Detailed revisions | [process/iterations](process/iterations/README.md) | .md | Dated notes about trophies, reading, score review and goal UI |
-| Version history | [process/history](process/history/README.md) | .csv, .json, .md | Exported commits, recorded repository heads and document moves |
-| Software verification | [evidence/automated-tests](evidence/automated-tests/README.md) | .xml, .json, .md | Saved check results, diagnostic settings and report indexes |
-| User study | [evidence/user-testing](evidence/user-testing/README.md) | .md at present | Two-round method and evidence status; approved public records are still pending |
-| Images and demonstrations | [media](media/README.md) | .png, .md at present | Labelled browser/Unity captures; the final-build demonstration is still pending |
-| Assessment material | [assessment](assessment/README.md) | .md | Requirements, where to find evidence and the submission checklist |
-| Historical designs | [archive](archive/README.md) | .md, .docx, .png | Superseded GDDs, visual notes and earlier overview pages |
+| Project entrance | [Root README](../README.md) | .md | Game, download and reading routes |
+| Main account | [Documentation](README.md) | .md | Portfolio, report, journal, evaluation, ethics and authorship |
+| Study account | [evidence/user-testing](evidence/user-testing/README.md) | .md at present | Two-round method and evidence status; approved detailed records remain pending |
+| Images and demonstration | [media](media/README.md) | .png, .md | Labelled screenshots; final-build demonstration remains pending |
+| Requirements and checklist | [assessment](assessment/README.md) | .md | Required material, its location and remaining submission work |
 | Dissertation | [Thesis](../Thesis/README.md) | .md at present; final PDF pending | Thesis status and the future approved PDF |
-| Runnable game | [Assets](../Assets/) | .cs, .unity, .fbx, .png, .wav, .mat, .asset, .meta and shader/font files | Game code, scenes, models, interface art, audio and Unity asset data |
-| Unity dependencies | [Packages](../Packages/) | .json | Package list and lockfile |
-| Unity project setup | [ProjectSettings](../ProjectSettings/) | .asset, .txt, .json | Editor version, build scenes, input and project settings |
-| Editable source artwork | [SourceAssets](../SourceAssets/) | .blend, .glb, .png, .jpg, .md | Modelling files, references and third-party model records |
-| Optional online service | [Services/leaderboard](../Services/leaderboard/README.md) | .js, .mjs, .sql, .toml, .json, .md | Leaderboard server, database setup, configuration example and local checks |
-| Supporting tools | [Tools](../Tools/) | .py, .cmd, .svg, .pdf, .csv, .json, .txt, .md | Modelling helpers, camera experiments, printable material and archive checks |
-| Source inventory | [SOURCE_MANIFEST.json](../SOURCE_MANIFEST.json) | .json | File sizes and hashes used to check the source copy |
+| Supporting material | [Misc](../Misc/README.md) | .md, .xml, .json, .csv, .docx, .png | Detailed guides, dated revisions, saved reports, history and old designs |
 
 The report explains the project. The journal explains decisions. Evaluation explains what the evidence supports.
-Release notes identify a source or download version. They are not substitutes for one another.
+The ethics reflection and authorship records remain in the main reading.
+
+### Source folders
+
+These folders keep the paths used by Unity and the supporting scripts.
+
+| Folder | Main file types | Purpose |
+| --- | --- | --- |
+| [Assets](../Assets/) | .cs, .unity, .fbx, .png, .wav, .meta, shaders and fonts | Game source, scenes and runtime assets |
+| [Packages](../Packages/) and [ProjectSettings](../ProjectSettings/) | .json, .asset, .txt | Dependencies, editor version and project settings |
+| [SourceAssets](../SourceAssets/) | .blend, .glb, .png, .jpg, .md | Editable artwork and model source records |
+| [Services](../Services/) | .js, .mjs, .sql, .toml, .json, .md | Optional leaderboard backend |
+| [Tools](../Tools/) | .py, .cmd, .svg, .pdf, .csv, .json, .txt, .md | Modelling helpers, camera experiments, printable material and archive checks |
+| [SOURCE_MANIFEST.json](../SOURCE_MANIFEST.json) | .json | File sizes and hashes for the source copy |
 
 ## What the file types mean
 
@@ -80,7 +84,7 @@ The browser game began with feeding pigeons. Players later chose where to throw 
 The question was how a small intervention could change conditions without directly controlling each animal.
 
 Read the [web development account](https://github.com/Ketian-LI/urban-wildlife-simulation/blob/main/docs/WEB_DEMO_DEVELOPMENT.md)
-and [commit table](process/history/early-web-history.csv).
+and [commit table](../Misc/process/history/early-web-history.csv).
 The first recorded browser build is [22 July](https://github.com/Ketian-LI/urban-wildlife-simulation/commit/8eed0a56abad62e360fa46ff50e127a606d5f6ab).
 This is the web stage, not the Unity game.
 
@@ -92,7 +96,7 @@ The Unity experiments explored physical tokens, camera input, placement previews
 They expanded the choices, but also introduced more rules and input problems.
 
 The [migration record](https://github.com/Ketian-LI/urban-wildlife-tangible-unity/blob/main/docs/GDD_V3_MIGRATION.md)
-and [repository lineage](process/REPOSITORY_LINEAGE.md) explain that direction.
+and [repository lineage](../Misc/process/REPOSITORY_LINEAGE.md) explain that direction.
 The [camera guide](../Tools/CameraRecognition/README.md) describes the retained tool.
 These records do not establish reliable physical play or a completed camera-based study.
 The date and build of the earliest Unity transfer remain partly documented.
@@ -105,8 +109,8 @@ The recorded room-project import is [22 September](https://github.com/Ketian-LI/
 A bounded board made room connections and routes easier to compare.
 The work included rearrangement, onboarding and Research configurations.
 
-Read the [Unity history](process/history/symbiosis-unity-history.csv) and
-[historical design documents](archive/legacy-docs/).
+Read the [Unity history](../Misc/process/history/symbiosis-unity-history.csv) and
+[historical design documents](../Misc/archive/legacy-docs).
 Those modes are an earlier stage; their controls and results should not be read as the current construction rules.
 
 [Next stage](#04-progressive-construction) · [Timeline](#follow-the-project-in-time)
@@ -122,7 +126,7 @@ Later October work added category limits and construction-box presentation.
 The player now had to learn what each new room did before choosing a layout.
 Read the [development journal](DEVELOPMENT_JOURNAL.md#september-october-a-bounded-room-board),
 the [20 October source](https://github.com/Ketian-LI/symbiosis-49-unity/commit/d5a8cc7ec03f95993370fe5626156aa61f959690)
-and the [current scene/mode guide](technical/SCENES_AND_MODES.md).
+and the [current scene/mode guide](../Misc/technical/SCENES_AND_MODES.md).
 
 [Next stage](#05-cards-upgrades-and-playtesting) · [Timeline](#follow-the-project-in-time)
 
@@ -136,7 +140,7 @@ The original 5 returned, making 13 different people across both rounds.
 Exact session dates and executable identifiers still need checking.
 The [method record](evidence/user-testing/METHOD.md) and [evaluation](EVALUATION.md) distinguish the rounds and their limits.
 
-The [current rules](technical/GAME_RULES.md) describe the published source.
+The [current rules](../Misc/technical/GAME_RULES.md) describe the published source.
 They should not be applied backwards to every participant session.
 
 [Next stage](#06-the-19-november-snapshot) · [Timeline](#follow-the-project-in-time)
@@ -147,7 +151,7 @@ This snapshot brought together stronger layout effects, visible deductions, resu
 The journal added short stories based on placements and recorded activity.
 
 Use the [journal's revision table](DEVELOPMENT_JOURNAL.md#november-cards-and-consequences),
-the [software-report index](evidence/automated-tests/README.md)
+the [software-report index](../Misc/evidence/automated-tests/README.md)
 and the [StreetJournal release](https://github.com/Ketian-LI/symbiosis-49-unity/releases/tag/archive-2026-11-20).
 The release was published on 20 November, but its Windows executable is the 19 November build.
 
@@ -160,7 +164,7 @@ The source ZIP was prepared below the brief's 1 GB upload limit.
 It left the final thesis and approved anonymous research evidence pending.
 
 See the [pinned archive](https://github.com/Ketian-LI/symbiosis-49-unity/tree/archive/2026-11-20),
-[release notes](process/RELEASE_NOTES.md#archive-snapshot---20-november-2026)
+[release notes](../Misc/process/RELEASE_NOTES.md#archive-snapshot---20-november-2026)
 and [assessment requirements](assessment/REQUIREMENTS.md).
 This was a published archive, not a Moodle submission.
 
@@ -172,10 +176,10 @@ The next source revisions improved text hierarchy and kept score causes availabl
 The score-source view highlighted relevant rooms and visible actors.
 Further work changed the inside-leaf presentation and three-goal component.
 
-Read the [reading and balance review](process/iterations/SKILL_GUIDED_UI_2026-11-21.md),
-[score-source record](process/iterations/SCORE_INDEX_2026-11-21.md),
-[left-page record](process/iterations/LEFT_LEAF_STYLE_2026-11-21.md)
-and [goal UI record](process/iterations/GOAL_PROGRESS_UI_2026-11-21.md).
+Read the [reading and balance review](../Misc/process/iterations/SKILL_GUIDED_UI_2026-11-21.md),
+[score-source record](../Misc/process/iterations/SCORE_INDEX_2026-11-21.md),
+[left-page record](../Misc/process/iterations/LEFT_LEAF_STYLE_2026-11-21.md)
+and [goal UI record](../Misc/process/iterations/GOAL_PROGRESS_UI_2026-11-21.md).
 The [screenshots](media/screenshots/README.md) are labelled Unity test renders.
 Later feedback can reject a visual design even when its software checks pass.
 
@@ -184,6 +188,7 @@ Later feedback can reject a visual design even when its software checks pass.
 ## 09 The 22 November review
 
 The documents were rewritten in shorter English and grouped by purpose.
+The main assessment reading was separated from supporting material in [Misc](../Misc/README.md).
 A newer local thesis revision added the later study account.
 The ethics reflection recorded the missed review, the risks and the actions still unfinished.
 
@@ -202,6 +207,6 @@ The final thesis PDF, permitted research evidence, final-build demonstration and
 
 Use [project status](PROJECT_STATUS.md) for the current position and
 the [submission checklist](assessment/SUBMISSION_CHECKLIST.md) for the remaining actions.
-The [technical guide](technical/README.md) explains how to run and rebuild the source.
+The [technical guide](../Misc/technical/README.md) explains how to run and rebuild the source.
 
 [Back to folder map](#what-is-in-each-folder) · [Back to timeline](#follow-the-project-in-time)

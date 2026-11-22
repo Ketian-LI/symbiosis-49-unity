@@ -36,4 +36,4 @@ The browser prototype explored feeding and animal responses. Later versions intr
 room construction. The [development journal](DEVELOPMENT_JOURNAL.md) explains those changes.
 
 Read the [project report](PROJECT_REPORT.md) for the design account, [evaluation](EVALUATION.md) for the evidence,
-or [setup guide](technical/SETUP_AND_BUILD.md) to run the game.
+or [setup guide](../Misc/technical/SETUP_AND_BUILD.md) to run the game.

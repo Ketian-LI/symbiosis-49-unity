@@ -22,7 +22,7 @@ In Fill, the player selects a card, previews a legal plot and confirms construct
 in stages. Later, the player chooses from a hand. The board has 49 plots. Endless uses an expanding board and its own run rules.
 
 Selecting a card is separate from placing it. A route preview shows a possibility. Points for meals and resident routines
-depend on recorded activity. The [rules](technical/GAME_RULES.md) and [controls](technical/CONTROLS.md) explain these differences.
+depend on recorded activity. The [rules](../Misc/technical/GAME_RULES.md) and [controls](../Misc/technical/CONTROLS.md) explain these differences.
 
 ## Making consequences visible
 
@@ -39,7 +39,7 @@ These features aim to make outcomes easier to read. The current evidence does no
 
 The run model stores the board, turn state and rule versions. Separate systems handle food, resident routines, wildlife,
 placement scores and saving. Presentation code turns those results into rooms, animation, stories and interface text.
-The [architecture guide](technical/ARCHITECTURE.md) links the main classes.
+The [architecture guide](../Misc/technical/ARCHITECTURE.md) links the main classes.
 
 The game supports local rankings. An optional HTTP service receives submitted scores and names. Offline play does not
 depend on that service. Its identity method and validation limits are described in [ethics and limitations](ETHICS_AND_LIMITATIONS.md).

@@ -1,34 +1,23 @@
-# Documentation
+# Assessment reading guide
 
-Start with the [project overview and linked timeline](PROJECT_OVERVIEW.md).
-It explains the folders, file types and development stages on one page.
-Use the [portfolio](PORTFOLIO.md) to see the game, the [report](PROJECT_REPORT.md) for the design account,
-and the [journal](DEVELOPMENT_JOURNAL.md) for the longer development record.
+The main account is here. Read the [project overview and linked timeline](PROJECT_OVERVIEW.md)
+for the folder map and the route from the first prototype to the current game.
 
-## Choose a route
-
-| I want to | Read |
+| Read | What it explains |
 | --- | --- |
-| Play or rebuild the game | [Setup and build](technical/SETUP_AND_BUILD.md) |
-| Understand the current rules | [Game rules](technical/GAME_RULES.md) and [controls](technical/CONTROLS.md) |
-| Inspect the implementation | [Architecture](technical/ARCHITECTURE.md) and [scenes and modes](technical/SCENES_AND_MODES.md) |
-| Follow the development process | [Process guide](process/README.md) |
-| Review testing | [Evaluation](EVALUATION.md) and [evidence index](evidence/README.md) |
-| Check ethics and authorship | [Ethics reflection](ETHICS_REFLECTION.md), [limitations](ETHICS_AND_LIMITATIONS.md), [AI use](AI_AND_AUTHORSHIP.md) and [asset sources](ASSET_PROVENANCE.md) |
-| Check the assessment material | [Assessment guide](assessment/README.md) and [thesis status](../Thesis/README.md) |
-| Inspect an earlier design | [Archive](archive/README.md) |
-| Find sources | [References](REFERENCES.md) |
+| [Portfolio](PORTFOLIO.md) | The game and selected screenshots |
+| [Project report](PROJECT_REPORT.md) | The question, design choices and implementation |
+| [Development journal](DEVELOPMENT_JOURNAL.md) | What changed, why it changed and the evidence behind it |
+| [Evaluation](EVALUATION.md) | Feedback, technical results and limits |
+| [Study method](evidence/user-testing/METHOD.md) | The two rounds and the records still to check |
+| [Ethics reflection](ETHICS_REFLECTION.md) and [limitations](ETHICS_AND_LIMITATIONS.md) | The missed review, risks and unfinished actions |
+| [AI use](AI_AND_AUTHORSHIP.md), [asset sources](ASSET_PROVENANCE.md) and [references](REFERENCES.md) | Authorship, assistance and attribution |
+| [Thesis status](../Thesis/README.md) | The final PDF that remains to be added |
+| [Assessment guide](assessment/README.md) | Requirements and the submission checklist |
 
-## Where information belongs
+[Project status](PROJECT_STATUS.md) identifies the source, downloads and remaining work.
+[Media](media/README.md) labels the screenshots and missing demonstration.
+[Evidence](evidence/README.md) separates the study account from software checks.
 
-The [project status](PROJECT_STATUS.md) identifies the source, downloads and remaining work.
-It is the starting point when two versions appear to disagree.
-
-Current rules belong in the technical guides. Dated decisions belong in the journal and iteration records.
-Test results belong in the evidence index. Research conclusions belong in Evaluation and the thesis.
-
-A completed form, a planned feature and a passing software check are different kinds of evidence.
-The documents keep those differences visible.
-
-Browse the [technical](technical/README.md), [process](process/README.md), [evidence](evidence/README.md),
-[media](media/README.md), [assessment](assessment/README.md) and [archive](archive/README.md) sections.
+Detailed technical guides, individual revision notes, raw test reports and old designs are in
+[Misc](../Misc/README.md). They remain available for checking a claim without adding to the main reading order.

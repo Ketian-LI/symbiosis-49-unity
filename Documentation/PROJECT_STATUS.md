@@ -13,7 +13,7 @@ Checked on 22 November 2026. This page describes this GitHub source, not every l
 | Thesis | A local English revision dated 22 November; not published here | The author-approved PDF and final figure checks |
 | Portfolio media | Labelled browser and Unity test renders | A demonstration matching the submitted build |
 
-Use the [release notes](process/RELEASE_NOTES.md) to identify earlier snapshots.
+Use the [release notes](../Misc/process/RELEASE_NOTES.md) to identify earlier snapshots.
 The latest local work may be ahead of this source. A mockup or a working-folder result is not added to the published feature list without checking its source.
 
 ## Study account

@@ -11,8 +11,8 @@ Use [project status](../PROJECT_STATUS.md) for delivery versions and the current
 | Research weblog or sketchbook | [Development journal](../DEVELOPMENT_JOURNAL.md) | Included; reconstructed history is labelled |
 | Project report | [Report](../PROJECT_REPORT.md) | English overview included; final PDF arrangement needs tutor/author confirmation |
 | Associated thesis, at least 3,500 words, as PDF | [Thesis status](../../Thesis/README.md) | Final PDF pending |
-| LO1: sustained creative and technical practice | [Journal](../DEVELOPMENT_JOURNAL.md), source and [history](../process/REPOSITORY_LINEAGE.md) | Making and revision records available |
-| LO2: plan and realise a complex project | [Report](../PROJECT_REPORT.md) and [build guide](../technical/SETUP_AND_BUILD.md) | Unity source and an earlier Windows build available |
+| LO1: sustained creative and technical practice | [Journal](../DEVELOPMENT_JOURNAL.md), source and [history](../../Misc/process/REPOSITORY_LINEAGE.md) | Making and revision records available |
+| LO2: plan and realise a complex project | [Report](../PROJECT_REPORT.md) and [build guide](../../Misc/technical/SETUP_AND_BUILD.md) | Unity source and an earlier Windows build available |
 | LO3: ethical analysis | [Ethics and limitations](../ETHICS_AND_LIMITATIONS.md) | Critical account included; approval and data-use scope need confirmation |
 | LO4: user testing through a specified method | [Evaluation](../EVALUATION.md) and [method record](../evidence/user-testing/METHOD.md) | Two-round account documented; approved evidence and final analysis pending |
 | Moodle link file and full repository ZIP | [Checklist](SUBMISSION_CHECKLIST.md) | Older files prepared; final package needs updating and submission |

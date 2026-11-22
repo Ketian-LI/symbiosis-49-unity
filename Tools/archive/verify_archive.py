@@ -4,20 +4,21 @@ from urllib.parse import unquote
 
 root = Path(__file__).resolve().parents[2]
 errors = []
-for group in ('Assets', 'Packages', 'ProjectSettings', 'Documentation', 'Thesis'):
+for group in ('Assets', 'Packages', 'ProjectSettings', 'Documentation', 'Thesis', 'Misc'):
     if not (root / group).is_dir(): errors.append('Missing directory: ' + group)
 for relative in ('Documentation/README.md',
+                 'Misc/README.md',
                  'Documentation/PROJECT_STATUS.md',
-                 'Documentation/technical/README.md',
-                 'Documentation/process/README.md',
+                 'Misc/technical/README.md',
+                 'Misc/process/README.md',
                  'Documentation/assessment/README.md',
                  'Documentation/media/README.md',
-                 'Documentation/technical/SCENES_AND_MODES.md',
-                 'Documentation/technical/SETUP_AND_BUILD.md',
-                 'Documentation/technical/ARCHITECTURE.md',
-                 'Documentation/technical/GAME_RULES.md',
-                 'Documentation/technical/CONTROLS.md',
-                 'Documentation/technical/SAVE_FORMAT.md',
+                 'Misc/technical/SCENES_AND_MODES.md',
+                 'Misc/technical/SETUP_AND_BUILD.md',
+                 'Misc/technical/ARCHITECTURE.md',
+                 'Misc/technical/GAME_RULES.md',
+                 'Misc/technical/CONTROLS.md',
+                 'Misc/technical/SAVE_FORMAT.md',
                  'Documentation/assessment/REQUIREMENTS.md',
                  'Documentation/assessment/SUBMISSION_CHECKLIST.md',
                  'Documentation/evidence/README.md',
@@ -81,8 +82,7 @@ while pending:
     seen.add(node)
     pending.extend(graph.get(node, set()) - seen)
 active = [p.resolve() for p in markdown if
-          (p.is_relative_to(root / 'Documentation') and
-           not p.is_relative_to(root / 'Documentation/archive')) or
+          p.is_relative_to(root / 'Documentation') or
           p.is_relative_to(root / 'Thesis')]
 for file in active:
     if file not in seen:

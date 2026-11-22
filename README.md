@@ -15,9 +15,9 @@ file types and the route from the first prototype to the current source.
 ## Play or open the project
 
 - [Download the Windows game](https://github.com/Ketian-LI/symbiosis-49-unity/releases/tag/archive-2026-11-20).
-  This is the **19 November build**. Later source changes are listed in the [release notes](Documentation/process/RELEASE_NOTES.md).
+  This is the **19 November build**. Later source changes are listed in the [release notes](Misc/process/RELEASE_NOTES.md).
 - Open this repository in **Unity 6000.3.4f1**, load `Assets/Scenes/Main.unity`, then press Play.
-- See [setup and build instructions](Documentation/technical/SETUP_AND_BUILD.md) for the complete steps.
+- See [setup and build instructions](Misc/technical/SETUP_AND_BUILD.md) for the complete steps.
 
 Fill and Endless use a mouse and keyboard. A camera is not required.
 The macOS download is a Unity source project; it does not contain a built Mac app.
@@ -58,5 +58,5 @@ records the oversight and unfinished actions. The final thesis PDF and approved 
 The [submission checklist](Documentation/assessment/SUBMISSION_CHECKLIST.md) gives the next steps.
 GitHub publication is not Moodle submission.
 
-Earlier prototypes remain in the [project history](Documentation/process/REPOSITORY_LINEAGE.md).
-Detailed records are kept in [iterations](Documentation/process/iterations/README.md) and the [archive](Documentation/archive/README.md).
+Detailed technical guides, revision notes, saved test reports and old designs are grouped in
+[Misc](Misc/README.md). The main reading order is in [Documentation](Documentation/README.md).

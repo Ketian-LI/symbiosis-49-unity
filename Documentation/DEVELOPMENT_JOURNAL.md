@@ -11,7 +11,7 @@ The [project overview and linked timeline](PROJECT_OVERVIEW.md#follow-the-projec
 The browser prototype began with a feeding action. Later changes let players choose where to throw food and watch nearby
 animals respond. This raised a design question: could the player change conditions without controlling every animal directly?
 
-The [web history](process/history/early-web-history.csv) and
+The [web history](../Misc/process/history/early-web-history.csv) and
 [web development account](https://github.com/Ketian-LI/urban-wildlife-simulation/blob/main/docs/WEB_DEMO_DEVELOPMENT.md)
 record that stage. They do not show a Unity build.
 
@@ -30,7 +30,7 @@ The project moved to a modular room grid. A bounded board made routes and neighb
 Earlier versions began with a populated board. The later construction version let the player build it one placement at a time.
 
 This changed the opening problem. Players needed to learn what a room did before choosing among many room types.
-The [repository lineage](process/REPOSITORY_LINEAGE.md) links the source stages and dated commits.
+The [repository lineage](../Misc/process/REPOSITORY_LINEAGE.md) links the source stages and dated commits.
 
 ## November: cards and consequences
 
@@ -42,12 +42,12 @@ The main software revisions were:
 
 | Problem | Change | Evidence |
 | --- | --- | --- |
-| Good and poor layouts ended with similar scores | V13 increased the effect of favourable and unfavourable pairings | [Scoring report](evidence/automated-tests/scoring-and-storage.xml) |
-| Name entry and restart controls could be blocked | Input focus and the topmost pointer target were checked | [Result checks](evidence/automated-tests/result-interactions.xml) |
-| Goals disappeared after restart or tutorial skip | Goal presentation was reset for each run | [Failure](evidence/automated-tests/goal-restart-before-fix.xml) and [repair](evidence/automated-tests/goal-restart.xml) |
-| The left page had little to explain | Stories were derived from placements and recorded activity | [Story checks](evidence/automated-tests/story-model.xml) |
-| Score animations ended before causes could be reviewed | A score-source view reopened the last settlement's rooms and actors | [Interface record](process/iterations/SCORE_INDEX_2026-11-21.md) |
-| The three-goal component did not fit the page | Names, metric labels, fractions and achieved states were separated | [Goal UI record](process/iterations/GOAL_PROGRESS_UI_2026-11-21.md) |
+| Good and poor layouts ended with similar scores | V13 increased the effect of favourable and unfavourable pairings | [Scoring report](../Misc/evidence/automated-tests/scoring-and-storage.xml) |
+| Name entry and restart controls could be blocked | Input focus and the topmost pointer target were checked | [Result checks](../Misc/evidence/automated-tests/result-interactions.xml) |
+| Goals disappeared after restart or tutorial skip | Goal presentation was reset for each run | [Failure](../Misc/evidence/automated-tests/goal-restart-before-fix.xml) and [repair](../Misc/evidence/automated-tests/goal-restart.xml) |
+| The left page had little to explain | Stories were derived from placements and recorded activity | [Story checks](../Misc/evidence/automated-tests/story-model.xml) |
+| Score animations ended before causes could be reviewed | A score-source view reopened the last settlement's rooms and actors | [Interface record](../Misc/process/iterations/SCORE_INDEX_2026-11-21.md) |
+| The three-goal component did not fit the page | Names, metric labels, fractions and achieved states were separated | [Goal UI record](../Misc/process/iterations/GOAL_PROGRESS_UI_2026-11-21.md) |
 
 A story, an upgrade and a score are related but different. An upgrade can change capacity.
 A routine or meal still has to happen before an activity score is recorded.
@@ -57,7 +57,7 @@ A routine or meal still has to happen before an activity score is recorded.
 The English archive brought source, history, selected checks and screenshots together.
 It kept the final thesis and approved study evidence pending.
 A further review checked text in both languages and compared diagnostic placement policies.
-The [iteration index](process/iterations/README.md) links the detailed records.
+The [iteration index](../Misc/process/iterations/README.md) links the detailed records.
 
 ## 22 November: documents and open design work
 
@@ -83,5 +83,8 @@ prepared and disclosure made from the work still needed. Private participant for
 A reading map and directory guides now connect the report, process, evidence and assessment material. The status page
 separates repository source, older downloads and local draft work. The two-round method account uses the author's confirmed
 group overlap: five first-round participants returned within a second-round group of thirteen. It does not publish the raw records.
-The [technical guide](technical/ARCHITECTURE.md) now explains system responsibilities and the scene/mode boundaries.
+The [technical guide](../Misc/technical/ARCHITECTURE.md) now explains system responsibilities and the scene/mode boundaries.
 The final PDF, study permissions and final package remain open items.
+
+The assessment reading now stays in Documentation and Thesis. Detailed guides, revision records, raw software reports
+and superseded designs are grouped in [Misc](../Misc/README.md). The file moves preserve the material and update its links.

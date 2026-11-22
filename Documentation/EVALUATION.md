@@ -24,7 +24,7 @@ The public archive does not treat the working draft or consent folder as permiss
 ## Software checks
 
 Exported Unity checks cover selected scoring, saves, goals, result controls and interface behaviour.
-The [report index](evidence/automated-tests/README.md) links each saved batch.
+The [report index](../Misc/evidence/automated-tests/README.md) links each saved batch.
 Some checks appear in several batches. Adding their totals would overstate the number of unique tests.
 
 The latest goal-interface batch passes 21/21 checks. It covers bilingual text, restart/skip goal visibility,
@@ -42,7 +42,7 @@ The policies chose unfavourable edges, random legal plots or connected services.
 They help reveal narrow score ranges and poor incentives.
 They are not player results or proof of optimal play.
 
-The [review record](process/iterations/SKILL_GUIDED_UI_2026-11-21.md) gives the setup, results and limits.
+The [review record](../Misc/process/iterations/SKILL_GUIDED_UI_2026-11-21.md) gives the setup, results and limits.
 
 ## Conclusions that remain open
 

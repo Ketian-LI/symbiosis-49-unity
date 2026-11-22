@@ -1,7 +1,7 @@
 {
   "prepared_on": "2026-11-22",
-  "source_base_commit": "082f571883a4b1e526b6fd3f53b4f753f61f610e",
-  "note": "Documentation reading routes, current status and study account updated. Gameplay and runtime assets retained; no new executable.",
+  "source_base_commit": "231e97db2bfdca4fd1f246835fb669fe4bec48e6",
+  "note": "Supporting documents moved to Misc. Archive checker follows the new paths; gameplay source and runtime assets retained. No new executable.",
   "files": [
     {
       "path": "Assets/_Recovery/0 (1).unity",
@@ -7385,8 +7385,8 @@
     },
     {
       "path": "Tools/archive/verify_archive.py",
-      "bytes": 5232,
-      "sha256": "8ca1eef1d053c21d6cc58e55408f82fc2857b2d5bbc78cca2969b2b5f67e667d"
+      "bytes": 5133,
+      "sha256": "bb1da4f4c9187e2b10bf8746ed0c8831822cfeeb2795ef9b8598220152fc6ce5"
     },
     {
       "path": "Tools/Audio/generate_symbiosis_audio.py",
