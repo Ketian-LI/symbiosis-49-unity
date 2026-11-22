@@ -25,8 +25,8 @@ The score-source view returns to the last settled day's contributors. It highlig
 In Endless, it can centre a cause outside the current view.
 
 These images are actual Unity renders of fixed test layouts, captured during the 21 November source revisions.
-They are not participant sessions. The later city-background mockup is a design preview and has not replaced this source.
-A demonstration of the final submitted build is [still to be added](media/demonstrations/README.md).
+They document implemented features rather than participant sessions. Video coverage is listed in the
+[demonstration record](media/demonstrations/README.md).
 
 ## Where it began
 

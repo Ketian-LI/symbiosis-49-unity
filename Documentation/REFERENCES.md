@@ -1,4 +1,4 @@
-# Sources consulted for this archive
+# References
 
 Creative Computing Institute (2026) *Unit Assessment Brief: Creative Computing Final Project, IU000293, 2025-26*.
 Author-supplied PDF, `T4 IU000293 Creative Computing Final Project AB 25-26 (1).pdf`, pp. 2-4, 7. Read 20 November 2026.
@@ -21,8 +21,7 @@ Unity Technologies (n.d.) *Boat Attack*. Available at: https://github.com/Unity-
 The Nature of Code contributors (n.d.) *The Nature of Code Examples p5.js (archived)*. Available at:
 https://github.com/nature-of-code/noc-examples-p5.js-archived (Accessed: 20 November 2026).
 
-This is the archive's source list, not a claim that the final thesis literature review is complete. The books listed in the
-assessment brief and references appearing in working drafts must be checked against the final thesis argument and actual reading.
+This list covers sources consulted for the repository account and its organisation.
 
 ## Ethics guidance checked on 22 November 2026
 
@@ -33,4 +32,4 @@ The page contains 2025 deadlines; those dates are not used as the project's 2026
 University of the Arts London (2020) *Code of Practice on Research Ethics*, October. Available at:
 [UAL research ethics code](https://www.arts.ac.uk/__data/assets/pdf_file/0020/43328/UAL-Code-of-Practice-on-Research-Ethics-October-2020.pdf).
 
-The [ethics reflection](ETHICS_REFLECTION.md) records the author's confirmed position. It is not an approval record.
+The [ethics reflection](ETHICS_REFLECTION.md) records the project's review and data-handling position.

@@ -1,29 +1,22 @@
 # Assessment requirements
 
-Source: the author-supplied IU000293 Creative Computing Final Project brief, 2025-26.
-Pages 2-4 set the outcomes, required work and submission method. Page 7 recommends Harvard referencing.
-The supplied PDF was checked again on 22 November 2026.
-Use [project status](../PROJECT_STATUS.md) for delivery versions and the current study account.
+This map follows the IU000293 Creative Computing Final Project brief for 2025-26.
+Pages 2-4 describe the required work and submission method; page 7 recommends Harvard referencing.
 
-| Required work | Where to look | Current status |
+| Required work | Location | Record |
 | --- | --- | --- |
-| Portfolio of project outcomes | [Portfolio](../PORTFOLIO.md) | Screenshots and source links included; final demonstration pending |
-| Research weblog or sketchbook | [Development journal](../DEVELOPMENT_JOURNAL.md) | Included; reconstructed history is labelled |
-| Project report | [Report](../PROJECT_REPORT.md) | English overview included; final PDF arrangement needs tutor/author confirmation |
-| Associated thesis, at least 3,500 words, as PDF | [Thesis status](../../Thesis/README.md) | Final PDF pending |
-| LO1: sustained creative and technical practice | [Journal](../DEVELOPMENT_JOURNAL.md), source and [history](../../Misc/process/REPOSITORY_LINEAGE.md) | Making and revision records available |
-| LO2: plan and realise a complex project | [Report](../PROJECT_REPORT.md) and [build guide](../../Misc/technical/SETUP_AND_BUILD.md) | Unity source and an earlier Windows build available |
-| LO3: ethical analysis | [Ethics and limitations](../ETHICS_AND_LIMITATIONS.md) | Critical account included; approval and data-use scope need confirmation |
-| LO4: user testing through a specified method | [Evaluation](../EVALUATION.md) and [method record](../evidence/user-testing/METHOD.md) | Two-round account documented; approved evidence and final analysis pending |
-| Moodle link file and full repository ZIP | [Checklist](SUBMISSION_CHECKLIST.md) | Older files prepared; final package needs updating and submission |
+| Portfolio of outcomes | [Portfolio](../PORTFOLIO.md) | Screenshots and source links. |
+| Research weblog or sketchbook | [Development journal](../DEVELOPMENT_JOURNAL.md) | Development sequence and retrospective records. |
+| Project report | [Report](../PROJECT_REPORT.md) | Design, implementation and evaluation account. |
+| Associated thesis: at least 3,500 words, as PDF | [Thesis record](../../Thesis/README.md) | PDF not included. |
+| LO1: sustained creative and technical practice | [Journal](../DEVELOPMENT_JOURNAL.md) and [source history](../../Misc/process/REPOSITORY_LINEAGE.md) | Making and revision records. |
+| LO2: plan and realise a complex project | [Report](../PROJECT_REPORT.md) and [build guide](../../Misc/technical/SETUP_AND_BUILD.md) | Unity source and Windows build. |
+| LO3: ethical analysis | [Ethics reflection](../ETHICS_REFLECTION.md) and [limitations](../ETHICS_AND_LIMITATIONS.md) | Critical account; formal review remains unresolved. |
+| LO4: user testing through a specified method | [Evaluation](../EVALUATION.md) and [method](../evidence/user-testing/METHOD.md) | Two-round account and evidence limits. |
+| GitHub link and full repository ZIP | [Submission inventory](SUBMISSION_CHECKLIST.md) | Published source and released archive. |
 
-The standard deadline is **23 November 2026, 14:00 GMT**.
-The adjusted date is 30 November, 14:00 GMT, only where the student's eligibility and use have been confirmed.
-The assessment is graded as a whole. All required components must be submitted.
+The brief specifies a `.txt` containing the GitHub link and a `.zip` containing the full repository, with a maximum
+upload size of 1 GB. Its standard deadline is 23 November 2026 at 14:00 GMT. The adjusted deadline of 30 November
+applies only where the student's eligibility and use have been confirmed.
 
-Moodle accepts a `.txt` containing the GitHub link and a `.zip` containing the full repository.
-The maximum upload size is 1 GB. GitHub publication alone is not Moodle submission.
-
-The supplied brief does not set a five-image requirement, a three-minute video length or a fixed participant count.
-It says **at least 3,500 words**, not 3,500 plus or minus 10%.
-Any extra Moodle or tutor requirements need to be checked separately.
+The brief does not prescribe a fixed number of images or participants, or a fixed demonstration-video length.

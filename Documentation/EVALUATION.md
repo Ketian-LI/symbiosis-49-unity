@@ -1,54 +1,54 @@
 # Evaluation
 
-User feedback, software checks and design critique answer different questions.
-This page explains what each source can support.
+The evaluation draws on playtesting, software checks and score calibration. Each addresses a different question:
+what players understood, whether the implementation behaved as expected, and how the scoring rules responded to layouts.
 
-## User testing
+## Playtesting
 
-The author confirmed two rounds: 5 people in the first and 13 in the second.
-The original 5 returned, so there were 13 different people across both rounds.
-The first-round account reports three questionnaires alongside written and voice feedback.
+There were two rounds of remote playtesting: 5 people in the first and 13 in the second.
+The original 5 returned, giving 13 different participants. The first-round account includes 3 questionnaires
+alongside written and voice feedback. The [method record](evidence/user-testing/METHOD.md) describes recruitment,
+questions and rule differences.
 
-The [method record](evidence/user-testing/METHOD.md) describes recruitment, task questions and rule differences.
-The older draft called the second round a plan. The local 22 November revision records that it took place.
-Exact builds, session completion and the final analysis still need to be matched to the underlying records.
+The playtesting account identifies unclear rules, delayed feedback and repetition. One waste-collection example
+concerned a legal placement whose visible result appeared on the following day. This raised a design problem:
+a valid action was difficult to connect to its consequence.
 
-The draft describes players reaching the end without understanding some rules. It also records a waste-collection case:
-a player chose a valid plot, but the old version delayed the result until the next day.
-These accounts prompted design questions. The approved anonymous material needed to inspect them is not yet in this repository.
+These observations informed more immediate feedback, visible score causes and a review of the finished layout.
+They do not establish the effect of each later feature. Rules and recording methods changed between rounds,
+and exact executable identifiers are not available for every session.
 
-The application has not yet been sent to the supervisor.
-The [ethics reflection](ETHICS_REFLECTION.md) explains the oversight and outstanding actions.
-The public archive does not treat the working draft or consent folder as permission to publish all study material.
+The study began before formal ethics review. Raw participant records and an approved set of anonymous extracts
+are not published here. The [ethics reflection](ETHICS_REFLECTION.md) explains the data-use limits.
 
 ## Software checks
 
-Exported Unity checks cover selected scoring, saves, goals, result controls and interface behaviour.
-The [report index](../Misc/evidence/automated-tests/README.md) links each saved batch.
-Some checks appear in several batches. Adding their totals would overstate the number of unique tests.
+Saved Unity reports cover selected scoring rules, saves, goals, result controls and interface behaviour.
+The [report index](../Misc/evidence/automated-tests/README.md) identifies each batch.
+Some tests recur across batches, so the batch totals are not a count of unique tests.
 
-The latest goal-interface batch passes 21/21 checks. It covers bilingual text, restart/skip goal visibility,
-hand presentation, result controls and score-source navigation.
-No Unity tests were rerun for this documentation update.
+The latest goal-interface batch records 21/21 passing checks. It covers bilingual text, restart and tutorial-skip
+goal visibility, hand presentation, result controls and score-source navigation.
 
-Two older opening checks fail before and after the left-page revision.
-One checks the case after a fixed 1.4-second wait. The other compares a closed-case tree scale with its restored scale.
-The reports remain visible as failures. A separate navigation check does not make those failures disappear.
+Two older opening checks fail both before and after the left-page revision. One uses a fixed 1.4-second wait;
+the other compares the closed-case tree scale with its restored scale. Those failures remain in the reports.
+The saved results describe their named snapshots. The documentation revisions did not rerun Unity tests.
 
 ## Score calibration
 
 The November review used 72 automated Fill runs: 36 calibration runs and 36 held-out checks.
-The policies chose unfavourable edges, random legal plots or connected services.
-They help reveal narrow score ranges and poor incentives.
-They are not player results or proof of optimal play.
+The policies chose unfavourable edges, random legal plots or connected services. This compared score ranges
+and incentives under different placement strategies.
 
-The [review record](../Misc/process/iterations/SKILL_GUIDED_UI_2026-11-21.md) gives the setup, results and limits.
+These are diagnostic runs rather than player results or proof of optimal play.
+The [review record](../Misc/process/iterations/SKILL_GUIDED_UI_2026-11-21.md) gives the setup, results and limitations.
 
-## Conclusions that remain open
+## Findings and limits
+
+The project identifies a recurring interaction problem: a player may finish the game without understanding why
+a placement helped or harmed the neighbourhood. The design response was to keep consequences available for inspection,
+rather than show only a total score.
 
 The current public evidence does not establish improved ecological understanding, representative player preference
-or an advantage for physical input.
-Finishing 49 days shows task completion. Understanding a rule and wanting another game need their own evidence.
-
-The final account should identify the version behind each finding.
-Feedback on an older turn system cannot establish the effect of later stories or highlights.
+or an advantage for physical input. Task completion, rule understanding and willingness to replay are separate outcomes.
+Feedback from an earlier build cannot demonstrate the effect of later stories, highlights or card layouts.

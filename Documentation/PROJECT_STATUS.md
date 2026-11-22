@@ -1,43 +1,40 @@
-# Project status
+# Project and delivery record
 
-Checked on 22 November 2026. This page describes this GitHub source, not every local experiment.
+Status on 22 November 2026. This page identifies the material in the repository and its published downloads.
 
-## Versions and delivery
+## Versions
 
-| Item | Available now | Still needed |
-| --- | --- | --- |
-| Unity source | Construction source through the 21 November interface revisions; documentation updated on 22 November | Select and verify the final submission version |
-| Windows download | 19 November StreetJournal build, published in the 20 November release | Rebuild if later source changes are to be included |
-| macOS download | Source project for building on a Mac | A built and tested Mac app, if one is required |
-| Repository ZIP | 20 November source archive, about 332 MB | A new ZIP containing the final source and approved documents |
-| Thesis | A local English revision dated 22 November; not published here | The author-approved PDF and final figure checks |
-| Portfolio media | Labelled browser and Unity test renders | A demonstration matching the submitted build |
+| Item | Recorded version |
+| --- | --- |
+| Unity source | Construction game through the 21 November interface revisions; documentation edited on 22 November. |
+| Windows download | 19 November StreetJournal executable, published in the 20 November release. It predates the later source revisions. |
+| macOS download | Unity source project. No built or tested Mac application is included. |
+| Released source ZIP | 20 November archive, approximately 332 MB. It predates the current documentation. |
+| Thesis PDF | Not included in this repository. A local English working document is dated 22 November. |
+| Portfolio | Labelled browser and Unity screenshots. No final-build video is included. |
 
-Use the [release notes](../Misc/process/RELEASE_NOTES.md) to identify earlier snapshots.
-The latest local work may be ahead of this source. A mockup or a working-folder result is not added to the published feature list without checking its source.
+The [release notes](../Misc/process/RELEASE_NOTES.md) identify earlier snapshots.
+The [submission inventory](assessment/SUBMISSION_CHECKLIST.md) lists the included material.
+This repository does not document a Moodle submission.
 
-## Study account
+## Study record
 
-The author confirmed five first-round participants and thirteen second-round participants.
-The five from the first round returned in the second, so there were **thirteen people across the two rounds**, not eighteen.
-The first-round working account reports three questionnaires.
+Two rounds involved 5 participants and 13 participants respectively. The original 5 returned in the second round,
+giving **13 different participants** across the study. The first-round account includes 3 returned questionnaires.
+These counts describe recruitment and responses; they do not establish that everyone completed a full run.
 
-These are author-reported study details. They do not establish that every session used the same build or that every record is ready to publish.
-The [method record](evidence/user-testing/METHOD.md) separates the two rounds.
-Approved anonymous evidence and the final analysis remain outstanding.
+Exact executable identifiers are not documented for every session. Detailed participant records and an approved set of
+anonymous extracts are not included in the public archive. The [method](evidence/user-testing/METHOD.md) describes the
+recording approach and its limits.
 
-## Ethics and submission
+## Ethics record
 
-The application had not been sent to the supervisor when the author confirmed the position on 22 November.
-Pausing further playtesting, moving records to UAL OneDrive and handling older external-service records were also unfinished.
-The [ethics reflection](ETHICS_REFLECTION.md) records that position. It does not replace review.
+The ethics application had not been sent to the supervisor as of 22 November. A pause on further playtesting,
+transfer of records to UAL OneDrive and handling of earlier external-service records had not been completed.
+The [ethics reflection](ETHICS_REFLECTION.md) records the oversight, risks and lessons.
 
-The final thesis PDF and approved study evidence are not in this repository.
-A Moodle submission has not been verified.
-Use the [submission checklist](assessment/SUBMISSION_CHECKLIST.md) for the next actions.
+## Development scope
 
-## Requested features outside this source
-
-The city-background restoration, goal icons based on card artwork, revised recent-changes area and per-category deck display
-remain design work for this published snapshot. Clickable manual terms and Enter-to-confirm also remain outside its implemented controls.
-Their later local progress needs separate verification before this list changes.
+The published source does not include the requested city-background restoration, card-based goal icons,
+revised recent-changes area, per-category deck display, clickable manual terms or Enter-to-confirm control.
+These are later design proposals, separate from the implemented features described in this repository.

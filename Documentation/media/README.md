@@ -1,10 +1,8 @@
 # Media
 
-Use the [portfolio](../PORTFOLIO.md) for a selected view of the work.
+The [portfolio](../PORTFOLIO.md) presents selected images with design context.
 
-- [Screenshots](screenshots/README.md) identify the browser and Unity capture groups.
-- [Demonstrations](demonstrations/README.md) records the missing final-build video.
+- [Screenshot index](screenshots/README.md) identifies the browser and Unity capture groups.
+- [Demonstration record](demonstrations/README.md) states the video coverage.
 
-A Unity test render shows the software in a fixed layout.
-A participant session, an earlier build and an AI-generated design preview need their own labels.
-The 22 November city-background preview has not been substituted for an implemented-game screenshot.
+Unity captures use fixed test layouts. They document software appearance rather than participant sessions.

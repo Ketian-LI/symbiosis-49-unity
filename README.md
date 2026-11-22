@@ -33,30 +33,26 @@ are designed game rules. They are not predictions of a real ecosystem.
 ## Read the project
 
 The [documentation guide](Documentation/README.md) maps all sections.
-Use [project status](Documentation/PROJECT_STATUS.md) to check versions and remaining work.
+The [delivery record](Documentation/PROJECT_STATUS.md) identifies source and download versions.
 
 | Start here | What it covers |
 | --- | --- |
-| [Portfolio](Documentation/PORTFOLIO.md) | Screenshots and the final experience |
+| [Portfolio](Documentation/PORTFOLIO.md) | The game and selected screenshots |
 | [Project report](Documentation/PROJECT_REPORT.md) | The problem, design choices and implementation |
 | [Development journal](Documentation/DEVELOPMENT_JOURNAL.md) | How the project changed and why |
 | [Evaluation](Documentation/EVALUATION.md) | User feedback, technical checks and open questions |
-| [Thesis](Thesis/README.md) | Final PDF status |
+| [Thesis](Thesis/README.md) | Dissertation record |
 | [Ethics and limitations](Documentation/ETHICS_AND_LIMITATIONS.md) | Representation, participant data and practical limits |
-| [Ethics reflection](Documentation/ETHICS_REFLECTION.md) | The missed review, risks, work done and remaining actions |
-| [AI use and authorship](Documentation/AI_AND_AUTHORSHIP.md) | Assistance and the author's contribution |
+| [Ethics reflection](Documentation/ETHICS_REFLECTION.md) | Research conduct, risks and lessons |
+| [AI use and authorship](Documentation/AI_AND_AUTHORSHIP.md) | Tools and project contributions |
 | [Asset sources](Documentation/ASSET_PROVENANCE.md) | Artwork, models, fonts and licences |
 | [Assessment map](Documentation/assessment/REQUIREMENTS.md) | Where to find each required item |
 
-## Current status
+## Version and evidence record
 
-This source includes the 21 November interface work. The 22 November changes organise and clarify its documentation.
-The Windows download remains an earlier build. [Project status](Documentation/PROJECT_STATUS.md) lists the source and delivery versions.
+The source includes the 21 November interface revisions. The Windows download is the earlier 19 November build.
+The [delivery record](Documentation/PROJECT_STATUS.md) and [submission inventory](Documentation/assessment/SUBMISSION_CHECKLIST.md)
+identify the included material. The thesis PDF and detailed anonymous study evidence are not included.
+The [ethics reflection](Documentation/ETHICS_REFLECTION.md) records the study's review and data-handling position.
 
-The ethics application has not yet been sent to the supervisor. The [ethics reflection](Documentation/ETHICS_REFLECTION.md)
-records the oversight and unfinished actions. The final thesis PDF and approved study evidence are still absent.
-The [submission checklist](Documentation/assessment/SUBMISSION_CHECKLIST.md) gives the next steps.
-GitHub publication is not Moodle submission.
-
-Detailed technical guides, revision notes, saved test reports and old designs are grouped in
-[Misc](Misc/README.md). The main reading order is in [Documentation](Documentation/README.md).
+Detailed technical guides, revision notes, saved software reports and older designs are grouped in [Misc](Misc/README.md).

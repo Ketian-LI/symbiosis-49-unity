@@ -55,36 +55,19 @@ A routine or meal still has to happen before an activity score is recorded.
 ## 20-21 November: archive and review
 
 The English archive brought source, history, selected checks and screenshots together.
-It kept the final thesis and approved study evidence pending.
 A further review checked text in both languages and compared diagnostic placement policies.
 The [iteration index](../Misc/process/iterations/README.md) links the detailed records.
 
-## 22 November: documents and open design work
+## 22 November: documentation and ethics reflection
 
-The documents were grouped by purpose. Main guides were shortened, and historical plans were moved to an archive.
-Links, source hashes and test-report counts were checked. Gameplay source and saved reports were retained.
+The report, portfolio, journal and evaluation were organised into a single reading route, with a linked timeline.
+Detailed guides, individual revisions, software reports and older designs were grouped in [Misc](../Misc/README.md).
+Links, source hashes and saved report counts were checked. This work changed documentation rather than gameplay.
 
-The city-background restoration, card-matching goal icons, revised recent-changes area and per-category deck display remain
-design requests. Manual cross-links and an Enter key to confirm placement also remain planned.
-They are not described as implemented features in this revision.
+The two-round study account records five first-round participants returning within a second-round group of thirteen.
+The [ethics reflection](ETHICS_REFLECTION.md) documents the missed review, external processing of earlier feedback
+and the safeguards that remained unresolved on 22 November. Private participant records are excluded from the public archive.
 
-The next submission tasks are to finish the thesis, reconcile study evidence and package the same version that the report describes.
-See the [checklist](assessment/SUBMISSION_CHECKLIST.md).
-
-## 22 November ethics reflection
-
-The author supplied staff advice to explain the missed ethics review and reflect on its risks. The author confirmed that
-the application had not yet been sent to the supervisor. Pausing further playtesting, moving records to UAL OneDrive and
-handling external service records had not been completed. The [reflection](ETHICS_REFLECTION.md) separates the materials
-prepared and disclosure made from the work still needed. Private participant forms remain outside the public repository.
-
-## 22 November document architecture review
-
-A reading map and directory guides now connect the report, process, evidence and assessment material. The status page
-separates repository source, older downloads and local draft work. The two-round method account uses the author's confirmed
-group overlap: five first-round participants returned within a second-round group of thirteen. It does not publish the raw records.
-The [technical guide](../Misc/technical/ARCHITECTURE.md) now explains system responsibilities and the scene/mode boundaries.
-The final PDF, study permissions and final package remain open items.
-
-The assessment reading now stays in Documentation and Thesis. Detailed guides, revision records, raw software reports
-and superseded designs are grouped in [Misc](../Misc/README.md). The file moves preserve the material and update its links.
+Later proposals include card-based goal icons, a deck-composition display, revised background and recent-changes visuals,
+manual cross-links and an Enter key for placement confirmation. These proposals are separate from the implemented source.
+The [delivery record](PROJECT_STATUS.md) identifies the scope of the published version.

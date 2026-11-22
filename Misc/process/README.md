@@ -22,3 +22,5 @@ The journal identifies the available basis for each change.
 [Iteration records](iterations/README.md) keep dated detail.
 [Release notes](RELEASE_NOTES.md) identify source and download snapshots.
 [History files](history/README.md) preserve the earlier records.
+
+The [supporting AI-use record](AI_USE_RECORD.md) links tool logs and references.

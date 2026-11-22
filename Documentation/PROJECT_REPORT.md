@@ -4,8 +4,8 @@ SYMBIOSIS: 49 is a Unity card-placement game. Players build a neighbourhood one 
 Homes need access to work and meals. Animals need food they can reach. Streets, green spaces and waste facilities
 can help one part of the neighbourhood while causing problems elsewhere.
 
-This report explains the project and links to its code and evidence. The [thesis](../Thesis/README.md) provides the longer
-research argument; its final PDF is still pending.
+This report connects the design problem, implementation and evaluation. The [development journal](DEVELOPMENT_JOURNAL.md)
+traces the earlier prototypes, and the [delivery record](PROJECT_STATUS.md) identifies the published material.
 
 ## The design problem
 
@@ -46,16 +46,14 @@ depend on that service. Its identity method and validation limits are described 
 
 ## What the evidence shows
 
-The author reports two rounds of remote playtesting. The [method record](evidence/user-testing/METHOD.md) identifies
-the groups and the changes between rounds. The first-round account describes unclear rules, delayed feedback and repetition.
-The latest local thesis revision also records second-round feedback.
-
-The exact builds and permitted use of the records still need checking. Approved anonymous evidence is not yet published
-here. The [project status](PROJECT_STATUS.md) and [ethics reflection](ETHICS_REFLECTION.md) state the remaining work.
+Remote playtesting involved two rounds with 13 different participants. The [method record](evidence/user-testing/METHOD.md)
+describes the groups and rule differences. Feedback identified unclear rules, delayed feedback and repetition.
+The study began before formal ethics review, and exact executable identifiers are not documented for every session.
+The [ethics reflection](ETHICS_REFLECTION.md) states the limits on further use of the earlier records.
 
 Automated checks cover selected rules, saving, restart, goal visibility and interface interactions. Unity renders show fixed
 layouts in both languages. These checks help find software faults; they do not replace user testing.
 The [evaluation](EVALUATION.md) keeps the two types of evidence separate.
 
-The current task is to finish the thesis, check the study records and align the submitted build with its documentation.
-The game is a simplified account of urban life, with authored scores and species behaviour. Its limits are part of the work.
+The resulting artefact makes placement consequences available through rooms, stories, score reasons and layout review.
+It remains a simplified account of urban life, with authored scores and species behaviour rather than ecological predictions.

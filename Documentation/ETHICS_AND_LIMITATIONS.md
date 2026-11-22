@@ -2,26 +2,22 @@
 
 ## Representing urban wildlife
 
-The game reduces food, movement, habitat and risk to a small set of rules. The designer chooses which species appear and
-which outcomes earn points. A high score is a result within this game, not a judgement about a real city's ecology.
+The game reduces food, movement, habitat and risk to a small set of rules. The designer chooses which species appear
+and which outcomes earn points. A high score describes success within this game, rather than the ecological quality
+of a real city.
 
-Combining resident and animal points can hide competing needs. The interface shows separate contributions and explains
-causes so players can inspect the assumptions. A short story can make an event approachable, but it can also make a complex
-relationship seem simple. Whether players understand these limits needs user research.
+Combining resident and animal points can hide competing needs. Separate contributions and visible causes let players
+inspect those assumptions. Short stories make events approachable, but may also make complex relationships seem simple.
+The evaluation does not establish how well players recognise these limits.
 
 ## Participant records
 
-Playtests and feedback collection began before formal ethics review was completed. On 22 November, the author confirmed
-that the application had not yet been sent to the supervisor. A pause on further playtesting, transfer to UAL OneDrive and
-handling of old records held through AI or leaderboard services had not been completed.
+Playtesting and feedback collection began before formal ethics review. The application had not been sent to the supervisor
+as of 22 November 2026. Storage arrangements and handling of earlier external-service records also remained unresolved.
+The [ethics reflection](ETHICS_REFLECTION.md) records the sequence, risks and lessons.
 
-The [ethics reflection](ETHICS_REFLECTION.md) explains the oversight, risks and lessons. Preparing forms and explaining the
-problem do not establish approval or resolve the remaining data-handling work.
-
-Before earlier feedback is analysed or quoted further, the author needs to confirm its permitted use with the supervisor.
-Participant identities, chats, audio, contact details and signed forms stay outside this repository.
-Only approved, de-identified extracts belong in the [user-testing evidence](evidence/user-testing/README.md).
-Signed forms and a private code key should not be published as evidence of consent.
+Private participant records and signed forms are excluded from this repository. An approved set of de-identified extracts
+is not included. Informal agreement to play and later consent documents do not establish prior institutional approval.
 
 ## The optional leaderboard
 
@@ -31,9 +27,9 @@ it does not replay the run to prove the score. Offline play and local rankings w
 
 ## Practical limits
 
-Selected checks cover English/Chinese text, keyboard naming, pointer targets and result review.
+Selected software checks cover English and Chinese text, keyboard naming, pointer targets and result review.
 A full accessibility study has not been completed. The camera prototype has limited physical evidence.
-The macOS download is source-only, and no Mac runtime or signing result is claimed.
+The macOS download contains source rather than a built application.
 
-The [evaluation](EVALUATION.md) records the limits of user feedback and software checks.
-The [asset record](ASSET_PROVENANCE.md) separates generated, imported and editable materials.
+The [evaluation](EVALUATION.md) records the limits of the study and software checks.
+The [asset record](ASSET_PROVENANCE.md) identifies generated, imported and editable materials.

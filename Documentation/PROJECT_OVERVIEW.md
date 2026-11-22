@@ -4,7 +4,7 @@ This is the starting page for the whole project.
 First use the [folder map](#what-is-in-each-folder) to find a type of material.
 Then follow the [timeline](#follow-the-project-in-time) to see how the work developed.
 
-[Folder map](#what-is-in-each-folder) · [File types](#what-the-file-types-mean) · [Timeline](#follow-the-project-in-time) · [Remaining work](#10-current-position-and-next-steps)
+[Folder map](#what-is-in-each-folder) · [File types](#what-the-file-types-mean) · [Timeline](#follow-the-project-in-time) · [Delivery record](#10-published-record)
 
 ## What is in each folder
 
@@ -17,7 +17,7 @@ The timeline below connects the main account to the relevant detail.
 | Main account | [Documentation](README.md) | .md | Portfolio, report, journal, evaluation, ethics and authorship |
 | Study account | [evidence/user-testing](evidence/user-testing/README.md) | .md at present | Two-round method and evidence status; approved detailed records remain pending |
 | Images and demonstration | [media](media/README.md) | .png, .md | Labelled screenshots; final-build demonstration remains pending |
-| Requirements and checklist | [assessment](assessment/README.md) | .md | Required material, its location and remaining submission work |
+| Requirements and inventory | [assessment](assessment/README.md) | .md | Required material, its location and delivery record |
 | Dissertation | [Thesis](../Thesis/README.md) | .md at present; final PDF pending | Thesis status and the future approved PDF |
 | Supporting material | [Misc](../Misc/README.md) | .md, .xml, .json, .csv, .docx, .png | Detailed guides, dated revisions, saved reports, history and old designs |
 
@@ -71,12 +71,12 @@ Some November work has only a month or snapshot date; that uncertainty is kept.
 | September 2026 | Physical input and city planning | Tokens, previews and larger route systems | [02](#02-physical-input-and-city-planning) |
 | 22 September-6 October | Room board | A bounded grid with rearrangement and Research configurations | [03](#03-room-board-and-research-configurations) |
 | 9-20 October | Progressive construction | Build the board one placement at a time | [04](#04-progressive-construction) |
-| November; session dates still to check | Cards, upgrades and playtesting | More choices, revised rules and two rounds of feedback | [05](#05-cards-upgrades-and-playtesting) |
+| November; precise session dates undocumented | Cards, upgrades and playtesting | More choices, revised rules and two rounds of feedback | [05](#05-cards-upgrades-and-playtesting) |
 | 19 November snapshot | Scores, goals and review | Layout-sensitive scoring, restart repair and stories | [06](#06-the-19-november-snapshot) |
 | 20 November | English archive | Source, history and selected evidence brought together | [07](#07-the-20-november-archive) |
 | 21 November | Reading and score sources | Clearer text, contributor highlights and goal progress | [08](#08-the-21-november-interface-work) |
 | 22 November | Thesis, ethics and document review | Update the account and disclose unfinished work | [09](#09-the-22-november-review) |
-| Pending | Final package | Align the thesis, evidence, source and submission | [10](#10-current-position-and-next-steps) |
+| 22 November | Published record | Source, documentation and delivery versions | [10](#10-published-record) |
 
 ## 01 Browser prototype
 
@@ -135,9 +135,9 @@ and the [current scene/mode guide](../Misc/technical/SCENES_AND_MODES.md).
 November work developed the illustrated hand, deck area, room upgrades and staged opening.
 Feedback raised questions about small text, visual consistency, unclear consequences and repetition.
 
-The author reports 5 people in the first round and 13 in the second.
+Playtesting involved 5 people in the first round and 13 in the second.
 The original 5 returned, making 13 different people across both rounds.
-Exact session dates and executable identifiers still need checking.
+Exact session dates and executable identifiers are not documented for every participant in the public account.
 The [method record](evidence/user-testing/METHOD.md) and [evaluation](EVALUATION.md) distinguish the rounds and their limits.
 
 The [current rules](../Misc/technical/GAME_RULES.md) describe the published source.
@@ -197,16 +197,16 @@ Read the [document map](README.md), [thesis status](../Thesis/README.md),
 Private consent documents, chats and audio are not published here.
 The reflection does not establish approval.
 
-[Next stage](#10-current-position-and-next-steps) · [Timeline](#follow-the-project-in-time)
+[Next stage](#10-published-record) · [Timeline](#follow-the-project-in-time)
 
-## 10 Current position and next steps
+## 10 Published record
 
-The repository contains the source and documented development process.
-The downloads, local draft and published source are different snapshots.
-The final thesis PDF, permitted research evidence, final-build demonstration and updated submission package remain open.
+The repository contains the source, project account, labelled screenshots and documented development process.
+The downloads and published source are different snapshots. The thesis PDF, detailed anonymous study evidence
+and final-build demonstration are not included.
 
-Use [project status](PROJECT_STATUS.md) for the current position and
-the [submission checklist](assessment/SUBMISSION_CHECKLIST.md) for the remaining actions.
+The [delivery record](PROJECT_STATUS.md) identifies versions, and the
+[submission inventory](assessment/SUBMISSION_CHECKLIST.md) lists the included material.
 The [technical guide](../Misc/technical/README.md) explains how to run and rebuild the source.
 
 [Back to folder map](#what-is-in-each-folder) · [Back to timeline](#follow-the-project-in-time)

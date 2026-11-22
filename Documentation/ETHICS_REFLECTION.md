@@ -14,11 +14,11 @@ Participants could lose control over how their feedback, voices or identifying d
 
 As a UAL student, I was responsible for following the University's procedures. Missing review could undermine confidence in how the project handled participants and in the reliability of its research account. I cannot treat staff advice or a completed form as evidence of institutional approval.
 
-My own ethical responsibility and academic credibility are also at risk. Presenting later consent as if it had existed before the study, or describing unfinished safeguards as completed, would make the account misleading. I need to retain the actual sequence of events, including the oversight.
+The oversight also affects my academic credibility. Later consent cannot be presented as if it existed before the study, and unfinished safeguards cannot be described as completed. This account retains the actual sequence of events.
 
 ## What I have done so far
 
-I raised the issue with a member of staff. The advice was to complete the form, speak to my supervisor and explain the oversight and lessons in this repository. I prepared an ethics application draft and organised the participant information and consent documents in a separate working folder. My supervisor is Matt Jarvis. The application has not yet been sent to him.
+I raised the issue with a member of staff and received advice to complete the form, speak to my supervisor and explain the oversight and lessons in this repository. I prepared an ethics application draft and organised the participant information and consent documents separately. The application had not been sent to my supervisor as of 22 November 2026.
 
 The public repository keeps consent documents, raw messages, audio and participant identities out of the research evidence folders. It states that approval and permitted use of the earlier feedback remain unresolved. This limits further public exposure through the project archive. It does not resolve earlier data handling or establish that all consent documents are complete.
 
@@ -26,9 +26,9 @@ The public repository keeps consent documents, raw messages, audio and participa
 
 At the time of writing, new playtesting has not yet been paused. Transfer of the research records to UAL OneDrive and handling of records held through AI or leaderboard services have not been completed. These are outstanding risks, not completed safeguards.
 
-I need to send the application to my supervisor and ask what may be retained, analysed or quoted from the earlier work. I also need guidance before further participant work, a check of each person's permissions and any exclusions, and a confirmed storage and retention arrangement. Possible leaderboard uploads and copies held through external services need review. I cannot claim that earlier copies have been deleted or recalled.
+Formal review, permission for further analysis or quotation, and a confirmed storage and retention arrangement remain unresolved. The record also does not establish which sessions uploaded leaderboard data or the status of earlier copies held by external services. No deletion or recall of those copies is claimed.
 
-Later consent must use the actual signing date and the uses each participant permits. It cannot establish that approval or consent was in place before the earlier sessions. The thesis should state the same status as this repository. Findings that cannot be supported or used with permission should not be presented as approved research evidence.
+Later consent records the actual signing date and the uses each participant permits. It cannot establish that approval or consent was in place before the earlier sessions. The study account is therefore presented with these limits, rather than as approved research evidence.
 
 ## What I have learned
 
@@ -41,4 +41,4 @@ For future work, I will check the process with my supervisor early, obtain the r
 - [CCI ethical guidance for taught projects](https://git.arts.ac.uk/pages/wzhang/CCI-Thesis/), accessed 22 November 2026. The page contains 2025 deadlines; those dates are not used as deadlines for this project.
 - [UAL Code of Practice on Research Ethics](https://www.arts.ac.uk/__data/assets/pdf_file/0020/43328/UAL-Code-of-Practice-on-Research-Ethics-October-2020.pdf), October 2020, accessed 22 November 2026.
 
-This account follows the author's confirmation of the current status on 22 November 2026. It does not publish private forms or the staff conversation.
+Private forms and the staff conversation are excluded from the public archive.

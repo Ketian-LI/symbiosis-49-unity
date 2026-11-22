@@ -1,7 +1,7 @@
 {
   "prepared_on": "2026-11-22",
-  "source_base_commit": "231e97db2bfdca4fd1f246835fb669fe4bec48e6",
-  "note": "Supporting documents moved to Misc. Archive checker follows the new paths; gameplay source and runtime assets retained. No new executable.",
+  "source_base_commit": "7e9af2ab89cd36c369c3584c5d8dec2668453e55",
+  "note": "Documentation edited for assessment reading. Gameplay source, runtime assets, tools and saved software results are unchanged. No new executable.",
   "files": [
     {
       "path": "Assets/_Recovery/0 (1).unity",
