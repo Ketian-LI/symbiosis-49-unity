@@ -4,6 +4,8 @@ This account was reconstructed from commits, saved design documents, test report
 It was first assembled on 20 November and reorganised on 22 November 2026.
 Retrospective entries are not presented as notes written at the time.
 
+The [project overview and linked timeline](PROJECT_OVERVIEW.md#follow-the-project-in-time) gives a shorter route through these stages.
+
 ## July-August: feeding pigeons
 
 The browser prototype began with a feeding action. Later changes let players choose where to throw food and watch nearby

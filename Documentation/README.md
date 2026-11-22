@@ -1,8 +1,9 @@
 # Documentation
 
-Start with the [portfolio](PORTFOLIO.md) to see the game.
-Use the [project report](PROJECT_REPORT.md) for the design account and the [development journal](DEVELOPMENT_JOURNAL.md)
-to follow the changes.
+Start with the [project overview and linked timeline](PROJECT_OVERVIEW.md).
+It explains the folders, file types and development stages on one page.
+Use the [portfolio](PORTFOLIO.md) to see the game, the [report](PROJECT_REPORT.md) for the design account,
+and the [journal](DEVELOPMENT_JOURNAL.md) for the longer development record.
 
 ## Choose a route
 

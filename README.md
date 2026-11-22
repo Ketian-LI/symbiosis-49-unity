@@ -5,6 +5,9 @@ A card-placement game about building a neighbourhood for people and urban wildli
 Place homes, shops, workplaces and green spaces on a tabletop board. Residents need routes to work and meals.
 Animals need food they can reach. Each placement changes what can happen next.
 
+Read the [project overview and linked timeline](Documentation/PROJECT_OVERVIEW.md) for the folder map,
+file types and the route from the first prototype to the current source.
+
 ![The construction game running in Unity](Documentation/media/screenshots/game-readable-zh.png)
 
 *Unity render of a fixed test layout. The game supports English and Chinese.*

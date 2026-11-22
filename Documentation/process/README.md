@@ -1,5 +1,6 @@
 # Development process
 
+Use the [linked timeline](../PROJECT_OVERVIEW.md#follow-the-project-in-time) for a quick route through the project.
 Read the [development journal](../DEVELOPMENT_JOURNAL.md) for the sequence of decisions.
 The [repository lineage](REPOSITORY_LINEAGE.md) identifies where each implementation lives.
 
