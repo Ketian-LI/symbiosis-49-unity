@@ -9,15 +9,15 @@ Construction runs use separate files for each mode under Unity's `Application.pe
 | BoardGame run | `construction-boardgame-v1.json` |
 | Local ranking history | `construction-local-leaderboard-v1.json` |
 
-[ConstructionRunModel.Export](../../Assets/Scripts/Core/ConstructionRunModel.cs) writes the run data.
+[ConstructionRunModel.Export](../../Project/04-Final/Assets/Scripts/Core/ConstructionRunModel.cs) writes the run data.
 `TryRestore` checks it before a run is loaded. Rule-version fields keep earlier runs from silently adopting a new score scale.
 The filename suffix alone does not identify every scoring or card-rule version.
 
-[ConstructionRunStore](../../Assets/Scripts/Core/ConstructionRunStore.cs) writes a temporary file, then replaces the saved file.
+[ConstructionRunStore](../../Project/04-Final/Assets/Scripts/Core/ConstructionRunStore.cs) writes a temporary file, then replaces the saved file.
 An ordinary save refuses to overwrite unreadable data. A confirmed new run can archive an invalid or mismatched file before
 trying again. Failure is reported to the interface.
 
-[ConstructionLocalLeaderboardStore](../../Assets/Scripts/Presentation/ConstructionLocalLeaderboardStore.cs) keeps local results
+[ConstructionLocalLeaderboardStore](../../Project/04-Final/Assets/Scripts/Presentation/ConstructionLocalLeaderboardStore.cs) keeps local results
 separate from the current run. The optional HTTP ranking service is another system.
 
 The [legacy session schema](../archive/legacy-docs/SAVE_DATA_SCHEMA.md) describes the earlier room-rearrangement project.

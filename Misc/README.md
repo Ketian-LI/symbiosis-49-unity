@@ -11,15 +11,13 @@ This folder holds supporting detail and earlier material. Files are retained so 
 | [evidence/automated-tests](evidence/automated-tests/README.md) | Saved software reports, calibration data and report indexes | .xml, .json, .md |
 | [archive](archive/README.md) | Superseded design documents, old overviews and reference images | .md, .docx, .png |
 
-## Project folders kept in place
+## Project versions
 
-The Unity project uses [Assets](../Assets/), [Packages](../Packages/) and [ProjectSettings](../ProjectSettings/).
-They stay at the repository root so Unity can open the project.
+The [Project index](../Project/README.md) identifies the early browser prototype and each Unity stage.
+The final Unity source is in [Project/04-Final](../Project/04-Final/README.md); its `Assets`, `Packages` and `ProjectSettings`
+stay together inside that project directory. Historical Unity sources are separate downloads.
 
-[SourceAssets](../SourceAssets/) contains editable artwork and model records.
-[Tools](../Tools/) contains modelling, camera and archive helpers.
-The optional [leaderboard service](../Services/leaderboard/README.md) has its own setup.
-These folders keep their paths so existing scripts and project references continue to work.
+The repository's [link and source checker](tools/verify_archive.py) belongs to this submission archive, outside the Unity project.
 
 ## Reading old records
 

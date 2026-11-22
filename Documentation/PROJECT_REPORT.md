@@ -57,3 +57,9 @@ The [evaluation](EVALUATION.md) keeps the two types of evidence separate.
 
 The resulting artefact makes placement consequences available through rooms, stories, score reasons and layout review.
 It remains a simplified account of urban life, with authored scores and species behaviour rather than ecological predictions.
+
+## Ethical reflection
+
+The [ethics reflection](ETHICS_REFLECTION.md) records the missed review, participant and institutional risks,
+the response to the oversight and the lessons for future work. An [appendix copy](../Thesis/Appendices/ETHICS_REFLECTION.md)
+is provided with the dissertation material.

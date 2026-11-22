@@ -26,12 +26,12 @@ This connects an instruction to a reason for building, rather than beginning wit
 
 I brought the tutorial into the hand itself. The opening design specified eight fixed cards in 3/3/2 groups before free choice.
 Guided steps establish the room relationships, while allowing location choices where the step permits them.
-The [hand presentation](../Assets/Scripts/Presentation/ConstructionPrototypeController.FillHand.cs) retains the guided opening
+The [hand presentation](../Project/04-Final/Assets/Scripts/Presentation/ConstructionPrototypeController.FillHand.cs) retains the guided opening
 and the transition to player selection.
 
 Three starting goals provide directions beyond filling the board. Their replacement is limited before confirmation,
 so players cannot keep drawing until every goal is easy. The requirement that a replacement differ from the current card
-became a specific reliability fix. The [goal model](../Assets/Scripts/Core/ConstructionSpecialTaskModel.cs) records those states.
+became a specific reliability fix. The [goal model](../Project/04-Final/Assets/Scripts/Core/ConstructionSpecialTaskModel.cs) records those states.
 
 ## A coherent board and hand
 
@@ -51,8 +51,8 @@ An image proposal, a successful compile and a visually resolved interface are se
 
 I wanted neighbouring placements to change the room itself, rather than add points alone.
 Connected green patches, garden homes and terrace restaurants therefore needed visible variants as well as functional effects.
-The [placement rules](../Assets/Scripts/Core/ConstructionPlacementScore.cs) and
-[room visuals](../Assets/Scripts/Presentation/RoomInteriorVisualBuilder.cs) document that relationship.
+The [placement rules](../Project/04-Final/Assets/Scripts/Core/ConstructionPlacementScore.cs) and
+[room visuals](../Project/04-Final/Assets/Scripts/Presentation/RoomInteriorVisualBuilder.cs) document that relationship.
 
 Later discussion exposed another ambiguity: plant type, habitat level and maturity appeared to describe the same thing.
 They were separated in the explanations. A planting choice can follow the plot; maturity describes growth over time;
@@ -61,7 +61,7 @@ The supermarket explanation now connects its temporary food supply to resident m
 
 Free building also stopped selecting the next card automatically. The fixed opening remains guided,
 but later choices wait for a deliberate card click. This leaves the goal area available and keeps the next construction decision with the player.
-The relevant logic is in [hand selection](../Assets/Scripts/Presentation/ConstructionPrototypeController.FillHand.cs).
+The relevant logic is in [hand selection](../Project/04-Final/Assets/Scripts/Presentation/ConstructionPrototypeController.FillHand.cs).
 Endless uses the same room systems within its expanding-board progression; its rules remain distinct from Fill.
 
 ## Explain a score through its causes
@@ -78,8 +78,8 @@ Score animations alone were too brief for inspection. The score-source view keep
 highlights contributing rooms and visible actors, and provides entry navigation.
 The finished-layout review lets players close the result panel and look at the board itself.
 Short neighbourhood stories connect changes to their recorded triggers.
-See the [score controls](../Misc/technical/CONTROLS.md), [result review](../Assets/Scripts/Presentation/ConstructionPrototypeController.ResultReview.cs)
-and [story model](../Assets/Scripts/Core/ConstructionStoryModel.cs).
+See the [score controls](../Misc/technical/CONTROLS.md), [result review](../Project/04-Final/Assets/Scripts/Presentation/ConstructionPrototypeController.ResultReview.cs)
+and [story model](../Project/04-Final/Assets/Scripts/Core/ConstructionStoryModel.cs).
 
 ## Reliability is part of the interaction
 
@@ -96,10 +96,10 @@ They do not establish that every interface issue was resolved or replace the [pl
 
 Physical layout input explored the familiarity of a tabletop object. Full physical control would have added further recognition
 and interaction demands, so camera work was scoped separately from desktop play.
-It remains a [technical prototype](../Tools/CameraRecognition/README.md), rather than evidence of a completed physical playtest.
+It remains a [technical prototype](../Project/04-Final/Tools/CameraRecognition/README.md), rather than evidence of a completed physical playtest.
 
-The retained source includes score-source navigation. Clickable manual terms, Enter-to-confirm and per-category deck visibility
-are separate requirements outside that source snapshot. A discussion of a feature does not place it in the published build.
+The final 22 November source includes score-source navigation and the real per-category deck catalogue.
+Clickable manual terms and Enter-to-confirm remain separate requirements outside the pinned final snapshot.
 The [delivery record](PROJECT_STATUS.md) distinguishes the source from the Windows executable and macOS source-only package.
 
 The [decision register](../Misc/process/records/design-decision-register.csv) lists 26 decisions with supporting files.

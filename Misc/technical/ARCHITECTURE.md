@@ -25,17 +25,17 @@ Resident routines and animal meals must be recorded before their activity scores
 
 | Responsibility | Start here |
 | --- | --- |
-| Turn, cards, run state and export/restore | [ConstructionRunModel](../../Assets/Scripts/Core/ConstructionRunModel.cs) |
-| Plots and placed rooms | [ConstructionBoardModel](../../Assets/Scripts/Data/ConstructionBoardModel.cs) |
-| Placement effects and neighbour upgrades | [ConstructionPlacementScore](../../Assets/Scripts/Core/ConstructionPlacementScore.cs) |
-| Green connections and habitat | [ConstructionGreenPatchModel](../../Assets/Scripts/Core/ConstructionGreenPatchModel.cs) |
-| Food supply and settlement | [ConstructionFoodModel](../../Assets/Scripts/Core/ConstructionFoodModel.cs) |
-| Resident work and meal routines | [ConstructionHumanModel](../../Assets/Scripts/Core/ConstructionHumanModel.cs) |
-| Score history and rule versions | [ConstructionScoreLedger](../../Assets/Scripts/Core/ConstructionScoreLedger.cs) |
-| Goal conditions and rewards | [ConstructionSpecialTaskModel](../../Assets/Scripts/Core/ConstructionSpecialTaskModel.cs) |
-| Interface and action flow | [ConstructionPrototypeController](../../Assets/Scripts/Presentation/ConstructionPrototypeController.cs) |
-| Rooms and visible actors | [ConstructionWorldView](../../Assets/Scripts/Presentation/ConstructionWorldView.cs) |
-| Run storage | [ConstructionRunStore](../../Assets/Scripts/Core/ConstructionRunStore.cs) |
+| Turn, cards, run state and export/restore | [ConstructionRunModel](../../Project/04-Final/Assets/Scripts/Core/ConstructionRunModel.cs) |
+| Plots and placed rooms | [ConstructionBoardModel](../../Project/04-Final/Assets/Scripts/Data/ConstructionBoardModel.cs) |
+| Placement effects and neighbour upgrades | [ConstructionPlacementScore](../../Project/04-Final/Assets/Scripts/Core/ConstructionPlacementScore.cs) |
+| Green connections and habitat | [ConstructionGreenPatchModel](../../Project/04-Final/Assets/Scripts/Core/ConstructionGreenPatchModel.cs) |
+| Food supply and settlement | [ConstructionFoodModel](../../Project/04-Final/Assets/Scripts/Core/ConstructionFoodModel.cs) |
+| Resident work and meal routines | [ConstructionHumanModel](../../Project/04-Final/Assets/Scripts/Core/ConstructionHumanModel.cs) |
+| Score history and rule versions | [ConstructionScoreLedger](../../Project/04-Final/Assets/Scripts/Core/ConstructionScoreLedger.cs) |
+| Goal conditions and rewards | [ConstructionSpecialTaskModel](../../Project/04-Final/Assets/Scripts/Core/ConstructionSpecialTaskModel.cs) |
+| Interface and action flow | [ConstructionPrototypeController](../../Project/04-Final/Assets/Scripts/Presentation/ConstructionPrototypeController.cs) |
+| Rooms and visible actors | [ConstructionWorldView](../../Project/04-Final/Assets/Scripts/Presentation/ConstructionWorldView.cs) |
+| Run storage | [ConstructionRunStore](../../Project/04-Final/Assets/Scripts/Core/ConstructionRunStore.cs) |
 
 ## Interface responsibilities
 
@@ -43,14 +43,14 @@ The large controller is split into partial files. Use the relevant part rather t
 
 | Change | Relevant part |
 | --- | --- |
-| Hand, deck and swap display | [FillHand](../../Assets/Scripts/Presentation/ConstructionPrototypeController.FillHand.cs) |
-| Three-goal selection and progress | [SpecialTasks](../../Assets/Scripts/Presentation/ConstructionPrototypeController.SpecialTasks.cs) |
-| Journal layout | [NeighborhoodStories](../../Assets/Scripts/Presentation/ConstructionPrototypeController.NeighborhoodStories.cs) |
-| Text derived from recorded events | [ConstructionNeighborhoodStories](../../Assets/Scripts/Presentation/ConstructionNeighborhoodStories.cs) |
-| Score-source controls | [ScoreTrace controller](../../Assets/Scripts/Presentation/ConstructionPrototypeController.ScoreTrace.cs) |
-| Finding visible contributing actors | [ScoreTrace world view](../../Assets/Scripts/Presentation/ConstructionWorldView.ScoreTrace.cs) |
-| Local results | [LocalLeaderboard](../../Assets/Scripts/Presentation/ConstructionPrototypeController.LocalLeaderboard.cs) |
-| Optional online results | [NetworkLeaderboard](../../Assets/Scripts/Presentation/ConstructionPrototypeController.NetworkLeaderboard.cs) |
+| Hand, deck and swap display | [FillHand](../../Project/04-Final/Assets/Scripts/Presentation/ConstructionPrototypeController.FillHand.cs) |
+| Three-goal selection and progress | [SpecialTasks](../../Project/04-Final/Assets/Scripts/Presentation/ConstructionPrototypeController.SpecialTasks.cs) |
+| Journal layout | [NeighborhoodStories](../../Project/04-Final/Assets/Scripts/Presentation/ConstructionPrototypeController.NeighborhoodStories.cs) |
+| Text derived from recorded events | [ConstructionNeighborhoodStories](../../Project/04-Final/Assets/Scripts/Presentation/ConstructionNeighborhoodStories.cs) |
+| Score-source controls | [ScoreTrace controller](../../Project/04-Final/Assets/Scripts/Presentation/ConstructionPrototypeController.ScoreTrace.cs) |
+| Finding visible contributing actors | [ScoreTrace world view](../../Project/04-Final/Assets/Scripts/Presentation/ConstructionWorldView.ScoreTrace.cs) |
+| Local results | [LocalLeaderboard](../../Project/04-Final/Assets/Scripts/Presentation/ConstructionPrototypeController.LocalLeaderboard.cs) |
+| Optional online results | [NetworkLeaderboard](../../Project/04-Final/Assets/Scripts/Presentation/ConstructionPrototypeController.NetworkLeaderboard.cs) |
 
 ## Boundaries to preserve
 

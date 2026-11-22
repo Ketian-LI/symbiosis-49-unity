@@ -34,6 +34,12 @@ Two older opening checks fail both before and after the left-page revision. One 
 the other compares the closed-case tree scale with its restored scale. Those failures remain in the reports.
 The saved results describe their named snapshots. The documentation revisions did not rerun Unity tests.
 
+The final 22 November interface reports record
+[38/38 selected EditMode checks](../Misc/evidence/automated-tests/approved-fill-ui-editmode.xml) and
+[27/27 selected PlayMode checks](../Misc/evidence/automated-tests/approved-fill-ui-playmode.xml).
+They cover real stock conservation, saved-state compatibility, text emphasis, room coverage and warnings, modal input,
+restart/skip goals, settlement phases and menu-to-game navigation. They overlap earlier reports and are not participant evidence.
+
 ## Score calibration
 
 The November review used 72 automated Fill runs: 36 calibration runs and 36 held-out checks.

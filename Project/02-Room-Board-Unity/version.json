@@ -1,0 +1,15 @@
+{
+  "id": "02-Room-Board-Unity",
+  "title": "Room rearrangement and Research configurations",
+  "date": "2026-10-06",
+  "role": "historical",
+  "repo": "Ketian-LI/symbiosis-49-unity",
+  "commit": "b8d83d36aebce2070b24665a33f0b663e2a0f08f",
+  "source_url": "https://github.com/Ketian-LI/symbiosis-49-unity/tree/b8d83d36aebce2070b24665a33f0b663e2a0f08f",
+  "archive_name": "SYMBIOSIS49-02-Room-Board-Unity-2026-10-06-Source.zip",
+  "archive_url": "https://github.com/Ketian-LI/symbiosis-49-unity/releases/download/project-versions-2026-11-22/SYMBIOSIS49-02-Room-Board-Unity-2026-10-06-Source.zip",
+  "editor": "6000.3.4f1",
+  "archive_sha256": "5a1768d61e62e29c7d103d87ccc65395cb6a1a0c24600fd089e778520a6b5d8f",
+  "archive_bytes": 164900873,
+  "unity_project_subdirectory": "."
+}

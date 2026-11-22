@@ -143,5 +143,37 @@
     "failed": 0,
     "file": "trophy-reading-playmode.xml",
     "scope": "Saved report; overlaps other exports. Not a new run."
+  },
+  {
+    "batch": "room-highlights-editmode",
+    "total": 17,
+    "passed": 17,
+    "failed": 0,
+    "file": "room-highlights-editmode.xml",
+    "scope": "Saved 22 November selected checks; overlaps earlier batches. Not a new run or participant total."
+  },
+  {
+    "batch": "room-highlights-playmode",
+    "total": 23,
+    "passed": 23,
+    "failed": 0,
+    "file": "room-highlights-playmode.xml",
+    "scope": "Saved 22 November selected checks; overlaps earlier batches. Not a new run or participant total."
+  },
+  {
+    "batch": "approved-fill-ui-editmode",
+    "total": 38,
+    "passed": 38,
+    "failed": 0,
+    "file": "approved-fill-ui-editmode.xml",
+    "scope": "Saved 22 November selected checks; overlaps earlier batches. Not a new run or participant total."
+  },
+  {
+    "batch": "approved-fill-ui-playmode",
+    "total": 27,
+    "passed": 27,
+    "failed": 0,
+    "file": "approved-fill-ui-playmode.xml",
+    "scope": "Saved 22 November selected checks; overlaps earlier batches. Not a new run or participant total."
   }
 ]

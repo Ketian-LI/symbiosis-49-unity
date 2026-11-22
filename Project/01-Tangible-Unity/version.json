@@ -1,0 +1,15 @@
+{
+  "id": "01-Tangible-Unity",
+  "title": "Physical-input and city-planning prototype",
+  "date": "2026-09-16",
+  "role": "historical",
+  "repo": "Ketian-LI/urban-wildlife-tangible-unity",
+  "commit": "b428ba5e02353ea02cd855ad1decf19488403ac6",
+  "source_url": "https://github.com/Ketian-LI/urban-wildlife-tangible-unity/tree/b428ba5e02353ea02cd855ad1decf19488403ac6",
+  "archive_name": "SYMBIOSIS49-01-Tangible-Unity-2026-09-16-Source.zip",
+  "archive_url": "https://github.com/Ketian-LI/symbiosis-49-unity/releases/download/project-versions-2026-11-22/SYMBIOSIS49-01-Tangible-Unity-2026-09-16-Source.zip",
+  "editor": "6000.3.4f1",
+  "archive_sha256": "1b6e380a7c7da98c16bc2c60565fdd4929ae329968fe551657ce4a47a5c7f7ca",
+  "archive_bytes": 118382801,
+  "unity_project_subdirectory": "unity"
+}

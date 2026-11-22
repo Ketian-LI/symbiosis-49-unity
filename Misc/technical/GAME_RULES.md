@@ -1,6 +1,6 @@
 # Current game rules
 
-This page describes the construction source retained from 21 November 2026.
+This page describes the final construction source snapshot from 22 November 2026, held in [Project/04-Final](../../Project/04-Final/README.md).
 Earlier full-board rearrangement and Research modes are separate stages. Their rules are in the [archive](../archive/README.md).
 
 ## Place and observe
@@ -33,8 +33,8 @@ Green variants share the Green supply. They are not separate fixed decks.
 The hand offers distinct categories; remaining supply affects draw weights.
 These counts do not describe the separate physical BoardGame inventory or an unlimited Endless supply.
 
-The [run model](../../Assets/Scripts/Core/ConstructionRunModel.cs) owns the supply and compatibility rules.
-A per-category remaining-card display has been requested but is not implemented in this source.
+The [run model](../../Project/04-Final/Assets/Scripts/Core/ConstructionRunModel.cs) owns the supply and compatibility rules.
+Click the draw pile to inspect real remaining counts by category, together with pile, held and built totals. Tutorial queue cards are accounted for separately from ordinary held stock.
 
 ## Upgrades and scores
 
@@ -52,7 +52,7 @@ New Fill/Endless runs use gameplay scoring V13. New Fill trophies use rule set 2
 | Silver | 3500-4499 |
 | Gold | 4500 or more |
 
-Old saves keep their recorded rules. The [award model](../../Assets/Scripts/Core/ConstructionAwardModel.cs),
-[placement rules](../../Assets/Scripts/Core/ConstructionPlacementScore.cs) and
-[score ledger](../../Assets/Scripts/Core/ConstructionScoreLedger.cs) hold the detailed calculations.
+Old saves keep their recorded rules. The [award model](../../Project/04-Final/Assets/Scripts/Core/ConstructionAwardModel.cs),
+[placement rules](../../Project/04-Final/Assets/Scripts/Core/ConstructionPlacementScore.cs) and
+[score ledger](../../Project/04-Final/Assets/Scripts/Core/ConstructionScoreLedger.cs) hold the detailed calculations.
 The [balance review](../process/iterations/SKILL_GUIDED_UI_2026-11-21.md) explains the diagnostic runs and their limits.

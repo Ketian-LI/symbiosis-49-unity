@@ -1,0 +1,15 @@
+{
+  "id": "03-Progressive-Construction",
+  "title": "Progressive room-construction prototype",
+  "date": "2026-10-20",
+  "role": "historical",
+  "repo": "Ketian-LI/symbiosis-49-unity",
+  "commit": "d5a8cc7ec03f95993370fe5626156aa61f959690",
+  "source_url": "https://github.com/Ketian-LI/symbiosis-49-unity/tree/d5a8cc7ec03f95993370fe5626156aa61f959690",
+  "archive_name": "SYMBIOSIS49-03-Progressive-Construction-2026-10-20-Source.zip",
+  "archive_url": "https://github.com/Ketian-LI/symbiosis-49-unity/releases/download/project-versions-2026-11-22/SYMBIOSIS49-03-Progressive-Construction-2026-10-20-Source.zip",
+  "editor": "6000.3.4f1",
+  "archive_sha256": "1a2bfa424853ec8e902e7fb1638591c1be1558f04230958f022e2e6f1d365f2d",
+  "archive_bytes": 190660089,
+  "unity_project_subdirectory": "."
+}

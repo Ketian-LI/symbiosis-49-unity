@@ -10,7 +10,7 @@ Pages 2-4 describe the required work and submission method; page 7 recommends Ha
 | Project report | [Report](../PROJECT_REPORT.md) | Design, implementation and evaluation account. |
 | Associated thesis: at least 3,500 words, as PDF | [Thesis record](../../Thesis/README.md) | PDF not included. |
 | LO1: sustained creative and technical practice | [Journal](../DEVELOPMENT_JOURNAL.md) and [source history](../../Misc/process/REPOSITORY_LINEAGE.md) | Making and revision records. |
-| LO2: plan and realise a complex project | [Report](../PROJECT_REPORT.md) and [build guide](../../Misc/technical/SETUP_AND_BUILD.md) | Unity source and Windows build. |
+| LO2: plan and realise a complex project | [Report](../PROJECT_REPORT.md) and [build guide](../../Misc/technical/SETUP_AND_BUILD.md) | Final Unity source, version archive and older Windows build. |
 | LO3: ethical analysis | [Ethics reflection](../ETHICS_REFLECTION.md) and [limitations](../ETHICS_AND_LIMITATIONS.md) | Critical account; formal review remains unresolved. |
 | LO4: user testing through a specified method | [Evaluation](../EVALUATION.md) and [method](../evidence/user-testing/METHOD.md) | Two-round account and evidence limits. |
 | GitHub link and full repository ZIP | [Submission inventory](SUBMISSION_CHECKLIST.md) | Published source and released archive. |

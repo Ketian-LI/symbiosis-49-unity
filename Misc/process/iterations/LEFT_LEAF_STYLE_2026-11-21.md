@@ -2,7 +2,7 @@
 
 The left construction leaf uses the oak-paper artwork already used by the right leaf. The printed interior in the opening
 scene uses the same source, so its paper does not switch back to the city illustration during the transition.
-[ConstructionCasePaper.cs](../../../Assets/Scripts/Presentation/ConstructionCasePaper.cs) owns the interior resource path.
+[ConstructionCasePaper.cs](../../../Project/04-Final/Assets/Scripts/Presentation/ConstructionCasePaper.cs) owns the interior resource path.
 The exterior lid artwork remains a separate asset.
 
 The journal heading uses the same 23-unit reading role as the right score heading. Its date and previous-story line use

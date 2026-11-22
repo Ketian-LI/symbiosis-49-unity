@@ -1,5 +1,6 @@
 # Project history and related repositories
 
+The [Project version index](../../Project/README.md) provides the downloadable source stages and identifies the final version.
 These repositories share a design history. They are not interchangeable versions of the same feature set.
 
 | Stage | Source | What it records |
@@ -9,7 +10,7 @@ These repositories share a design history. They are not interchangeable versions
 | Room rearrangement and Research modes | [Earlier Unity main](https://github.com/Ketian-LI/symbiosis-49-unity/tree/main) | Earlier full-board systems and research instrumentation |
 | Progressive construction | [October construction commit](https://github.com/Ketian-LI/symbiosis-49-unity/commit/d5a8cc7ec03f95993370fe5626156aa61f959690) | The move towards sequential room construction |
 | English archive, 20 November | [Pinned archive](https://github.com/Ketian-LI/symbiosis-49-unity/tree/archive/2026-11-20) | V13 scoring, goal repair, stories and source packaging |
-| Current source | [Repository root](../../README.md) | Later source/interface work and this document structure |
+| Final source | [Project/04-Final](../../Project/04-Final/README.md) | Pinned 22 November card-construction source, with approved interface and deck catalogue |
 
 The [recorded repository heads](history/related-repositories.json) were checked on 20 November.
 The [web](history/early-web-history.csv) and [Unity](history/symbiosis-unity-history.csv) CSVs preserve exported commit records.

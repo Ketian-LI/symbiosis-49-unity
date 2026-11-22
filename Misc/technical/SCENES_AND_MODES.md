@@ -1,12 +1,12 @@
 # Scenes and modes
 
 The build contains two enabled scenes: `Main` and `ConstructionPrototype`.
-[EditorBuildSettings](../../ProjectSettings/EditorBuildSettings.asset) records them.
+[EditorBuildSettings](../../Project/04-Final/ProjectSettings/EditorBuildSettings.asset) records them.
 
 ## Opening and return
 
 Main provides the menu and the shared opening board.
-[ConstructionMenuEntry](../../Assets/Scripts/Presentation/ConstructionMenuEntry.cs) records the selected mode and enters ConstructionPrototype.
+[ConstructionMenuEntry](../../Project/04-Final/Assets/Scripts/Presentation/ConstructionMenuEntry.cs) records the selected mode and enters ConstructionPrototype.
 The normal shared-board transition loads the construction scene additively and then makes it active.
 The source also contains a single-scene fallback.
 

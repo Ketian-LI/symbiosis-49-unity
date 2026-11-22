@@ -1,3 +1,12 @@
+# Final source and version archive - 22 November 2026
+
+The submission repository now groups the project stages under [Project](../../Project/README.md).
+The final source is [04-Final](../../Project/04-Final/README.md), pinned to the approved 22 November interface and deck-catalogue revision.
+It includes persistent room relationships and three settlement batches. Historical Unity sources are separate downloads.
+The available Windows executable remains the 19 November build; no new executable or built Mac app is claimed.
+
+---
+
 # Documentation architecture review 22 November 2026
 
 Added a reading map, a shared status page and directory guides. The technical section now explains scene loading,

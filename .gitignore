@@ -2,8 +2,8 @@
 [Tt]emp/
 [Oo]bj/
 [Bb]uild/
-!Assets/Resources/UI/ConstructionIcons/build/
-!Assets/Resources/UI/ConstructionIcons/build/**
+!Project/04-Final/Assets/Resources/UI/ConstructionIcons/build/
+!Project/04-Final/Assets/Resources/UI/ConstructionIcons/build/**
 [Bb]uilds/
 [Ll]ogs/
 [Uu]ser[Ss]ettings/
@@ -12,8 +12,8 @@
 [Dd]ocs/[Ii]mages/
 MemoryCaptures/
 Recordings/
-Assets/_Recovery/
-Assets/_Recovery.meta
+Project/04-Final/Assets/_Recovery/
+Project/04-Final/Assets/_Recovery.meta
 .vs/
 .idea/
 *.csproj

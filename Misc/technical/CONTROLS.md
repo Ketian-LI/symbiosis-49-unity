@@ -7,14 +7,16 @@ These controls apply to the construction game.
 | Click a hand card | Select a room category |
 | Click a lit empty plot, then confirm | Place the selected room |
 | Hover a built plot | Read its status and causes |
+| Click a built room | Pin its coverage and relationship highlights; click it again to clear |
 | Click a home | Inspect work and meal choices, where available |
+| Click the draw pile | Open the live remaining-card catalogue |
 | H or the Index button | Open or close score-source review after a recorded settlement |
 | Tab / Shift+Tab | Move to the next / previous score entry |
 | Previous / Next buttons | Move through the same entries |
 | F | Centre the indexed plot in Endless |
 | O | Open or close the manual |
 | Arrow keys | Pan the board during active Endless play |
-| Esc | Close an open score index; otherwise use the existing pause/close action |
+| Esc | Close the active catalogue or index; otherwise clear visible selection or use the existing pause/close action |
 
 Selecting a card does not place a room. A legal preview still needs confirmation.
 Enter-to-confirm and clickable manual glossary terms are planned; they are not implemented in this source.
@@ -32,12 +34,12 @@ Entries use recorded meals, routines and placement effects. Animals that did not
 activity score are not added as contributors. If an old record lacks an actor identity, the view uses known rooms.
 It does not recreate an animal that has left or died.
 
-During Fill settlement, highlights follow the animal, resident and shared-score phases.
+During settlement, highlights follow the resident, animal and shared-score phases. Each batch clears before the next.
 Review reopens those causes after the animation. F can locate an off-screen plot in Endless.
 
-Index shortcuts pause while a name field, manual, pause menu, placement confirmation or blocking overlay is active.
+Index shortcuts pause while a name field, manual, deck catalogue, pause menu, placement confirmation or blocking overlay is active.
 They wait for the opening tour and case animation to finish. Close the result panel to review the finished board.
 
-Implementation: [controller](../../Assets/Scripts/Presentation/ConstructionPrototypeController.cs),
-[score-source controls](../../Assets/Scripts/Presentation/ConstructionPrototypeController.ScoreTrace.cs) and
-[manual](../../Assets/Scripts/Presentation/ConstructionPrototypeController.QuickGuide.cs).
+Implementation: [controller](../../Project/04-Final/Assets/Scripts/Presentation/ConstructionPrototypeController.cs),
+[score-source controls](../../Project/04-Final/Assets/Scripts/Presentation/ConstructionPrototypeController.ScoreTrace.cs) and
+[manual](../../Project/04-Final/Assets/Scripts/Presentation/ConstructionPrototypeController.QuickGuide.cs).

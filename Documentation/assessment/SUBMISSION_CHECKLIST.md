@@ -4,10 +4,10 @@ Material recorded on 22 November 2026. The [delivery record](../PROJECT_STATUS.m
 
 | Component | Repository record |
 | --- | --- |
-| Game source | Unity construction source, editable assets and build instructions are included. |
+| Game source | Final Unity source in Project/04-Final, historical source downloads, editable assets and build instructions are included. |
 | Project account | English report, portfolio, development journal and linked timeline are included. |
 | Evaluation | Study method, evaluation account and saved software reports are included. |
-| Ethics and authorship | Ethics reflection, limitations, AI-use statement and asset sources are included. |
+| Ethics and authorship | Ethics reflection, appendix copy, limitations, AI-use statement and asset sources are included. |
 | Windows build | The release contains the 19 November executable. |
 | macOS delivery | The release contains a source project, not a built Mac application. |
 | Thesis PDF | Not included. |

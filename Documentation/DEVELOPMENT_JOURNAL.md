@@ -69,6 +69,15 @@ The two-round study account records five first-round participants returning with
 The [ethics reflection](ETHICS_REFLECTION.md) documents the missed review, external processing of earlier feedback
 and the safeguards that remained unresolved on 22 November. Private participant records are excluded from the public archive.
 
-Later proposals include card-based goal icons, a deck-composition display, revised background and recent-changes visuals,
-manual cross-links and an Enter key for placement confirmation. These proposals are separate from the implemented source.
-The [delivery record](PROJECT_STATUS.md) identifies the scope of the published version.
+The later 22 November source implements the approved goal artwork, deck catalogue and reading layout.
+Manual cross-links and an Enter key for confirmation remain separate requirements. The [delivery record](PROJECT_STATUS.md) identifies the pinned scope.
+
+## 22 November: final source and version archive
+
+The final source combines the approved Fill reading layout, restored city motif, card-art goal rows, guidance emphasis,
+real remaining-card catalogue and persistent room relationships. The saved final interface reports cover 38 selected EditMode
+and 27 selected PlayMode checks. They are technical checks rather than new participant findings.
+
+The [Project index](../Project/README.md) now separates the browser prototype and four Unity stages.
+The final source remains directly openable in `Project/04-Final/`; historical sources have individual packages.
+The [ethics reflection](ETHICS_REFLECTION.md) remains a main document, with an [appendix copy](../Thesis/Appendices/ETHICS_REFLECTION.md).

@@ -1,6 +1,7 @@
 # Project documentation
 
 The [overview and linked timeline](PROJECT_OVERVIEW.md) connects the first prototype to the current game.
+The [Project index](../Project/README.md) holds the browser prototype and Unity versions, with the final source clearly marked.
 The main reading follows the sequence below.
 
 | Read | Focus |

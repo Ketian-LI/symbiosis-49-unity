@@ -1,0 +1,43 @@
+{
+  "final_version": "04-Final",
+  "final_source_commit": "bb65fc46044f7348d85c8c9ea11c933ef53f4798",
+  "web_demo": "https://urban-pigeon-simulation.lkt1009.chatgpt.site/",
+  "versions": [
+    {
+      "id": "01-Tangible-Unity",
+      "title": "Physical-input and city-planning prototype",
+      "date": "2026-09-16",
+      "role": "historical",
+      "repo": "Ketian-LI/urban-wildlife-tangible-unity",
+      "commit": "b428ba5e02353ea02cd855ad1decf19488403ac6",
+      "archive_url": "https://github.com/Ketian-LI/symbiosis-49-unity/releases/download/project-versions-2026-11-22/SYMBIOSIS49-01-Tangible-Unity-2026-09-16-Source.zip"
+    },
+    {
+      "id": "02-Room-Board-Unity",
+      "title": "Room rearrangement and Research configurations",
+      "date": "2026-10-06",
+      "role": "historical",
+      "repo": "Ketian-LI/symbiosis-49-unity",
+      "commit": "b8d83d36aebce2070b24665a33f0b663e2a0f08f",
+      "archive_url": "https://github.com/Ketian-LI/symbiosis-49-unity/releases/download/project-versions-2026-11-22/SYMBIOSIS49-02-Room-Board-Unity-2026-10-06-Source.zip"
+    },
+    {
+      "id": "03-Progressive-Construction",
+      "title": "Progressive room-construction prototype",
+      "date": "2026-10-20",
+      "role": "historical",
+      "repo": "Ketian-LI/symbiosis-49-unity",
+      "commit": "d5a8cc7ec03f95993370fe5626156aa61f959690",
+      "archive_url": "https://github.com/Ketian-LI/symbiosis-49-unity/releases/download/project-versions-2026-11-22/SYMBIOSIS49-03-Progressive-Construction-2026-10-20-Source.zip"
+    },
+    {
+      "id": "04-Final",
+      "title": "Final card-construction source snapshot",
+      "date": "2026-11-22",
+      "role": "final",
+      "repo": "Ketian-LI/symbiosis-49-unity",
+      "commit": "bb65fc46044f7348d85c8c9ea11c933ef53f4798",
+      "archive_url": "https://github.com/Ketian-LI/symbiosis-49-unity/releases/download/project-versions-2026-11-22/SYMBIOSIS49-04-Final-2026-11-22-Source.zip"
+    }
+  ]
+}

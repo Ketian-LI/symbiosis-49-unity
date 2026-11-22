@@ -9,12 +9,13 @@ The [design-decision account](DESIGN_DECISIONS.md) connects the main changes to 
 
 ## What is in each folder
 
-The assessment reading is in `Documentation` and `Thesis`. Supporting records are grouped in `Misc`.
+The game and its versions are in `Project`. The assessment reading is in `Documentation` and `Thesis`. Supporting records are grouped in `Misc`.
 The timeline below connects the main account to the relevant detail.
 
 | Part | Folder or main file | File types | What belongs here |
 | --- | --- | --- | --- |
 | Project entrance | [Root README](../README.md) | .md | Game, download and reading routes |
+| Project versions | [Project](../Project/README.md) | .md, .json and source downloads | Browser prototype, historical Unity stages and final source |
 | Main account | [Documentation](README.md) | .md | Portfolio, report, journal, evaluation, ethics and authorship |
 | Study account | [evidence/user-testing](evidence/user-testing/README.md) | .md at present | Two-round method and evidence status; approved detailed records remain pending |
 | Images and demonstration | [media](media/README.md) | .png, .md | Labelled screenshots; final-build demonstration remains pending |
@@ -27,15 +28,15 @@ The ethics reflection and authorship records remain in the main reading.
 
 ### Source folders
 
-These folders keep the paths used by Unity and the supporting scripts.
+These folders are inside `Project/04-Final/`. Add that directory in Unity Hub, rather than the submission repository root.
 
 | Folder | Main file types | Purpose |
 | --- | --- | --- |
-| [Assets](../Assets/) | .cs, .unity, .fbx, .png, .wav, .meta, shaders and fonts | Game source, scenes and runtime assets |
-| [Packages](../Packages/) and [ProjectSettings](../ProjectSettings/) | .json, .asset, .txt | Dependencies, editor version and project settings |
-| [SourceAssets](../SourceAssets/) | .blend, .glb, .png, .jpg, .md | Editable artwork and model source records |
-| [Services](../Services/) | .js, .mjs, .sql, .toml, .json, .md | Optional leaderboard backend |
-| [Tools](../Tools/) | .py, .cmd, .svg, .pdf, .csv, .json, .txt, .md | Modelling helpers, camera experiments, printable material and archive checks |
+| [Assets](../Project/04-Final/Assets) | .cs, .unity, .fbx, .png, .wav, .meta, shaders and fonts | Game source, scenes and runtime assets |
+| [Packages](../Project/04-Final/Packages) and [ProjectSettings](../Project/04-Final/ProjectSettings) | .json, .asset, .txt | Dependencies, editor version and project settings |
+| [SourceAssets](../Project/04-Final/SourceAssets) | .blend, .glb, .png, .jpg, .md | Editable artwork and model source records |
+| [Services](../Project/04-Final/Services) | .js, .mjs, .sql, .toml, .json, .md | Optional leaderboard backend |
+| [Tools](../Project/04-Final/Tools) | .py, .cmd, .svg, .pdf, .csv, .json, .txt, .md | Modelling helpers, camera experiments and printable material |
 | [SOURCE_MANIFEST.json](../SOURCE_MANIFEST.json) | .json | File sizes and hashes for the source copy |
 
 ## What the file types mean
@@ -98,7 +99,7 @@ They expanded the choices, but also introduced more rules and input problems.
 
 The [migration record](https://github.com/Ketian-LI/urban-wildlife-tangible-unity/blob/main/docs/GDD_V3_MIGRATION.md)
 and [repository lineage](../Misc/process/REPOSITORY_LINEAGE.md) explain that direction.
-The [camera guide](../Tools/CameraRecognition/README.md) describes the retained tool.
+The [camera guide](../Project/04-Final/Tools/CameraRecognition/README.md) describes the retained tool.
 These records do not establish reliable physical play or a completed camera-based study.
 The date and build of the earliest Unity transfer remain partly documented.
 
@@ -190,6 +191,7 @@ Later feedback can reject a visual design even when its software checks pass.
 
 The documents were rewritten in shorter English and grouped by purpose.
 The main assessment reading was separated from supporting material in [Misc](../Misc/README.md).
+The final source incorporated the approved Fill interface and actual remaining-card catalogue. The [Project version index](../Project/README.md) separates it from the earlier stages.
 A newer local thesis revision added the later study account.
 The ethics reflection recorded the missed review, the risks and the actions still unfinished.
 
@@ -202,7 +204,7 @@ The reflection does not establish approval.
 
 ## 10 Published record
 
-The repository contains the source, project account, labelled screenshots and documented development process.
+The repository contains the final source in [Project/04-Final](../Project/04-Final/README.md), historical version downloads, project account, labelled screenshots and documented development process.
 The downloads and published source are different snapshots. The thesis PDF, detailed anonymous study evidence
 and final-build demonstration are not included.
 

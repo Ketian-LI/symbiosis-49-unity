@@ -9,3 +9,8 @@ it is separate from the published material.
 The [project report](../Documentation/PROJECT_REPORT.md), [evaluation](../Documentation/EVALUATION.md) and
 [ethics reflection](../Documentation/ETHICS_REFLECTION.md) provide the corresponding project account.
 The [delivery record](../Documentation/PROJECT_STATUS.md) identifies the material currently available.
+
+## Appendix text
+
+[Appendix A: Ethics review and reflection](Appendices/ETHICS_REFLECTION.md) is available as a separate appendix text.
+The [appendix index](Appendices/README.md) identifies its relationship to the main reflection.

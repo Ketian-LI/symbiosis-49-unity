@@ -1,8 +1,12 @@
 # Screenshots
 
-The `game-readable`, `penalty-readable`, `manual-readable` and `score-index` pairs show English and Chinese Unity renders.
-They come from fixed test layouts used in the 21 November source checks.
-The earlier `street-journal` images record the 19 November version.
-`early-web-prototype.png` shows the browser stage.
+| Files | Source snapshot |
+| --- | --- |
+| `fill-approved`, `fill-deck`, `fill-room-selection`, `fill-opening` | Approved Fill interface, 22 November |
+| `score-batch-resident`, `score-batch-animal`, `score-batch-shared` | Final three-batch settlement fixtures, 22 November |
+| `game-readable`, `penalty-readable`, `manual-readable`, `score-index` | Earlier 21 November fixtures |
+| `street-journal` | 19 November version |
+| `early-web-prototype` | Browser stage |
 
-The images show software output from fixed layouts. See the [portfolio](../../PORTFOLIO.md) for selected images and design context.
+Unity images are renders of fixed software layouts, not participant sessions.
+The [portfolio](../../PORTFOLIO.md) presents the final images with design context.

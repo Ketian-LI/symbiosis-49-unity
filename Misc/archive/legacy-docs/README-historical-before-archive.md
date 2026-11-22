@@ -17,7 +17,7 @@
 - [UI 与视觉设计记录](SYMBIOSIS_49_UI_VISUAL_SPEC.md)：截至 2026-09-21 的已记录视觉决策；后续玩法讨论不自动视为已实现功能。
 - [HUD v02 素材说明](GAMEPLAY_HUD_V02_ASSETS.md)与[桌面背景说明](GAMEPLAY_TABLETOP_BACKDROP_V01.md)：记录素材来源、图层分离及 Unity 中的使用方式。
 - [野生动物房间配色样本](WILDLIFE_ROOM_COLOR_SAMPLES.md)与[狐狸 v03 建模点位](Fox_Landmark_Coordinates_v03.md)：分别用于材质和独立建模；狐狸 v03 尚未替换游戏中的狐狸 FBX。
-- [动物三视图参考](ArtReferences/Animals)及 [SourceAssets/References](../../../SourceAssets/References)：建模参考图，不代表对应最终模型已导入 Unity。
+- [动物三视图参考](ArtReferences/Animals)及 [SourceAssets/References](../../../Project/04-Final/SourceAssets/References)：建模参考图，不代表对应最终模型已导入 Unity。
 
 ## 当前玩家可进入的两种建造模式
 

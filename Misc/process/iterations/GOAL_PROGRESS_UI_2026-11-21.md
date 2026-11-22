@@ -14,7 +14,7 @@ until settlement, rather than implying that those points have already been award
 Unfinished rows identify their metric, such as linked greens, full resident routines or animal species; the progress values
 still come from the existing goal model.
 
-[ConstructionGoalReadingWash.cs](../../../Assets/Scripts/Presentation/ConstructionGoalReadingWash.cs) draws a feathered paper field
+[ConstructionGoalReadingWash.cs](../../../Project/04-Final/Assets/Scripts/Presentation/ConstructionGoalReadingWash.cs) draws a feathered paper field
 behind the reading area. It samples the unprinted centre of the existing hand-card paper, avoiding a second frame and keeping
 the printed foliage from competing with numbers and lower-row text. It does not intercept pointer input. No new bitmap was
 generated. The previous hard rectangular whole-section backing and duplicate progress bars are no longer shown.
