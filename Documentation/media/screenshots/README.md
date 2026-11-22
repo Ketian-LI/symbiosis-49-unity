@@ -8,7 +8,7 @@
 | `street-journal` | 19 November version |
 | `early-web-prototype` | Browser stage |
 
-Unity images are renders of fixed software layouts, not participant sessions.
+The index includes fixed Unity test renders, historical game captures, retained prototype images and a physical setup photograph. Their captions identify the source type; they are not participant-session records.
 The [portfolio](../../PORTFOLIO.md) presents the final images with design context.
 
 ## Current commuting and explanation fixtures
@@ -17,3 +17,17 @@ The [portfolio](../../PORTFOLIO.md) presents the final images with design contex
 `building-example-3` and `independent-journal` have English and Chinese captures from the combined commuting/reference source.
 They are native Unity test renders, not participant sessions. Earlier `fill-approved` and scoring-batch captures retain
 their earlier same-day snapshot labels.
+
+## Historical stages and physical setup
+
+| File | Source record |
+| --- | --- |
+| `park-planning-prototype.png` | Park-planning image retained in the supplied presentation; capture date unrecorded |
+| `woodland-city-rerender-20261111.png` | 11 November rerender of September source commit `80d8bab` |
+| `room-rearrangement-board.png` | Earlier full-board game capture; source file dated 24 September |
+| `construction-late-october.png` | Unity Editor capture in late-October working records; source file dated 29 October |
+| `guided-card-opening.png` | November-stage tutorial screenshot in the presentation; exact capture date unrecorded |
+| `physical-board-camera.jpg` | Photograph of the technical input setup; capture date unrecorded |
+
+[Image source records](timeline-image-sources.json) preserve the file hashes and source descriptions.
+The images are unmodified copies, with no new artwork or reconstructed screenshots created for the journal.

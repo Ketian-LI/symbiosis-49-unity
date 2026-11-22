@@ -1,0 +1,60 @@
+{
+  "purpose": "Images used by the visual development journal and portfolio",
+  "new_artwork_created": false,
+  "images": [
+    {
+      "file": "park-planning-prototype.png",
+      "title": "Park-planning prototype",
+      "record": "Archived prototype image retained in the supplied development presentation, slide 3. Capture date unrecorded.",
+      "capture_date": null,
+      "bytes": 2779946,
+      "sha256": "09af9a0dcbbb35497e9e09177ecc8eb3c2f09884c515e1c89b52a817773f54af",
+      "treatment": "Unmodified copy of an existing project image"
+    },
+    {
+      "file": "woodland-city-rerender-20261111.png",
+      "title": "Open woodland city",
+      "record": "Rendered on 11 November 2026 from the historical September source, commit 80d8bab. Not a September capture or participant session.",
+      "capture_date": "2026-11-11",
+      "bytes": 1760076,
+      "sha256": "f3391d14f7ffeb40ca64c96c959df90afe6c3702b6f1549f1784e9bdef35a39d",
+      "treatment": "Unmodified copy of an existing project image"
+    },
+    {
+      "file": "room-rearrangement-board.png",
+      "title": "Full-board room rearrangement",
+      "record": "Archived game capture with the fixed central green area, retained in presentation slide 4. Source file dated 24 September 2026; this is not an independently verified capture timestamp.",
+      "capture_date": null,
+      "bytes": 1841669,
+      "sha256": "7e6df24a14afd738795fd99b1f6ddb3cd77ca7563789410cae5637ec160fbd93",
+      "treatment": "Unmodified copy of an existing project image"
+    },
+    {
+      "file": "construction-late-october.png",
+      "title": "Progressive room construction",
+      "record": "Unity Editor capture from the late-October working records; source file dated 29 October 2026. Shows a partially built board before the later hand of illustrated cards.",
+      "capture_date": null,
+      "bytes": 2095818,
+      "sha256": "8c72f39fc1fc025470eaff26e3c74040ae6a9bd99c0c8fec80ffabb2e91d4c36",
+      "treatment": "Unmodified copy of an existing project image"
+    },
+    {
+      "file": "guided-card-opening.png",
+      "title": "Guided illustrated-card opening",
+      "record": "Archived game screenshot supplied for the development presentation, slide 5. Shows the oak, home and restaurant step. Exact capture date unrecorded.",
+      "capture_date": null,
+      "bytes": 2394080,
+      "sha256": "1c2b2e01d3b0ab6845cb0a781bd7b36cf77ec6b515fa6d53012de9b716f9317a",
+      "treatment": "Unmodified copy of an existing project image"
+    },
+    {
+      "file": "physical-board-camera.jpg",
+      "title": "Physical board and camera",
+      "record": "Project setup photograph retained in development presentation slide 11. Technical prototype, not a participant playtest. Capture date unrecorded.",
+      "capture_date": null,
+      "bytes": 145914,
+      "sha256": "fb421f1afb78632341ddad6f99a3f0ae0e3477d58e157b79805bb439e96a82bf",
+      "treatment": "Unmodified copy of an existing project image"
+    }
+  ]
+}

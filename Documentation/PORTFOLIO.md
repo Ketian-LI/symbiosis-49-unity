@@ -1,39 +1,149 @@
 # Portfolio
 
-SYMBIOSIS: 49 turns successive placements into a neighbourhood used by residents and animals.
-The [final source](../Project/04-Final/README.md) and [earlier prototypes](../Project/README.md) are recorded separately.
+SYMBIOSIS: 49 is a card-placement game about building a neighbourhood for people and urban wildlife.
+The player changes the layout, then watches residents and animals use what has been built.
+The project asks whether players can connect a visible outcome to a spatial rule and use it in their next decision.
 
-## Board and hand
+![The illustrated board and compact hand](media/screenshots/fill-approved-zh.png)
 
-![The illustrated construction interface](media/screenshots/fill-approved-zh.png)
+*Approved Fill-interface fixture, 22 November. The left page groups goals and events, the centre holds the board, and the right page explains the score and current card. Later same-day commuting and journal features are shown below.*
 
-Cards sit in a compact tray. The left page groups goals and neighbourhood stories; the right page shows score and selected-room information.
-The real [deck catalogue](media/screenshots/fill-deck-en.png) distinguishes cards in the pile, held cards and built rooms.
+**[Open the final Unity source](../Project/04-Final/README.md)** · [Download options](../Project/Downloads/README.md) · [Earlier versions](../Project/README.md)
 
-## Automatic commuting
+| Part | What the player does |
+| --- | --- |
+| Fill | Build a finite 49-plot neighbourhood from a hand of cards |
+| Endless | Continue construction on an expanding board |
+| Desktop controls | Use mouse and keyboard; a camera is not required |
+| Physical input experiment | Read printed room tokens through a camera; a separate technical prototype |
 
-![Inspecting a home's automatic commute](media/screenshots/automatic-commute-en.png)
+## A turn from card to consequence
 
-Selecting a home shows its work and meal destinations and missing links. The layout still determines access and capacity.
+![The opening introduces the restaurant through residents' need for food](media/screenshots/fill-opening-zh.png)
 
-## Explanations in context
+*Opening fixture from the approved 22 November interface. The central oak comes before human services.*
 
-![Linked term explanation and marked manual destination](media/screenshots/manual-restaurant-en.png)
+1. Select a room card. Legal plots are marked on the board.
+2. Preview a plot and confirm construction. Selecting a card alone does not build it.
+3. Watch the run resolve resident and animal activity, upgrades and score changes.
+4. Inspect the affected room, score source or journal before making another choice.
 
-Hovering a linked term shows its meaning. Clicking opens the actual manual heading.
-The [building examples](media/screenshots/building-example-1-en.png) explain commuting and edge-connected routes.
+Eight fixed opening cards introduce the basic room relationships. The oak establishes an animal home before residents arrive.
+Homes then create a need for work and meals. Free choice follows the opening, so the player can try a different arrangement
+without first reading every rule at once.
 
-## Persistent consequences
+## Buildings depend on their neighbours
 
-![The independent settlement journal](media/screenshots/independent-journal-en.png)
+![Upgrade examples using the actual room artwork](media/screenshots/building-example-3-en.png)
 
-The journal retains recorded deductions, placements and upgrades. Existing bad edges can appear again at later Fill settlements.
-Coverage and housing disturbance remain distinct; the [reference diagrams](media/screenshots/building-example-2-en.png) compare them.
+*The third P-key reference page, from the final commuting/reference source.*
 
-## Development context
+| Placement condition | Change shown in the game |
+| --- | --- |
+| Two linked green plots | A level-two habitat |
+| Three or more linked green plots with two planting types | A level-three habitat |
+| A home beside a connected pair of green plots | A garden-home variant |
+| A restaurant beside a square | A terrace variant with three meal seats |
+| Green on opposite sides of a street | A slow-street condition with lower traffic risk |
 
-![The early browser prototype](media/screenshots/early-web-prototype.png)
+The upgraded images help distinguish a room's state. Habitat level is separate from maturity; new planting grows over time.
+An upgrade does not itself mean that an animal ate or a resident completed a routine. Those activities must happen in the model. Lower traffic risk also does not remove a street/green edge deduction.
 
-The [journal](DEVELOPMENT_JOURNAL.md#timeline) follows feeding, park planning, an open city, room rearrangement and construction.
-Unity images above are fixed test renders, not participant sessions. The [screenshot index](media/screenshots/README.md)
-identifies their source groups. [Evaluation](EVALUATION.md) states what the participant and software evidence supports.
+## Residents need a complete route
+
+![Inspecting a home's automatically assigned work and meal destinations](media/screenshots/automatic-commute-en.png)
+
+*Home inspection in the final source. It shows destinations, coordinates and missing connections.*
+
+Homes, workplaces, food services and streets form a route system. Residents receive work and meal destinations automatically,
+within the available capacity and legal connections. Selecting a home exposes the plan rather than opening a dispatch editor.
+A route can fail because access is broken or a service has no capacity; adding another building is useful only if the layout
+makes it reachable. The [commuting reference](media/screenshots/building-example-1-en.png) shows edge connections and a disconnected diagonal example.
+
+## Wildlife food and housing disturbance
+
+![Waste coverage and shared-edge housing disturbance explained separately](media/screenshots/building-example-2-en.png)
+
+*The second P-key reference page distinguishes collection from a bad housing edge.*
+
+Green spaces provide habitat and food conditions. Resident meals at a supermarket can leave temporary animal food.
+Food being present is different from an animal reaching it and eating; animal points follow recorded feeding.
+
+A waste room can collect from nearby plots and along connected streets. A home sharing an edge with it can still suffer
+disturbance. Collection coverage and that penalty are separate rules. In Fill, an existing bad edge can deduct again at a
+later confirmed settlement. This gives placement a continuing cost and makes the reason for each loss important to inspect.
+
+## Follow each part of the score
+
+| Residents | Animals | Shared activity |
+| --- | --- | --- |
+| [<img src="media/screenshots/score-batch-resident.png" alt="Resident settlement phase" width="260">](media/screenshots/score-batch-resident.png) | [<img src="media/screenshots/score-batch-animal.png" alt="Animal settlement phase" width="260">](media/screenshots/score-batch-animal.png) | [<img src="media/screenshots/score-batch-shared.png" alt="Shared settlement phase" width="260">](media/screenshots/score-batch-shared.png) |
+| Bronze, silver and gold cues identify resident contributions. | Green cues identify animal contributions. | Blue cues identify shared contributions. |
+
+*Three-phase Unity fixtures from 22 November. Click a preview to inspect the full frame.*
+
+Settlement proceeds through resident, animal and shared activity. Each batch clears before the next, so contributors do not
+remain mixed together. Floating values identify a source while it is happening. Deductions use their own colour and written cause.
+The score is a game rule, not a measure of the ecological quality of a real city.
+
+## Explanations remain available
+
+![The independent journal keeps a written record of settled events](media/screenshots/independent-journal-en.png)
+
+*The I-key journal in the final source, with the newest recorded events first.*
+
+The journal records placements, upgrades, commutes, feeding and deductions, including the room pairs responsible for recurring losses.
+It gives the player another way to inspect simultaneous events after floating labels disappear.
+The [H-key score-source view](media/screenshots/score-index-en.png), shown in an earlier 21 November fixture,
+reopens the latest settlement and highlights its relevant rooms and visible actors. Players can also close the result panel
+to review their finished layout.
+
+![A linked term opens its marked manual entry](media/screenshots/manual-restaurant-en.png)
+
+*Marked manual destination in the final source.*
+
+Ten core terms provide short hover meanings and clickable manual destinations. Manual explanations link to other entries.
+O opens the manual, P opens three pages of building examples, and I opens the independent journal.
+These views explain the current run without placing another room or adding another score.
+
+## Cards and goals make the next choice visible
+
+![The real remaining-card catalogue](media/screenshots/fill-deck-en.png)
+
+*Deck-catalogue fixture, 22 November. The counts come from the run's actual card supply.*
+
+The catalogue distinguishes cards in the pile, held cards and built rooms. Green variants share one supply rather than acting
+as separate hidden decks. Three goals offer different directions for a run. Goal progress stays on the left page, while the
+hand and deck sit below the board. This allows a player to compare what a goal asks for with the rooms still available.
+
+## How the object changed
+
+| Earlier room-board version | Later illustrated construction version |
+| --- | --- |
+| [<img src="media/screenshots/room-rearrangement-board.png" alt="Earlier populated room board" width="390">](media/screenshots/room-rearrangement-board.png) | [<img src="media/screenshots/fill-approved-zh.png" alt="Later illustrated card-construction board" width="390">](media/screenshots/fill-approved-zh.png) |
+| A populated board and fixed central green area; the player rearranged rooms. | A hand of illustrated cards; the player builds the layout one placement at a time. |
+
+The project moved from feeding pigeons to park planning, an open city and modular rooms. Construction made it possible to
+introduce a room when the player needed it. The visual work also moved from top-view room interiors toward recognisable
+building fronts, illustrated habitats and a compact hand. The [visual development journal](DEVELOPMENT_JOURNAL.md#timeline)
+shows each stage with dated or qualified source captions.
+
+## Physical input as a separate experiment
+
+![The marked physical board and camera setup](media/screenshots/physical-board-camera.jpg)
+
+*Project setup photograph retained in the supplied presentation. The capture date is unrecorded.*
+
+A marked 7 by 7 board and 80 printed tokens explored a physical layout input. One recognised token could produce its
+corresponding Unity plot. Other controls remained on screen. This was a technical prototype, without a participant study
+of physical play; it is separate from the mouse-and-keyboard construction game.
+
+## Contribution and evidence
+
+I defined the spatial rules and opening progression, directed the visual revisions, and used feedback to decide what to change.
+[Authorship and tools](AI_AND_AUTHORSHIP.md) and [asset sources](ASSET_PROVENANCE.md) provide the contribution records.
+
+The images show implemented interfaces, historical project views and one physical setup. They are not participant-session
+evidence. The latest dissertation's questionnaire account and separate later observation are described in [evaluation](EVALUATION.md).
+Those records do not isolate the effect of every later feature. Current source and older executable versions are labelled
+separately in [downloads](../Project/Downloads/README.md).
