@@ -13,7 +13,7 @@ reference owns the shortcuts and their input restrictions.
 
 The second skill's truth, style and reviewing-technical-prose references were also read at the same revision.
 Both repositories declare MIT licences. These files were consulted as instructions; no external repository script was executed
-and no skill code was bundled into the game. Codex assisted the implementation, document revision and verification.
+and no skill code was bundled into the game. 
 The [machine-readable source record](../../evidence/automated-tests/documentation-skill-sources.json) retains paths, commits and blob identifiers.
 
 ## Defects addressed

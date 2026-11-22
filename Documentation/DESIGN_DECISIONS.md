@@ -2,8 +2,8 @@
 
 SYMBIOSIS: 49 developed from a feeding action into a game about constructing a shared neighbourhood.
 My design decisions focused on what players could choose, what a placement changed and how those changes became readable.
-This account was reconstructed on 22 November from recorded design discussions, source history and saved checks.
-It explains the decisions behind the [development journal](DEVELOPMENT_JOURNAL.md).
+This account connects my design decisions with the implementation and saved verification records.
+The [development journal](DEVELOPMENT_JOURNAL.md) follows the sequence of revisions.
 
 ## From feeding to spatial choices
 
@@ -16,8 +16,7 @@ within a bounded grid. The first room version began with a populated board and a
 It concentrated too much explanation at the start and left less room for a sense of construction.
 I changed the task to placing rooms one at a time, allowing the tutorial to introduce each space during play.
 
-The [source lineage](../Misc/process/REPOSITORY_LINEAGE.md) identifies these stages.
-The November explanation of this transition is retrospective; it is not presented as a note written during the earliest prototype.
+The [source lineage](../Misc/process/REPOSITORY_LINEAGE.md) identifies the prototypes and the transition between them.
 
 ## Habitat first, then human needs
 
@@ -104,4 +103,4 @@ are separate requirements outside that source snapshot. A discussion of a featur
 The [delivery record](PROJECT_STATUS.md) distinguishes the source from the Windows executable and macOS source-only package.
 
 The [decision register](../Misc/process/records/design-decision-register.csv) lists 26 decisions with supporting files.
-The [review method](../Misc/process/CONVERSATION_REVIEW.md) explains how discussion records were checked and selected.
+The [evidence index](evidence/README.md) links the software reports and evaluation account.

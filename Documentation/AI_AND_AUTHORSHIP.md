@@ -12,5 +12,3 @@ and revision of my designs, as described below.
 | Research material | ChatGPT/Codex helped organise and analyse some questionnaires, message extracts and transcripts. The data-handling implications are addressed in the [ethics reflection](ETHICS_REFLECTION.md). |
 
 The [asset record](ASSET_PROVENANCE.md) identifies AI-assisted visual assets, third-party material and editable source files.
-The [supporting record](../Misc/process/AI_USE_RECORD.md) links the available development logs and tool references.
-Those records cover documented stages of the project; they are not a complete prompt-by-prompt history.

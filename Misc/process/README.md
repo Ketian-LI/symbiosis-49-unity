@@ -23,7 +23,4 @@ The journal identifies the available basis for each change.
 [Release notes](RELEASE_NOTES.md) identify source and download snapshots.
 [History files](history/README.md) preserve the earlier records.
 
-The [supporting AI-use record](AI_USE_RECORD.md) links tool logs and references.
-
-The [conversation review](CONVERSATION_REVIEW.md) explains the retrospective source selection.
 The [decision register](records/design-decision-register.csv) connects the recorded decisions to supporting files.
