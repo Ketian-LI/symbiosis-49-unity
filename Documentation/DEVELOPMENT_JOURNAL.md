@@ -75,3 +75,11 @@ The author supplied staff advice to explain the missed ethics review and reflect
 the application had not yet been sent to the supervisor. Pausing further playtesting, moving records to UAL OneDrive and
 handling external service records had not been completed. The [reflection](ETHICS_REFLECTION.md) separates the materials
 prepared and disclosure made from the work still needed. Private participant forms remain outside the public repository.
+
+## 22 November document architecture review
+
+A reading map and directory guides now connect the report, process, evidence and assessment material. The status page
+separates repository source, older downloads and local draft work. The two-round method account uses the author's confirmed
+group overlap: five first-round participants returned within a second-round group of thirteen. It does not publish the raw records.
+The [technical guide](technical/ARCHITECTURE.md) now explains system responsibilities and the scene/mode boundaries.
+The final PDF, study permissions and final package remain open items.

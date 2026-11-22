@@ -10,8 +10,8 @@ research argument; its final PDF is still pending.
 ## The design problem
 
 The early browser prototype let players feed pigeons. Later versions gave players more choices about space, buildings
-and routes. Those choices also made the rules harder to learn. The project therefore asks how placement and feedback can
-help players understand the game, and what makes a different layout worth trying.
+and routes. Those choices also made the rules harder to learn. The project asks how placement and feedback can help
+players understand the game, and what makes a different layout worth trying.
 
 Three questions guide the current work: does the player know what to do next, can they explain an outcome, and do they
 have a reason to keep experimenting? Finishing a session alone does not answer all three questions.
@@ -46,13 +46,16 @@ depend on that service. Its identity method and validation limits are described 
 
 ## What the evidence shows
 
-The working thesis reports five remote Fill sessions and three questionnaires. That account identifies unclear rules,
-delayed feedback and repetition. The public archive does not yet include the approved anonymous records needed to inspect
-those findings. The exact build used in the study also needs confirmation.
+The author reports two rounds of remote playtesting. The [method record](evidence/user-testing/METHOD.md) identifies
+the groups and the changes between rounds. The first-round account describes unclear rules, delayed feedback and repetition.
+The latest local thesis revision also records second-round feedback.
+
+The exact builds and permitted use of the records still need checking. Approved anonymous evidence is not yet published
+here. The [project status](PROJECT_STATUS.md) and [ethics reflection](ETHICS_REFLECTION.md) state the remaining work.
 
 Automated checks cover selected rules, saving, restart, goal visibility and interface interactions. Unity renders show fixed
 layouts in both languages. These checks help find software faults; they do not replace user testing.
 The [evaluation](EVALUATION.md) keeps the two types of evidence separate.
 
-The current task is to finish the thesis, reconcile the study records and align the submitted build with its documentation.
+The current task is to finish the thesis, check the study records and align the submitted build with its documentation.
 The game is a simplified account of urban life, with authored scores and species behaviour. Its limits are part of the work.

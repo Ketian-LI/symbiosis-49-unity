@@ -1,16 +1,13 @@
-# User-testing evidence
+# User testing evidence
 
-Approved anonymous study materials have not yet been added to this public archive.
+The [method record](METHOD.md) describes the two rounds and the checks still needed.
+The author reports 5 first-round participants and 13 second-round participants, including the original 5.
+That is 13 people across the two rounds.
 
-The working thesis reports five completed remote Fill sessions and three questionnaires.
-The exact tested build and final analysis still need confirmation.
-An older draft described the second round as a plan; a local 22 November revision records further feedback.
-The final public account still needs to identify the tested builds and permitted use of those records.
-See the [ethics reflection](../../ETHICS_REFLECTION.md) for the confirmed oversight and outstanding work.
+The detailed anonymous evidence has not yet been approved for this public archive.
+Participant agreement to quotation and formal ethics review are separate matters.
+See [project status](../../PROJECT_STATUS.md), [evaluation](../../EVALUATION.md) and the [ethics reflection](../../ETHICS_REFLECTION.md).
 
-The [method](METHOD.md) is a proposed/reconciliation plan. It is not proof that every step was carried out.
-
-Before publishing evidence, confirm ethics and permitted use with the supervisor.
-Then add a method summary, the build identifier, a small analysis table and approved de-identified quotations.
-Separate what a player reported from what the software recorded and what the researcher inferred.
-Do not upload chats, audio, names, contact details, consent signatures or the private participant code key.
+When permitted, add the tested build identifiers, a method summary, an analysis table and selected de-identified extracts.
+Each extract should support a stated finding and show what remains uncertain.
+Do not upload chats, audio, names, contact details, consent signatures or a private participant code key.

@@ -1,3 +1,14 @@
+# Documentation architecture review 22 November 2026
+
+Added a reading map, a shared status page and directory guides. The technical section now explains scene loading,
+mode differences and where each system belongs. The study record distinguishes the two rounds and their overlapping groups.
+The thesis page identifies the latest local English revision while leaving the final PDF pending.
+
+This update changes documents and their validator. It does not change gameplay, scenes, runtime artwork or saved test results.
+The dated ethics reflection is retained. Delivery versions and outstanding work are listed in [project status](../PROJECT_STATUS.md).
+
+---
+
 # Documentation update, 22 November 2026
 
 The main English guides now use shorter sentences and separate current instructions from historical notes.

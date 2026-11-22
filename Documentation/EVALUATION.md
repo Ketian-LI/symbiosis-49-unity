@@ -1,49 +1,54 @@
 # Evaluation
 
-The project has user feedback, automated checks and design critique. They answer different questions.
-This page records what each source supports and what still needs checking.
+User feedback, software checks and design critique answer different questions.
+This page explains what each source can support.
 
 ## User testing
 
-The English working thesis reports that five people completed a 49-day Fill session on their own computers.
-Three returned questionnaires. The author also collected written and voice feedback.
+The author confirmed two rounds: 5 people in the first and 13 in the second.
+The original 5 returned, so there were 13 different people across both rounds.
+The first-round account reports three questionnaires alongside written and voice feedback.
 
-The thesis describes players reaching the end without understanding some rules. It also records a waste-collection case:
-a player chose a valid location, but the old version delayed the visible result until the next day. That delay led to a rule
-change. These are findings reported in the draft, not a verified dataset published with this repository.
+The [method record](evidence/user-testing/METHOD.md) describes recruitment, task questions and rule differences.
+The older draft called the second round a plan. The local 22 November revision records that it took place.
+Exact builds, session completion and the final analysis still need to be matched to the underlying records.
 
-The older thesis draft described the second round as planned. A local 22 November revision records further feedback.
-The exact builds, approved anonymous records and final analysis still need checking. No participant names, voices or signed
-forms are included here.
+The draft describes players reaching the end without understanding some rules. It also records a waste-collection case:
+a player chose a valid plot, but the old version delayed the result until the next day.
+These accounts prompted design questions. The approved anonymous material needed to inspect them is not yet in this repository.
 
-The [ethics reflection](ETHICS_REFLECTION.md) records that the application has not yet been sent to the supervisor. It also
-identifies unfinished safeguards. The existence of feedback or consent documents does not settle its permitted research use.
+The application has not yet been sent to the supervisor.
+The [ethics reflection](ETHICS_REFLECTION.md) explains the oversight and outstanding actions.
+The public archive does not treat the working draft or consent folder as permission to publish all study material.
 
-The [method and reconciliation plan](evidence/user-testing/METHOD.md) sets out the proposed questions and analysis.
-The [study folder](evidence/user-testing/README.md) lists the evidence still needed. Ethics approval and permission to use
-earlier material must be confirmed with the supervisor. A drafted form is not approval.
+## Software checks
 
-## Technical checks
+Exported Unity checks cover selected scoring, saves, goals, result controls and interface behaviour.
+The [report index](evidence/automated-tests/README.md) links each saved batch.
+Some checks appear in several batches. Adding their totals would overstate the number of unique tests.
 
-Exported Unity checks cover selected scoring, save, goal, result and interface behaviour.
-The [automated-check index](evidence/automated-tests/README.md) gives the reports and their results.
-Some batches repeat the same checks. Their totals must not be added together as a count of unique tests.
+The latest goal-interface batch passes 21/21 checks. It covers bilingual text, restart/skip goal visibility,
+hand presentation, result controls and score-source navigation.
+No Unity tests were rerun for this documentation update.
 
-The latest goal-interface batch passes 21/21 checks. It includes bilingual text rendering, restart/skip goal visibility,
-hand presentation, result controls and score-source navigation. This is a saved report, not a fresh run of every project test.
-
-Two older opening checks fail both before and after the left-page revision. One checks the case after a fixed 1.4-second wait.
-The other compares the tree's closed-case scale with its restored scale. Their reports remain in the index as failures.
+Two older opening checks fail before and after the left-page revision.
+One checks the case after a fixed 1.4-second wait. The other compares a closed-case tree scale with its restored scale.
+The reports remain visible as failures. A separate navigation check does not make those failures disappear.
 
 ## Score calibration
 
 The November review used 72 automated Fill runs: 36 calibration runs and 36 held-out checks.
-The policies chose unfavourable edges, random legal plots or connected services. They help expose narrow score ranges
-and poor incentives. They are not player results or proof of an optimal strategy.
-The [review record](process/iterations/SKILL_GUIDED_UI_2026-11-21.md) gives the setup and limits.
+The policies chose unfavourable edges, random legal plots or connected services.
+They help reveal narrow score ranges and poor incentives.
+They are not player results or proof of optimal play.
 
-## What is not established
+The [review record](process/iterations/SKILL_GUIDED_UI_2026-11-21.md) gives the setup, results and limits.
 
-The current records do not show improved ecological understanding, a representative player preference or an advantage
-for physical input. Completing 49 days shows task completion; it does not show that the player understood the rules or
-wanted to play again. The final analysis should use specific examples, include unclear cases and identify the version tested.
+## Conclusions that remain open
+
+The current public evidence does not establish improved ecological understanding, representative player preference
+or an advantage for physical input.
+Finishing 49 days shows task completion. Understanding a rule and wanting another game need their own evidence.
+
+The final account should identify the version behind each finding.
+Feedback on an older turn system cannot establish the effect of later stories or highlights.

@@ -11,6 +11,9 @@ packages are listed in [manifest.json](../../Packages/manifest.json).
 4. Open `Assets/Scenes/Main.unity` and press Play.
 5. Choose Fill or Endless. The menu enters `ConstructionPrototype.unity`.
 
+The [scene and mode guide](SCENES_AND_MODES.md) explains that transition and the separate BoardGame path.
+
+The [project status](../PROJECT_STATUS.md) identifies this source and the older downloads.
 The source contains interface changes made after the 19 November Windows build.
 See [release notes](../process/RELEASE_NOTES.md) before comparing screenshots with a download.
 

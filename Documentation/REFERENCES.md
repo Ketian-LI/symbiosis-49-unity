@@ -23,3 +23,14 @@ https://github.com/nature-of-code/noc-examples-p5.js-archived (Accessed: 20 Nove
 
 This is the archive's source list, not a claim that the final thesis literature review is complete. The books listed in the
 assessment brief and references appearing in working drafts must be checked against the final thesis argument and actual reading.
+
+## Ethics guidance checked on 22 November 2026
+
+Creative Computing Institute (2025) *CCI Ethical Guidance for Projects on Taught Programmes*. Available at:
+[CCI ethical guidance](https://git.arts.ac.uk/pages/wzhang/CCI-Thesis/).
+The page contains 2025 deadlines; those dates are not used as the project's 2026 deadlines.
+
+University of the Arts London (2020) *Code of Practice on Research Ethics*, October. Available at:
+[UAL research ethics code](https://www.arts.ac.uk/__data/assets/pdf_file/0020/43328/UAL-Code-of-Practice-on-Research-Ethics-October-2020.pdf).
+
+The [ethics reflection](ETHICS_REFLECTION.md) records the author's confirmed position. It is not an approval record.

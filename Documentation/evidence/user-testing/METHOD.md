@@ -1,33 +1,46 @@
-# User-testing protocol and reconciliation plan
+# User testing method and record
 
-**Status: proposed/reconciliation protocol, not a completed study.** Existing author-reported remote play is described in
-[Evaluation](../../EVALUATION.md). The current unit brief requires a specified method but does not state a participant number.
+This page separates the author's account of completed playtesting from the checks still needed.
+The detailed responses and final analysis have not been approved for this public archive.
+The [ethics reflection](../../ETHICS_REFLECTION.md) records the missed review and unresolved use of earlier data.
 
-## Research focus
+## Reported study
 
-Investigate whether players can explain a relationship between a spatial choice, a registered model change and an observed
-human/animal consequence. Distinguish operating the interface from interpreting its assumptions.
+Participants were acquaintances invited privately. They played remotely on their own computers.
+The no-camera Fill game was the main condition.
 
-## Before collecting or analysing
+| Round | Author-reported group | Available account |
+| --- | ---: | --- |
+| First | 5 people | A 49-day task, written/voice feedback and 3 returned questionnaires |
+| Second | 13 people | Further feedback using revised waste and turn rules |
+| Across both | 13 different people | The original 5 returned; 8 more joined the second round |
 
-Confirm the tutor/ethics scope, approved consent language and retention plan. Identify the build, mode, language, rule version,
-platform and instructions actually used. Participation should be voluntary; avoid uploading names, voices, IPs or signed forms
-to a public repository. If existing material cannot be linked to a build, report that uncertainty.
+The second-round number is a participant count, not proof that every person completed every checkpoint or a full 49-day run.
+Those details need to be checked against the session records.
 
-## Session and interview
+The author confirmed three rules for the second-round group: waste collection covered the eight neighbouring plots;
+a home sharing an edge with the waste facility received a penalty; placing a card triggered turn scoring.
+This does not identify the exact executable sent to each person.
 
-Use a documented mouse/keyboard Fill condition first; do not silently add the unvalidated camera path. Record the initial
-instruction and whether help was given. Ask participants to describe a decision before explaining the mechanism to them.
-After play, use neutral questions: What changed? What do you think caused it? Which information helped? What remained unclear?
-What did the score appear to value? If a journal entry or upgrade was noticed, ask for an example rather than suggesting an answer.
+## Questions and recording
 
-## Analysis
+The first round asked participants to complete the game and suggest improvements.
+The revised second-round form asked about four points: finishing the fixed-card opening, the first free choice,
+a later change of plan and the end of the game. It also asked participants to judge two layouts.
 
-Keep observation, participant report and researcher interpretation in separate columns. Trace a small number of cases through
-action -> registered state -> visible consequence -> participant explanation -> revision. Include contradictory and unclear
-cases. Use raw counts with their denominators; do not generalise to a population. Report missing logs or uncontrolled play openly.
+The intended record distinguishes the choice, the expected result, the result noticed and the explanation.
+A question printed on the form is not evidence that it was answered at the intended moment.
+Help given during play, missing answers and retrospective accounts need to be identified in the final analysis.
 
-## Publishable output
+## Analysis still to check
 
-Create an anonymised method summary, a coding example, approved short quotations, negative cases, and a revision table.
-Link each revision to an issue/commit or snapshot. Keep private source records separately under the agreed retention process.
+For each example, keep the participant's report separate from the game record and the researcher's interpretation.
+Identify the build and rule version where possible. Use raw counts with their denominators.
+Include unclear and contradictory cases.
+
+The two rounds used different game rules and recording methods. They cannot, by themselves, isolate the effect of one change.
+Newer stories, highlights or card layouts are not validated by feedback from an older build.
+
+Before further participant work or use of earlier records, confirm the review and permitted uses with the supervisor.
+The public evidence can then include an approved method summary, analysis examples and de-identified extracts.
+Private forms, messages and audio remain outside this repository.

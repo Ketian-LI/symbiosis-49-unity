@@ -21,13 +21,16 @@ The macOS download is a Unity source project; it does not contain a built Mac ap
 
 ## What the project explores
 
-The project asks how players learn rules through placement and feedback. Can they connect a layout choice to what
-residents and animals actually do? What gives them a reason to try another arrangement?
+The project explores how players learn rules through placement and feedback. It looks at whether they can connect a layout
+choice to what residents and animals do, and whether they want to try another arrangement.
 
 The game grew from a browser feeding prototype into a room-based construction game. Its species, food values and scores
 are designed game rules. They are not predictions of a real ecosystem.
 
 ## Read the project
+
+The [documentation guide](Documentation/README.md) maps all sections.
+Use [project status](Documentation/PROJECT_STATUS.md) to check versions and remaining work.
 
 | Start here | What it covers |
 | --- | --- |
@@ -44,13 +47,13 @@ are designed game rules. They are not predictions of a real ecosystem.
 
 ## Current status
 
-The source includes the 21 November goal-progress and score-source interface changes.
-The 22 November update reorganises the documents and rewrites the main guides in plain English. It changes no game rules.
+This source includes the 21 November interface work. The 22 November changes organise and clarify its documentation.
+The Windows download remains an earlier build. [Project status](Documentation/PROJECT_STATUS.md) lists the source and delivery versions.
 
-The ethics application has not yet been sent to the supervisor. The [ethics reflection](Documentation/ETHICS_REFLECTION.md) states the oversight and outstanding actions.
-The final thesis PDF and approved anonymous study evidence still need the author's confirmation.
-The [submission checklist](Documentation/assessment/SUBMISSION_CHECKLIST.md) records the remaining work.
-Publishing this repository does not submit the assessment to Moodle.
+The ethics application has not yet been sent to the supervisor. The [ethics reflection](Documentation/ETHICS_REFLECTION.md)
+records the oversight and unfinished actions. The final thesis PDF and approved study evidence are still absent.
+The [submission checklist](Documentation/assessment/SUBMISSION_CHECKLIST.md) gives the next steps.
+GitHub publication is not Moodle submission.
 
 Earlier prototypes remain in the [project history](Documentation/process/REPOSITORY_LINEAGE.md).
 Detailed records are kept in [iterations](Documentation/process/iterations/README.md) and the [archive](Documentation/archive/README.md).
