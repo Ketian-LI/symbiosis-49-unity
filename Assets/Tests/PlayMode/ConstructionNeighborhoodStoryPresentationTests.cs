@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.IO;
 using System.Linq;
@@ -117,12 +117,16 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                     var awardCorners = new Vector3[4]; var headingCorners = new Vector3[4];
                     award.GetWorldCorners(awardCorners); selectedHeading.GetWorldCorners(headingCorners);
                     Assert.That(awardCorners.Min(point => point.y), Is.GreaterThan(headingCorners.Max(point => point.y)));
-                    var details = side.Find("Recent observed changes").GetComponent<RectTransform>();
-                    var body = tagline.rectTransform;
-                    var bodyCorners = new Vector3[4];
-                    var detailsCorners = new Vector3[4];
-                    body.GetWorldCorners(bodyCorners); details.GetWorldCorners(detailsCorners);
-                    Assert.That(detailsCorners.Max(point => point.y), Is.LessThan(bodyCorners.Min(point => point.y)));
+                    Assert.That(side.Find("Recent observed changes"),Is.Null,"The rejected changes block must not return.");
+                    var sourceButton=side.Find("Board progress backing/Open score index").GetComponent<RectTransform>();
+                    var sourceCorners=new Vector3[4];sourceButton.GetWorldCorners(sourceCorners);
+                    Assert.That(sourceCorners.Min(p=>p.y),Is.GreaterThan(headingCorners.Max(p=>p.y)+4f),"The score-source button owns a separate row.");
+                    Assert.That(root.transform.Find("Construction UI/Observation frame/Printed leaf paper").GetComponent<Image>().sprite.texture,
+                        Is.SameAs(Resources.Load<Texture2D>("UI/ConstructionCase/interior-city-v02")));
+                    var instruction=side.Find("Next step backing/Selected hand instruction").GetComponent<Text>();
+                    AssertSdfFits(instruction);
+                    Assert.That(instruction.GetComponentInChildren<TMPro.TextMeshProUGUI>().text,Does.Contain("<b>"));
+
                 }
                 Assert.That(side.Find("Story cue backing/Today heading").GetComponent<Text>().text,
                     Is.EqualTo("街坊手记"));
@@ -163,11 +167,10 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                             .onClick.Invoke();
                         yield return null;
                         yield return null;
-                        var reason = side.GetComponentsInChildren<Text>().First(label =>
-                            label.name.StartsWith("Observed change") && label.text.Contains("-80"));
-                        Assert.That(reason.gameObject.activeInHierarchy, Is.True);
-                        AssertSdfFits(reason);
-                        Assert.That(reason.color.r, Is.GreaterThan(reason.color.g));
+                        var reason=paper.Find("Story trigger").GetComponent<Text>();
+                        Assert.That(reason.text,Does.Contain("-80"));
+                        Assert.That(reason.gameObject.activeInHierarchy,Is.True);AssertSdfFits(reason);
+                        Assert.That(reason.color.r,Is.GreaterThan(reason.color.g));
                         foreach (var name in new[] { "Story title", "Story paragraph", "Story trigger" })
                             AssertSdfFits(paper.Find(name).GetComponent<Text>());
                         yield return Capture(root, Path.Combine(Path.GetDirectoryName(capture),
@@ -189,7 +192,7 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
                         refreshCard.Invoke(controller, null);
                         yield return null;
                         yield return null;
-                        foreach (var name in new[] { "Selected hand name", "Selected hand valid plots", "Selected hand tagline" })
+                        foreach (var name in new[] { "Selected hand name", "Selected hand valid plots", "Selected hand tagline", "Selected hand instruction" })
                             AssertSdfFits(side.Find("Next step backing/" + name).GetComponent<Text>());
                     }
                 }

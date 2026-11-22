@@ -62,9 +62,12 @@ namespace UrbanWildlifeRooms.Presentation
                 scoreTraceButtonLabels[index] = button.GetComponentInChildren<Text>();
             }
             scoreTraceLaunch = ButtonAt("Open score index", progressPanel.transform,
-                run.UsesFillHand ? new Vector2(44,38) : new Vector2(104,88),new Vector2(84,28)," ",16,Ink,Paper,
+                run.UsesFillHand ? new Vector2(-12,-158) : new Vector2(104,88),
+                run.UsesFillHand ? new Vector2(264,32) : new Vector2(84,28)," ",16,Paper,Ink,
                 ()=>ToggleScoreIndex(),false);
             scoreTraceLaunchLabel = scoreTraceLaunch.GetComponentInChildren<Text>();
+            var launchOutline=scoreTraceLaunch.gameObject.AddComponent<Outline>();
+            launchOutline.effectColor=Ink;launchOutline.effectDistance=new Vector2(1,-1);
             scoreTracePanel.gameObject.SetActive(false);
         }
 
@@ -86,7 +89,7 @@ namespace UrbanWildlifeRooms.Presentation
         }
 
         private bool ScoreTraceBlocked => run == null || !IsBoardCaseOpen || PauseOpen || QuickGuideOpen ||
-            ShouldShowOpeningTour() || buildPaletteOpen || hasPendingPlacement ||
+            ShouldShowOpeningTour() || buildPaletteOpen || hasPendingPlacement || DeckInventoryOpen ||
             specialTaskSelectionRoot != null && specialTaskSelectionRoot.gameObject.activeSelf ||
             finalResultPanel != null && finalResultPanel.activeSelf ||
             localRankingsOverlay != null && localRankingsOverlay.activeSelf ||
@@ -126,7 +129,7 @@ namespace UrbanWildlifeRooms.Presentation
                 scoreTraceActive=Array.Empty<ScoreTraceEntry>();
             }
             scoreTraceLaunch.interactable=scoreTraceEntries.Count>0;
-            scoreTraceLaunchLabel.text=L("Index · H","索引 · H");
+            scoreTraceLaunchLabel.text=L("Score sources · H","得分来源 · H");
             for(var i=0;i<3;i++) scoreTraceButtonLabels[i].text=i==0?L("Previous","上一项"):i==1?L("Next","下一项"):L("Close","关闭");
             if(scoreTraceReviewOpen) SelectScoreTrace();
             DrawScoreTrace();
@@ -160,7 +163,7 @@ namespace UrbanWildlifeRooms.Presentation
         private void SelectScoreTrace()
         {
             var entry=scoreTraceEntries[scoreTraceIndex]; scoreTraceActive=new[]{entry};
-            scoreTraceHeading.text=L($"Score index {scoreTraceIndex+1}/{scoreTraceEntries.Count}",$"得分索引 {scoreTraceIndex+1}/{scoreTraceEntries.Count}");
+            scoreTraceHeading.text=L($"Score sources {scoreTraceIndex+1}/{scoreTraceEntries.Count}",$"得分来源 {scoreTraceIndex+1}/{scoreTraceEntries.Count}");
             scoreTraceTitle.text=L(entry.English,entry.Chinese)+(entry.Points.HasValue ? $"  {entry.Points.Value:+0;-0;0}" : "");
             scoreTraceTitle.color=entry.Points<0 ? ReadingWarning : Ink;
             var count=entry.Actors.Count(actor=>worldView?.ScoreTraceActor(actor)!=null);
@@ -182,7 +185,7 @@ namespace UrbanWildlifeRooms.Presentation
         public void CloseScoreIndex()
         {
             scoreTraceReviewOpen=false; scoreTraceAutomatic=false;
-            if(run?.UsesFillHand==true) RefreshReadingSummary();
+            if(run?.UsesFillHand==true) RefreshFillRightHandPreview();
             scoreTraceActive=Array.Empty<ScoreTraceEntry>(); DrawScoreTrace();
         }
 
@@ -226,7 +229,8 @@ namespace UrbanWildlifeRooms.Presentation
             var visible=!ScoreTraceBlocked;
             scoreBatchPanel.gameObject.SetActive(visible && scoreTraceAutomatic);
             scoreTracePanel.gameObject.SetActive(scoreTraceReviewOpen && visible);
-            if(readingChangeRoot!=null && scoreTraceReviewOpen) readingChangeRoot.gameObject.SetActive(false);
+            if(fillRightPlacementInstruction!=null && scoreTraceReviewOpen)fillRightPlacementInstruction.gameObject.SetActive(false);
+            if(fillRightHandTagline!=null && scoreTraceReviewOpen)fillRightHandTagline.gameObject.SetActive(false);
             var active=visible && (scoreTraceReviewOpen || scoreTraceAutomatic) ? scoreTraceActive : Array.Empty<ScoreTraceEntry>();
             var rooms=scoreTraceRoomColors; var actors=scoreTraceActorColors; rooms.Clear(); actors.Clear();
             foreach(var entry in active.OrderBy(entry=>entry.Points<0 ? 1 : 0))

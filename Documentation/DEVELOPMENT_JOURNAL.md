@@ -167,3 +167,7 @@ time. Pointer exit no longer clears the pin. Residents, animals and shared score
 phase labels. The [feature record](../Docs/ROOM_HIGHLIGHTS_2026-11-22.md) links checks and actual captures; the
 [pending list](../Docs/PENDING_REQUESTS_2026-11-22.md) keeps recurring deductions, terminology, diagrams, the P journal and the
 approved wider visual revision outside this delivery. Selection does not award or deduct points.
+
+## 22 November: apply the approved Fill interface
+
+The approved concept was implemented with a restored city motif, restrained story/goal hierarchy, room-card thumbnails, a separate score-source button and selective action emphasis. A live remaining-card catalogue uses actual stock and returns swapped cards to the pile. New generated paper adaptations reserve clear reading space and are shared by opening lids and the live board. Native Fill captures and the 38/38 logic and 27/27 interface batches are linked in the [revision record](../Docs/APPROVED_FILL_UI_2026-11-22.md). Recurring deductions, commuting/glossary diagrams and P journal remain pending.

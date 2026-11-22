@@ -334,6 +334,9 @@ namespace UrbanWildlifeRooms.Core
                 .Where(category => !UsesBasicFillResources ||
                     !IsBasicFillResource(category))
                 .Sum(FillDeckCategoryRemaining);
+        public int FillDeckHeldCards => UsesFiniteFillDeck ? fillHandCards.Count : 0;
+        public int FillDeckRemainingFor(ConstructionCategory category) =>
+            UsesFiniteFillDeck ? FillDeckCategoryRemaining(category) : -1;
         private int FillDeckCategoryRemaining(ConstructionCategory category) =>
             Math.Max(0, DigitalFillCardSupply(category) -
                 CategoryBuiltCount(category) -

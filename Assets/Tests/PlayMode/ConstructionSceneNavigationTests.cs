@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
@@ -603,7 +603,8 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
             var insideUi = live.transform.Find("Construction UI");
             var leftInside = insideUi.Find("Observation frame/Printed leaf paper").GetComponent<Image>().sprite.texture;
             var rightInside = insideUi.Find("Action frame/Printed leaf paper").GetComponent<Image>().sprite.texture;
-            Assert.That(leftInside, Is.SameAs(rightInside), "Both live leaves must use the approved right-hand paper.");
+            Assert.That(leftInside, Is.SameAs(Resources.Load<Texture2D>("UI/ConstructionCase/interior-city-v02")),"Left leaf restores the approved town print.");
+            Assert.That(rightInside, Is.SameAs(Resources.Load<Texture2D>("UI/ConstructionCase/interior-oak-v02")));
             Assert.That(leftInside, Is.SameAs(opening.CaseShell.Find("West lid hinge/Printed city inside lid")
                 .GetComponent<Renderer>().sharedMaterial.mainTexture), "The opening and live left leaf must not swap artwork.");
             Assert.That(rightInside, Is.SameAs(opening.CaseShell.Find("East lid hinge/Printed oak inside lid")

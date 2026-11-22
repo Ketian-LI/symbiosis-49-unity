@@ -83,3 +83,7 @@ include waste coverage versus shared-edge warnings, selection persistence, modal
 ordering/cleanup in Fill and Endless and prior interactions. These batches overlap earlier exports and are not cumulative
 unique-test or participant totals. The synthetic captures verify those fixtures. Recurring penalty rules and the broader
 approved UI revision are not implemented here; older opening-test limitations remain in the history above.
+
+## Approved Fill interface verification
+
+The [revision record](../Docs/APPROVED_FILL_UI_2026-11-22.md) links 38/38 selected EditMode and 27/27 selected PlayMode checks. These cover stock conservation, legacy random-save compatibility, emphasis, bilingual native Fill UI, selection/coverage/warnings, modal isolation, restart/skip goals, three score batches and exact menu navigation. They overlap earlier batches and are not participant evidence or a cumulative unique-test count. The initial clipping and fixture failures were corrected before the passing exports. Other historical opening-test limitations above are retained.

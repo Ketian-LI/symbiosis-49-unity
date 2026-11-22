@@ -1,0 +1,18 @@
+{
+  "tool": "built-in image_gen",
+  "intent": "Recompose the approved city and oak papers to reserve uninterrupted space for live text. No baked UI text.",
+  "assets": [
+    {
+      "path": "Assets/Resources/UI/ConstructionCase/interior-city-v02.png",
+      "source": "interior-city-v01.png",
+      "generated_file": "exec-0632fc7d-0442-4de3-ae0e-0016aea357ba.png",
+      "prompt": "Use case: precise-object-edit. Production Unity UI paper background asset. Edit this portrait texture at the SAME 930:1692 aspect ratio. Keep identical warm ivory handmade paper, navy/olive vintage printed town style, orange roofs. Recompose the town illustration, DO NOT squash or stretch buildings: a smaller naturally proportioned cluster of houses and domed town hall must occupy ONLY the bottom 25 percent of the entire image, including all trees. Above the bottom 25 percent the paper must be completely open clean continuous parchment, including both side edges. No leaves above that lower quarter. The illustration should fill the lower width organically and meet the bottom crop, subtle trees at bottom corners. Exact original artistic language and palette. Upper 75 percent is reserved for readable live game UI and must have no objects. No text, letters, borders, panels, frames, labels or UI. Flat full bleed texture, no perspective, no shadow outside texture."
+    },
+    {
+      "path": "Assets/Resources/UI/ConstructionCase/interior-oak-v02.png",
+      "source": "interior-oak-v01.png",
+      "generated_file": "exec-0ecc4dc1-828a-4703-ad3d-ca423e841eb3.png",
+      "prompt": "Use case: precise-object-edit. Production Unity UI paper background asset. Edit this portrait texture at the SAME 930:1692 aspect ratio. Keep identical warm ivory handmade paper, vintage navy/olive oak foliage, creamy branches, two orange acorns at lower right, same artistic style. Retain oak canopy along topmost 8 percent, keep foliage along the RIGHT edge within rightmost 15 percent below the top canopy. Remove foliage from bottom LEFT entirely: lower left and lower central reading area must be clean continuous parchment matching rest. Bottom decorative oak may occupy only bottommost 5 percent, not a large corner bush. Maintain naturally proportioned leaves and acorns, do not squash/stretch. Central and left reading area x=0.08 to0.78 and y=0.12 to0.94 must be free of foliage. No text, letters, borders, panels, frames, labels or UI. Flat full bleed texture, no perspective, no external shadows."
+    }
+  ]
+}

@@ -13,10 +13,7 @@ namespace UrbanWildlifeRooms.Presentation
         private static readonly Color ReadingWarning = new(0.596f, 0.290f, 0.208f); // #984A35
         private readonly Text[] readingScoreLabels = new Text[3];
         private readonly Text[] readingScoreValues = new Text[3];
-        private Text readingAwardProgress, readingChangeHeading;
-        private readonly Text[] readingChanges = new Text[3];
-        private readonly Text[] readingChangeSymbols = new Text[3];
-        private RectTransform readingChangeRoot;
+        private Text readingAwardProgress;
 
         private void BuildReadingSummary()
         {
@@ -36,25 +33,8 @@ namespace UrbanWildlifeRooms.Presentation
             readingAwardProgress = TextAt("Live award distance", progressPanel.transform,
                 new Vector2(-12f, -124f), new Vector2(260f, 34f), "", 16, false, Ink, TextAnchor.MiddleLeft);
             var oldRule = progressPanel.transform.Find("Score summary rule");
-            SetRect(oldRule.GetComponent<RectTransform>(), new Vector2(-12f, -149f), new Vector2(260f, 1f));
+            SetRect(oldRule.GetComponent<RectTransform>(), new Vector2(-12f, -190f), new Vector2(260f, 1f));
 
-            var paper = Panel("Recent observed changes", guidePanel.transform.parent,
-                new Vector2(CaseLeafCenter - 10f, -220f), new Vector2(288f, 112f), ReadingPaper);
-            paper.raycastTarget = false;
-            readingChangeRoot = paper.rectTransform;
-            Panel("Recent changes rule", paper.transform, new Vector2(0f, 55f),
-                new Vector2(272f, 1f), HandQuietBrass).raycastTarget = false;
-            readingChangeHeading = TextAt("Recent changes heading", paper.transform,
-                new Vector2(0f, 40f), new Vector2(264f, 24f), "", 16, true, Ink, TextAnchor.MiddleLeft);
-            for (var index = 0; index < 3; index++)
-            {
-                readingChangeSymbols[index] = TextAt("Change symbol " + index, paper.transform,
-                    new Vector2(-124f, 12f - 26f * index), new Vector2(20f, 26f), "", 16,
-                    true, Ink, TextAnchor.MiddleCenter);
-                readingChanges[index] = TextAt("Observed change " + index, paper.transform,
-                    new Vector2(12f, 12f - 26f * index), new Vector2(240f, 24f), "", 16,
-                    false, Ink, TextAnchor.MiddleLeft);
-            }
         }
 
         private void RefreshReadingSummary()
@@ -62,22 +42,6 @@ namespace UrbanWildlifeRooms.Presentation
             if (readingAwardProgress == null) return;
             balanceScoreText.gameObject.SetActive(false); // Kept as an animation target only.
             RefreshReadingTotals(run.BalanceScore, run.PlacementScore, run.SpecialTaskScore);
-            var changes = ConstructionRecentChanges.For(run).Take(3).ToArray();
-            readingChangeRoot.gameObject.SetActive(changes.Length > 0);
-            readingChangeHeading.text = L($"Latest changes · day {run.LastScoreDay?.day}", $"最近变化 · 第 {run.LastScoreDay?.day} 天");
-            for (var index = 0; index < 3; index++)
-            {
-                readingChanges[index].gameObject.SetActive(index < changes.Length);
-                readingChangeSymbols[index].gameObject.SetActive(index < changes.Length);
-                if (index >= changes.Length) continue;
-                var change = changes[index];
-                // Keep the fallback arrow in its own label: its font metrics must
-                // not make TMP truncate the accompanying sentence after the icon.
-                readingChangeSymbols[index].text = change.Concern ? "!" : change.Upgrade ? "↑" : "·";
-                readingChanges[index].text = L(change.English, change.Chinese);
-                readingChanges[index].color = change.Concern ? ReadingWarning : change.Upgrade ? ReadingGreen : Ink;
-                readingChangeSymbols[index].color = readingChanges[index].color;
-            }
         }
 
         private void RefreshReadingTotals(int shared, int build, int goals)

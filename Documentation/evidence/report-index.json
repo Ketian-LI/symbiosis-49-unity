@@ -135,5 +135,21 @@
     "failed": 0,
     "file": "room-highlights-playmode.xml",
     "scope": "Selected range, relation and interaction checks; overlaps earlier batches."
+  },
+  {
+    "batch": "approved-fill-ui-editmode",
+    "total": 38,
+    "passed": 38,
+    "failed": 0,
+    "file": "approved-fill-ui-editmode.xml",
+    "scope": "Overlapping technical regression batch; not participant evidence or cumulative unique-test total."
+  },
+  {
+    "batch": "approved-fill-ui-playmode",
+    "total": 27,
+    "passed": 27,
+    "failed": 0,
+    "file": "approved-fill-ui-playmode.xml",
+    "scope": "Overlapping technical regression batch; not participant evidence or cumulative unique-test total."
   }
 ]

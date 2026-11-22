@@ -125,7 +125,8 @@ namespace UrbanWildlifeRooms.UI
             }
             if (force || previousText != source.text)
             {
-                rendered.text = source.text;
+                var guidance = source.GetComponent<InstructionEmphasis>();
+                rendered.text = guidance != null ? guidance.Render(source.text) : source.text;
                 previousText = source.text;
             }
             if (force || previousSize != source.fontSize ||

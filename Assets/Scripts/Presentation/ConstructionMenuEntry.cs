@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -704,7 +704,8 @@ namespace UrbanWildlifeRooms.Presentation
         private void AddPrintedInteriorFace(Transform hinge, float centre,
             float width, float depth, bool cityHalf)
         {
-            var texture = Resources.Load<Texture2D>(ConstructionCasePaper.InteriorPrint);
+            var texture = Resources.Load<Texture2D>(cityHalf
+                ? ConstructionCasePaper.LeftInteriorPrint : ConstructionCasePaper.InteriorPrint);
             if (texture == null) return;
             var shader = Shader.Find("Universal Render Pipeline/Unlit") ??
                 Shader.Find("Unlit/Texture") ?? Shader.Find("Standard");

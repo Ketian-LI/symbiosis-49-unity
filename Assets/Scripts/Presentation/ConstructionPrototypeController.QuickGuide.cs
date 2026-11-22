@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -129,7 +129,7 @@ namespace UrbanWildlifeRooms.Presentation
         {
             page.Append("<b>").Append(chinese ? chineseName : englishName)
                 .Append(chinese ? "：</b>" : ":</b> ")
-                .Append(chinese ? chineseExplanation : englishExplanation)
+                .Append(UrbanWildlifeRooms.UI.InstructionEmphasis.Format(chinese ? chineseExplanation : englishExplanation))
                 .Append("\n\n");
         }
 
@@ -209,7 +209,7 @@ namespace UrbanWildlifeRooms.Presentation
                 "查看与暂停", "悬停已建格可看状态。点击住宅可安排工作与用餐。按 Esc 打开暂停菜单。");
             ManualEntry(page, zh, "Score index shortcuts",
                 "H opens the last settled day's score index. Tab moves forward; Shift+Tab moves back. F centres an indexed plot in Endless. Esc closes the index. Coloured brackets identify the contributing rooms and visible actors during settlement and review.",
-                "得分索引快捷键", "H 打开最近一次结算的得分索引。Tab 下一项，Shift+Tab 上一项；无尽模式下按 F 居中定位。Esc 关闭索引。结算和查看索引时，彩色边框会标出相关房间与仍在场的居民、动物。");
+                "得分来源快捷键", "H 打开最近一次结算的得分来源。Tab 下一项，Shift+Tab 上一项；无尽模式下按 F 居中定位。Esc 关闭索引。结算和查看索引时，彩色边框会标出相关房间与仍在场的居民、动物。");
 
             ManualSection(page, L("ROOMS AND UPGRADES", "房间与升级"));
             ManualEntry(page, zh, "Shared edges and nearby plots",
@@ -416,7 +416,8 @@ namespace UrbanWildlifeRooms.Presentation
             if (quickGuideButton != null)
             {
                 quickGuideButton.gameObject.SetActive(!blocked);
-                quickGuideButtonLabel.text = L("Manual", "手册");
+                quickGuideButtonLabel.text = L("Manual · O", "手册 · O");
+                quickGuideButtonLabel.fontSize = 16;
             }
             quickGuideHeading.text = L("GAME MANUAL", "游戏手册");
             quickGuideSubtitle.text = L("Scroll to read · O to close", "滚轮翻阅　O 收起");
@@ -465,6 +466,7 @@ namespace UrbanWildlifeRooms.Presentation
 
         private void ToggleQuickGuide()
         {
+            CloseDeckInventory();
             if (quickGuideRoot == null || run == null || run.IsFinished ||
                 !IsBoardCaseOpen || PauseOpen ||
                 specialTaskSelectionRoot != null &&

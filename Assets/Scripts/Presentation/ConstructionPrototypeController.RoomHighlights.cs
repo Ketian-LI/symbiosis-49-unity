@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using UrbanWildlifeRooms.Data;
+using UrbanWildlifeRooms.UI;
 
 namespace UrbanWildlifeRooms.Presentation
 {
@@ -15,6 +17,8 @@ namespace UrbanWildlifeRooms.Presentation
         private readonly List<RectTransform> selectedRoomActors = new();
         private RectTransform selectedRoomPanel, selectedRoomActorLayer;
         private Text selectedRoomHeading, selectedRoomDetails, selectedRoomCloseLabel;
+        private Text selectedRoomName;
+        private Image selectedRoomArt;
         private bool selectedRoomOwnsGuide;
         private bool selectedRoomWasVisible;
         private static readonly int[] RoomReviewDrawOrder={3,2,0,1};
@@ -27,7 +31,8 @@ namespace UrbanWildlifeRooms.Presentation
             var group=selectedRoomActorLayer.gameObject.AddComponent<CanvasGroup>();
             group.blocksRaycasts=false;group.interactable=false;
             var paper=Panel("Selected room relationships",guidePanel.transform.parent,
-                new Vector2(CaseLeafCenter-10f,-58f),new Vector2(288f,310f),ReadingPaper);
+                run.UsesFillHand?new Vector2(CaseLeafCenter,-36f):new Vector2(CaseLeafCenter-10f,-58f),
+                run.UsesFillHand?new Vector2(342f,340f):new Vector2(288f,310f),run.UsesFillHand?Color.clear:ReadingPaper);
             paper.raycastTarget=false;selectedRoomPanel=paper.rectTransform;
             Panel("Selection heading rule",paper.transform,new Vector2(0,151),new Vector2(272,1),HandQuietBrass).raycastTarget=false;
             selectedRoomHeading=TextAt("Selected room relationship heading",paper.transform,new Vector2(0,126),new Vector2(264,38),"",22,true,Ink,TextAnchor.MiddleLeft);
@@ -36,6 +41,20 @@ namespace UrbanWildlifeRooms.Presentation
             var close=ButtonAt("Clear selected room highlights",paper.transform,new Vector2(0,-131),new Vector2(264,30)," ",16,Ink,Paper,
                 ()=>ClearRoomHighlightSelection(),false);
             selectedRoomCloseLabel=close.GetComponentInChildren<Text>();
+            if(run.UsesFillHand)
+            {
+                paper.transform.Find("Selection heading rule").gameObject.SetActive(false);
+                SetRect(selectedRoomHeading.rectTransform,new Vector2(-12,75),new Vector2(264,34));
+                selectedRoomHeading.fontSize=21;
+                selectedRoomArt=Panel("Selected relationship card",paper.transform,new Vector2(-82,-20),new Vector2(128,128),Color.white);
+                selectedRoomArt.preserveAspect=true;selectedRoomArt.raycastTarget=false;
+                selectedRoomName=TextAt("Selected relationship room",paper.transform,new Vector2(68,2),new Vector2(142,52),"",22,true,Ink,TextAnchor.MiddleLeft);
+                SetRect(selectedRoomDetails.rectTransform,new Vector2(-12,-155),new Vector2(264,100));
+                SetRect(close.GetComponent<RectTransform>(),new Vector2(-12,-200),new Vector2(264,28));
+                SetRect(selectedRoomCloseLabel.rectTransform,Vector2.zero,new Vector2(264,28));
+                close.GetComponent<Image>().color=Paper;selectedRoomCloseLabel.color=Ink;
+                var outline=close.gameObject.AddComponent<Outline>();outline.effectColor=Ink;outline.effectDistance=new Vector2(1,-1);
+            }
             selectedRoomPanel.gameObject.SetActive(false);
         }
 
@@ -88,7 +107,7 @@ namespace UrbanWildlifeRooms.Presentation
             if(visible)
             {
                 if(guidePanel.gameObject.activeSelf){guidePanel.gameObject.SetActive(false);selectedRoomOwnsGuide=true;}
-                if(readingChangeRoot!=null)readingChangeRoot.gameObject.SetActive(false);
+                if(run.UsesFillHand)LayoutSelectedRoomDetails();
             }
             else if(selectedRoomOwnsGuide)
             {
@@ -148,8 +167,14 @@ namespace UrbanWildlifeRooms.Presentation
         {
             var relation=selectedRoomRelations;
             selectedRoomHeading.text=CategoryLabel(relation.Selected.category)+L(" · selected"," · 已选中");
+            if(run.UsesFillHand)
+            {
+                selectedRoomHeading.text=L("Selected room","选中房间");
+                selectedRoomName.text=CategoryLabel(relation.Selected.category)+L(" · selected"," · 已选中");
+                selectedRoomArt.sprite=ConstructionHandArtCatalog.GetRoom(relation.Selected.category,relation.Selected.planting);
+            }
             var rows=new List<string>();
-            if(relation.Coverage.Count>0)rows.Add(L("<color=#24506B>Blue tiles: cleanup range, including connected streets.</color>","<color=#24506B>蓝格：清运范围，含连续街道接通的位置。</color>"));
+            if(relation.Coverage.Count>0)rows.Add(L("<color=#24506B>Blue: nearby plots and connected streets.</color>","<color=#24506B>蓝格：周围八格及连通街道。</color>"));
             if(relation.Penalties.Count>0)
             {
                 var cause=relation.Selected.category==UrbanWildlifeRooms.Data.ConstructionCategory.Waste
@@ -159,10 +184,18 @@ namespace UrbanWildlifeRooms.Presentation
             }
             if(relation.Benefits.Count>0)rows.Add(L($"Green frames: favourable pairings ×{relation.Benefits.Count}.",$"绿框：正向搭配 ×{relation.Benefits.Count}。"));
             if(relation.SettledRooms.Count>0)rows.Add(L($"Blue frames: related rooms/actors in day {relation.SettledDay}'s settled record.",$"蓝框：第 {relation.SettledDay} 天已结算的相关房间与角色。"));
-            if(rows.Count==0)rows.Add(L("No scored relation recorded for this room yet.","该房间暂未记录得分关联。"));
-            if(relation.Penalties.Count>0)rows.Add(L("Pairing points currently apply when built; this view does not deduct again.","当前搭配分在建造时结算；查看不会再次扣分。"));
+            if(rows.Count==0)rows.Add(L("Click a room to keep it selected. Press Esc or click it again to cancel.","点击房间后保持选中。按 Esc 或再次点击取消。"));
+            if(relation.Penalties.Count>0)rows.Add(L("Pairings settle on build; inspecting does not deduct again.","搭配在建造时结算；查看不会再次扣分。"));
             selectedRoomDetails.text=string.Join("\n",rows);
             selectedRoomCloseLabel.text=L("Cancel selection · Esc","取消选中 · Esc");
+        }
+
+        private void LayoutSelectedRoomDetails()
+        {
+            var roomy=selectedRoomDetails.preferredHeight>100f;
+            selectedRoomArt.gameObject.SetActive(!roomy);
+            SetRect(selectedRoomName.rectTransform,roomy?new Vector2(-22,30):new Vector2(68,2),roomy?new Vector2(244,52):new Vector2(142,52));
+            SetRect(selectedRoomDetails.rectTransform,roomy?new Vector2(-22,-92):new Vector2(-22,-148),roomy?new Vector2(244,176):new Vector2(244,100));
         }
     }
 }

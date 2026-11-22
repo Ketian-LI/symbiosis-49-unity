@@ -12,7 +12,8 @@ The keyboard and mouse controls below apply to the construction scenes in
 | Hover a built plot | Inspect status and causes | Construction board |
 | Click a built room | Pin its coverage, pairings and recorded score relationships; click it again to cancel | Construction scenes; warning and coverage can coexist |
 | Click a home | Inspect work and meal choices | Where resident dispatch is available |
-| H or the Index button | Open or close the score index | After a recorded settlement |
+| Click the draw pile | Inspect actual remaining / initial category counts | Fill; outside click, close or Esc dismisses it |
+| H or Score sources | Open or close the score-source index | After a recorded settlement |
 | Tab | Open the index or select the next entry | Wraps after the last entry |
 | Shift+Tab | Select the previous index entry | Opens at the last entry when closed |
 | Previous / Next buttons | Move through score entries | Same index as the keyboard controls |
@@ -21,13 +22,13 @@ The keyboard and mouse controls below apply to the construction scenes in
 | O | Open or close the game manual | Existing manual control |
 | Arrow keys | Pan the board viewport | Active Endless play, with the board open |
 
-Index shortcuts are suspended while a name input, manual, pause menu, placement confirmation or blocking overlay is active.
+Index shortcuts are suspended while a name input, manual, pause menu, remaining-card catalogue, placement confirmation or blocking overlay is active.
 They also wait for the opening tour and case animation to finish. The player can review the finished layout before opening
 the index; a visible result overlay keeps the index inactive.
 
 ## Reading the highlights
 
-During Fill settlement, the existing score animation switches the highlights between animal, resident and shared-score
+During Fill settlement, the existing score animation switches the highlights between resident, animal and shared-score
 contributors. Pairing/build cues also identify their relevant rooms. The index reopens these observed causes after animation.
 Its heading shows the selected entry and total entry count. It describes the last settled day, not cumulative lifetime score.
 

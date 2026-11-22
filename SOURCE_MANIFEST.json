@@ -1,7 +1,7 @@
 {
   "prepared_on": "2026-11-21",
-  "source_base_commit": "a30e47acc44381d5a6a6588592d3d8d7a0701c65",
-  "note": "Persistent room relationships and three settlement highlight batches; rule and wider UI requests remain pending. No new executable.",
+  "source_base_commit": "a0b2f9c51ccf61655e475f903f4322af9341191d",
+  "note": "Approved Fill interface, real remaining-card catalogue, clear paper adaptations and retained room highlights. No new executable.",
   "files": [
     {
       "path": "Assets/_Recovery/0 (1).unity",
@@ -714,6 +714,16 @@
       "sha256": "1945c0f938d10afea76eda0d9e85390defd5169169bc358e1e14987ac001221d"
     },
     {
+      "path": "Assets/Resources/UI/ConstructionCase/interior-city-v02.png",
+      "bytes": 2542746,
+      "sha256": "ddd77a703aff6b61b6ae7ce3b527cf0e6bf2ebccd60da9ede45caec13da14adc"
+    },
+    {
+      "path": "Assets/Resources/UI/ConstructionCase/interior-city-v02.png.meta",
+      "bytes": 2769,
+      "sha256": "8215aac653cd86b5768d2f4c07644bdbd1c86e5422b013712df60cf089090b2b"
+    },
+    {
       "path": "Assets/Resources/UI/ConstructionCase/interior-oak-v01.png",
       "bytes": 2805745,
       "sha256": "adb5d963be4127d99fb74a25ca80f654445433f5792861d58e78b0c5842a0a35"
@@ -722,6 +732,16 @@
       "path": "Assets/Resources/UI/ConstructionCase/interior-oak-v01.png.meta",
       "bytes": 2652,
       "sha256": "3c41c7298214414064d8bc3c9e0ad69460d99e549b7c81ad463f7473819e4725"
+    },
+    {
+      "path": "Assets/Resources/UI/ConstructionCase/interior-oak-v02.png",
+      "bytes": 2399504,
+      "sha256": "0ea2c06ac9a56da34352b35feac8f29915e2cf945b54bc44a0094aac039848f9"
+    },
+    {
+      "path": "Assets/Resources/UI/ConstructionCase/interior-oak-v02.png.meta",
+      "bytes": 2769,
+      "sha256": "f50b63a4b0eec180c7a76564506dc134d40c2271d5f128b70dd113a70e66e20f"
     },
     {
       "path": "Assets/Resources/UI/ConstructionCase/LeftPanelIcons/animal_score.png",
@@ -3320,8 +3340,8 @@
     },
     {
       "path": "Assets/Scripts/Core/ConstructionRunModel.cs",
-      "bytes": 174338,
-      "sha256": "1c0b07582b1291d9333404ed910142199f100d8636d86983221c64b623b8235c"
+      "bytes": 174576,
+      "sha256": "df82cbf248303514b2a4cc83bcfe74b4d927e1fc31a4be1c50a7d35b35984054"
     },
     {
       "path": "Assets/Scripts/Core/ConstructionRunModel.cs.meta",
@@ -4270,8 +4290,8 @@
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionCasePaper.cs",
-      "bytes": 264,
-      "sha256": "1445933bdcd4e0605a8071e68ff638595aba247085e19a5dd789568dda79d6f8"
+      "bytes": 365,
+      "sha256": "b50fcd6adeee5a6281803e576afa3ba0b2fde008129160af2b226ee4473ccd41"
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionCasePaper.cs.meta",
@@ -4320,8 +4340,8 @@
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionMenuEntry.cs",
-      "bytes": 82137,
-      "sha256": "d811fc5138219811239bd74231438790fd375af63b11c2055877f77bf7ac60c0"
+      "bytes": 82210,
+      "sha256": "a1777173e974bbeacf1de235203468a842a8d50c0f308c4bade2decc3c9dbc66"
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionMenuEntry.cs.meta",
@@ -4370,8 +4390,8 @@
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.cs",
-      "bytes": 593104,
-      "sha256": "811fa1d3f69d3d84a09148625f7cd4d090ddc6b35c84cf089fa79ec36844f3db"
+      "bytes": 593517,
+      "sha256": "4eb0ae13364887ddb6b7db9a43eb994fca6c97aa5cf9aaaba0908235945cd8de"
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.cs.meta",
@@ -4379,9 +4399,19 @@
       "sha256": "bdef2a385422eec75ead1e7ff35b465c67def07ddba371ef59d8d78eab18c4bc"
     },
     {
+      "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.DeckInventory.cs",
+      "bytes": 7222,
+      "sha256": "ddf066a36dfbc44257d2c96e087f49c5ee78f4139d89ddc3edf3d36f8c579278"
+    },
+    {
+      "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.DeckInventory.cs.meta",
+      "bytes": 59,
+      "sha256": "41c67b650d5aa39104486a95ae9ed46b464150e56f02c5ef9e643b2b1ec36a33"
+    },
+    {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.FillHand.cs",
-      "bytes": 80597,
-      "sha256": "befaa593efbcfc543cf596bf18833e4176c29571f9c16c26a869c9ebe219e794"
+      "bytes": 81525,
+      "sha256": "34abe3e8a030383091113e63175c0d9ca0378deec7d803dbcbf7938485c2b8f6"
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.FillHand.cs.meta",
@@ -4410,8 +4440,8 @@
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.NeighborhoodStories.cs",
-      "bytes": 5173,
-      "sha256": "1e968401e8804ae7342cb99c711bc35734b2357ccdba5eba8740f7b57882c0b0"
+      "bytes": 5332,
+      "sha256": "dccf54ef9bd2ac9288fa9eecce6e1222654b87d0e3f2f4eb06a046ecbc4aaf19"
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.NeighborhoodStories.cs.meta",
@@ -4440,8 +4470,8 @@
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.QuickGuide.cs",
-      "bytes": 38107,
-      "sha256": "4c717ffc76311fd06ab7cff177e020665194398baa668b0db8667acdf0c24ef1"
+      "bytes": 38259,
+      "sha256": "eb3799c91ae6f09c34e3f6949f57457df8f7fe4f237c962f5723e9565394b7ab"
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.QuickGuide.cs.meta",
@@ -4450,8 +4480,8 @@
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.Reading.cs",
-      "bytes": 6452,
-      "sha256": "c08de1e573145b025bfeb34252f396881df8139cc86de87986283d928c1a68f0"
+      "bytes": 3933,
+      "sha256": "2ad048280985fead454513937b39d17da757be4d8b11d9e324aca515925b9181"
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.Reading.cs.meta",
@@ -4470,8 +4500,8 @@
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.RoomHighlights.cs",
-      "bytes": 11039,
-      "sha256": "7bfe986d238bc70de6eba0f09dad082ce6c799c9bb33b3f27bac16f725e9b208"
+      "bytes": 13373,
+      "sha256": "6debacdb7b6f73864cbec30dd34b56ef4566cc663ea50d05366b8160e3868c27"
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.RoomHighlights.cs.meta",
@@ -4490,8 +4520,8 @@
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.ScoreTrace.cs",
-      "bytes": 14819,
-      "sha256": "d796254b1b2b4f65c835cca2bd8d61c1287a020b220858615379383bc474a133"
+      "bytes": 15235,
+      "sha256": "2fe8ead648d7b749b932488526b8e23918c2aee3ba39b7bd76ab4e73eb0eb0d4"
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.ScoreTrace.cs.meta",
@@ -4500,8 +4530,8 @@
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.SpecialTasks.cs",
-      "bytes": 52365,
-      "sha256": "d41c69f0fd9a25290945dfd372e473c824a0c80806e6e45a3a6654701a84257c"
+      "bytes": 53248,
+      "sha256": "9c5221560fbabd3e578cde7782a3e3ee1e7fbbea2d30ee5760bb557c46624f3d"
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionPrototypeController.SpecialTasks.cs.meta",
@@ -4530,8 +4560,8 @@
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionRoomRelations.cs",
-      "bytes": 2652,
-      "sha256": "ea2a42d7f7ee21b30e309dd89ba8c1341ae6ff343ae3f63746d16ced9b0a4828"
+      "bytes": 2681,
+      "sha256": "97d7c0f7daa9e6d8eac7ffd5964ab42b66e4744f6e68bcc42bd355a5dd3454f0"
     },
     {
       "path": "Assets/Scripts/Presentation/ConstructionRoomRelations.cs.meta",
@@ -5034,6 +5064,16 @@
       "sha256": "e72980a9376387f551693065ecf311bf281be82ef88a93500d9a99bcaded37b7"
     },
     {
+      "path": "Assets/Scripts/UI/InstructionEmphasis.cs",
+      "bytes": 3127,
+      "sha256": "123eb51de42e23a5077c6e966cf76d5b3900b25a7ffcf6239c13a5017b0d9c2d"
+    },
+    {
+      "path": "Assets/Scripts/UI/InstructionEmphasis.cs.meta",
+      "bytes": 59,
+      "sha256": "6c44d17265b105c94a1617d7088c736203b7d194f3522e46d9fe8af8314369f1"
+    },
+    {
       "path": "Assets/Scripts/UI/LayoutImpactFeedback.cs",
       "bytes": 35558,
       "sha256": "253e8466d0253d873b7e319126afd0ce551afc68ce1613456feaf44dd3b0db8c"
@@ -5055,8 +5095,8 @@
     },
     {
       "path": "Assets/Scripts/UI/LegacyTextTmpBridge.cs",
-      "bytes": 11245,
-      "sha256": "9b646026215848d5eb0d398cfeaaa32c0d92e7cc3ba9d910efa92c40bba75eee"
+      "bytes": 11370,
+      "sha256": "4bcd0ab5473546e893aad923a90d6002c2f1d987b875dfe02a72df344a2bff43"
     },
     {
       "path": "Assets/Scripts/UI/LegacyTextTmpBridge.cs.meta",
@@ -5592,6 +5632,16 @@
       "path": "Assets/Tests/Editor/ConstructionCoexistenceIntegrationTests.cs.meta",
       "bytes": 59,
       "sha256": "ffe175fe63e7c941b6873dc7e5bb649e34614defcbdad95b335567e175e3d93e"
+    },
+    {
+      "path": "Assets/Tests/Editor/ConstructionDeckInventoryTests.cs",
+      "bytes": 3947,
+      "sha256": "5b81a7349a64d0ac95e223771d52234ea4cfc9ecf34ec7356850f5309900824f"
+    },
+    {
+      "path": "Assets/Tests/Editor/ConstructionDeckInventoryTests.cs.meta",
+      "bytes": 59,
+      "sha256": "8b12a6b1d4742a04312b685399384f3aea4ccc794003a84635df8ef9d1269ede"
     },
     {
       "path": "Assets/Tests/Editor/ConstructionFillHandTests.cs",
@@ -6534,6 +6584,16 @@
       "sha256": "75e93c4187934fff189c5669d1de199e754891d97ca0167120bc3902ae4207e4"
     },
     {
+      "path": "Assets/Tests/PlayMode/ConstructionApprovedFillUiTests.cs",
+      "bytes": 9920,
+      "sha256": "8a8f866e95852b4a43f3ed7242491d4fed12fae6d3b7e9c9b7c50bfbd1a9e844"
+    },
+    {
+      "path": "Assets/Tests/PlayMode/ConstructionApprovedFillUiTests.cs.meta",
+      "bytes": 59,
+      "sha256": "db43be37cf26912a8c60d6ae065f5cb19039c05830fbafb7a500166e8eb5addf"
+    },
+    {
       "path": "Assets/Tests/PlayMode/ConstructionDiagonalMotionTests.cs",
       "bytes": 5751,
       "sha256": "f39d5bd41c84c1fcf7e654daddc0b6b8fef014d3f9365f484ff89d4edc10f424"
@@ -6595,8 +6655,8 @@
     },
     {
       "path": "Assets/Tests/PlayMode/ConstructionNeighborhoodStoryPresentationTests.cs",
-      "bytes": 19409,
-      "sha256": "4c957d4beb972b2f026130a2cfb7653fe391fccd1afa355a44cbb3cd6ec70e15"
+      "bytes": 19930,
+      "sha256": "1e222cb84f03c35c3aa628c183660e37e00f94313301965159c041164202bd9b"
     },
     {
       "path": "Assets/Tests/PlayMode/ConstructionNeighborhoodStoryPresentationTests.cs.meta",
@@ -6665,8 +6725,8 @@
     },
     {
       "path": "Assets/Tests/PlayMode/ConstructionSceneNavigationTests.cs",
-      "bytes": 49561,
-      "sha256": "e5ecad4a777dcb16746819ac233e50dad06536047ea03d0946a23262b278c2f1"
+      "bytes": 49722,
+      "sha256": "3398ffd5ffa30dbb79e7960cfe3265cdc3f78cb1d7f5fbc915556a3c3648087a"
     },
     {
       "path": "Assets/Tests/PlayMode/ConstructionSceneNavigationTests.cs.meta",

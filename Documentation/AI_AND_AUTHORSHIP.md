@@ -38,3 +38,7 @@ Sources, licences, decisions and verification limits are in the [dated review](.
 Codex assisted the score-trace projection, controller/world integration, input and visual checks, and English summary revision.
 Two further public documentation skills informed structure and claim review. Their pinned sources and concrete changes are
 recorded in [the documentation review](DOCUMENTATION_REVIEW_2026-11-21.md). No new raster artwork was generated in this pass.
+
+## Approved Fill implementation, 22 November
+
+Codex assisted native UI composition, stock inspection, selective guidance emphasis, compatibility checks and documentation. Two city/oak background adaptations were generated with the built-in image tool; the [exact prompts](../Docs/FILL_PAPER_ASSETS_2026-11-22.json) are recorded. The [feature record](../Docs/APPROVED_FILL_UI_2026-11-22.md) separates those assets from actual Unity fixture renders and from participant findings.

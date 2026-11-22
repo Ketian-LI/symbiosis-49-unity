@@ -39,7 +39,7 @@ namespace UrbanWildlifeRooms.Presentation
             // Shared is an aggregate of all contributors. Following it from a
             // single room would incorrectly highlight the entire settled town.
             var entries = ConstructionScoreTrace.For(run).Where(entry =>
-                entry.Kind != ScoreTraceKind.Shared && entry.Tiles.Contains(id)).ToArray();
+                (entry.Kind is ScoreTraceKind.Animal or ScoreTraceKind.Resident) && entry.Tiles.Contains(id)).ToArray();
             foreach (var entry in entries)
             {
                 result.SettledRooms.UnionWith(entry.Tiles);

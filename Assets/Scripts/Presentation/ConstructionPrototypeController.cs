@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -686,6 +686,7 @@ namespace UrbanWildlifeRooms.Presentation
 
         private void Update()
         {
+            if(DeckInventoryOpen && Input.GetKeyDown(KeyCode.Escape)){CloseDeckInventory();return;}
             UpdateFillHandMotion();
             if (Input.GetKeyDown(KeyCode.Escape) && !HandleScoreIndexKey(KeyCode.Escape) &&
                 !TryCancelRoomHighlights()) TogglePauseMenu();
@@ -706,7 +707,10 @@ namespace UrbanWildlifeRooms.Presentation
                 (EventSystem.current?.currentSelectedGameObject == null ||
                  EventSystem.current.currentSelectedGameObject
                      .GetComponent<InputField>() == null))
+            {
+                CloseDeckInventory();
                 ToggleQuickGuide();
+            }
             // A click can rebuild the board while the pointer is still over
             // a cell, so Unity does not always dispatch PointerExit. The hand
             // game uses nearby popovers; clear them when the pointer leaves
@@ -1842,7 +1846,7 @@ namespace UrbanWildlifeRooms.Presentation
             var leftFrame = BuildCaseLeaf(canvas.transform, "Observation frame",
                 new Vector2(-CaseLeafCenter,
                     openingTourBoardTarget.anchoredPosition.y),
-                ConstructionCasePaper.InteriorPrint);
+                ConstructionCasePaper.LeftInteriorPrint);
             var rightFrame = BuildCaseLeaf(canvas.transform, "Action frame",
                 new Vector2(CaseLeafCenter,
                     openingTourBoardTarget.anchoredPosition.y),
@@ -2387,6 +2391,7 @@ namespace UrbanWildlifeRooms.Presentation
             BuildRoomBadgeTooltip(canvas.transform);
             BuildOpeningTour(canvas.transform);
             BuildQuickGuide(canvas.transform);
+            BuildDeckInventory(canvas.transform);
             BuildLocalRankingsOverlay(canvas.transform);
             ApplyLanguageFonts();
             RefreshPaletteVisibility();
@@ -9674,6 +9679,11 @@ namespace UrbanWildlifeRooms.Presentation
         {
             var rect = NewRect(name, parent, position, size);
             var label = rect.gameObject.AddComponent<Text>();
+            if (InstructionEmphasis.AppliesTo(name))
+            {
+                bold = false;
+                rect.gameObject.AddComponent<InstructionEmphasis>();
+            }
             textWeights.Add(label, bold);
             label.font = Chinese ? chineseFont : bold ? boldFont : regularFont;
             label.fontStyle = Chinese && bold ? FontStyle.Bold : FontStyle.Normal;

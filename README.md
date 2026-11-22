@@ -5,9 +5,10 @@ A Unity card-placement game about the space shared by residents and urban wildli
 Place homes, services and green habitat on a tabletop board. The simulation records food actually eaten and resident
 routines actually completed. Stories, score reasons and participant highlights connect those outcomes to the layout.
 
-![Unity render showing the score index and its contributing rooms](Documentation/images/score-index-zh.png)
+![Unity Fill render showing journal, compact goals and selected-card guidance](Documentation/images/fill-approved-zh.png)
 
-The image is an actual Unity render of a fixed test layout. English and Chinese are supported.
+The image is an actual Unity render of a fixed Fill test layout. English and Chinese are supported.
+See the [approved interface revision](Docs/APPROVED_FILL_UI_2026-11-22.md) for remaining cards, pinned relationships and verification.
 
 ## Run the source
 
