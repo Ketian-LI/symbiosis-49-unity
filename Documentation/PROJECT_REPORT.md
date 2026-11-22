@@ -1,75 +1,58 @@
 # Project report
 
-SYMBIOSIS: 49 uses a room-card construction game to investigate how spatial choices affect visible opportunities for residents
-and urban wildlife. Players arrange homes, work, meals, green habitat, streets and waste facilities. The model records activity;
-the interface connects its consequences back to the rooms and visible participants.
+SYMBIOSIS: 49 is a Unity card-placement game. Players build a neighbourhood one room at a time.
+Homes need access to work and meals. Animals need food they can reach. Streets, green spaces and waste facilities
+can help one part of the neighbourhood while causing problems elsewhere.
 
-The research question is: how can an interactive simulation make the ways in which human spatial decisions shape urban wildlife
-conditions perceptible? The contribution is a designed relationship between arrangement and feedback, supported by inspectable
-source and a documented development process. The simplified species and scoring rules express the designer's choices.
+This report explains the project and links to its code and evidence. The [thesis](../Thesis/README.md) provides the longer
+research argument; its final PDF is still pending.
 
-## Interaction and interpretation
+## The design problem
 
-Fill builds a finite board through successive card placements. Endless extends the layout beyond the visible window.
-Players preview a location and confirm construction. Choosing a card changes the preview; it does not place a room or guarantee
-that a resident completes a journey or an animal eats. The [controls reference](CONTROLS.md) describes the player actions.
+The early browser prototype let players feed pigeons. Later versions gave players more choices about space, buildings
+and routes. Those choices also made the rules harder to learn. The project therefore asks how placement and feedback can
+help players understand the game, and what makes a different layout worth trying.
 
-The tabletop presentation uses illustrated hand cards and furnished room interiors. Neighbouring placements can alter rooms:
-connected greens improve habitat, homes can acquire gardens, restaurants beside plazas gain capacity, and suitable streets become
-less risky. Plant maturity, access, available food and actual activity remain separate model conditions. Their implementations
-are in [placement rules](../Assets/Scripts/Core/ConstructionPlacementScore.cs),
-[food settlement](../Assets/Scripts/Core/ConstructionFoodModel.cs) and
-[resident routines](../Assets/Scripts/Core/ConstructionHumanModel.cs).
+Three questions guide the current work: does the player know what to do next, can they explain an outcome, and do they
+have a reason to keep experimenting? Finishing a session alone does not answer all three questions.
 
-The neighbourhood journal pairs an everyday description with its trigger. A garden is a view outside a window, followed by the
-adjacency condition that produced it. Meal and routine stories appear only after recorded activity. Negative stories retain
-bad pairings and road deaths. The [story projection](../Assets/Scripts/Presentation/ConstructionNeighborhoodStories.cs) reads
-these facts without awarding points or creating another event.
+## Playing a turn
 
-The score index gives players a route from a contribution to its visible cause. Room brackets mark the relevant plots; actor
-brackets follow known contributing residents or animals. The player can move between entries and locate an off-screen cause
-in Endless. Its [projection](../Assets/Scripts/Presentation/ConstructionScoreTrace.cs) reads the last settled day and keeps
-previewed outcomes separate. Whether these explanations improve players' interpretations remains a user-research question.
+In Fill, the player selects a card, previews a legal plot and confirms construction. The opening introduces room types
+in stages. Later, the player chooses from a hand. The board has 49 plots. Endless uses an expanding board and its own run rules.
 
-## Implementation and persistence
+Selecting a card is separate from placing it. A route preview shows a possibility. Points for meals and resident routines
+depend on recorded activity. The [rules](technical/GAME_RULES.md) and [controls](technical/CONTROLS.md) explain these differences.
 
-The Unity source separates run state, resident routes, food, wildlife settlement, scoring, persistence and presentation.
-The [technical guide](TECHNICAL_GUIDE.md) maps the code and the build entry points. Scores and placement rules are versioned,
-so historical saves keep their own rules. The model decides the result; controller partials coordinate images, movement,
-stories, goal cards, participant highlights and result review.
+## Making consequences visible
 
-The optional HTTP leaderboard is separate from local rankings and ordinary play. Its stored best result is keyed by a
-public-IP digest, mode and rule version. People sharing a public network may therefore share a record. The service does not
-independently replay client-submitted totals; its pseudonymous IP-derived records are not anonymous player accounts.
-The source is in [Services/leaderboard](../Services/leaderboard/), with limitations in the [evaluation record](EVALUATION.md).
+Neighbouring rooms can change a building's appearance and function. A home beside a connected green patch can gain a garden.
+A restaurant beside a plaza can gain capacity. Plant growth and the food actually available remain separate conditions.
 
-## Development evidence
+The neighbourhood journal describes a change in everyday language and states its trigger. Score reasons explain rewards
+and deductions. The score-source view highlights the rooms and visible residents or animals involved in the last settlement.
+Players can also close the result panel to review a finished layout.
 
-The project developed through a browser feeding prototype, a tangible Unity experiment, bounded room rearrangement and the
-construction game. The [repository lineage](REPOSITORY_LINEAGE.md) identifies each implementation; the
-[development journal](DEVELOPMENT_JOURNAL.md) traces decisions and revisions. Earlier histories and tests retain their own scope.
+These features aim to make outcomes easier to read. The current evidence does not establish that they improve learning.
 
-Recorded faults include lost goal presentation after restart, input focus failures, result overlays blocking review, small score
-differences between layouts, and explanations that disappeared with their animation. The journal links these problems to source
-changes and selected checks. It also records the score calibration and its diagnostic limits, rather than treating simulation
-policy results as player findings.
+## How it is built
 
-The [evaluation document](EVALUATION.md) owns the exported batch counts and describes what each check establishes.
-Its fixtures test observed-meal gating, save reconstruction, negative pairings, input focus, pointer occlusion and bilingual text.
-Unity captures show synthetic layouts. They establish rendering evidence for those fixtures, not a complete playthrough of every
-mode, a performance study or evidence of ecological understanding.
+The run model stores the board, turn state and rule versions. Separate systems handle food, resident routines, wildlife,
+placement scores and saving. Presentation code turns those results into rooms, animation, stories and interface text.
+The [architecture guide](technical/ARCHITECTURE.md) links the main classes.
 
-## Research and delivery boundaries
+The game supports local rankings. An optional HTTP service receives submitted scores and names. Offline play does not
+depend on that service. Its identity method and validation limits are described in [ethics and limitations](ETHICS_AND_LIMITATIONS.md).
 
-An English working thesis reports remote Fill completions and questionnaires. The evaluated build identifier and approved raw
-records remain unresolved in this archive. The [evaluation record](EVALUATION.md) states the reported sample and the missing
-evidence. Those reports do not validate the scoring, journal or participant-index revision by association.
+## What the evidence shows
 
-The physical-camera work has a separate boundary: retained records describe a single physical-frame check and synthetic
-observations, while continuous multi-tile physical play remains unverified. The archived Windows executable was startup-checked
-at its own snapshot. The macOS delivery contains source; no Mac application or Mac runtime result is included.
+The working thesis reports five remote Fill sessions and three questionnaires. That account identifies unclear rules,
+delayed feedback and repetition. The public archive does not yet include the approved anonymous records needed to inspect
+those findings. The exact build used in the study also needs confirmation.
 
-Combining human and animal points can suggest that unlike interests are exchangeable. Visible causes expose that authored
-choice but do not resolve the ethical question. Further evaluation should identify what players infer, whose interests remain
-hidden and whether optimisation displaces care. The author must reconcile the evaluated build, anonymous analysis, ethics and
-final thesis materials. The [AI disclosure](AI_AND_AUTHORSHIP.md) records assistance and remaining attribution gaps.
+Automated checks cover selected rules, saving, restart, goal visibility and interface interactions. Unity renders show fixed
+layouts in both languages. These checks help find software faults; they do not replace user testing.
+The [evaluation](EVALUATION.md) keeps the two types of evidence separate.
+
+The current task is to finish the thesis, reconcile the study records and align the submitted build with its documentation.
+The game is a simplified account of urban life, with authored scores and species behaviour. Its limits are part of the work.

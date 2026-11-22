@@ -1,7 +1,7 @@
 {
-  "prepared_on": "2026-11-21",
-  "source_base_commit": "788be33bfe5a885b193a8b12dff1f34681bd27a5",
-  "note": "Redesigned goal progress component; existing artwork and rules retained. Source roots only; no new executable build.",
+  "prepared_on": "2026-11-22",
+  "source_base_commit": "a30e47acc44381d5a6a6588592d3d8d7a0701c65",
+  "note": "Documentation reorganisation. Gameplay code, scenes and runtime assets retained; no new executable build.",
   "files": [
     {
       "path": "Assets/_Recovery/0 (1).unity",
@@ -85,8 +85,8 @@
     },
     {
       "path": "Assets/ArtStyleExperiment/README.md",
-      "bytes": 1500,
-      "sha256": "9c8f4113eff032712f5ee36b4adcbe800f634819fdfb3561f1080f5161ebae5f"
+      "bytes": 1521,
+      "sha256": "3875d0cb4919adfa51f8811760df1fa36a0ea6f4e9d8415d8b388afe9d10a1ae"
     },
     {
       "path": "Assets/ArtStyleExperiment/README.md.meta",
@@ -7385,8 +7385,8 @@
     },
     {
       "path": "Tools/archive/verify_archive.py",
-      "bytes": 1390,
-      "sha256": "6d935ea8d6d283251b3bedc357ac193d1bca122ce6300405cb53af13ab041380"
+      "bytes": 3229,
+      "sha256": "f6698c81a62bacf90c377f5864f225247ab54a764213e3c9b4a49e483716a5ac"
     },
     {
       "path": "Tools/Audio/generate_symbiosis_audio.py",
@@ -7395,8 +7395,8 @@
     },
     {
       "path": "Tools/Audio/README.md",
-      "bytes": 1624,
-      "sha256": "26e5645bcc7c9bafd24c8a8bfb962445a1704aca92f60385554f21d8bc5d93e1"
+      "bytes": 1652,
+      "sha256": "87754134225a25c50890064a5131e75c4e2a11efbab6ea65c255931802b9b6cc"
     },
     {
       "path": "Tools/Blender/build_fox_from_landmarks_v03.py",
@@ -7895,13 +7895,13 @@
     },
     {
       "path": "Tools/CameraRecognition/README-art-camera.md",
-      "bytes": 2615,
-      "sha256": "c140619a1e28c367040cdcf62fd4948fec3e322d826247666228a6ab74d2d63a"
+      "bytes": 2671,
+      "sha256": "56386b9f7877d1ca156b67d34ec050f6f5ba7eef900ec82e54d2545b1ef52502"
     },
     {
       "path": "Tools/CameraRecognition/README.md",
-      "bytes": 4427,
-      "sha256": "0e9f7aecdc08e7a8d37bff678ecf2600a5add32bc07023df2e96a0a445268af6"
+      "bytes": 4462,
+      "sha256": "99bb8f04b2bec7526df3221f0c3c50a2c1a409f4ce34d92d8efef0ab1f9f67ca"
     },
     {
       "path": "Tools/CameraRecognition/requirements.txt",

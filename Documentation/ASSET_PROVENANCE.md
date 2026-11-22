@@ -1,16 +1,15 @@
-# Asset and source provenance
+# Asset sources
 
-| Material | Location | Record |
+| Material | Source and record | Status |
 | --- | --- | --- |
-| Current Unity code and scene/assets | `Assets`, `Packages`, `ProjectSettings` | Current construction working-tree snapshot; hash manifest included |
-| Editable modelling work | [SourceAssets](../SourceAssets/) and [Blender tools](../Tools/Blender/) | Preserve source files separately from exported game models |
-| Quaternius fox | [source/license record](../SourceAssets/External/Quaternius/Fox/SOURCE_AND_LICENSE.md) | Existing record identifies CC0 source and conversion; not original student modelling |
-| Nunito and Noto Sans SC | [font notices](../Docs/FONT_LICENSES.md), packaged OFL text | Existing SIL Open Font License notices retained |
-| Printed cards, foliage and interface art | `Assets/Resources/UI` | Substantial image-generation assistance; per-asset prompt/model record incomplete |
-| Current portfolio captures | [images](images/) | Unity-rendered fixture; not generated screenshots or participant photos |
-| Earlier web capture | [web image](images/early-web-prototype.png) | Browser prototype evidence, not Unity evidence |
-| External repository precedents | [comparison](ARCHIVE_PRECEDENTS.md) | Documentation patterns reviewed; no code or artwork imported from these examples |
+| Unity code and game assets | [Assets](../Assets/) | Current source snapshot; substantial AI assistance |
+| Editable models | [SourceAssets](../SourceAssets/) and [Blender tools](../Tools/Blender/) | Source files kept separately from game exports |
+| Quaternius fox | [Source and licence](../SourceAssets/External/Quaternius/Fox/SOURCE_AND_LICENSE.md) | CC0 asset and conversion record; not original student modelling |
+| Nunito and Noto Sans SC | [Font licences](technical/FONT_LICENSES.md) | Existing SIL Open Font License notices retained |
+| Cards, foliage and interface art | [UI resources](../Assets/Resources/UI/) | Image-generation assistance; full prompt and asset ledger still needs work |
+| Portfolio screenshots | [Screenshots](media/screenshots/) | Unity test renders, plus a labelled early browser capture |
+| Repository layout references | [Examples reviewed](archive/ARCHIVE_PRECEDENTS.md) | Used for organisation; no code or artwork imported from those examples |
 
-No new blanket licence is granted by this archive. Existing third-party licences apply to their materials. Reuse terms for the
-remaining project code and generated art need the author's explicit choice; public assessment access is not a declaration that
-all files are public domain. Keep licence notices with redistributed dependencies and confirm any additional tutor/group-work attribution.
+Public access does not make every file public domain. Existing third-party licences still apply.
+The author needs to choose reuse terms for the remaining code and generated art, and confirm any tutor or group-work credits.
+See [AI use and authorship](AI_AND_AUTHORSHIP.md) for the division of work.

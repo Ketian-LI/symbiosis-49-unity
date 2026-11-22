@@ -1,9 +1,14 @@
-# Thesis status
+# Thesis
 
-The supplied assessment brief requires an associated thesis of **at least 3,500 words as PDF**.
-No author-approved final PDF is included in this snapshot. On 20 November 2026 the author asked to leave this pending while
-code and process were archived. Working drafts with yellow placeholders are not silently promoted to final submissions.
+The brief requires an associated thesis of **at least 3,500 words as PDF**.
+The final author-approved PDF is not yet included.
 
-When ready, add the approved English PDF here and update the archive README and assessment map. Confirm the word-count basis,
-citations, participant-analysis scope, individual contribution and any tutor-agreed content before submitting.
-Keep identifiable raw research evidence and signed consent separately from this public repository.
+The local 20 November English draft contains the introduction, literature review, method, design, evaluation, discussion,
+references and appendices. It is still a working document. A draft filename or highlighted revision does not make it final.
+
+Before adding the PDF, confirm the study evidence and permitted quotations, resolve outstanding evidence markers,
+check references and figure captions, and align the account with the build being submitted.
+The project report and thesis PDF arrangement should follow the tutor's guidance.
+
+Once approved, add `SYMBIOSIS_49_Thesis.pdf` here and update the [submission checklist](../Documentation/assessment/SUBMISSION_CHECKLIST.md).
+Do not include private participant records or signed forms in this folder.

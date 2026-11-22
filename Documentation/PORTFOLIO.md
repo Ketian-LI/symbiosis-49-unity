@@ -1,30 +1,39 @@
-# Portfolio: outcomes and evidence
+# Portfolio
 
-## Current artefact
+SYMBIOSIS: 49 turns a sequence of small placements into a shared neighbourhood. The player builds homes, services and
+habitat, then watches residents and animals use the space.
 
-![Construction interface](images/street-journal-zh.png)
+## The board and hand
 
-*Figure 1. Current construction interface rendered in Unity from a nine-placement fixture. The room model, card hand,
-score leaf, three-goal bookmark and neighbourhood journal are shown together. This controlled capture is not a participant session.*
+![The construction game in Chinese](media/screenshots/game-readable-zh.png)
 
-![Neighbourhood journal and goals](images/street-journal-left.png)
+The illustrated hand sits below the board. The left page holds stories and goals; the right page keeps scores and the
+selected card together. Rooms change as their neighbours change.
 
-*Figure 2. A garden-home story with its actual connected-green trigger. The three goal rows remain below it. The journal projects
-model facts into narrative; it does not itself change a score or demonstrate that players understood the relationship.*
+## Reading a consequence
 
-## Earlier direction
+![An unfavourable pairing explained in English](media/screenshots/penalty-readable-en.png)
 
-![Preliminary web prototype](images/early-web-prototype.png)
+A waste facility next to a home produces a deduction. The interface keeps the cause visible after the animation ends.
+The journal describes the event and the score panel shows the recent change.
 
-*Figure 3. An earlier browser prototype explored spatial feeding and shared conditions. It is evidence of the web stage only.
-The associated code and timeline remain in the [web repository](https://github.com/Ketian-LI/urban-wildlife-simulation).*
+## Finding the rooms behind a score
 
-## Supporting views
+![Score-source review and its room highlights](media/screenshots/score-index-zh.png)
 
-- [Architecture and entry points](TECHNICAL_GUIDE.md)
-- [Editable models and conversion provenance](ASSET_PROVENANCE.md)
-- [Development decisions and failures](DEVELOPMENT_JOURNAL.md)
-- [Build/download status](RELEASE_NOTES.md)
+The score-source view returns to the last settled day's contributors. It highlights relevant plots and visible participants.
+In Endless, it can centre a cause outside the current view.
 
-A final demonstration video and any approved participant/physical-work images remain author-supplied items. No video is fabricated
-or linked to an unrelated demonstration. The current brief does not prescribe a fixed five-image portfolio.
+These images are actual Unity renders of fixed test layouts, captured during the 21 November source revisions.
+They are not participant sessions. The later city-background mockup is a design preview and has not replaced this source.
+A demonstration of the final submitted build is [still to be added](media/demonstrations/README.md).
+
+## Where it began
+
+![The early browser prototype](media/screenshots/early-web-prototype.png)
+
+The browser prototype explored feeding and animal responses. Later versions introduced physical input, city networks and
+room construction. The [development journal](DEVELOPMENT_JOURNAL.md) explains those changes.
+
+Read the [project report](PROJECT_REPORT.md) for the design account, [evaluation](EVALUATION.md) for the evidence,
+or [setup guide](technical/SETUP_AND_BUILD.md) to run the game.

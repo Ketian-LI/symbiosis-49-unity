@@ -1,35 +1,35 @@
-# Ethics, representation and limits
+# Ethics and limitations
 
-## Authored ecology
+## Representing urban wildlife
 
-The room grid, growth period, food values, animal appearance and risk rules compress complex ecological relationships.
-They support a speculative interaction, not wildlife-care advice or a forecast for a real city. Positive scores should not be
-read as evidence that an intervention is environmentally correct. Combining human and animal points can conceal disagreement
-between different interests; the interface should make its assumptions inspectable rather than moralise a total.
+The game reduces food, movement, habitat and risk to a small set of rules. The designer chooses which species appear and
+which outcomes earn points. A high score is a result within this game, not a judgement about a real city's ecology.
 
-## Agency and interpretation
+Combining resident and animal points can hide competing needs. The interface shows separate contributions and explains
+causes so players can inspect the assumptions. A short story can make an event approachable, but it can also make a complex
+relationship seem simple. Whether players understand these limits needs user research.
 
-Players change conditions; animals are not simply tools that must obey. Yet the designer still selects the responses, species,
-resources and events. A neighbourhood story can make an outcome approachable while also over-simplifying causation. The current
-journal therefore names its trigger and separates maturity, supply, reachability and actual activity. This improves transparency
-of the representation; whether it improves understanding remains an evaluation question.
+## Participant records
 
-## Participant data and consent
+The 20 November ethics and consent documents are drafts. They state that ethics approval had not yet been obtained and
+that earlier feedback needs review. No approval record has been confirmed for this public archive.
 
-The working thesis's reported consent and play counts are not independently verified raw evidence in this archive.
-Do not publish interviews, recordings, signed forms or contact information until publication rights and anonymisation have been
-checked. No new ethics approval or amendment is claimed. A change from remote desktop play to recorded camera-based physical
-play needs a scope review, not an assumption that the earlier process covers it.
+Before earlier feedback is analysed or quoted further, the author needs to confirm its permitted use with the supervisor.
+Participant identities, chats, audio, contact details and signed forms stay outside this repository.
+Only approved, de-identified extracts belong in the [user-testing evidence](evidence/user-testing/README.md).
+Signed forms and a private code key should not be published as evidence of consent.
 
-## Network processing
+## The optional leaderboard
 
-The optional leaderboard processes a public IP to derive an HMAC identity and receives a chosen display name and score.
-This is pseudonymous processing, not guaranteed anonymity. People on one network share a record. Scores are submitted by clients;
-the server does not prove that a score came from an unmodified game. Hosting and connectivity are external dependencies.
+The service derives an identity from a public IP using an HMAC digest. People on a shared network can share a record.
+This is pseudonymous processing, not guaranteed anonymity. The server receives a chosen name and score from the client;
+it does not replay the run to prove the score. Offline play and local rankings work without this service.
 
-## Access and practical limits
+## Practical limits
 
-English/Chinese text, pointer targets, keyboard name entry and read-only result review have selected technical checks.
-These are not a complete accessibility evaluation. The camera workflow has limited physical evidence. The macOS package is
-source-only, and no frame-rate or long-term cross-platform performance claim is made. The archive's final participant analysis,
-asset-by-asset provenance and final thesis remain author-confirmation tasks.
+Selected checks cover English/Chinese text, keyboard naming, pointer targets and result review.
+A full accessibility study has not been completed. The camera prototype has limited physical evidence.
+The macOS download is source-only, and no Mac runtime or signing result is claimed.
+
+The [evaluation](EVALUATION.md) records the limits of user feedback and software checks.
+The [asset record](ASSET_PROVENANCE.md) separates generated, imported and editable materials.
