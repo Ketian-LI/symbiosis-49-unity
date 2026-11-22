@@ -8,18 +8,21 @@ These controls apply to the construction game.
 | Click a lit empty plot, then confirm | Place the selected room |
 | Hover a built plot | Read its status and causes |
 | Click a built room | Pin its coverage and relationship highlights; click it again to clear |
-| Click a home | Inspect work and meal choices, where available |
+| Click a home | Inspect automatic work/meal destinations and missing links |
 | Click the draw pile | Open the live remaining-card catalogue |
 | H or the Index button | Open or close score-source review after a recorded settlement |
 | Tab / Shift+Tab | Move to the next / previous score entry |
 | Previous / Next buttons | Move through the same entries |
 | F | Centre the indexed plot in Endless |
 | O | Open or close the manual |
+| P | Open or close the three-page building reference |
+| I | Open or close the independent settlement journal |
+| Hover / click a linked term | Read a short definition / jump to its marked manual entry |
 | Arrow keys | Pan the board during active Endless play |
 | Esc | Close the active catalogue or index; otherwise clear visible selection or use the existing pause/close action |
 
 Selecting a card does not place a room. A legal preview still needs confirmation.
-Enter-to-confirm and clickable manual glossary terms are planned; they are not implemented in this source.
+Ten core terms are linked in the manual and relevant reading surfaces. Ordinary prose and button labels retain their own actions. Enter-to-confirm remains outside this snapshot.
 
 ## Score-source review
 
@@ -30,7 +33,7 @@ Room brackets mark relevant plots. Smaller brackets follow visible residents or 
 Animals use green, residents use bronze/silver/gold cues, shared scores use blue and deductions use rust.
 Text also states the cause and points.
 
-Entries use recorded meals, routines and placement effects. Animals that did not eat and residents that earned no
+Entries use recorded meals, routines, placement effects and recurring bad-edge deductions. Animals that did not eat and residents that earned no
 activity score are not added as contributors. If an old record lacks an actor identity, the view uses known rooms.
 It does not recreate an animal that has left or died.
 

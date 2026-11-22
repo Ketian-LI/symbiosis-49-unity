@@ -23,7 +23,7 @@ https://github.com/nature-of-code/noc-examples-p5.js-archived (Accessed: 20 Nove
 
 This list covers sources consulted for the repository account and its organisation.
 
-## Ethics guidance checked on 22 November 2026
+## Ethics references
 
 Creative Computing Institute (2025) *CCI Ethical Guidance for Projects on Taught Programmes*. Available at:
 [CCI ethical guidance](https://git.arts.ac.uk/pages/wzhang/CCI-Thesis/).
@@ -32,4 +32,10 @@ The page contains 2025 deadlines; those dates are not used as the project's 2026
 University of the Arts London (2020) *Code of Practice on Research Ethics*, October. Available at:
 [UAL research ethics code](https://www.arts.ac.uk/__data/assets/pdf_file/0020/43328/UAL-Code-of-Practice-on-Research-Ethics-October-2020.pdf).
 
-The [ethics reflection](ETHICS_REFLECTION.md) records the project's review and data-handling position.
+The [current ethics status](ETHICS_REFLECTION.md#current-review-status) records the pending supervisor review. These references identify guidance consulted, not project approval.
+
+## Supplied project documents
+
+Li, K. (2026) *From Feeding Pigeons to City Building: Gameplay and guidance in SYMBIOSIS 49*. Editable dissertation supplied on 22 November, `SYMBIOSIS_49_EN_Feedback_Manual_and_Journal_2026-11-22.docx`. Chapters 3-6 and Appendices A-C inform this project account.
+
+Li, K. (2026) *SYMBIOSIS: 49: How the game took shape*. Thirteen-slide presentation supplied on 22 November. Used for the development sequence and design context. Its nine-form evaluation snapshot predates the dissertation's thirteen-record account.

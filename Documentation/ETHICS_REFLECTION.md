@@ -2,6 +2,10 @@
 
 SYMBIOSIS: 49. Status on 22 November 2026.
 
+## Current review status
+
+I have sent all participant consent forms and the project plan to my supervisor. They have not yet been reviewed. No ethics approval has been confirmed.
+
 ## What I missed
 
 I carried out playtests and collected feedback before completing the required ethics review. Participants agreed orally or through chat, but I had not completed the formal review process with my supervisor. I should have checked the requirements before recruiting participants and gathering data.
@@ -18,15 +22,15 @@ The oversight also affects my academic credibility. Later consent cannot be pres
 
 ## What I have done so far
 
-I raised the issue with a member of staff and received advice to complete the form, speak to my supervisor and explain the oversight and lessons in this repository. I prepared an ethics application draft and organised the participant information and consent documents separately. The application had not been sent to my supervisor as of 22 November 2026.
+I raised the issue with a member of staff and received advice to complete the form, speak to my supervisor and explain the oversight and lessons in this repository. I prepared the ethics application draft and organised the participant documents. All participant consent forms and the project plan have now been sent to my supervisor. Review is pending.
 
-The public repository keeps consent documents, raw messages, audio and participant identities out of the research evidence folders. It states that approval and permitted use of the earlier feedback remain unresolved. This limits further public exposure through the project archive. It does not resolve earlier data handling or establish that all consent documents are complete.
+The public repository keeps consent documents, raw messages, audio and participant identities out of the research evidence folders. It states that approval and permitted use of the earlier feedback remain unresolved. This limits further public exposure through the project archive. Sending the documents does not itself resolve the earlier data-handling issues.
 
 ## What remains unresolved
 
 At the time of writing, new playtesting has not yet been paused. Transfer of the research records to UAL OneDrive and handling of records held through AI or leaderboard services have not been completed. These are outstanding risks, not completed safeguards.
 
-Formal review, permission for further analysis or quotation, and a confirmed storage and retention arrangement remain unresolved. The record also does not establish which sessions uploaded leaderboard data or the status of earlier copies held by external services. No deletion or recall of those copies is claimed.
+Supervisor review, the scope for further use of the earlier feedback, and a confirmed storage and retention arrangement remain unresolved. The record also does not establish which sessions uploaded leaderboard data or the status of earlier copies held by external services. No deletion or recall of those copies is claimed.
 
 Later consent records the actual signing date and the uses each participant permits. It cannot establish that approval or consent was in place before the earlier sessions. The study account is therefore presented with these limits, rather than as approved research evidence.
 
@@ -47,5 +51,5 @@ The optional leaderboard derives an identity from a public IP using an HMAC dige
 a record. This is pseudonymous processing, not guaranteed anonymity. The server receives a chosen name and score;
 it does not replay the run to prove the score. Offline play and local rankings work without this service.
 
-The [references](REFERENCES.md#ethics-guidance-checked-on-22-november-2026) identify the institutional guidance consulted.
+The [references](REFERENCES.md#ethics-references) identify the institutional guidance consulted.
 Private forms and the staff conversation are excluded from the public archive.

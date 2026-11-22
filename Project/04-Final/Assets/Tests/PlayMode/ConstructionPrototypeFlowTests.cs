@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -4834,250 +4834,27 @@ namespace UrbanWildlifeRooms.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator ResidentDispatchIsAnUnlimitedSeparateUiOperationAndSaves()
+        public IEnumerator ResidentRoutesAreAutomaticAndInspectionCannotChangeAssignments()
         {
-            var run = ConfirmedEndlessRun();
-            Assert.That(run.TrySimulateDay(out _), Is.True);
-            Assert.That(run.TryBuild(4, 3, ConstructionCategory.Residence,
-                GreenPlanting.None, out var home, out _, out _), Is.True);
-            Assert.That(run.TrySimulateDay(out _), Is.True);
-            Assert.That(run.TryBuild(4, 2, ConstructionCategory.Restaurant,
-                GreenPlanting.None, out var restaurant, out _, out _), Is.True);
-            Assert.That(run.TrySimulateDay(out _), Is.True);
-            Assert.That(run.TryBuild(5, 3, ConstructionCategory.Workshop,
-                GreenPlanting.None, out var workshop, out _, out _), Is.True);
-            Assert.That(run.TrySimulateDay(out _), Is.True);
-            Assert.That(run.TryBuild(4, 4, ConstructionCategory.Supermarket,
-                GreenPlanting.None, out var supermarket, out _, out _), Is.True);
-            Assert.That(run.DispatchWorkOptions(home.id).Count, Is.GreaterThanOrEqualTo(3));
-            Assert.That(run.DispatchMealOptions(home.id).Count, Is.EqualTo(2));
-
-            var savePath = Path.Combine(Application.temporaryCachePath,
-                "construction-resident-dispatch-" + Guid.NewGuid().ToString("N") + ".json");
-            var store = new ConstructionRunStore(savePath);
-            var root = new GameObject("Resident dispatch UI test");
-            GameObject temporaryEventSystem = null;
+            var run=(ConstructionRunModel)typeof(ConstructionApprovedFillUiTests).GetMethod("Fixture",BindingFlags.Static|BindingFlags.NonPublic).Invoke(null,new object[]{false});
+            var home=run.At(4,3);var before=JsonUtility.ToJson(run.Export());
+            var expected=run.PreviewHumanDay().residents.Single(person=>person.homeTileId==home.id);
+            Assert.That(expected.completedCycle,Is.True);
+            var root=new GameObject("Automatic resident route UI test");
             try
             {
-                var controller = root.AddComponent<ConstructionPrototypeController>();
-                controller.UseRunForTesting(run, store);
-                controller.UseLanguageForTesting(InterfaceLanguage.Chinese);
-                yield return null;
-                var deadline = Time.realtimeSinceStartup + 3f;
-                while (!controller.IsBoardCaseOpen && Time.realtimeSinceStartup < deadline)
-                    yield return null;
-                Assert.That(controller.IsBoardCaseOpen, Is.True);
-
-                Assert.That(controller.TryPlace(4, 3), Is.False);
-                var canvas = root.transform.Find("Construction UI");
-                var entry = canvas.Find("Route inspection/Open resident dispatch")
-                    .GetComponent<Button>();
-                Assert.That(entry.gameObject.activeInHierarchy, Is.True);
-                Assert.That(entry.GetComponentInChildren<Text>().text,
-                    Is.EqualTo("调度 →"));
-                Assert.That(entry.GetComponentInParent<CanvasGroup>().blocksRaycasts,
-                    Is.True, "The route panel must accept real clicks after opening.");
-                Assert.That(entry.targetGraphic.raycastTarget, Is.True);
-                // A batch player can report a graphics device while still
-                // lacking a Game View surface for screen-space UI raycasts.
-                // The CanvasGroup and target remain checked in that path.
-                if (!Application.isBatchMode &&
-                    SystemInfo.graphicsDeviceType !=
-                    UnityEngine.Rendering.GraphicsDeviceType.Null)
-                {
-                    temporaryEventSystem = EventSystem.current == null
-                        ? new GameObject("Dispatch raycast EventSystem", typeof(EventSystem))
-                        : null;
-                    Canvas.ForceUpdateCanvases();
-                    var corners = new Vector3[4];
-                    entry.GetComponent<RectTransform>().GetWorldCorners(corners);
-                    var pointer = new PointerEventData(EventSystem.current)
-                        { position = (corners[0] + corners[2]) * 0.5f };
-                    var hits = new List<RaycastResult>();
-                    EventSystem.current.RaycastAll(pointer, hits);
-                    Assert.That(hits, Is.Not.Empty);
-                    Assert.That(hits[0].gameObject, Is.EqualTo(entry.gameObject),
-                        "The Dispatch button must be the first pointer hit, not hidden by an overlay.");
-                }
-                entry.onClick.Invoke();
-                var panel = canvas.Find("Resident dispatch");
-                Assert.That(panel.gameObject.activeInHierarchy, Is.True);
-                Assert.That(panel.parent, Is.EqualTo(canvas),
-                    "The dispatch card must share the root Canvas with case hinges so it can render above them.");
-                var face = panel.Find("Dispatch paper");
-                Assert.That(panel.GetSiblingIndex(),
-                    Is.EqualTo(panel.parent.childCount - 1),
-                    "The active dispatch card must sit above persistent page actions.");
-                Assert.That(panel.GetComponent<RectTransform>().rect.size,
-                    Is.EqualTo(new Vector2(350f, 600f)));
-                Assert.That(face.GetComponent<RectTransform>().rect.size,
-                    Is.EqualTo(new Vector2(336f, 586f)));
-                foreach (var iconName in new[]
-                         {
-                             "Dispatch residence icon", "Dispatch work icon",
-                             "Dispatch meal icon"
-                         })
-                {
-                    var icon = face.Find(iconName).GetComponent<Image>();
-                    Assert.That(icon.sprite, Is.Not.Null,
-                        $"{iconName} must load a real Unity sprite.");
-                    Assert.That(icon.preserveAspect, Is.True);
-                    Assert.That(icon.raycastTarget, Is.False,
-                        "Decorative icons must not steal selection clicks.");
-                }
-                var orderedSections = new[]
-                {
-                    "Dispatch header", "Dispatch home", "Dispatch rules",
-                    "Work destination label", "Work destination border",
-                    "Meal destination label", "Meal destination border",
-                    "Dispatch divider", "Dispatch preview heading",
-                    "Dispatch preview", "Dispatch score heading",
-                    "Dispatch score backing", "Dispatch note",
-                    "Reset resident dispatch to auto"
-                };
-                var lastBottom = float.PositiveInfinity;
-                foreach (var sectionName in orderedSections)
-                {
-                    var rect = face.Find(sectionName).GetComponent<RectTransform>();
-                    var top = rect.anchoredPosition.y + rect.rect.height * 0.5f;
-                    var bottom = rect.anchoredPosition.y - rect.rect.height * 0.5f;
-                    Assert.That(top, Is.LessThan(lastBottom - 1f),
-                        $"{sectionName} overlaps the preceding dispatch section.");
-                    lastBottom = bottom;
-                }
-                foreach (Transform child in face)
-                {
-                    var rect = child as RectTransform;
-                    if (rect == null) continue;
-                    Assert.That(Mathf.Abs(rect.anchoredPosition.x) +
-                        rect.rect.width * 0.5f,
-                        Is.LessThanOrEqualTo(168f + 0.1f),
-                        $"{child.name} escapes the paper horizontally.");
-                    Assert.That(Mathf.Abs(rect.anchoredPosition.y) +
-                        rect.rect.height * 0.5f,
-                        Is.LessThanOrEqualTo(
-                            face.GetComponent<RectTransform>().rect.height * 0.5f +
-                            0.1f),
-                        $"{child.name} escapes the paper vertically.");
-                }
-                var workNext = face.Find("Next work destination").GetComponent<Button>();
-                var mealNext = face.Find("Next meal destination").GetComponent<Button>();
-                foreach (var headingName in new[]
-                         {
-                             "Work destination label", "Meal destination label",
-                             "Dispatch preview heading"
-                         })
-                {
-                    var heading = face.Find(headingName).GetComponent<Text>();
-                    Assert.That(heading.rectTransform.rect.height,
-                        Is.GreaterThanOrEqualTo(28f),
-                        $"{headingName} must have room for the live Chinese font.");
-                }
-                var workChoice = face.Find("Work destination").GetComponent<Text>();
-                var mealChoice = face.Find("Meal destination").GetComponent<Text>();
-                Assert.That(workChoice.text, Does.Contain("自动"));
-                Assert.That(mealChoice.text, Does.Contain("自动"));
-                Assert.That(face.Find("Dispatch rules").GetComponent<Text>().text,
-                    Does.Contain("任意调换"));
-
-                workNext.onClick.Invoke();
-                mealNext.onClick.Invoke();
-                Assert.That(run.GetResidentDispatch(home.id).workTileId,
-                    Is.EqualTo(restaurant.id));
-                Assert.That(run.GetResidentDispatch(home.id).mealTileId,
-                    Is.EqualTo(restaurant.id));
-                workNext.onClick.Invoke();
-                mealNext.onClick.Invoke();
-                Assert.That(run.GetResidentDispatch(home.id).workTileId,
-                    Is.EqualTo(workshop.id));
-                Assert.That(run.GetResidentDispatch(home.id).mealTileId,
-                    Is.EqualTo(supermarket.id));
-                Assert.That(run.BuiltToday, Is.True,
-                    "Repeated dispatch changes must not consume the room build slot.");
-                Assert.That(face.Find("Dispatch preview").GetComponent<Text>().text,
-                    Does.Contain("上班：").And.Contain("用餐："));
-                Assert.That(face.Find("Dispatch score heading").GetComponent<Text>().text,
-                    Is.EqualTo("全城动线状态"));
-                Assert.That(face.Find("Dispatch animal score").GetComponent<Text>().text,
-                    Does.StartWith("动物进食 "));
-                Assert.That(face.Find("Dispatch resident score").GetComponent<Text>().text,
-                    Does.StartWith("上班 "));
-                Assert.That(face.Find("Dispatch shared score").GetComponent<Text>().text,
-                    Does.StartWith("循环 "));
-                foreach (var labelName in new[]
-                         {
-                             "Dispatch heading", "Dispatch home", "Dispatch rules",
-                             "Work destination label", "Work destination",
-                             "Meal destination label", "Meal destination",
-                             "Dispatch preview heading", "Dispatch preview",
-                             "Dispatch score heading", "Dispatch note"
-                         })
-                {
-                    var label = face.Find(labelName).GetComponent<Text>();
-                    Assert.That(label.preferredHeight,
-                        Is.LessThanOrEqualTo(label.rectTransform.rect.height + 1f),
-                        $"Chinese {labelName} text is clipped.");
-                }
-                controller.ToggleLanguage();
-                Assert.That(face.Find("Dispatch heading").GetComponent<Text>().text,
-                    Is.EqualTo("RESIDENT DISPATCH"));
-                Assert.That(face.Find("Work destination label").GetComponent<Text>().text,
-                    Is.EqualTo("WORK"));
-                Assert.That(face.Find("Meal destination label").GetComponent<Text>().text,
-                    Is.EqualTo("MEAL"));
-                foreach (var labelName in new[]
-                         {
-                             "Dispatch heading", "Dispatch home", "Dispatch rules",
-                             "Work destination label", "Work destination",
-                             "Meal destination label", "Meal destination",
-                             "Dispatch preview heading", "Dispatch preview",
-                             "Dispatch score heading", "Dispatch note"
-                         })
-                {
-                    var label = face.Find(labelName).GetComponent<Text>();
-                    Assert.That(label.preferredHeight,
-                        Is.LessThanOrEqualTo(label.rectTransform.rect.height + 1f),
-                        $"English {labelName} text is clipped.");
-                }
-                controller.ToggleLanguage();
-                Assert.That(store.TryLoad(out var saved), Is.True);
-                Assert.That(saved.GetResidentDispatch(home.id).workTileId,
-                    Is.EqualTo(workshop.id));
-                Assert.That(saved.GetResidentDispatch(home.id).mealTileId,
-                    Is.EqualTo(supermarket.id));
-
-                face.Find("Reset resident dispatch to auto")
-                    .GetComponent<Button>().onClick.Invoke();
-                Assert.That(run.GetResidentDispatch(home.id), Is.Null);
-                Assert.That(store.TryLoad(out saved), Is.True);
-                Assert.That(saved.GetResidentDispatch(home.id), Is.Null);
-                face.Find("Close resident dispatch")
-                    .GetComponent<Button>().onClick.Invoke();
-                Assert.That(panel.gameObject.activeInHierarchy, Is.False);
-                controller.ToggleBuildPalette();
-                controller.ToggleBuildPalette();
-                entry.onClick.Invoke();
-                Assert.That(panel.gameObject.activeInHierarchy, Is.True);
-                Assert.That(panel.GetSiblingIndex(),
-                    Is.EqualTo(panel.parent.childCount - 1),
-                    "Opening the build palette must not leave page buttons above dispatch.");
-                face.Find("Close resident dispatch")
-                    .GetComponent<Button>().onClick.Invoke();
-                Assert.That(controller.AdvanceDay(), Is.True);
-                Assert.That(controller.CurrentDay, Is.EqualTo(6));
-                Assert.That(controller.TryPlace(4, 3), Is.False);
-                entry.onClick.Invoke();
-                Assert.That(panel.gameObject.activeInHierarchy, Is.True,
-                    "Dispatch reopens on the next day without a daily quota.");
+                var controller=root.AddComponent<ConstructionPrototypeController>();controller.UseRunForTesting(run);
+                yield return null;var end=Time.realtimeSinceStartup+12f;while(!controller.IsBoardCaseOpen && Time.realtimeSinceStartup<end)yield return null;
+                Assert.That(controller.IsBoardCaseOpen,Is.True);Assert.That(controller.TryPlace(4,3),Is.False);yield return null;
+                Assert.That(root.GetComponentsInChildren<Transform>(true).Any(t=>t.name is "Open resident dispatch" or "Resident dispatch"),Is.False);
+                Assert.That(typeof(ConstructionPrototypeController).GetField("selectedHomeId",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(controller),Is.EqualTo(home.id));
+                controller.OpenResidentDispatch();Assert.That(controller.CycleResidentDispatch(false,1),Is.False);
+                Assert.That(JsonUtility.ToJson(run.Export()),Is.EqualTo(before));
+                var after=run.PreviewHumanDay().residents.Single(person=>person.homeTileId==home.id);
+                Assert.That(after.workTileId,Is.EqualTo(expected.workTileId));Assert.That(after.mealTileId,Is.EqualTo(expected.mealTileId));
+                Assert.That(after.routeTileIds.First(),Is.EqualTo(home.id));Assert.That(after.routeTileIds.Last(),Is.EqualTo(home.id));
             }
-            finally
-            {
-                if (temporaryEventSystem != null)
-                    Object.Destroy(temporaryEventSystem);
-                Object.Destroy(root);
-                if (File.Exists(savePath)) File.Delete(savePath);
-            }
-            yield return null;
+            finally{Object.Destroy(root);}yield return null;
         }
 
         private static int ActiveRouteElementCount(Transform overlay, string name) =>

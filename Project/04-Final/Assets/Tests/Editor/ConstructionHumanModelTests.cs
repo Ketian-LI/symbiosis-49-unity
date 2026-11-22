@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using System.Collections.Generic;
 using NUnit.Framework;
 using UrbanWildlifeRooms.Core;
@@ -698,117 +698,32 @@ namespace UrbanWildlifeRooms.Tests.Editor
         }
 
         [Test]
-        public void DispatchCanBeSwappedWithoutUsingTheDailyBuildAndSurvivesSave()
+        public void HistoricalDispatchMigratesToAutomaticWithoutRewritingPastResults()
         {
-            var run = CompleteLinearIntroduction();
-            var home = run.At(3, 2);
-            var workshop = run.At(2, 2);
-            var restaurant = run.At(3, 1);
-            var market = run.At(5, 2);
-            Assert.That(run.DispatchWorkOptions(home.id).Select(tile => tile.id),
-                Does.Contain(workshop.id));
-            Assert.That(run.DispatchMealOptions(home.id).Select(tile => tile.id),
-                Does.Contain(market.id));
-
-            var day = run.CurrentDay;
-            for (var index = 0; index < 12; index++)
-                Assert.That(run.TrySetResidentDispatch(home.id, workshop.id,
-                    index % 2 == 0 ? restaurant.id : market.id), Is.True);
-            Assert.That(run.CurrentDay, Is.EqualTo(day));
-            Assert.That(run.BuiltToday, Is.False);
-            Assert.That(run.CanAdvanceFillDay, Is.False,
-                "Dispatch does not replace the daily room placement.");
-            Assert.That(run.GetResidentDispatch(home.id).mealTileId,
-                Is.EqualTo(market.id));
-            var preview = run.PreviewHumanDay().residents.Single(person =>
-                person.homeTileId == home.id);
-            Assert.That(preview.workTileId, Is.EqualTo(workshop.id));
-            Assert.That(preview.mealTileId, Is.EqualTo(market.id));
-
-            Assert.That(ConstructionRunModel.TryRestore(run.Export(),
-                out var restored), Is.True);
-            Assert.That(restored.GetResidentDispatch(home.id).mealTileId,
-                Is.EqualTo(market.id));
-            Assert.That(restored.PreviewHumanDay().residents.Single(person =>
-                person.homeTileId == home.id).mealTileId,
-                Is.EqualTo(market.id));
-            Assert.That(restored.TrySimulateDay(out _), Is.True);
-            Assert.That(restored.LastHumanDay.residents.Single(person =>
-                person.homeTileId == home.id).mealTileId,
-                Is.EqualTo(preview.mealTileId));
-            Assert.That(restored.GetResidentDispatch(home.id).mealTileId,
-                Is.EqualTo(market.id),
-                "The selected destination remains set for the next day.");
-            Assert.That(restored.TrySetResidentDispatch(home.id, null, null),
-                Is.True);
-            Assert.That(restored.GetResidentDispatch(home.id), Is.Null);
-
-            var legacy = run.Export();
-            legacy.residentDispatches = null;
-            Assert.That(ConstructionRunModel.TryRestore(legacy,
-                out var noDispatchSave), Is.True);
-            Assert.That(noDispatchSave.GetResidentDispatch(home.id), Is.Null);
+            var run=CompleteLinearIntroduction();var home=run.At(3,2);var workshop=run.At(2,2);var market=run.At(5,2);
+            var expected=run.PreviewHumanDay().residents.Single(person=>person.homeTileId==home.id);
+            var save=run.Export();var previous=UnityEngine.JsonUtility.ToJson(save.lastHumanDay);
+            save.residentDispatches=new List<ConstructionResidentDispatch>{new(){homeTileId=home.id,workTileId=workshop.id,mealTileId=market.id}};
+            Assert.That(ConstructionRunModel.TryRestore(save,out var restored),Is.True);
+            Assert.That(restored.GetResidentDispatch(home.id),Is.Null);
+            Assert.That(restored.Export().residentDispatches,Is.Empty);
+            Assert.That(UnityEngine.JsonUtility.ToJson(restored.Export().lastHumanDay),Is.EqualTo(previous));
+            var automatic=restored.PreviewHumanDay().residents.Single(person=>person.homeTileId==home.id);
+            Assert.That(automatic.workTileId,Is.EqualTo(expected.workTileId));
+            Assert.That(automatic.mealTileId,Is.EqualTo(expected.mealTileId));
+            Assert.That(restored.TrySimulateDay(out _),Is.True);
+            Assert.That(restored.LastHumanDay.residents.Single(person=>person.homeTileId==home.id).mealTileId,Is.EqualTo(automatic.mealTileId));
         }
 
         [Test]
-        public void DispatchRejectsWrongOrUnreachableTargetsWithoutChangingPlan()
+        public void ManualDispatchCannotChangeAutomaticPlanAndMalformedLegacyRecordsAreRejected()
         {
-            var run = CompleteLinearIntroduction();
-            var home = run.At(3, 2);
-            var workshop = run.At(2, 2);
-            var market = run.At(5, 2);
-            Assert.That(run.TrySetResidentDispatch(home.id, workshop.id,
-                market.id), Is.True);
-            Assert.That(run.TrySetResidentDispatch(home.id, home.id,
-                market.id), Is.False);
-            Assert.That(run.TrySetResidentDispatch(home.id, workshop.id,
-                "missing-tile"), Is.False);
-            Assert.That(run.TrySetResidentDispatch("missing-home", null,
-                market.id), Is.False);
-            Assert.That(run.GetResidentDispatch(home.id).workTileId,
-                Is.EqualTo(workshop.id));
-            Assert.That(run.GetResidentDispatch(home.id).mealTileId,
-                Is.EqualTo(market.id));
-
-            var corrupted = run.Export();
-            corrupted.residentDispatches[0].mealTileId = home.id;
-            Assert.That(ConstructionRunModel.TryRestore(corrupted, out _),
-                Is.False);
-        }
-
-        [Test]
-        public void MarketMealDispatchProducesReachableWildlifeScrapsInForecastAndDay()
-        {
-            var run = CompleteLinearIntroduction();
-            var home = run.At(3, 2);
-            var market = run.At(5, 2);
-            Place(run, 5, 3, ConstructionCategory.Green,
-                GreenPlanting.Shrub);
-            var saved = run.Export();
-            saved.food.tiles.Single(tile =>
-                tile.tileId == run.At(2, 3).id).stock = 0;
-            Assert.That(ConstructionRunModel.TryRestore(saved, out run),
-                Is.True);
-            Assert.That(run.TrySetResidentDispatch(home.id, null,
-                market.id), Is.True);
-            Assert.That(run.PreviewHumanDay().residents.Single(person =>
-                person.homeTileId == home.id).mealTileId,
-                Is.EqualTo(market.id));
-            Assert.That(run.PreviewHumanDay().restaurantDemand, Is.Zero);
-            var forecast = run.PreviewEcologyDay();
-            Assert.That(forecast.urbanMealTileIds,
-                Does.Contain(market.id),
-                "A hungry pigeon can use market scraps through the new green link.");
-            Assert.That(run.TrySimulateDay(out var actual), Is.True);
-            Assert.That(actual.urbanMealTileIds,
-                Is.EquivalentTo(forecast.urbanMealTileIds));
-            Assert.That(actual.animalPoints,
-                Is.EqualTo(forecast.animalPoints));
-            Assert.That(run.LastHumanDay.residents.Single(person =>
-                person.homeTileId == home.id).mealTileId,
-                Is.EqualTo(market.id));
-            Assert.That(run.LastHumanDay.restaurantRejectedForCapacity,
-                Is.Zero);
+            var run=CompleteLinearIntroduction();var home=run.At(3,2);var before=UnityEngine.JsonUtility.ToJson(run.Export());
+            Assert.That(run.TrySetResidentDispatch(home.id,run.At(2,2).id,run.At(5,2).id),Is.False);
+            Assert.That(run.TrySetResidentDispatch(home.id,null,null),Is.False);
+            Assert.That(UnityEngine.JsonUtility.ToJson(run.Export()),Is.EqualTo(before));
+            var malformed=run.Export();malformed.residentDispatches=new List<ConstructionResidentDispatch>{new(){homeTileId=home.id,workTileId=home.id}};
+            Assert.That(ConstructionRunModel.TryRestore(malformed,out _),Is.False);
         }
 
         private static ConstructionRunModel CompleteLinearIntroduction()

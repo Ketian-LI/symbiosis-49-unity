@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UrbanWildlifeRooms.Core;
@@ -46,6 +46,10 @@ namespace UrbanWildlifeRooms.Presentation
             var day = run.LastScoreDay.day;
             var board = run.BuiltTiles.Where(tile => tile.builtDay <= day).ToArray();
             var ids = board.Select(tile => tile.id).ToHashSet();
+            foreach(var penalty in run.RecurringPenalties.Where(p=>p.day==day))
+                result.Add(new ScoreTraceEntry(ScoreTraceKind.Build,"Recurring bad pairing","持续扣分 · 不良共边",penalty.points,
+                    new[]{penalty.firstTileId,penalty.secondTileId}));
+
             var placed = board.Where(tile => tile.builtDay == day).OrderByDescending(tile => tile.buildIndex).FirstOrDefault();
             if (run.UsesPlacementScore && placed != null)
             {

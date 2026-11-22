@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -87,6 +87,9 @@ namespace UrbanWildlifeRooms.UI
             rect.offsetMin = Vector2.zero;
             rect.offsetMax = Vector2.zero;
             rendered = overlay.AddComponent<TextMeshProUGUI>();
+            var termSource = source.GetComponent<ConstructionTermSource>();
+            if (termSource != null && source.GetComponentInParent<Button>() == null)
+                overlay.AddComponent<ConstructionTermLinks>().Owner = termSource.Owner;
             rendered.margin = Vector4.zero;
             rendered.enableAutoSizing = false;
             Refresh(force: true);
@@ -126,7 +129,9 @@ namespace UrbanWildlifeRooms.UI
             if (force || previousText != source.text)
             {
                 var guidance = source.GetComponent<InstructionEmphasis>();
-                rendered.text = guidance != null ? guidance.Render(source.text) : source.text;
+                var copy = guidance != null ? guidance.Render(source.text) : source.text;
+                rendered.text = source.GetComponent<ConstructionTermSource>() != null
+                    ? ConstructionGlossary.Linkify(copy, source.color.grayscale > 0.65f) : copy;
                 previousText = source.text;
             }
             if (force || previousSize != source.fontSize ||
@@ -203,6 +208,7 @@ namespace UrbanWildlifeRooms.UI
                 rendered.raycastTarget = source.raycastTarget;
                 previousRaycast = source.raycastTarget;
             }
+            if (rendered.GetComponent<ConstructionTermLinks>() != null) rendered.raycastTarget = true;
             RefreshOutline(force);
         }
 

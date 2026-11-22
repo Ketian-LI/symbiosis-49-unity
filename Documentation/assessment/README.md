@@ -10,7 +10,7 @@ Pages 2-4 describe the work and submission method; page 7 recommends Harvard ref
 | Portfolio of outcomes | [Portfolio](../PORTFOLIO.md) | Labelled screenshots and source links included |
 | Research weblog or sketchbook | [Development journal](../DEVELOPMENT_JOURNAL.md#timeline) | Retrospective timeline with dated supporting records included |
 | Project report | [Report](../PROJECT_REPORT.md) | Design, implementation and evaluation account included |
-| Associated thesis: at least 3,500 words, as PDF | [Thesis](../../Thesis/README.md) | PDF not included; a local English working document is dated 22 November |
+| Associated thesis: at least 3,500 words, as PDF | [Thesis](../../Thesis/README.md) | Latest supplied DOCX reflected in the project account; final PDF not included |
 | GitHub-link text file | [Repository](https://github.com/Ketian-LI/symbiosis-49-unity) | Link files prepared locally; no Moodle submission receipt recorded |
 | Full repository ZIP, maximum 1 GB | [Current repository ZIP](https://github.com/Ketian-LI/symbiosis-49-unity/archive/refs/heads/codex/submission-documentation-2026-11-22.zip) | The current submission branch as a ZIP; released version archives retain their pinned snapshots |
 
@@ -30,7 +30,7 @@ identify source and executable versions. The [software-report index](../../Misc/
 lists the saved checks. [Authorship](../AI_AND_AUTHORSHIP.md) and [asset sources](../ASSET_PROVENANCE.md) record tools and attribution.
 
 Detailed anonymous participant evidence is not included; formal review and further-use permissions remain unresolved.
-The [thesis appendix reference](../../Thesis/Appendices/README.md) points to the ethics statement.
+The [supplementary thesis reference](../../Thesis/Appendices/README.md) points to the ethics statement. All consent forms and the project plan have been sent to the supervisor; review is pending.
 No video of the final construction build or Moodle submission receipt is included.
 
 ## Submission details

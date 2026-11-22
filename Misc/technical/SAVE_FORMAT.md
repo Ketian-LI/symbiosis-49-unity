@@ -23,3 +23,11 @@ separate from the current run. The optional HTTP ranking service is another syst
 The [legacy session schema](../archive/legacy-docs/SAVE_DATA_SCHEMA.md) describes the earlier room-rearrangement project.
 Its `session-v2.json` is not the current construction save.
 Never include personal saves or ranking exports in a public evidence archive without reviewing their contents.
+
+## Current commuting and recurring records
+
+Valid historical manual-dispatch fields are read and checked, then discarded for future automatic allocation.
+Previously settled human results and scores remain intact. The recurring-penalty ledger persists its day, room pair
+and amount; duplicate pairs, invalid geometry and malformed amounts are rejected. Saves without the ledger are not
+back-charged. [ConstructionRecurringPenalties](../../Project/04-Final/Assets/Scripts/Core/ConstructionRecurringPenalties.cs)
+holds those records.

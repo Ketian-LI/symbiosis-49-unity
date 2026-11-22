@@ -1,3 +1,20 @@
+# Current commuting and reference source 22 November 2026
+
+The final project now contains automatic commuting, ten linked manual terms, recurring Fill deductions,
+P-key building examples and an independent I-key journal. The source is pinned to `ac9685dd0d652f70666369f1c1753457710e3e05`.
+The [implementation record](iterations/COMMUTING_REFERENCE_AND_PENALTIES_2026-11-22.md) and
+[final source page](../../Project/04-Final/README.md) identify the behaviour, reports and current download.
+
+The report and evaluation now follow the supplied thirteen-slide presentation and latest dissertation.
+The dissertation's thirteen-record account supersedes the presentation's nine-form interim statistics;
+one additional observation remains separate. All consent forms and the project plan have been sent to the supervisor;
+review is pending. The ethics-reference heading no longer implies project approval.
+
+The prior same-day source archive remains historical. Executables were not rebuilt, private participant records were
+not published, and this update does not record a Moodle submission.
+
+---
+
 # Final source and version archive - 22 November 2026
 
 The submission repository now groups the project stages under [Project](../../Project/README.md).

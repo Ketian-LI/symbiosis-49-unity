@@ -1,7 +1,7 @@
 # SYMBIOSIS: 49
 
 A card-placement game about building a neighbourhood for people and urban wildlife.
-Homes need routes to work and meals. Animals need food they can reach. Each placement changes what can happen next.
+Homes need routes to work and meals. Animals need food they can reach. Linked explanations and a settlement journal help players inspect what each placement changes.
 
 ![The final construction interface](Documentation/media/screenshots/fill-approved-zh.png)
 

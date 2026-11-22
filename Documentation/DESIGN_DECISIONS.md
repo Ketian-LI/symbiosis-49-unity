@@ -98,9 +98,11 @@ Physical layout input explored the familiarity of a tabletop object. Full physic
 and interaction demands, so camera work was scoped separately from desktop play.
 It remains a [technical prototype](../Project/04-Final/Tools/CameraRecognition/README.md), rather than evidence of a completed physical playtest.
 
-The final 22 November source includes score-source navigation and the real per-category deck catalogue.
-Clickable manual terms and Enter-to-confirm remain separate requirements outside the pinned final snapshot.
+The final source now includes automatic commuting, the real per-category deck catalogue and ten linked manual terms.
+P opens building examples and I opens the recorded journal. Existing bad edges recur in later Fill settlements, so deductions
+remain visible after the introducing placement. Enter-to-confirm remains outside this snapshot.
+The [current implementation record](../Misc/process/iterations/COMMUTING_REFERENCE_AND_PENALTIES_2026-11-22.md) gives the scope.
 The [submission record](assessment/README.md) distinguishes the source from the Windows executable and macOS source-only package.
 
-The [decision register](../Misc/process/records/design-decision-register.csv) lists 26 decisions with supporting files.
+The [decision register](../Misc/process/records/design-decision-register.csv) links the decisions to supporting files.
 The [evidence overview](EVALUATION.md#evidence-and-limits) links the software reports and evaluation account.

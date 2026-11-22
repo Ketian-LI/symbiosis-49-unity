@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -174,18 +174,39 @@ namespace UrbanWildlifeRooms.Presentation
                 selectedRoomArt.sprite=ConstructionHandArtCatalog.GetRoom(relation.Selected.category,relation.Selected.planting);
             }
             var rows=new List<string>();
+            if(relation.Selected.category==ConstructionCategory.Residence)
+            {
+                var resident=run.PreviewHumanDay().residents.FirstOrDefault(person=>person.homeTileId==relation.Selected.id);
+                string Destination(string id)
+                {
+                    var tile=run.BuiltTiles.FirstOrDefault(value=>value.id==id);
+                    return tile==null?L("none","无"):CategoryLabel(tile.category)+$" ({tile.column+1},{tile.row+1})";
+                }
+                if(resident==null)rows.Add(L("No resident currently lives here.","本住宅目前没有居民。"));
+                else
+                {
+                    rows.Add(L("Automatic commute: ","自动通勤：")+(resident.completedCycle?L("complete","可完成"):L("incomplete","暂未完成")));
+                    rows.Add(L("Work: ","上班：")+(resident.worked?Destination(resident.workTileId):
+                        run.ResidenceCanReachWork(relation.Selected.id)?L("jobs full or closed","岗位不足或已停用"):L("no connected job","未接通岗位")));
+                    rows.Add(L("Meal: ","用餐：")+(resident.ate?Destination(resident.mealTileId):
+                        run.ResidenceCanReachFood(relation.Selected.id)?L("seats full or closed","餐位不足或已停用"):L("no connected meal service","未接通用餐地点")));
+                    if(resident.completedCycle)rows.Add(L("Then return home.","用餐后回到住宅。"));
+                }
+            }
+
             if(relation.Coverage.Count>0)rows.Add(L("<color=#24506B>Blue: nearby plots and connected streets.</color>","<color=#24506B>蓝格：周围八格及连通街道。</color>"));
             if(relation.Penalties.Count>0)
             {
                 var cause=relation.Selected.category==UrbanWildlifeRooms.Data.ConstructionCategory.Waste
                     ? L("homes beside waste",run.PlacementRulesVersion>=4?"共边住宅":"邻近住宅")
                     : L("poor pairings","不良搭配");
-                rows.Add(L($"<color=#984A35>Red frames: {cause} ×{relation.Penalties.Count}; {relation.Penalties.Values.Sum()} build points.</color>",$"<color=#984A35>红框：{cause} ×{relation.Penalties.Count}，建造搭配 {relation.Penalties.Values.Sum()} 分。</color>"));
+                var penaltyTiming=run.UsesRecurringPenalties?L("per settlement","每次结算"):L("on building","建造时");
+                rows.Add(L($"<color=#984A35>Red frames: {cause} ×{relation.Penalties.Count}; {relation.Penalties.Values.Sum()} {penaltyTiming}.</color>",$"<color=#984A35>红框：{cause} ×{relation.Penalties.Count}，{penaltyTiming} {relation.Penalties.Values.Sum()} 分。</color>"));
             }
             if(relation.Benefits.Count>0)rows.Add(L($"Green frames: favourable pairings ×{relation.Benefits.Count}.",$"绿框：正向搭配 ×{relation.Benefits.Count}。"));
-            if(relation.SettledRooms.Count>0)rows.Add(L($"Blue frames: related rooms/actors in day {relation.SettledDay}'s settled record.",$"蓝框：第 {relation.SettledDay} 天已结算的相关房间与角色。"));
+            if(relation.Selected.category!=ConstructionCategory.Residence && relation.SettledRooms.Count>0)rows.Add(L($"Blue frames: related rooms/actors in day {relation.SettledDay}'s settled record.",$"蓝框：第 {relation.SettledDay} 天已结算的相关房间与角色。"));
             if(rows.Count==0)rows.Add(L("Click a room to keep it selected. Press Esc or click it again to cancel.","点击房间后保持选中。按 Esc 或再次点击取消。"));
-            if(relation.Penalties.Count>0)rows.Add(L("Pairings settle on build; inspecting does not deduct again.","搭配在建造时结算；查看不会再次扣分。"));
+            if(relation.Penalties.Count>0)rows.Add(run.UsesRecurringPenalties?L("Bad edges deduct at each confirmed settlement. Inspecting does not deduct.","共边关系每次建造结算都会扣分；查看不扣分。"):L("Pairings settle on build; inspecting does not deduct again.","搭配在建造时结算；查看不再次扣分。"));
             selectedRoomDetails.text=string.Join("\n",rows);
             selectedRoomCloseLabel.text=L("Cancel selection · Esc","取消选中 · Esc");
         }

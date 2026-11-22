@@ -1,64 +1,64 @@
 # Project report
 
-SYMBIOSIS: 49 is a Unity card-placement game. Players build a neighbourhood one room at a time.
-Homes need access to work and meals. Animals need food they can reach. Streets, green spaces and waste facilities
-can help one part of the neighbourhood while causing problems elsewhere.
+SYMBIOSIS: 49 is a Unity card-placement game about building a neighbourhood for people and urban wildlife.
+The project began with my experience of feeding animals at a church. I wanted to explore what changes when animals
+receive food from people. A pigeon-feeding website became a Unity park, then an open city and finally a bounded room grid.
 
-This report connects the design problem, implementation and evaluation. The [development journal](DEVELOPMENT_JOURNAL.md)
-traces the earlier prototypes, and the [submission record](assessment/README.md) identifies the published material.
+## Research question
 
-## The design problem
+How can placement and feedback help players learn a game's spatial rules and use them in another decision?
+I distinguish completing an action, noticing its result, explaining the cause and applying that explanation elsewhere.
+Finishing the board alone does not establish understanding.
 
-The early browser prototype let players feed pigeons. Later versions gave players more choices about space, buildings
-and routes. Those choices also made the rules harder to learn. The project asks how placement and feedback can help
-players understand the game, and what makes a different layout worth trying.
+The [development journal](DEVELOPMENT_JOURNAL.md#timeline) traces the prototypes.
+The [design decisions](DESIGN_DECISIONS.md) explain how their problems shaped the current game.
 
-Three questions guide the current work: does the player know what to do next, can they explain an outcome, and do they
-have a reason to keep experimenting? Finishing a session alone does not answer all three questions.
+## Teaching through construction
 
-## Playing a turn
+The full-board version introduced too many rooms at once. Following supervisor feedback, I organised the opening around
+residents' needs: the central oak comes first, then people arrive and need homes, work and meals.
+Eight fixed opening cards introduce those relationships before free card choice.
 
-In Fill, the player selects a card, previews a legal plot and confirms construction. The opening introduces room types
-in stages. Later, the player chooses from a hand. The board has 49 plots. Endless uses an expanding board and its own run rules.
+In Fill, players select a card, preview a legal plot and confirm construction on a 49-plot board.
+Endless uses an expanding board and separate progression rules.
+Goals offer directions beyond filling every space; the draw pile shows the actual remaining card supply.
 
-Selecting a card is separate from placing it. A route preview shows a possibility. Points for meals and resident routines
-depend on recorded activity. The [rules](../Misc/technical/GAME_RULES.md) and [controls](../Misc/technical/CONTROLS.md) explain these differences.
+## Consequences and explanations
 
-## Making consequences visible
+Neighbouring placements can change both appearance and capacity: homes gain gardens and restaurants gain terraces.
+An upgrade, food becoming available and an animal actually eating remain different events.
+Resident, animal and shared-score batches identify their own contributors. The score-source view retains causes after animation.
 
-Neighbouring rooms can change a building's appearance and function. A home beside a connected green patch can gain a garden.
-A restaurant beside a plaza can gain capacity. Plant growth and the food actually available remain separate conditions.
+Resident work and meal destinations are now allocated automatically within route and capacity constraints.
+Selecting a home shows the planned destinations and missing links. Players still decide whether the layout offers enough
+connected services. Ten linked terms provide short hover meanings and jump to the relevant manual entry.
+P opens building examples; I opens an independent journal of recorded placements, upgrades, commutes and deductions.
 
-The neighbourhood journal describes a change in everyday language and states its trigger. Score reasons explain rewards
-and deductions. The score-source view highlights the rooms and visible residents or animals involved in the last settlement.
-Players can also close the result panel to review a finished layout.
+Waste coverage and housing disturbance use different spatial conditions. Current collection can follow connected streets,
+while a home sharing an edge with a waste room still incurs a penalty. Existing bad edges recur at later Fill settlements.
+This changes strategy as well as presentation. The [current rules](../Misc/technical/GAME_RULES.md) distinguish those systems.
 
-These features aim to make outcomes easier to read. The current evidence does not establish that they improve learning.
+## Implementation
 
-## How it is built
+Separate models handle run state, food, resident activity, wildlife, placement effects, recurring deductions and saving.
+Presentation code turns the recorded results into rooms, highlights, stories and explanations.
+The [architecture](../Misc/technical/ARCHITECTURE.md) and [final source page](../Project/04-Final/README.md) identify the code and snapshot.
 
-The run model stores the board, turn state and rule versions. Separate systems handle food, resident routines, wildlife,
-placement scores and saving. Presentation code turns those results into rooms, animation, stories and interface text.
-The [architecture guide](../Misc/technical/ARCHITECTURE.md) links the main classes.
+The desktop game needs no camera. Physical input was a separate technical exploration using a marked board and 80 printed
+tokens. One recognised token could produce its corresponding Unity plot; a participant study of physical input was not completed.
+Local rankings work offline. An optional network service has separate identity and score-validation limits described in
+the [ethics reflection](ETHICS_REFLECTION.md#representation-and-the-optional-leaderboard).
 
-The game supports local rankings. An optional HTTP service receives submitted scores and names. Offline play does not
-depend on that service. Its identity method and validation limits are described in [ethics and limitations](ETHICS_REFLECTION.md).
+## Evaluation and reflection
 
-## What the evidence shows
+The latest dissertation records two questionnaire rounds and a separate later observation.
+Some players changed their actions while still misidentifying the spatial cause. The later case describes a changed
+prediction after inspection, but cannot isolate which feedback feature contributed.
+[Evaluation](EVALUATION.md) gives the counts, method, missing-response rules and limits.
 
-Remote playtesting involved two rounds with 13 different participants. The [playtesting method](EVALUATION.md#playtesting)
-describes the groups and rule differences. Feedback identified unclear rules, delayed feedback and repetition.
-The study began before formal ethics review, and exact executable identifiers are not documented for every session.
-The [ethics reflection](ETHICS_REFLECTION.md) states the limits on further use of the earlier records.
+The current artefact makes consequences available for inspection. It does not establish improved ecological understanding
+or the independent benefit of each revision. Scores and species behaviour remain authored game rules.
 
-Automated checks cover selected rules, saving, restart, goal visibility and interface interactions. Unity renders show fixed
-layouts in both languages. These checks help find software faults; they do not replace user testing.
-The [evaluation](EVALUATION.md) keeps the two types of evidence separate.
-
-The resulting artefact makes placement consequences available through rooms, stories, score reasons and layout review.
-It remains a simplified account of urban life, with authored scores and species behaviour rather than ecological predictions.
-
-## Ethical reflection
-
-The [ethics reflection](ETHICS_REFLECTION.md) records the missed review, participant and institutional risks,
-the response to the oversight and the lessons for future work. The [thesis appendix](../Thesis/Appendices/README.md) refers to this statement.
+Playtesting began before formal ethics review. All participant consent forms and the project plan have now been sent to
+the supervisor; review is pending. The [ethics reflection](ETHICS_REFLECTION.md) records the oversight and outstanding issues.
+Its [supplementary thesis reference](../Thesis/Appendices/README.md) is separate from the dissertation's existing Appendices A-C.

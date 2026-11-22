@@ -31,6 +31,7 @@ Resident routines and animal meals must be recorded before their activity scores
 | Green connections and habitat | [ConstructionGreenPatchModel](../../Project/04-Final/Assets/Scripts/Core/ConstructionGreenPatchModel.cs) |
 | Food supply and settlement | [ConstructionFoodModel](../../Project/04-Final/Assets/Scripts/Core/ConstructionFoodModel.cs) |
 | Resident work and meal routines | [ConstructionHumanModel](../../Project/04-Final/Assets/Scripts/Core/ConstructionHumanModel.cs) |
+| Recurring bad-edge ledger | [ConstructionRecurringPenalties](../../Project/04-Final/Assets/Scripts/Core/ConstructionRecurringPenalties.cs) |
 | Score history and rule versions | [ConstructionScoreLedger](../../Project/04-Final/Assets/Scripts/Core/ConstructionScoreLedger.cs) |
 | Goal conditions and rewards | [ConstructionSpecialTaskModel](../../Project/04-Final/Assets/Scripts/Core/ConstructionSpecialTaskModel.cs) |
 | Interface and action flow | [ConstructionPrototypeController](../../Project/04-Final/Assets/Scripts/Presentation/ConstructionPrototypeController.cs) |
@@ -45,6 +46,8 @@ The large controller is split into partial files. Use the relevant part rather t
 | --- | --- |
 | Hand, deck and swap display | [FillHand](../../Project/04-Final/Assets/Scripts/Presentation/ConstructionPrototypeController.FillHand.cs) |
 | Three-goal selection and progress | [SpecialTasks](../../Project/04-Final/Assets/Scripts/Presentation/ConstructionPrototypeController.SpecialTasks.cs) |
+| P examples and independent I journal | [Reference](../../Project/04-Final/Assets/Scripts/Presentation/ConstructionPrototypeController.Reference.cs) |
+| Linked terms and manual destinations | [Terms](../../Project/04-Final/Assets/Scripts/Presentation/ConstructionPrototypeController.Terms.cs) and [ConstructionGlossary](../../Project/04-Final/Assets/Scripts/UI/ConstructionGlossary.cs) |
 | Journal layout | [NeighborhoodStories](../../Project/04-Final/Assets/Scripts/Presentation/ConstructionPrototypeController.NeighborhoodStories.cs) |
 | Text derived from recorded events | [ConstructionNeighborhoodStories](../../Project/04-Final/Assets/Scripts/Presentation/ConstructionNeighborhoodStories.cs) |
 | Score-source controls | [ScoreTrace controller](../../Project/04-Final/Assets/Scripts/Presentation/ConstructionPrototypeController.ScoreTrace.cs) |

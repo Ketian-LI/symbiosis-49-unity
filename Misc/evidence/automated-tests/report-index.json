@@ -175,5 +175,29 @@
     "failed": 0,
     "file": "approved-fill-ui-playmode.xml",
     "scope": "Saved 22 November selected checks; overlaps earlier batches. Not a new run or participant total."
+  },
+  {
+    "batch": "commuting-reference-penalties-editmode",
+    "total": 77,
+    "passed": 77,
+    "failed": 0,
+    "file": "commuting-reference-penalties-editmode.xml",
+    "scope": "Saved checks for the pinned source; overlapping batches, not participant findings or cumulative unique-test totals."
+  },
+  {
+    "batch": "commuting-reference-penalties-playmode",
+    "total": 32,
+    "passed": 32,
+    "failed": 0,
+    "file": "commuting-reference-penalties-playmode.xml",
+    "scope": "Saved checks for the pinned source; overlapping batches, not participant findings or cumulative unique-test totals."
+  },
+  {
+    "batch": "commuting-reference-penalties-capture",
+    "total": 4,
+    "passed": 4,
+    "failed": 0,
+    "file": "commuting-reference-penalties-capture.xml",
+    "scope": "Saved checks for the pinned source; overlapping batches, not participant findings or cumulative unique-test totals."
   }
 ]

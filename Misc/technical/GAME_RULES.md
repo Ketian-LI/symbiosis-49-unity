@@ -56,3 +56,25 @@ Old saves keep their recorded rules. The [award model](../../Project/04-Final/As
 [placement rules](../../Project/04-Final/Assets/Scripts/Core/ConstructionPlacementScore.cs) and
 [score ledger](../../Project/04-Final/Assets/Scripts/Core/ConstructionScoreLedger.cs) hold the detailed calculations.
 The [balance review](../process/iterations/SKILL_GUIDED_UI_2026-11-21.md) explains the diagnostic runs and their limits.
+
+## Automatic commuting
+
+Work and meal destinations are selected automatically within legal routes and job/seat capacities.
+The allocator prioritises complete routines and rotates scarce opportunities. Each leg of the fixed work, meal,
+optional square and home itinerary uses a shortest legal shared-edge route. This does not prove a global maximum score
+or an optimal tour across every possible stop order. Selecting a home inspects its plan rather than opening a dispatch editor.
+
+## Waste coverage and recurring deductions
+
+A waste room serves its eight neighbouring plots and sources reached through a continuous shared-edge street chain.
+Collection coverage does not remove the separate disturbance from a home sharing an edge with that waste room.
+Diagonal contact can receive collection without the shared-edge housing penalty.
+
+In current Fill rules, an introducing placement pays its existing bad-pair charge once. Starting with the next confirmed
+placement settlement, each existing waste/home edge deducts 80 and each street/green edge deducts 40, including slow streets.
+Two homes beside one waste room are two edges. Previewing, reading panels or loading a save cannot add another charge.
+
+The recurring ledger stores the day, both rooms and the amount. Old saves receive no retrospective charges;
+future eligible settlements begin recording them. Endless retains its existing building-time pairing rule.
+Trophy bands above are unchanged, and the older calibration ranges are not revalidated for recurring deductions.
+See [evaluation](../../Documentation/EVALUATION.md#score-calibration).

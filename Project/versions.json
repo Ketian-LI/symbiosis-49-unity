@@ -1,6 +1,6 @@
 {
   "final_version": "04-Final",
-  "final_source_commit": "bb65fc46044f7348d85c8c9ea11c933ef53f4798",
+  "final_source_commit": "ac9685dd0d652f70666369f1c1753457710e3e05",
   "web_demo": "https://urban-pigeon-simulation.lkt1009.chatgpt.site/",
   "versions": [
     {
@@ -32,12 +32,12 @@
     },
     {
       "id": "04-Final",
-      "title": "Final card-construction source snapshot",
+      "title": "Final source with automatic commuting, linked references and recurring deductions",
       "date": "2026-11-22",
       "role": "final",
       "repo": "Ketian-LI/symbiosis-49-unity",
-      "commit": "bb65fc46044f7348d85c8c9ea11c933ef53f4798",
-      "archive_url": "https://github.com/Ketian-LI/symbiosis-49-unity/releases/download/project-versions-2026-11-22/SYMBIOSIS49-04-Final-2026-11-22-Source.zip"
+      "commit": "ac9685dd0d652f70666369f1c1753457710e3e05",
+      "archive_url": "https://github.com/Ketian-LI/symbiosis-49-unity/releases/download/project-update-2026-11-22/SYMBIOSIS49-04-Final-2026-11-22-Routes-Source.zip"
     }
   ]
 }

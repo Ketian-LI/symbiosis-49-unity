@@ -1,45 +1,39 @@
 # Portfolio
 
-SYMBIOSIS: 49 turns a sequence of small placements into a shared neighbourhood. The player builds homes, services and
-habitat, then watches residents and animals use the space. The [final Unity version](../Project/04-Final/README.md)
-is separate from its [earlier prototypes](../Project/README.md).
+SYMBIOSIS: 49 turns successive placements into a neighbourhood used by residents and animals.
+The [final source](../Project/04-Final/README.md) and [earlier prototypes](../Project/README.md) are recorded separately.
 
-## The board and hand
+## Board and hand
 
-![The final Fill interface](media/screenshots/fill-approved-zh.png)
+![The illustrated construction interface](media/screenshots/fill-approved-zh.png)
 
-The hand sits below the board. The left page brings stories and goals together; the right page groups the score,
-score-source entry and selected card. Guidance emphasizes the action without making the whole paragraph bold.
+Cards sit in a compact tray. The left page groups goals and neighbourhood stories; the right page shows score and selected-room information.
+The real [deck catalogue](media/screenshots/fill-deck-en.png) distinguishes cards in the pile, held cards and built rooms.
 
-## Inspect the remaining cards
+## Automatic commuting
 
-![The remaining-card catalogue in English](media/screenshots/fill-deck-en.png)
+![Inspecting a home's automatic commute](media/screenshots/automatic-commute-en.png)
 
-Clicking the draw pile opens the real remaining-card catalogue. Counts distinguish the pile, held cards and built rooms.
-The catalogue stays over the lower board and leaves both information pages readable.
+Selecting a home shows its work and meal destinations and missing links. The layout still determines access and capacity.
 
-## Distinguish coverage from a penalty
+## Explanations in context
 
-![Waste-room collection coverage and adjacent-home warnings](media/screenshots/fill-room-selection-zh.png)
+![Linked term explanation and marked manual destination](media/screenshots/manual-restaurant-en.png)
 
-A selected waste room can show blue collection coverage and red shared-edge pairing warnings at the same time.
-The two effects remain distinct: a home can be covered without receiving that particular pairing penalty.
+Hovering a linked term shows its meaning. Clicking opens the actual manual heading.
+The [building examples](media/screenshots/building-example-1-en.png) explain commuting and edge-connected routes.
 
-## Follow the score
+## Persistent consequences
 
-![A resident settlement batch](media/screenshots/score-batch-resident.png)
+![The independent settlement journal](media/screenshots/independent-journal-en.png)
 
-Resident, animal and shared-score phases highlight their own contributors. The previous batch clears before the next.
-The score-source review keeps the latest settlement available after the animation.
+The journal retains recorded deductions, placements and upgrades. Existing bad edges can appear again at later Fill settlements.
+Coverage and housing disturbance remain distinct; the [reference diagrams](media/screenshots/building-example-2-en.png) compare them.
 
-These images are actual Unity renders of fixed test layouts from the 22 November source revision.
-They document software appearance rather than participant sessions. [Screenshot records](media/screenshots/README.md)
-identify the earlier captures.
-
-## Where it began
+## Development context
 
 ![The early browser prototype](media/screenshots/early-web-prototype.png)
 
-The [web prototype](../Project/00-Web-Prototype/README.md) explored feeding and animal responses.
-The [development journal](DEVELOPMENT_JOURNAL.md) connects that work to physical input, room construction and the final hand.
-The [report](PROJECT_REPORT.md) explains the design account, and [evaluation](EVALUATION.md) states the evidence limits.
+The [journal](DEVELOPMENT_JOURNAL.md#timeline) follows feeding, park planning, an open city, room rearrangement and construction.
+Unity images above are fixed test renders, not participant sessions. The [screenshot index](media/screenshots/README.md)
+identifies their source groups. [Evaluation](EVALUATION.md) states what the participant and software evidence supports.

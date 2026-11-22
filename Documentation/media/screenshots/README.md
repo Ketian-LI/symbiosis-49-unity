@@ -10,3 +10,10 @@
 
 Unity images are renders of fixed software layouts, not participant sessions.
 The [portfolio](../../PORTFOLIO.md) presents the final images with design context.
+
+## Current commuting and explanation fixtures
+
+`automatic-commute`, `term-hover`, `manual-restaurant`, `building-example-1`, `building-example-2`,
+`building-example-3` and `independent-journal` have English and Chinese captures from the combined commuting/reference source.
+They are native Unity test renders, not participant sessions. Earlier `fill-approved` and scoring-batch captures retain
+their earlier same-day snapshot labels.

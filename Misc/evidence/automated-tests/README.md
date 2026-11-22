@@ -29,10 +29,17 @@ The optional leaderboard checks use an in-memory local database. They do not tes
 Older room-system reports are kept in [legacy](legacy). Their rules differ from the current construction game.
 See [evaluation](../../../Documentation/EVALUATION.md) for what these records support and the known opening-test failures.
 
-## Final source, 22 November
+## Earlier interface snapshot, 22 November
 
 The final interface exports record [38 selected EditMode checks](approved-fill-ui-editmode.xml) and
 [27 selected PlayMode checks](approved-fill-ui-playmode.xml).
 The preceding room-relationship exports record [17 EditMode checks](room-highlights-editmode.xml) and
 [23 PlayMode checks](room-highlights-playmode.xml). These batches overlap; they are not cumulative unique-test totals.
 The folder reorganisation did not rerun these tests.
+
+## Current commuting and reference source
+
+The current snapshot adds [77 EditMode checks](commuting-reference-penalties-editmode.xml),
+[32 PlayMode checks](commuting-reference-penalties-playmode.xml) and
+[4 targeted presentation checks](commuting-reference-penalties-capture.xml).
+These are saved exports for the pinned revision. They overlap earlier batches and are not new participant findings.
