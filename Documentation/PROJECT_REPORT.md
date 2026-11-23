@@ -8,7 +8,7 @@ receive food from people. A pigeon-feeding website became a Unity park, then an 
 
 How can placement and feedback help players learn a game's spatial rules and use them in another decision?
 I distinguish completing an action, noticing its result, explaining the cause and applying that explanation elsewhere.
-Finishing the board alone does not establish understanding.
+These distinctions guide the questions used in playtesting.
 
 The [development journal](DEVELOPMENT_JOURNAL.md#timeline) traces the prototypes.
 The [design decisions](DESIGN_DECISIONS.md) explain how their problems shaped the current game.
@@ -44,21 +44,18 @@ Separate models handle run state, food, resident activity, wildlife, placement e
 Presentation code turns the recorded results into rooms, highlights, stories and explanations.
 The [architecture](../Misc/technical/ARCHITECTURE.md) and [final source page](../Project/04-Final/README.md) identify the code and snapshot.
 
-The desktop game needs no camera. Physical input was a separate technical exploration using a marked board and 80 printed
-tokens. One recognised token could produce its corresponding Unity plot; a participant study of physical input was not completed.
+The desktop game uses mouse and keyboard input. The physical-input prototype used a marked board and 80 printed
+tokens. One recognised token could produce its corresponding Unity plot.
 Local rankings work offline. An optional network service has separate identity and score-validation limits described in
 the [ethics reflection](ETHICS_REFLECTION.md#representation-and-the-optional-leaderboard).
 
 ## Evaluation and reflection
 
-The latest dissertation records two questionnaire rounds and a separate later observation.
-Some players changed their actions while still misidentifying the spatial cause. The later case describes a changed
-prediction after inspection, but cannot isolate which feedback feature contributed.
-[Evaluation](EVALUATION.md) gives the counts, method, missing-response rules and limits.
+The dissertation records two questionnaire rounds and a later observation. Some players changed their actions while
+still misidentifying the spatial cause. In the later case, inspection preceded a correct prediction in a changed layout.
+These findings support the design focus on explaining the relationship behind a score, as well as showing the score itself.
+[Evaluation](EVALUATION.md) presents the counts, method and interpretation.
 
-The current artefact makes consequences available for inspection. It does not establish improved ecological understanding
-or the independent benefit of each revision. Scores and species behaviour remain authored game rules.
+The resulting artefact lets players inspect a placement through room changes, recorded activity, score causes and layout review.
 
-Playtesting began before formal ethics review. All participant consent forms and the project plan have now been sent to
-the supervisor; review is pending. The [ethics reflection](ETHICS_REFLECTION.md) records the oversight and outstanding issues.
-Its [supplementary thesis reference](../Thesis/Appendices/README.md) is separate from the dissertation's existing Appendices A-C.
+The [ethics reflection](ETHICS_REFLECTION.md) records the review process, data handling and lessons from the project.

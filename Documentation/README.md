@@ -10,8 +10,8 @@ The [Project index](../Project/README.md) identifies each implementation and the
 | [Project report](PROJECT_REPORT.md) | The research question, game design and implementation |
 | [Development journal](DEVELOPMENT_JOURNAL.md#timeline) | A linked timeline from the browser prototype to the final game |
 | [Design decisions](DESIGN_DECISIONS.md) | Why the main changes were made, with supporting records |
-| [Evaluation](EVALUATION.md) | Playtesting method, feedback, software checks and evidence limits |
-| [Ethics reflection](ETHICS_REFLECTION.md) | Research conduct, outstanding risks and lessons |
+| [Evaluation](EVALUATION.md) | Playtesting method, feedback and software checks |
+| [Ethics reflection](ETHICS_REFLECTION.md) | Research conduct, current review status and lessons |
 | [AI use and authorship](AI_AND_AUTHORSHIP.md) and [asset sources](ASSET_PROVENANCE.md) | Contributions, tools and attribution |
 | [References](REFERENCES.md) | Sources consulted for the project account |
 | [Submission record](assessment/README.md) | Required work, its location and current status |
@@ -24,7 +24,7 @@ The [Project index](../Project/README.md) identifies each implementation and the
 | [Documentation](README.md) | .md | The main assessment reading |
 | [media/screenshots](media/screenshots/README.md) | .png, .md | Labelled browser captures and Unity test renders |
 | [assessment](assessment/README.md) | .md | One requirements and submission table |
-| [Thesis](../Thesis/README.md) | .md | Dissertation record and appendix reference; the PDF is not included |
+| [Thesis](../Thesis/README.md) | .md | Dissertation record and appendix reference |
 | [Misc](../Misc/README.md) | .md, .xml, .json, .csv, .docx, .png | Technical detail, saved reports, dated revisions and older designs |
 
 ## File types

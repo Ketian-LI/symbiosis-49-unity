@@ -18,5 +18,3 @@ The [Project index](Project/README.md) separates the web prototype, historical U
 | [Thesis](Thesis/README.md) | Dissertation record and appendix reference |
 | [Submission record](Documentation/assessment/README.md) | Assessment requirements, included material and omissions |
 | [Misc](Misc/README.md) | Technical guides, saved software reports and historical records |
-
-The project's scores and species behaviour are authored game rules, rather than predictions of a real ecosystem.

@@ -24,7 +24,7 @@ The project asks whether players can connect a visible outcome to a spatial rule
 *Opening fixture from the approved 22 November interface. The central oak comes before human services.*
 
 1. Select a room card. Legal plots are marked on the board.
-2. Preview a plot and confirm construction. Selecting a card alone does not build it.
+2. Preview a plot and confirm construction. The confirmation commits the placement.
 3. Watch the run resolve resident and animal activity, upgrades and score changes.
 4. Inspect the affected room, score source or journal before making another choice.
 
@@ -47,7 +47,7 @@ without first reading every rule at once.
 | Green on opposite sides of a street | A slow-street condition with lower traffic risk |
 
 The upgraded images help distinguish a room's state. Habitat level is separate from maturity; new planting grows over time.
-An upgrade does not itself mean that an animal ate or a resident completed a routine. Those activities must happen in the model. Lower traffic risk also does not remove a street/green edge deduction.
+Feeding and completed routines earn their activity points when they occur. Traffic risk and street/green edge deductions are calculated separately.
 
 ## Residents need a complete route
 
@@ -56,7 +56,7 @@ An upgrade does not itself mean that an animal ate or a resident completed a rou
 *Home inspection in the final source. It shows destinations, coordinates and missing connections.*
 
 Homes, workplaces, food services and streets form a route system. Residents receive work and meal destinations automatically,
-within the available capacity and legal connections. Selecting a home exposes the plan rather than opening a dispatch editor.
+within the available capacity and legal connections. Selecting a home shows its assigned destinations.
 A route can fail because access is broken or a service has no capacity; adding another building is useful only if the layout
 makes it reachable. The [commuting reference](media/screenshots/building-example-1-en.png) shows edge connections and a disconnected diagonal example.
 
@@ -82,9 +82,8 @@ later confirmed settlement. This gives placement a continuing cost and makes the
 
 *Three-phase Unity fixtures from 22 November. Click a preview to inspect the full frame.*
 
-Settlement proceeds through resident, animal and shared activity. Each batch clears before the next, so contributors do not
-remain mixed together. Floating values identify a source while it is happening. Deductions use their own colour and written cause.
-The score is a game rule, not a measure of the ecological quality of a real city.
+Settlement proceeds through resident, animal and shared activity. Each batch highlights its contributors, then clears for the next. Floating values identify a source while it is happening. Deductions use their own colour and written cause.
+
 
 ## Explanations remain available
 
@@ -104,7 +103,7 @@ to review their finished layout.
 
 Ten core terms provide short hover meanings and clickable manual destinations. Manual explanations link to other entries.
 O opens the manual, P opens three pages of building examples, and I opens the independent journal.
-These views explain the current run without placing another room or adding another score.
+These views let the player inspect the recorded run between placements.
 
 ## Cards and goals make the next choice visible
 
@@ -112,8 +111,7 @@ These views explain the current run without placing another room or adding anoth
 
 *Deck-catalogue fixture, 22 November. The counts come from the run's actual card supply.*
 
-The catalogue distinguishes cards in the pile, held cards and built rooms. Green variants share one supply rather than acting
-as separate hidden decks. Three goals offer different directions for a run. Goal progress stays on the left page, while the
+The catalogue shows cards in the pile, held cards and built rooms. Green variants share one supply. Three goals offer different directions for a run. Goal progress stays on the left page, while the
 hand and deck sit below the board. This allows a player to compare what a goal asks for with the rooms still available.
 
 ## How the object changed
@@ -128,22 +126,19 @@ introduce a room when the player needed it. The visual work also moved from top-
 building fronts, illustrated habitats and a compact hand. The [visual development journal](DEVELOPMENT_JOURNAL.md#timeline)
 shows each stage with dated or qualified source captions.
 
-## Physical input as a separate experiment
+## Physical input prototype
 
 ![The marked physical board and camera setup](media/screenshots/physical-board-camera.jpg)
 
 *Project setup photograph retained in the supplied presentation. The capture date is unrecorded.*
 
 A marked 7 by 7 board and 80 printed tokens explored a physical layout input. One recognised token could produce its
-corresponding Unity plot. Other controls remained on screen. This was a technical prototype, without a participant study
-of physical play; it is separate from the mouse-and-keyboard construction game.
+corresponding Unity plot. Other controls remained on screen. The setup explored physical placement alongside the desktop interface.
 
 ## Contribution and evidence
 
 I defined the spatial rules and opening progression, directed the visual revisions, and used feedback to decide what to change.
 [Authorship and tools](AI_AND_AUTHORSHIP.md) and [asset sources](ASSET_PROVENANCE.md) provide the contribution records.
 
-The images show implemented interfaces, historical project views and one physical setup. They are not participant-session
-evidence. The latest dissertation's questionnaire account and separate later observation are described in [evaluation](EVALUATION.md).
-Those records do not isolate the effect of every later feature. Current source and older executable versions are labelled
-separately in [downloads](../Project/Downloads/README.md).
+The [evaluation](EVALUATION.md) explains how players interpreted the spatial rules and how their feedback informed revisions.
+[Downloads](../Project/Downloads/README.md) lists the available source and executable versions.

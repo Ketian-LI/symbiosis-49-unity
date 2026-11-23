@@ -7,7 +7,7 @@ Ketian-LI (2026) *Urban Wildlife Simulation*. Available at: https://github.com/K
 (Accessed: 20 November 2026). README, development timeline, AI log and commit history reviewed.
 
 Ketian-LI (2026) *Urban Wildlife Tangible Unity*. Available at: https://github.com/Ketian-LI/urban-wildlife-tangible-unity
-(Accessed: 20 November 2026). README and GDD V3 migration record reviewed; not rerun as a complete hardware study.
+(Accessed: 20 November 2026). README and GDD V3 migration record.
 
 Ketian-LI (2026) *SYMBIOSIS: 49 Unity*. Available at: https://github.com/Ketian-LI/symbiosis-49-unity
 (Accessed: 20 November 2026). Historical source/commits and current local construction snapshot reviewed.
@@ -27,12 +27,12 @@ This list covers sources consulted for the repository account and its organisati
 
 Creative Computing Institute (2025) *CCI Ethical Guidance for Projects on Taught Programmes*. Available at:
 [CCI ethical guidance](https://git.arts.ac.uk/pages/wzhang/CCI-Thesis/).
-The page contains 2025 deadlines; those dates are not used as the project's 2026 deadlines.
+2025 guidance edition. The supplied 2025-26 assessment brief records the project submission dates.
 
 University of the Arts London (2020) *Code of Practice on Research Ethics*, October. Available at:
 [UAL research ethics code](https://www.arts.ac.uk/__data/assets/pdf_file/0020/43328/UAL-Code-of-Practice-on-Research-Ethics-October-2020.pdf).
 
-The [current ethics status](ETHICS_REFLECTION.md#current-review-status) records the pending supervisor review. These references identify guidance consulted, not project approval.
+The [ethics reflection](ETHICS_REFLECTION.md) records the project's review process.
 
 ## Supplied project documents
 

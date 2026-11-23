@@ -15,6 +15,5 @@ Its account develops the question of how players notice, explain and apply a gam
 | Appendix B: procedure and coding | [Evaluation method and record](../Documentation/EVALUATION.md#playtesting) |
 | Appendix C: physical input and tools | [Camera prototype](../Project/04-Final/Tools/CameraRecognition/README.md) and [authorship](../Documentation/AI_AND_AUTHORSHIP.md) |
 
-The repository incorporates this document's updated aggregate account. The editable document and a final thesis PDF
-are not published here. The [submission record](../Documentation/assessment/README.md) identifies the required format.
-The [supplementary ethics reflection](Appendices/README.md) is kept separate from the dissertation's existing Appendices A-C.
+The repository follows this document's updated account. The [submission record](../Documentation/assessment/README.md)
+lists the available files, and the [ethics reflection](Appendices/README.md) records the review process.

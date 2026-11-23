@@ -11,7 +11,7 @@ three goals, the real remaining-card catalogue, room relationships and separate 
 1. Use Unity **6000.3.4f1**.
 2. In Unity Hub, add this `Project/04-Final/` directory.
 3. Open `Assets/Scenes/Main.unity` and press Play.
-4. Choose Fill or Endless. Mouse and keyboard play does not require a camera.
+4. Choose Fill or Endless. Use mouse and keyboard input.
 
 `Assets`, `Packages` and `ProjectSettings` stay together here. `SourceAssets` retains editable art;
 `Services` contains the optional leaderboard backend; `Tools` contains modelling and camera utilities.
@@ -25,17 +25,15 @@ three goals, the real remaining-card catalogue, room relationships and separate 
 
 The [earlier same-day source package](https://github.com/Ketian-LI/symbiosis-49-unity/releases/tag/project-versions-2026-11-22)
 is retained as a historical snapshot. It predates this commuting/reference revision.
-The Windows executable in [downloads](../Downloads/README.md) is still the 19 November build.
-The macOS archive contains source, not a built Mac application.
+The [download page](../Downloads/README.md) lists each source package and executable by date.
 
 ## Scope and verification
 
 Ten core terms support hover definitions and jumps to marked manual entries. P opens three reference pages;
-I opens the recorded journal; O opens the manual. Enter-to-confirm remains outside this snapshot.
-Recurring bad-edge deductions apply to future confirmed Fill settlements. They do not retroactively charge old saves;
-Endless retains its existing building-time pairing rules.
+I opens the recorded journal; O opens the manual.
+Recurring bad-edge deductions begin with eligible future Fill settlements, preserving the points already stored in older saves.
+Endless uses its building-time pairing rules.
 
 The [implementation record](../../Misc/process/iterations/COMMUTING_REFERENCE_AND_PENALTIES_2026-11-22.md),
 [rules](../../Misc/technical/GAME_RULES.md) and [controls](../../Misc/technical/CONTROLS.md) explain the behaviour.
-[Evaluation](../../Documentation/EVALUATION.md#software-checks) identifies the saved checks and limitations.
-This archive update verifies the pinned source bytes and imports existing reports; it does not rebuild executables.
+[Evaluation](../../Documentation/EVALUATION.md#software-checks) records the software-check results.

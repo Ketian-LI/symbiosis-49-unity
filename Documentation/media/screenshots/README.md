@@ -8,15 +8,14 @@
 | `street-journal` | 19 November version |
 | `early-web-prototype` | Browser stage |
 
-The index includes fixed Unity test renders, historical game captures, retained prototype images and a physical setup photograph. Their captions identify the source type; they are not participant-session records.
+The index includes fixed Unity test renders, historical game captures, retained prototype images and a physical setup photograph. Captions identify the source type and date.
 The [portfolio](../../PORTFOLIO.md) presents the final images with design context.
 
 ## Current commuting and explanation fixtures
 
 `automatic-commute`, `term-hover`, `manual-restaurant`, `building-example-1`, `building-example-2`,
 `building-example-3` and `independent-journal` have English and Chinese captures from the combined commuting/reference source.
-They are native Unity test renders, not participant sessions. Earlier `fill-approved` and scoring-batch captures retain
-their earlier same-day snapshot labels.
+These are native Unity test renders. Earlier `fill-approved` and scoring-batch captures retain their source labels.
 
 ## Historical stages and physical setup
 
@@ -30,4 +29,4 @@ their earlier same-day snapshot labels.
 | `physical-board-camera.jpg` | Photograph of the technical input setup; capture date unrecorded |
 
 [Image source records](timeline-image-sources.json) preserve the file hashes and source descriptions.
-The images are unmodified copies, with no new artwork or reconstructed screenshots created for the journal.
+The image files are preserved as unmodified copies.

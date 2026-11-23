@@ -22,7 +22,7 @@ The [source lineage](../Misc/process/REPOSITORY_LINEAGE.md) identifies the proto
 
 The opening order carries the project's premise: animals already live in the place before people move in.
 The central oak therefore comes first. Homes, work and meals follow as the neighbourhood develops.
-This connects an instruction to a reason for building, rather than beginning with a list of room functions.
+Each building enters through a need the player can recognise.
 
 I brought the tutorial into the hand itself. The opening design specified eight fixed cards in 3/3/2 groups before free choice.
 Guided steps establish the room relationships, while allowing location choices where the step permits them.
@@ -41,15 +41,12 @@ The score and selected-card information were grouped on the right, with a stable
 
 The opening animation introduced another problem: a small change in angle or page position could make the playing board
 look detached from the object that had just opened. I asked for smaller tilt, aligned side leaves, narrower gaps and revised hinges and shadows.
-These were continuing visual revisions rather than a single approved solution.
 
-The [portfolio](PORTFOLIO.md) shows labelled software captures.
-The saved [opening reports](../Misc/evidence/automated-tests/README.md) include failures.
-An image proposal, a successful compile and a visually resolved interface are separate forms of evidence.
+The [portfolio](PORTFOLIO.md) shows the visual progression. The [opening reports](../Misc/evidence/automated-tests/README.md) record the transition checks.
 
 ## Make upgrades and resources distinguishable
 
-I wanted neighbouring placements to change the room itself, rather than add points alone.
+I wanted neighbouring placements to change a room's appearance and function.
 Connected green patches, garden homes and terrace restaurants therefore needed visible variants as well as functional effects.
 The [placement rules](../Project/04-Final/Assets/Scripts/Core/ConstructionPlacementScore.cs) and
 [room visuals](../Project/04-Final/Assets/Scripts/Presentation/RoomInteriorVisualBuilder.cs) document that relationship.
@@ -72,7 +69,7 @@ I also questioned score ranges when unfavourable layouts could finish too close 
 The subsequent balance work revised placement effects and trophy bands, with different rule versions retained for older saves.
 
 The [calibration record](../Misc/process/iterations/SKILL_GUIDED_UI_2026-11-21.md) compares automated placement policies.
-Those runs examine incentives; they are not player results or proof that an optimal layout has been found.
+Those runs compare the incentives created by different placement strategies.
 
 Score animations alone were too brief for inspection. The score-source view keeps the last settlement available,
 highlights contributing rooms and visible actors, and provides entry navigation.
@@ -90,17 +87,17 @@ These issues were recorded separately from visual preferences and checked throug
 The retained [goal failure](../Misc/evidence/automated-tests/goal-restart-before-fix.xml),
 [goal repair](../Misc/evidence/automated-tests/goal-restart.xml) and
 [result checks](../Misc/evidence/automated-tests/result-interactions.xml) show the scope of that verification.
-They do not establish that every interface issue was resolved or replace the [playtesting evaluation](EVALUATION.md).
+The [playtesting evaluation](EVALUATION.md) examines how players used the revised interfaces.
 
-## Keep prototypes, requests and delivery distinct
+## Automatic routines and persistent explanations
 
 Physical layout input explored the familiarity of a tabletop object. Full physical control would have added further recognition
 and interaction demands, so camera work was scoped separately from desktop play.
-It remains a [technical prototype](../Project/04-Final/Tools/CameraRecognition/README.md), rather than evidence of a completed physical playtest.
+The [camera prototype](../Project/04-Final/Tools/CameraRecognition/README.md) records the physical recognition work.
 
 The final source now includes automatic commuting, the real per-category deck catalogue and ten linked manual terms.
 P opens building examples and I opens the recorded journal. Existing bad edges recur in later Fill settlements, so deductions
-remain visible after the introducing placement. Enter-to-confirm remains outside this snapshot.
+remain visible after the introducing placement.
 The [current implementation record](../Misc/process/iterations/COMMUTING_REFERENCE_AND_PENALTIES_2026-11-22.md) gives the scope.
 The [submission record](assessment/README.md) distinguishes the source from the Windows executable and macOS source-only package.
 

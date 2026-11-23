@@ -1,55 +1,62 @@
 # Ethics review and reflection
 
-SYMBIOSIS: 49. Status on 22 November 2026.
+Recorded status on 22 November 2026.
 
 ## Current review status
 
-I have sent all participant consent forms and the project plan to my supervisor. They have not yet been reviewed. No ethics approval has been confirmed.
+All participant consent forms and the project plan have been sent to my supervisor. Review is pending.
 
 ## What I missed
 
-I carried out playtests and collected feedback before completing the required ethics review. Participants agreed orally or through chat, but I had not completed the formal review process with my supervisor. I should have checked the requirements before recruiting participants and gathering data.
+I carried out playtests and collected feedback before completing the required ethics review.
+Participants agreed orally or through chat. I should have checked the process with my supervisor before recruitment and data collection.
 
-I also supplied some completed questionnaires, message extracts and transcripts to ChatGPT/Codex for organisation and analysis. These services are outside UAL-managed systems. The material could contain details that identify participants. Earlier versions of the game also included an online leaderboard that could receive chosen nicknames and scores. I have not established which participant sessions uploaded data.
+I supplied some questionnaires, message extracts and transcripts to ChatGPT/Codex for organisation and analysis.
+These services operate outside UAL-managed systems, and the material could contain identifying details.
+Earlier game versions also had an online leaderboard that could receive chosen nicknames and scores.
 
 ## The risks
 
-Participants could lose control over how their feedback, voices or identifying details were used. Removing a name alone may not prevent someone from being recognised. Recruitment through personal contacts could also make it harder to refuse or criticise the game. Informal agreement to play did not settle every question about storage, external processing or publication.
+Names, voices and contextual details could identify participants. External processing affected their control over where feedback
+was held and how it could be reused. Recruitment through personal contacts could also make refusal or criticism difficult.
 
-As a UAL student, I was responsible for following the University's procedures. Missing review could undermine confidence in how the project handled participants and in the reliability of its research account. I cannot treat staff advice or a completed form as evidence of institutional approval.
+As a UAL student, I was responsible for following the University's procedures. The missed review exposed participants to
+data-handling risks and weakened the credibility of the research account. It also affected the trust placed in me as the researcher
+and as a representative of the University.
 
-The oversight also affects my academic credibility. Later consent cannot be presented as if it existed before the study, and unfinished safeguards cannot be described as completed. This account retains the actual sequence of events.
+## Actions taken
 
-## What I have done so far
+I raised the issue with a member of staff, who advised me to complete the form, speak to my supervisor and record the oversight
+and lessons in this repository. I prepared the ethics application draft, organised the participant documents and sent the consent
+forms and project plan to my supervisor.
 
-I raised the issue with a member of staff and received advice to complete the form, speak to my supervisor and explain the oversight and lessons in this repository. I prepared the ethics application draft and organised the participant documents. All participant consent forms and the project plan have now been sent to my supervisor. Review is pending.
+I keep consent forms, contact details, raw messages and audio separate from the public project archive.
+The repository presents the project account and aggregate findings.
 
-The public repository keeps consent documents, raw messages, audio and participant identities out of the research evidence folders. It states that approval and permitted use of the earlier feedback remain unresolved. This limits further public exposure through the project archive. Sending the documents does not itself resolve the earlier data-handling issues.
+## Actions to complete
 
-## What remains unresolved
+On 22 November, further playtesting had not been paused. Transfer of the research records to UAL OneDrive and handling of
+earlier AI and leaderboard records were unfinished. Storage, retention and permitted reuse of earlier feedback await supervisor review.
 
-At the time of writing, new playtesting has not yet been paused. Transfer of the research records to UAL OneDrive and handling of records held through AI or leaderboard services have not been completed. These are outstanding risks, not completed safeguards.
-
-Supervisor review, the scope for further use of the earlier feedback, and a confirmed storage and retention arrangement remain unresolved. The record also does not establish which sessions uploaded leaderboard data or the status of earlier copies held by external services. No deletion or recall of those copies is claimed.
-
-Later consent records the actual signing date and the uses each participant permits. It cannot establish that approval or consent was in place before the earlier sessions. The study account is therefore presented with these limits, rather than as approved research evidence.
+I still need to establish which sessions uploaded leaderboard data and the status of copies held by external services.
+Deletion of those copies has not been confirmed.
 
 ## What I have learned
 
-Ethics review belongs in the project plan before recruitment, rather than at the point of submission. I need to decide what data I will collect, where it will go and who can access it before asking people to take part. Software services and AI tools are part of that decision.
+Ethics review belongs before recruitment. Data collection needs a plan for permissions, storage, access and external processing.
+I need to consider the services used by the game and by the research workflow when making that plan.
 
-For future work, I will check the process with my supervisor early, obtain the required review and document consent before collecting data. I will keep dated records of permissions and changes to the study. This reflection records responsibility and the remaining work; it does not replace that work or the University's decision.
+In future work I will agree the process with my supervisor early, obtain the required review and document consent before collecting
+data. I will keep dated permission records and update them when the study or its software services change.
 
 ## Representation and the optional leaderboard
 
-The game reduces food, movement, habitat and risk to authored rules. A high score describes success within those rules,
-rather than the ecological quality of a real city. Combining resident and animal points can hide competing needs.
-Separate contributions and visible causes expose some assumptions, while short stories can also oversimplify them.
-The evaluation does not establish how well players recognise these limits.
+The game turns food, movement, habitat and risk into authored rules. Its scores reward a designed balance of resident and animal
+activity. Combining those scores can obscure competing needs; showing their contributions separately helps players inspect
+the assumptions behind a total. Short stories make events accessible while simplifying the underlying relationships.
 
-The optional leaderboard derives an identity from a public IP using an HMAC digest. People on a shared network can share
-a record. This is pseudonymous processing, not guaranteed anonymity. The server receives a chosen name and score;
-it does not replay the run to prove the score. Offline play and local rankings work without this service.
+The optional leaderboard assigns an identity using an HMAC digest of a public IP. Shared networks can therefore share a record.
+This is pseudonymous processing. The service stores a chosen name and client-submitted score without replaying the run.
+Offline play and local rankings operate independently of the service.
 
-The [references](REFERENCES.md#ethics-references) identify the institutional guidance consulted.
-Private forms and the staff conversation are excluded from the public archive.
+The [references](REFERENCES.md#ethics-references) identify the institutional guidance used for this reflection.

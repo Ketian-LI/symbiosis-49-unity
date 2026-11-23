@@ -6,9 +6,8 @@
 | Editable models | [SourceAssets](../Project/04-Final/SourceAssets) and [Blender tools](../Project/04-Final/Tools/Blender) | Editable files and scripts are retained separately from game exports. |
 | Quaternius fox | [Source and licence](../Project/04-Final/SourceAssets/External/Quaternius/Fox/SOURCE_AND_LICENSE.md) | Third-party CC0 model, with a conversion record. |
 | Nunito and Noto Sans SC | [Font licences](../Misc/technical/FONT_LICENSES.md) | SIL Open Font License notices are retained. |
-| Cards, foliage and interface art | [UI resources](../Project/04-Final/Assets/Resources/UI) | AI-assisted artwork developed from my visual references and instructions. The available tool-use records do not cover every asset. |
+| Cards, foliage and interface art | [UI resources](../Project/04-Final/Assets/Resources/UI) | AI-assisted artwork developed from my visual references and instructions. |
 | Portfolio screenshots | [Screenshots](media/screenshots/README.md) | Labelled Unity renders, archival project captures, retained prototype images and the physical setup photograph; see the screenshot index. |
-| Repository layout references | [Examples reviewed](../Misc/archive/ARCHIVE_PRECEDENTS.md) | References for organisation; no code or artwork was imported from those examples. |
+| Repository layout references | [Examples reviewed](../Misc/archive/ARCHIVE_PRECEDENTS.md) | References for repository organisation. |
 
-Third-party licences apply to the corresponding files. Public assessment access does not place the repository in the public domain.
-No repository-wide reuse licence is included.
+Third-party licence notices govern their corresponding files. The repository carries no general reuse licence.

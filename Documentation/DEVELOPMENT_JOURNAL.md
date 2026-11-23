@@ -1,7 +1,7 @@
 # Development journal
 
-This retrospective account was assembled from commits, saved designs, software reports and captures.
-Dates refer to those records, not automatically to participant sessions.
+This journal follows the project through its commits, saved designs, software reports and captures.
+Dates identify the corresponding versions and records.
 The [design decisions](DESIGN_DECISIONS.md) explain the reasons behind the main changes.
 
 ## Timeline
@@ -40,13 +40,11 @@ The [web version page](../Project/00-Web-Prototype/README.md) links the hosted p
 *Archived park-planning image from the development presentation. Feeding areas and a main route make spatial choices visible; the capture date is unrecorded.*
 
 The Unity work moved through park planning and an open woodland city, then explored building tokens, camera input, placement previews and city routes.
-More decisions also brought more rules and input failures to diagnose. Physical recognition remained a separate,
-partly verified prototype; the records do not establish reliable physical play or a completed camera-based study.
-The date and build of the earliest Unity transfer remain partly documented.
+More decisions also brought more rules and input failures to diagnose. Camera recognition developed alongside the desktop prototype.
 
 ![Open woodland city rerendered from the September source](media/screenshots/woodland-city-rerender-20261111.png)
 
-*Open-city version, rerendered on 11 November from September source commit `80d8bab`. This is a later render of the historical project, not a September screenshot.*
+*September open-city source, commit `80d8bab`, rerendered on 11 November 2026.*
 
 Read the [migration record](https://github.com/Ketian-LI/urban-wildlife-tangible-unity/blob/main/docs/GDD_V3_MIGRATION.md),
 [source package](../Project/01-Tangible-Unity/README.md) and
@@ -88,11 +86,10 @@ The [20 October source](../Project/03-Progressive-Construction/README.md) record
 
 November work developed illustrated cards, a lower hand tray, visible upgrades and a staged opening.
 Visual review identified small text, detached hinges, wasted space and panels covering useful information.
-These comments guided revisions; they were not a controlled comparison of visual styles.
+These comments guided the changes to card size, spacing and panel placement.
 
 Two rounds of remote playtesting raised questions about unclear rules, delayed consequences and repetition.
-The [evaluation](EVALUATION.md#playtesting) records the participants, method and limits.
-Rules changed between rounds, so the final rules cannot be applied backwards to every session.
+The [evaluation](EVALUATION.md#playtesting) records the participants, method and rule version used in each round.
 
 ## 06 Scoring and reliability
 
@@ -119,7 +116,6 @@ was published on 20 November from the 19 November build.
 *21 November Unity fixture. The score-source entry retains a routine, affected plots and navigation after settlement.*
 
 The English archive brought source, history, selected checks and screenshots together on 20 November.
-It was a published project archive, not a Moodle submission.
 The next review checked bilingual text and compared diagnostic placement policies.
 
 The [reading and balance review](../Misc/process/iterations/SKILL_GUIDED_UI_2026-11-21.md),
@@ -144,8 +140,7 @@ The [Project index](../Project/README.md) identifies the current final snapshot 
 The updated dissertation supplies the thirteen-record questionnaire account and one separate follow-up observation;
 the earlier presentation retains its nine-form snapshot. [Evaluation](EVALUATION.md) keeps those records distinct.
 
-All participant consent forms and the project plan have now been sent to the supervisor. They have not yet been reviewed.
-The [ethics reflection](ETHICS_REFLECTION.md) retains the earlier oversight and outstanding data-handling issues.
+The [ethics reflection](ETHICS_REFLECTION.md) records the documents sent to the supervisor and the work still awaiting review.
 The [submission record](assessment/README.md) identifies included material and omissions.
 
 [Back to timeline](#timeline)

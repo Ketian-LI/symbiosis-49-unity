@@ -30,7 +30,7 @@ identify source and executable versions. The [software-report index](../../Misc/
 lists the saved checks. [Authorship](../AI_AND_AUTHORSHIP.md) and [asset sources](../ASSET_PROVENANCE.md) record tools and attribution.
 
 Detailed anonymous participant evidence is not included; formal review and further-use permissions remain unresolved.
-The [supplementary thesis reference](../../Thesis/Appendices/README.md) points to the ethics statement. All consent forms and the project plan have been sent to the supervisor; review is pending.
+The [ethics reflection](../../Thesis/Appendices/README.md) points to the ethics statement. All consent forms and the project plan have been sent to the supervisor; review is pending.
 No video of the final construction build or Moodle submission receipt is included.
 
 ## Submission details
