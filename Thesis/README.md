@@ -1,8 +1,10 @@
 # Dissertation record
 
-*From Feeding Pigeons to City Building: Gameplay and guidance in SYMBIOSIS 49*, Ketian Li, 22 November 2026.
+*From Feeding Urban Pigeons to City Building: Gameplay and guidance in SYMBIOSIS 49*, Ketian Li, 22 November 2026.
 
-The latest supplied document is `SYMBIOSIS_49_EN_Feedback_Manual_and_Journal_2026-11-22.docx`.
+**[Read or download the final thesis (PDF)](SYMBIOSIS_49_Thesis_Ketian_Li_Final_2026-11-23.pdf).**
+
+The final thesis PDF was exported and added to this repository on 23 November 2026.
 Its account develops the question of how players notice, explain and apply a game's spatial rules.
 
 | Dissertation section | Corresponding repository account |

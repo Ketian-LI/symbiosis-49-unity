@@ -1,6 +1,6 @@
 # Assessment and submission record
 
-Status on 22 November 2026. This table follows the supplied IU000293 Creative Computing Final Project brief, 2025-26.
+Status on 23 November 2026. This table follows the supplied IU000293 Creative Computing Final Project brief, 2025-26.
 Pages 2-4 describe the work and submission method; page 7 recommends Harvard referencing.
 
 ## Required material and current record
@@ -10,7 +10,7 @@ Pages 2-4 describe the work and submission method; page 7 recommends Harvard ref
 | Portfolio of outcomes | [Portfolio](../PORTFOLIO.md) | Labelled screenshots and source links included |
 | Research weblog or sketchbook | [Development journal](../DEVELOPMENT_JOURNAL.md#timeline) | Retrospective timeline with dated supporting records included |
 | Project report | [Report](../PROJECT_REPORT.md) | Design, implementation and evaluation account included |
-| Associated thesis: at least 3,500 words, as PDF | [Thesis](../../Thesis/README.md) | Latest supplied DOCX reflected in the project account; final PDF not included |
+| Associated thesis: at least 3,500 words, as PDF | [Final thesis PDF](../../Thesis/SYMBIOSIS_49_Thesis_Ketian_Li_Final_2026-11-23.pdf) | Final PDF included; [dissertation record](../../Thesis/README.md) links the chapters to supporting material |
 | GitHub-link text file | [Repository](https://github.com/Ketian-LI/symbiosis-49-unity) | Link files prepared locally; no Moodle submission receipt recorded |
 | Full repository ZIP, maximum 1 GB | [Current repository ZIP](https://github.com/Ketian-LI/symbiosis-49-unity/archive/refs/heads/codex/submission-documentation-2026-11-22.zip) | The current submission branch as a ZIP; released version archives retain their pinned snapshots |
 
